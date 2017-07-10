@@ -13,7 +13,12 @@
 
 ## Event System
 
-
+* Dispatch an event with arguments.
+* Events are handled by jobs. A job is registered on an even with specific event properties.
+* Jobs can go to sleep and be awakened by an event.
+* Events can be deffered (via timer) and if multiple happen while deferred, they are aggregated.
+  The job will get the aggregated information.
+* Jobs can be registered for an event and start by that event happening
 
 ## Job that is triggered on a commit
 
@@ -32,5 +37,12 @@ Properties: rerun if failed
 Properties: repo + commithash + build tree
 
 1. If not a re-run, write build tree status to DB (i.e. no jobs have started)
-1. Dispatch jobs that have no parents that are not yet built
+1. Otherwise write to the status which jobs are built.
+1. Dispatch jobs that have no parents that are not yet built (or stop some due to failure)
 1. Add event handler to dispatch this job when any of the jobs are finished
+
+## Job Dispatching
+
+* What is a job?
+* How is it dispatched?
+* How is it run?
