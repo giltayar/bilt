@@ -74,3 +74,10 @@ If awoken from sleep due to build job run, the the event information will be bui
 * type: npm-lib|npm-docker|maven...
 * repo+commit+branch
 * path to source code
+
+
+## Principles
+
+* All plugins are a module that exports a factory function that receives _something_ not sure what exactly,
+  and return an object with a set of functions that conform to an interface for that plugin.
+* All functions return a promise. Never a raw value.
