@@ -1,5 +1,5 @@
 {
-  "name": "bildit-jobs",
+  "name": "bildit-jobs-job-dispatcher",
   "version": "1.0.0",
   "description": "Runs jobs",
   "main": "jobs.js",
