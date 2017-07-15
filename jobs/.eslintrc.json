@@ -13,7 +13,15 @@
         "prettier"
     ],
     "rules": {
-        "prettier/prettier": [ "error", { "semi": false, "parser": "babylon", "printWidth": 100 } ],
+        "prettier/prettier": [ "error", {
+            "semi": false,
+            "parser": "babylon",
+            "printWidth": 100,
+            "singleQuote": true,
+            "trailingComma": "all",
+            "bracketSpacing": false,
+            "jsxBracketSameLine": true
+        } ],
         "no-const-assign": "warn",
         "no-this-before-super": "warn",
         "no-undef": "warn",
