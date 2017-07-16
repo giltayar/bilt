@@ -6,7 +6,7 @@ const pretty = x => util.format('%o', x)
 
 module.export = context => {
   const plugins = {
-    Job: [require('../../jobs/npm-jobs-runner')(context)],
+    JobRunner: [require('../../jobs/npm-jobs-runner')(context)],
   }
 
   return {
