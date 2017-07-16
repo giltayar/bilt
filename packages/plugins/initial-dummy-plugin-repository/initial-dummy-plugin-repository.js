@@ -4,6 +4,8 @@ const util = require('util')
 
 const pretty = x => util.format('%o', x)
 
+const pFilter = async (array, filter) => (await Promise.all(array.map(filter))).filter(x => !!x)
+
 module.export = context => {
   const plugins = {
     JobRunner: [require('../../jobs/npm-jobs-runner')(context)],
@@ -19,7 +21,10 @@ module.export = context => {
 
       if (!pluginsForKind) throw new Error(`No plugins support plugin ${kind}`)
 
-      const supportedPlugins = pluginsForKind.filter(plugin => plugin.supports(pluginInfo))
+      const supportedPlugins = await pFilter(pluginsForKind, async plugin =>
+        plugin.supports(pluginInfo),
+      )
+
       if (supportedPlugins.length === 0)
         throw new Error(
           `No plugins support the plugin info ${pluginInfo}. Available plugins for ${kind} were ${pretty(

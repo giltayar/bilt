@@ -1,0 +1,28 @@
+{
+  "name": "bildit-npm-job-runner",
+  "version": "1.0.0",
+  "description": "Job Runner for NPM Jobs",
+  "main": "npm-job-runner.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ci",
+    "npm"
+  ],
+  "author": "Gil Tayar <gil@tayar.org>",
+  "license": "Unlicense",
+  "repository": {
+    "url": "https://github.com/giltayar/bildit",
+    "type": "git"
+  },
+  "dependencies": {
+    "debug": "^2.6.8"
+  },
+  "devDependencies": {
+    "eslint": "^4.2.0",
+    "eslint-plugin-flowtype": "^2.35.0",
+    "eslint-plugin-prettier": "^2.1.2",
+    "prettier": "^1.5.2"
+  }
+}
