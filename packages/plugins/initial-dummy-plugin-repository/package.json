@@ -1,0 +1,26 @@
+{
+  "name": "bildit-initial-dummy-plugin-repository",
+  "version": "1.0.0",
+  "description": "A dummy repository that .. requires anything till we get the whole build system going",
+  "main": "initial-dummy-plugin-repository.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ci",
+    "plugin-repository"
+  ],
+  "author": "Gil Tayar <gil@tayar.org>",
+  "license": "Unlicense",
+  "repository": {
+    "url": "https://github.com/giltayar/bildit",
+    "type": "git"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^4.2.0",
+    "eslint-plugin-flowtype": "^2.35.0",
+    "eslint-plugin-prettier": "^2.1.2",
+    "prettier": "^1.5.2"
+  }
+}
