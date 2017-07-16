@@ -16,7 +16,9 @@
     "url": "https://github.com/giltayar/bildit",
     "type": "git"
   },
-  "dependencies": {},
+  "dependencies": {
+    "debug": "^2.6.8"
+  },
   "devDependencies": {
     "eslint": "^4.2.0",
     "eslint-plugin-flowtype": "^2.35.0",

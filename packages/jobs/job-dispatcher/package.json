@@ -1,8 +1,8 @@
 {
-  "name": "bildit-jobs-job-dispatcher",
+  "name": "bildit-job-dispatcher",
   "version": "1.0.0",
-  "description": "Runs jobs",
-  "main": "jobs.js",
+  "description": "Dispatches jobs to be run by appropriate plign",
+  "main": "job-dispatcher.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
