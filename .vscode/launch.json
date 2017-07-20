@@ -1,0 +1,26 @@
+{
+  // Use IntelliSense to learn about possible Node.js debug attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Test CLI on host-agent",
+      "program": "${workspaceRoot}/packages/cli/build-local-folder/build-local-folder.js",
+      "args": [
+        "packages/agents/host-agent"
+      ],
+      "env": {
+        "DEBUG": "*"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Program",
+      "program": "${file}"
+    }
+  ]
+}

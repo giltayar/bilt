@@ -1,14 +1,13 @@
 'use strict'
 const debug = require('debug')('bildit:initial-dummy-plugin-repository')
 const util = require('util')
+const bluebird = require('bluebird')
 
 const pretty = x => util.format('%o', x)
 
-const pFilter = async (array, filter) => (await Promise.all(array.map(filter))).filter(x => !!x)
-
-module.export = context => {
+module.exports = context => {
   const plugins = {
-    JobRunner: [require('../../jobs/npm-jobs-runner')(context)],
+    JobRunner: [require('../../npm/npm-job-runner')(context)],
   }
 
   return {
@@ -21,7 +20,7 @@ module.export = context => {
 
       if (!pluginsForKind) throw new Error(`No plugins support plugin ${kind}`)
 
-      const supportedPlugins = await pFilter(pluginsForKind, async plugin =>
+      const supportedPlugins = await bluebird.filter(pluginsForKind, async plugin =>
         plugin.supports(pluginInfo),
       )
 

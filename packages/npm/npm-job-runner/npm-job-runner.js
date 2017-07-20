@@ -18,7 +18,7 @@ module.exports = () => {
       if ((packageJson.scripts || {}).test) {
         debug('running npm test in job %o', jobInfo)
 
-        await agentFunctions.executeCommand(['npm', 'run', 'build'])
+        await agentFunctions.executeCommand(['npm', 'test'])
       }
     },
 

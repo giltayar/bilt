@@ -13,11 +13,11 @@ module.exports = ({cwd = '.'} = {}) => {
           shell,
         })
 
-        process.on('close', ({code}) => {
+        process.on('close', code => {
           if (code !== 0) reject(new Error(`Command failed with errorcode ${code}`))
           else resolve()
         })
-        process.on('error', ({err}) => {
+        process.on('error', err => {
           reject(err)
         })
       })

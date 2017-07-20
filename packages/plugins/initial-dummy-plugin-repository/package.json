@@ -17,6 +17,7 @@
     "type": "git"
   },
   "dependencies": {
+    "bluebird": "^3.5.0",
     "debug": "^2.6.8"
   },
   "devDependencies": {
