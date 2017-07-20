@@ -1,8 +1,8 @@
 {
-  "name": "bildit-???",
+  "name": "bildit-host-agent",
   "version": "1.0.0",
-  "description": "???",
-  "main": "???.js",
+  "description": "An agent for regular local running a process on the local host",
+  "main": "host-agent.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
