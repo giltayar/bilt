@@ -2,7 +2,9 @@
 
 const debug = require('debug')('bildit:npm-job-runner')
 
-module.exports = () => {
+module.exports = async ({pluginInfo: {job: {kind}}}) => {
+  if (kind !== 'npm') return false
+
   return {
     async runJob(jobInfo, agentFunctions) {
       debug('running npm install in job %o', jobInfo)
@@ -20,10 +22,6 @@ module.exports = () => {
 
         await agentFunctions.executeCommand(['npm', 'test'])
       }
-    },
-
-    async supports(jobInfo) {
-      return jobInfo.job.kind === 'npm'
     },
   }
 }

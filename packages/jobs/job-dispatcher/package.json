@@ -1,5 +1,5 @@
 {
-  "name": "bildit-job-dispatcher",
+  "name": "@bildit/job-dispatcher",
   "version": "1.0.0",
   "description": "Dispatches jobs to be run by appropriate plign",
   "main": "job-dispatcher.js",

@@ -1,19 +1,16 @@
 'use strict'
 
-const pluginRepoFactory = require('../../plugins/initial-dummy-plugin-repository')
-const jobDispatcherFactory = require('../../jobs/job-dispatcher')
-const eventsFactory = require('../../events/in-memory-events')
-const hostAgentFactory = require('../../agents/host-agent')
 const debug = require('debug')('bildit:build-local-folder')
+const pluginRepoFactory = require('../../plugins/config-based-plugin-repository')
+const path = require('path')
+;(async () => {
+  const folderToBuild = path.resolve(process.argv[2])
 
-const pluginRepository = pluginRepoFactory()
-const events = eventsFactory()
+  const pluginRepository = await pluginRepoFactory({folderToBuild})
 
-const jobDispatcher = jobDispatcherFactory({pluginRepository, events})
+  const jobDispatcher = await pluginRepository.findPlugin({kind: 'jobDispatcher'})
+  const agentFunctions = await pluginRepository.findPlugin({kind: 'agent', cwd: folderToBuild})
 
-const folder = process.argv[2]
-
-const agentFunctions = hostAgentFactory({cwd: folder})
-
-debug('building folder %s with npm build', folder)
-jobDispatcher.dispatchJob({kind: 'npm'}, agentFunctions)
+  debug('building folder %s with npm build', folderToBuild)
+  await jobDispatcher.dispatchJob({kind: 'npm'}, agentFunctions)
+})().catch(err => console.log(err.stack))

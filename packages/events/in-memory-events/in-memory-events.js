@@ -1,7 +1,7 @@
 'use strict'
 const debug = require('debug')('bildit:in-memory-events')
 
-module.exports = () => {
+module.exports = async () => {
   const subscribers = {}
 
   return {

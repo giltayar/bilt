@@ -1,11 +1,11 @@
 'use strict'
 const debug = require('debug')('bildit:job-dispatcher')
 
-module.exports = ({pluginRepository, events}) => {
+module.exports = async ({pluginRepository, events}) => {
   return {
     async dispatchJob(job, agentFunctions) {
       debug('dispatching job %o', job)
-      const plugin = await pluginRepository.findPlugin({kind: 'JobRunner', job})
+      const plugin = await pluginRepository.findPlugin({kind: 'jobRunner', job})
 
       await events.publish('START_JOB', {job})
 

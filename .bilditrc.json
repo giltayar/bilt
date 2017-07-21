@@ -1,0 +1,11 @@
+{
+  "plugins": {
+    "registry": {
+      "pluginFactory": "./packages/plugins/config-based-plugin-repository",
+      "jobDispatcher": "./packages/jobs/job-dispatcher",
+      "events": "./packages/events/in-memory-events",
+      "agent": "./packages/agents/host-agent",
+      "jobRunner": ["./packages/npm/npm-job-runner"]
+    }
+  }
+}
