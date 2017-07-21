@@ -2,7 +2,7 @@
   "name": "bildit-in-memory-events",
   "version": "1.0.0",
   "description": "Event system that stores publishers and subscribers in memory",
-  "main": "in-memory-events.js",
+  "main": "src/in-memory-events.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -21,7 +21,6 @@
   },
   "devDependencies": {
     "eslint": "^4.2.0",
-    "eslint-plugin-flowtype": "^2.35.0",
     "eslint-plugin-prettier": "^2.1.2",
     "prettier": "^1.5.2"
   }

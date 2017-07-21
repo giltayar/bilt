@@ -2,9 +2,10 @@
 
 ## Feature complete local build
 
-1. Same build, but all plugins come from config file.
-1. Build a multi-package build, first without checking for dependencies and changelist, and list of packages
-   and build order come from a list file on root or something.
+1. Build a multi-package build, using artifact-walker
+    1. integrate artifact-walker into bildit
+       1. Use agentFunctions instead of `fs`
+    1. Make tests run again
 1. Enable npm-link-ing in local
 1. Add discovery of packages, but still no dependency check
 1. Do dependency check build graph

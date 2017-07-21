@@ -1,0 +1,12 @@
+{
+  "name": "test-repo-b",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "b.js",
+  "scripts": {
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

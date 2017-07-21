@@ -1,0 +1,14 @@
+{
+  "name": "test-repo-c",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "c.js",
+  "scripts": {
+    "test": "echo testing...",
+    "build": "echo building..."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

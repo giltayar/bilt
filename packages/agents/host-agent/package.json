@@ -2,7 +2,7 @@
   "name": "bildit-host-agent",
   "version": "1.0.0",
   "description": "An agent for regular local running a process on the local host",
-  "main": "host-agent.js",
+  "main": "src/host-agent.js",
   "scripts": {},
   "keywords": [
     "ci",
@@ -19,7 +19,6 @@
   },
   "devDependencies": {
     "eslint": "^4.2.0",
-    "eslint-plugin-flowtype": "^2.35.0",
     "eslint-plugin-prettier": "^2.1.2",
     "prettier": "^1.5.2"
   }

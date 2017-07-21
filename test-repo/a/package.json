@@ -1,0 +1,14 @@
+{
+  "name": "test-repo-a",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "a.js",
+  "scripts": {
+    "test": "echo testing...",
+    "build": "echo building..."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

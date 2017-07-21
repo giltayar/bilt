@@ -1,0 +1,6 @@
+{
+  "name": "docker-npm-artifact-name",
+  "dependencies": {
+    "npm-artifact-name": "0.2"
+  }
+}

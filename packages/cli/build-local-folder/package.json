@@ -2,7 +2,7 @@
   "name": "bildit-build-local-folder",
   "version": "1.0.0",
   "description": "The CLI that builds a local folder",
-  "main": "build-local-folder.js",
+  "main": "src/build-local-folder.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -21,7 +21,6 @@
   },
   "devDependencies": {
     "eslint": "^4.2.0",
-    "eslint-plugin-flowtype": "^2.35.0",
     "eslint-plugin-prettier": "^2.1.2",
     "prettier": "^1.5.2"
   }
