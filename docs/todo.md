@@ -2,15 +2,20 @@
 
 ## Feature complete local build
 
-1. Build a multi-package build, using artifact-walker
-    1. integrate artifact-walker into bildit
-       1. Use agentFunctions instead of `fs`
-    1. Make tests run again
 1. Enable npm-link-ing in local
-1. Add discovery of packages, but still no dependency check
+1. Add publishing, with a flag
 1. Do dependency check build graph
 1. Add changed files (whichever git says were changed, no makefile support)
 
-## configuration of plugins starting to work
+## Local build should use the restartable thingie
 
-1. Same, but with a docker agent, to test plugability
+1. What she said
+
+## Support docker agents for each job
+
+1. Same, but with a docker agent, to test plugability, except the repo-build
+1. Now with the repo build
+
+## Supoprt Circle CI
+
+1. Make it so that it works in Circle CI
