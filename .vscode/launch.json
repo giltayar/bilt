@@ -8,9 +8,9 @@
       "type": "node",
       "request": "launch",
       "name": "Launch Test CLI on host-agent",
-      "program": "${workspaceRoot}/packages/cli/build-local-folder/build-local-folder.js",
+      "program": "${workspaceRoot}/packages/cli/build-local-folder/src/build-local-folder.js",
       "args": [
-        "packages/agents/host-agent"
+        "test-repo"
       ],
       "env": {
         "DEBUG": "*"

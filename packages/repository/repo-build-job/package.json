@@ -1,0 +1,30 @@
+{
+  "name": "@bildit/repo-build-job",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/repo-build-job.js",
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ci",
+    "???"
+  ],
+  "author": "Gil Tayar <gil@tayar.org>",
+  "license": "Unlicense",
+  "repository": {
+    "url": "https://github.com/giltayar/bildit",
+    "type": "git"
+  },
+  "dependencies": {
+    "debug": "^2.6.8"
+  },
+  "devDependencies": {
+    "eslint": "^4.2.0",
+    "eslint-plugin-prettier": "^2.1.2",
+    "prettier": "^1.5.2"
+  }
+}

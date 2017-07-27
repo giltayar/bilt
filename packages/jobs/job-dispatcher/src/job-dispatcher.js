@@ -3,14 +3,15 @@ const debug = require('debug')('bildit:job-dispatcher')
 
 module.exports = async ({pluginRepository, events}) => {
   return {
-    async dispatchJob(job, agentFunctions) {
+    async dispatchJob(job) {
       debug('dispatching job %o', job)
-      const plugin = await pluginRepository.findPlugin({kind: 'jobRunner', job})
+      const jobRunner = await pluginRepository.findPlugin({kind: 'jobRunner', job})
+      const agent = await pluginRepository.findPlugin({kind: 'agent', job})
 
       await events.publish('START_JOB', {job})
 
       debug('running job %o', job)
-      const jobResult = await plugin.runJob(job, agentFunctions)
+      const jobResult = await jobRunner.runJob(job, {agent})
       debug('ran job %o', job)
 
       await events.publish('END_JOB', {job, jobResult})

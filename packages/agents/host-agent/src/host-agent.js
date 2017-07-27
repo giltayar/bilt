@@ -4,14 +4,13 @@ const path = require('path')
 const {promisify} = require('util')
 const debug = require('debug')('bildit:host-agent')
 
-module.exports = async ({pluginInfo: {cwd = '.'}} = {}) => {
+module.exports = async ({pluginInfo: {job: {directory}}}) => {
   return {
-
     async executeCommand(commandArgs, {shell = false} = {}) {
-      debug('dispatching command %o in directory %s', commandArgs, cwd)
+      debug('dispatching command %o in directory %s', commandArgs, directory)
       await new Promise((resolve, reject) => {
         const process = childProcess.spawn(commandArgs[0], commandArgs.slice(1), {
-          cwd,
+          cwd: directory,
           stdio: 'inherit',
           shell,
         })
@@ -27,7 +26,11 @@ module.exports = async ({pluginInfo: {cwd = '.'}} = {}) => {
     },
 
     async readFileAsBuffer(fileName) {
-      return await promisify(fs.readFile)(path.resolve(cwd, fileName))
+      return await promisify(fs.readFile)(path.resolve(directory, fileName))
+    },
+
+    async fetchRepo(directory) {
+      return directory
     },
   }
 }

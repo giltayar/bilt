@@ -5,7 +5,7 @@
       "jobDispatcher": "./packages/jobs/job-dispatcher",
       "events": "./packages/events/in-memory-events",
       "agent": "./packages/agents/host-agent",
-      "jobRunner": ["./packages/npm/npm-job-runner"]
+      "jobRunner": ["./packages/npm/npm-build-job", "./packages/repository/repo-build-job"]
     }
   }
 }

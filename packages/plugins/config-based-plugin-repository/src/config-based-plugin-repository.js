@@ -7,11 +7,10 @@ const cosmiconfig = require('cosmiconfig')
 
 const pretty = x => util.format('%o', x)
 
-module.exports = async context => {
+module.exports = async (directory, context) => {
   const configLoader = cosmiconfig('bildit', {sync: true, rcExtensions: true})
-  const {folderToBuild} = context
-  const configResult = await configLoader.load(folderToBuild)
-  if (!configResult) throw new Error(`Could not find configuration path from ${folderToBuild}`)
+  const configResult = await configLoader.load(directory)
+  if (!configResult) throw new Error(`Could not find configuration path from ${directory}`)
 
   const {config: {plugins: {registry}}, filepath: configFilePath} = configResult
   const configFileDir = path.dirname(configFilePath)
@@ -25,7 +24,7 @@ module.exports = async context => {
       // once we have sync loading in cosmiconfig, we can move it back to 'ctor
       const {kind} = pluginInfo
 
-      debug('looking for plugin of kind %s', kind)
+      debug('looking for plugin of kind %s using context %o', kind, contextWithAdditions)
 
       if (!registry[kind]) throw new Error(`No plugins support plugin ${kind}`)
 
