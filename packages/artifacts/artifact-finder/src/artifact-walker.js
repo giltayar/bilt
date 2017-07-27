@@ -3,7 +3,7 @@ const flatten = require('lodash/flatten')
 const find = require('lodash/find')
 const path = require('path')
 
-module.exports = async (
+const artifactWalker = async (
   fetchEntriesOfDir,
   dir,
   extractArtifacts,
@@ -29,7 +29,7 @@ module.exports = async (
     entries
       .filter(entry => entry.type === 'dir')
       .map(entry =>
-        exports.artifactWalker(
+        artifactWalker(
           fetchEntriesOfDir,
           path.join(dir, entry.name),
           extractArtifacts,
@@ -41,3 +41,5 @@ module.exports = async (
 
   return flatten(artifacts).filter(a => !!a)
 }
+
+module.exports = artifactWalker
