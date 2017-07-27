@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "src/artifact-finder.js",
+  "files": [
+    "src"
+  ],
   "scripts": {
     "test": "mocha",
     "debug": "mocha --debug-brk"

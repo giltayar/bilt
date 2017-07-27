@@ -1,5 +1,5 @@
 {
-  "name": "bildit-build-local-folder",
+  "name": "@bildit/build-local-folder",
   "version": "1.0.0",
   "description": "The CLI that builds a local folder",
   "main": "src/build-local-folder.js",

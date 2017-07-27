@@ -1,8 +1,8 @@
 {
-  "name": "bildit-npm-job-runner",
+  "name": "@bildit/npm-build-job",
   "version": "1.0.0",
   "description": "Job Runner for NPM Jobs",
-  "main": "src/npm-job-runner.js",
+  "main": "src/npm-build-job.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -1,5 +1,5 @@
 {
-  "name": "bildit-host-agent",
+  "name": "@bildit/host-agent",
   "version": "1.0.0",
   "description": "An agent for regular local running a process on the local host",
   "main": "src/host-agent.js",
