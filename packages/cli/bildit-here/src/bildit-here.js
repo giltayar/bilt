@@ -8,6 +8,8 @@ const path = require('path')
 
   const pluginRepository = await pluginRepoFactory(folderToBuild, {})
 
+  await configureEventsToOutputEventToStdout(pluginRepository)
+
   const jobDispatcher = await pluginRepository.findPlugin({kind: 'jobDispatcher'})
 
   debug('building folder %s', folderToBuild)
@@ -18,3 +20,13 @@ const path = require('path')
     linkDependencies: true,
   })
 })().catch(err => console.log(err.stack))
+
+async function configureEventsToOutputEventToStdout(pluginRepository) {
+  const events = await pluginRepository.findPlugin({kind: 'events'})
+
+  await events.subscribe('START_JOB', ({job}) => {
+    if (job.kind === 'repository') return
+
+    console.log('####### Building', path.relative(job.artifactsDirectory, job.directory))
+  })
+}

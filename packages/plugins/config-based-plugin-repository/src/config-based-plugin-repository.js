@@ -1,5 +1,5 @@
 'use strict'
-const debug = require('debug')('bildit:initial-dummy-plugin-repository')
+const debug = require('debug')('bildit:plugin-repository')
 const path = require('path')
 const util = require('util')
 const bluebird = require('bluebird')
@@ -14,9 +14,13 @@ module.exports = async (directory, context) => {
 
   const {config: {plugins: {registry}}, filepath: configFilePath} = configResult
   const configFileDir = path.dirname(configFilePath)
+  const pluginsFound = new Map()
 
   const pluginRepositoryCreator = context => ({
     async findPlugin(pluginInfo) {
+      const possiblePlugin = pluginsFound.get(JSON.stringify(pluginInfo))
+      if (possiblePlugin) return possiblePlugin
+
       const contextWithAdditions = Object.assign({}, context, {
         pluginRepository: this,
         pluginInfo,
@@ -49,6 +53,7 @@ module.exports = async (directory, context) => {
         throw new Error(`Too many plugins support ${pluginInfo}: ${pretty(supportedPlugins)}`)
 
       debug('found plugin for kind %s', kind)
+      pluginsFound.set(JSON.stringify(pluginInfo), supportedPlugins[0])
       return supportedPlugins[0]
     },
   })

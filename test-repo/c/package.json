@@ -1,0 +1,14 @@
+{
+  "name": "@bildit/test-repo-c",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "cgit .js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@bildit/test-repo-a": "^1.0.0"
+  }
+}
