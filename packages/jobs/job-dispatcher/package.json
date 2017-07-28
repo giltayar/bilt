@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "description": "Dispatches jobs to be run by appropriate plign",
   "main": "src/job-dispatcher.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": {},
   "keywords": [
     "ci",
     "jobs"

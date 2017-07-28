@@ -1,0 +1,11 @@
+{
+  "name": "npm-artifact-name",
+  "dependencies": {
+    "a": "0.1",
+    "c": "0.2"
+  },
+  "devDependencies": {
+    "docker-artifact": "0.3",
+    "jocha": "1.0"
+  }
+}

@@ -1,7 +1,7 @@
 'use strict'
 
 const debug = require('debug')('bildit:bildit-here')
-const pluginRepoFactory = require('../../../plugins/config-based-plugin-repository')
+const pluginRepoFactory = require('@bildit/config-based-plugin-repository')
 const path = require('path')
 ;(async () => {
   const folderToBuild = path.resolve(process.argv[2])

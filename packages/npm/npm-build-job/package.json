@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "description": "Job Runner for NPM Jobs",
   "main": "src/npm-build-job.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": {},
   "keywords": [
     "ci",
     "npm"
@@ -17,8 +15,7 @@
     "type": "git"
   },
   "dependencies": {
-    "debug": "^2.6.8",
-    "make-dir": "^1.0.0"
+    "debug": "^2.6.8"
   },
   "devDependencies": {
     "eslint": "^4.2.0",

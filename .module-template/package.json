@@ -7,11 +7,10 @@
     "src"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "ci",
-    "???"
+    "bildit"
   ],
   "author": "Gil Tayar <gil@tayar.org>",
   "license": "Unlicense",

@@ -2,6 +2,7 @@
 
 ## Feature complete local build
 
+1. Dogfood it
 1. Add changed files (whichever git says were changed, no makefile support)
 
 ## Local build should use the restartable thingie

@@ -9,8 +9,9 @@ const artifactWalker = async (
   extractArtifacts,
   extractorMerger,
   baseDir = dir,
+  ignoreStack = [],
 ) => {
-  const entries = await fetchEntriesOfDir(dir)
+  const {entries, ignoreStack: newIgnoreStack} = await fetchEntriesOfDir(dir, ignoreStack)
   const filenames = entries
     .filter(entry => entry.type === 'file')
     .map(entry => path.join(dir, entry.name))
@@ -35,6 +36,7 @@ const artifactWalker = async (
           extractArtifacts,
           extractorMerger,
           baseDir,
+          newIgnoreStack,
         ),
       ),
   )

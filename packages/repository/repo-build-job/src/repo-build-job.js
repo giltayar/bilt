@@ -1,7 +1,7 @@
 'use strict'
 
 const debug = require('debug')('bildit:repo-build-job')
-const artifactFinderFactory = require('../../../artifacts/artifact-finder')
+const artifactFinderFactory = require('@bildit/artifact-finder')
 const path = require('path')
 
 module.exports = async ({pluginRepository, pluginInfo: {job: {kind}}}) => {

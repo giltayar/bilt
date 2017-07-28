@@ -2,7 +2,6 @@
 const debug = require('debug')('bildit:plugin-repository')
 const path = require('path')
 const util = require('util')
-const bluebird = require('bluebird')
 const cosmiconfig = require('cosmiconfig')
 
 const pretty = x => util.format('%o', x)
@@ -35,7 +34,9 @@ module.exports = async (directory, context) => {
       const pluginModulePathsForKind = [].concat(registry[kind])
 
       const pluginModulesForKind = pluginModulePathsForKind.map(pluginModulePath =>
-        require(path.resolve(configFileDir, pluginModulePath)),
+        require(pluginModulePath.startsWith('.')
+          ? path.resolve(configFileDir, pluginModulePath)
+          : pluginModulePath),
       )
 
       const pluginsForKind = await Promise.all(

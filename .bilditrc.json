@@ -1,11 +1,11 @@
 {
   "plugins": {
     "registry": {
-      "pluginFactory": "./packages/plugins/config-based-plugin-repository",
-      "jobDispatcher": "./packages/jobs/job-dispatcher",
-      "events": "./packages/events/in-memory-events",
-      "agent": "./packages/agents/host-agent",
-      "jobRunner": ["./packages/npm/npm-build-job", "./packages/repository/repo-build-job"]
+      "pluginFactory": "@bildit/config-based-plugin-repository",
+      "jobDispatcher": "@bildit/job-dispatcher",
+      "events": "@bildit/in-memory-events",
+      "agent": "@bildit/host-agent",
+      "jobRunner": ["@bildit/npm-build-job", "@bildit/repo-build-job"]
     }
   }
 }

@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "description": "The CLI that builds a local folder",
   "main": "src/bildit-here.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": {},
   "keywords": [
     "ci",
     "build"
@@ -17,7 +15,8 @@
     "type": "git"
   },
   "dependencies": {
-    "debug": "^2.6.8"
+    "debug": "^2.6.8",
+    "@bildit/config-based-plugin-repository": "*"
   },
   "devDependencies": {
     "eslint": "^4.2.0",

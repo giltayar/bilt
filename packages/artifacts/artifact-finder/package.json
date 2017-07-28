@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "test": "mocha",
-    "debug": "mocha --debug-brk"
+    "debug": "mocha --inspect-brk"
   },
   "author": "Gil Tayar <gil@tayar.org>",
   "license": "Unlicense",
