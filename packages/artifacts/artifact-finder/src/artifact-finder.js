@@ -39,7 +39,9 @@ const fetchEntriesOfDir = async (ignoreFile, baseDir, dir, ignoreStack = []) => 
   let retGitIgnored = ignoreStack
   if (entryNames.includes(ignoreFile)) {
     retGitIgnored = retGitIgnored.concat(
-      (await readFileAsync(path.join(dir, ignoreFile), {encoding: 'utf-8'})).split(/\r?\n/g),
+      (await readFileAsync(path.join(dir, ignoreFile), {encoding: 'utf-8'}))
+        .split(/\r?\n/g)
+        .filter(l => l.trim() && !l.trim().startsWith('#')),
     )
   }
   const igFilter = ignore().add(retGitIgnored).createFilter()
