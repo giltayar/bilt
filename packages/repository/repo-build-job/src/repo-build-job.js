@@ -11,16 +11,20 @@ module.exports = async ({pluginRepository, pluginInfo: {job: {kind}}}) => {
   const jobDispatcher = await pluginRepository.findPlugin({kind: 'jobDispatcher'})
 
   return {
-    async runJob({repository}, {agent}) {
+    async runJob({directory, repository, linkDependencies}, {agent}) {
       debug('running job repo-build-job')
       debug('fetching repository %s', repository)
-      const directory = await agent.fetchRepo(repository)
+      const repoDirectory = await agent.fetchRepo(repository, {directory})
 
-      const artifacts = await artifactFinder.findArtifacts(directory)
+      const artifacts = await artifactFinder.findArtifacts(repoDirectory)
       debug('building artifacts %o', artifacts)
 
       for (const artifact of artifacts) {
-        const job = createJobFromArtifact(artifact, directory)
+        const job = createJobFromArtifact(
+          artifact,
+          repoDirectory,
+          linkDependencies ? artifacts : undefined,
+        )
 
         debug('running sub-job %o', job)
         await jobDispatcher.dispatchJob(job)
@@ -29,7 +33,10 @@ module.exports = async ({pluginRepository, pluginInfo: {job: {kind}}}) => {
   }
 }
 
-const createJobFromArtifact = (artifact, directory) => ({
+const createJobFromArtifact = (artifact, directory, artifacts) => ({
   kind: artifact.type,
+  artifactsDirectory: directory,
   directory: path.join(directory, artifact.path),
+  dependencies: artifacts ? artifact.dependencies : [],
+  artifacts,
 })

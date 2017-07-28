@@ -29,8 +29,8 @@ module.exports = async ({pluginInfo: {job: {directory}}}) => {
       return await promisify(fs.readFile)(path.resolve(directory, fileName))
     },
 
-    async fetchRepo(directory) {
-      return directory
+    async fetchRepo(repository, {}) {
+      return repository
     },
   }
 }

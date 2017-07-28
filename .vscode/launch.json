@@ -8,7 +8,7 @@
       "type": "node",
       "request": "launch",
       "name": "Launch Test CLI on host-agent",
-      "program": "${workspaceRoot}/packages/cli/build-local-folder/src/build-local-folder.js",
+      "program": "${workspaceRoot}/packages/cli/bildit-here/src/bildit-here.js",
       "args": [
         "test-repo"
       ],

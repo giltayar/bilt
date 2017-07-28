@@ -1,6 +1,6 @@
 'use strict'
 
-const debug = require('debug')('bildit:build-local-folder')
+const debug = require('debug')('bildit:bildit-here')
 const pluginRepoFactory = require('../../../plugins/config-based-plugin-repository')
 const path = require('path')
 ;(async () => {
@@ -15,5 +15,6 @@ const path = require('path')
     kind: 'repository',
     repository: folderToBuild,
     directory: folderToBuild,
+    linkDependencies: true,
   })
 })().catch(err => console.log(err.stack))
