@@ -9,6 +9,8 @@
 1. What she said
 1. Do dependency check build graph
 1. Add changed files, including changes since last build
+1. Define a good CLI
+1. Build the CLI
 
 ## Support docker agents for each job
 
@@ -20,3 +22,14 @@
 ## Supoprt Circle CI
 
 1. Make it so that it works in Circle CI
+
+## Use Cases
+
+* Local build.
+  * This can theoretically run in Travis/Circle.
+  * Support changed files
+* Local build that works on a repo, and uses docker/kubernetes to run builds.
+  * Web api to check the results/logs
+  * console api to check the results/logs
+  * Supports publishing
+* Travis/Circle CI build that use build triggering to run builds.
