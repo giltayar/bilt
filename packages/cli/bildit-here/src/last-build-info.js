@@ -61,7 +61,7 @@ async function calculateChangesToBuildSinceLastBuild(directory, lastBuildInfo, c
 
 async function findCommitAfter(directory, commit) {
   try {
-    const commitList = (await p(childProcess.exec)(`git rev-list "${commit}" HEAD`, {
+    const commitList = (await p(childProcess.exec)(`git rev-list ${commit}...HEAD`, {
       cwd: directory,
     })).stdout
       .split('\n')
