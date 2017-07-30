@@ -103,7 +103,9 @@ async function readHashOfFile(file) {
       .createReadStream(file)
       .pipe(md5Hash)
       .on('finish', function() {
-        resolve(this.read())
+        const r = this.read()
+        console.log('hash', r)
+        resolve(r)
       })
       .on('error', reject),
   )
