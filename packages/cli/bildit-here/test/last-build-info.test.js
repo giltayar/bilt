@@ -20,8 +20,9 @@ describe('readLastBuildInfo and saveLastBuildInfo', () => {
 
     expect(await lastBuildInfo.readLastBuildInfo(gitDir)).to.deep.equal({something: 4})
   })
+})
 
-  describe('findChangesInCurrentRepo', () => {
+describe('findChangesInCurrentRepo', () => {
     it('should show no changes in files on an untouched workspace', async () => {
       const changes = await lastBuildInfo.findChangesInCurrentRepo(gitDir)
 
@@ -53,4 +54,4 @@ describe('readLastBuildInfo and saveLastBuildInfo', () => {
       })
     })
   })
-})
+
