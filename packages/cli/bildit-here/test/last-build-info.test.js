@@ -1,5 +1,6 @@
 const {describe, beforeEach} = require('mocha')
 const {expect} = require('chai')
+const fs = require('fs')
 const path = require('path')
 const replayGitRepo = require('./replay-git-repo')
 const lastBuildInfo = require('../src/last-build-info')
@@ -25,6 +26,14 @@ describe('readLastBuildInfo and saveLastBuildInfo', () => {
 
       expect(changes.commit).to.be.ok
       expect(changes.changedFilesInWorkspace).to.be.empty
+    })
+    it('should show file changes in one file that we touch', async () => {
+      const changes = await lastBuildInfo.findChangesInCurrentRepo(gitDir)
+
+      await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
+
+      expect(changes.commit).to.be.ok
+      expect(changes.changedFilesInWorkspace).to.have.length(1)
     })
   })
 })
