@@ -7,7 +7,9 @@
     "src",
     "scripts"
   ],
-  "scripts": {},
+  "scripts": {
+    "test": "mocha"
+  },
   "keywords": [
     "ci",
     "build"
@@ -20,14 +22,18 @@
   },
   "dependencies": {
     "@bildit/config-based-plugin-repository": "*",
+    "cpr": "^2.2.0",
     "debug": "^2.6.8",
     "git-repo-info": "^1.4.1",
     "jest-changed-files": "^20.0.3",
     "make-dir": "^1.0.0"
   },
   "devDependencies": {
+    "chai": "^4.1.0",
     "eslint": "^4.2.0",
     "eslint-plugin-prettier": "^2.1.2",
-    "prettier": "^1.5.2"
+    "mocha": "^3.4.2",
+    "prettier": "^1.5.2",
+    "test-fixture": "^1.0.2"
   }
 }
