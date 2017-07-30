@@ -12,8 +12,7 @@ describe('last-build-info', () => {
   beforeEach(async () => (gitDir = await replayGitRepo(path.join(__dirname, 'test-folder'))))
 
   describe('readLastBuildInfo and saveLastBuildInfo', () => {
-    it.only('should return undefined when no .bildit folder', async () => {
-      console.log(gitDir)
+    it('should return undefined when no .bildit folder', async () => {
       expect(await buildInfo.readLastBuildInfo(gitDir)).to.be.undefined
     })
 
@@ -74,7 +73,7 @@ describe('last-build-info', () => {
       )
 
       expect(changes.changedFilesThatNeedBuild).to.have.members(['a.txt', 'c.txt'])
-      expect(changes.fromCommit).to.equal(lastBuildInfo.commit)
+      expect(changes.fromCommit).to.be.undefined
     })
   })
 })

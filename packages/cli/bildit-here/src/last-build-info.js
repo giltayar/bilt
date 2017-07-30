@@ -41,7 +41,7 @@ async function saveLastBuildInfo(directory, currentRepoInfo) {
 
 async function findChangesInCurrentRepo(directory) {
   return {
-    commit: gitRepoInfo().sha,
+    commit: gitRepoInfo(directory).sha,
     changedFilesInWorkspace: await readHashesOfFiles(
       directory,
       await gitFindChangedFiles(directory),
@@ -72,6 +72,7 @@ async function findCommitAfter(directory, commit) {
 
     return commitList[commitList.length - 1]
   } catch (err) {
+    console.log('error!', err.stderr)
     if (err.stderr.includes('Invalid symmetric difference')) {
       console.error(
         `couldn't find the commit ${commit} from buildInfo. Building only changed files in workspace.`,
