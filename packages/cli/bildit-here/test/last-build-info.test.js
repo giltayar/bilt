@@ -34,7 +34,7 @@ describe('readLastBuildInfo and saveLastBuildInfo', () => {
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
 
       expect(changes.commit).to.be.ok
-      expect(changes.changedFilesInWorkspace).to.have.length(1)
+      expect(changes.changedFilesInWorkspace).to.deep.equal({'a.txt': 'dsasdasd'})
     })
   })
 })
