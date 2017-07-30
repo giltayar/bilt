@@ -2,6 +2,7 @@ const {describe, beforeEach} = require('mocha')
 const {expect} = require('chai')
 const fs = require('fs')
 const path = require('path')
+const {promisify: p} = require('util')
 const replayGitRepo = require('./replay-git-repo')
 const lastBuildInfo = require('../src/last-build-info')
 
