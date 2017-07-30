@@ -63,9 +63,9 @@ describe('last-build-info', () => {
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
       await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'lalala')
 
-      const currentRepoInfo = await lastBuildInfo.findChangesInCurrentRepo(gitDir)
+      const currentRepoInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
 
-      const changedFiles = lastBuildInfo.calculateChangesToBuildSinceLastBuild(
+      const changedFiles = buildInfo.calculateChangesToBuildSinceLastBuild(
         gitDir,
         lastBuildInfo,
         currentRepoInfo,
