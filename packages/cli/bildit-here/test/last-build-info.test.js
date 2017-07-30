@@ -34,7 +34,9 @@ describe('readLastBuildInfo and saveLastBuildInfo', () => {
       const changes = await lastBuildInfo.findChangesInCurrentRepo(gitDir)
 
       expect(changes.commit).to.be.ok
-      expect(changes.changedFilesInWorkspace).to.deep.equal({'a.txt': 'dsasdasd'})
+      expect(changes.changedFilesInWorkspace).to.deep.equal({
+        'a.txt': '9aa6e5f2256c17d2d430b100032b997c',
+      })
     })
   })
 })
