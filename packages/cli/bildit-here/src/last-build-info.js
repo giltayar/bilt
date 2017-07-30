@@ -53,7 +53,10 @@ async function calculateChangesToBuildSinceLastBuild(directory, lastBuildInfo, c
 async function saveBuildInfo(directory, currentRepoInfo) {
   await makeDir(path.join(directory, '.bildit'))
 
-  await p(fs.writeFile)(path.join(directory, '.bildit/last-build.json'), currentRepoInfo)
+  await p(fs.writeFile)(
+    path.join(directory, '.bildit/last-build.json'),
+    JSON.stringify(currentRepoInfo, undefined, 2),
+  )
 }
 
 async function findCommitAfter(directory, commit) {
