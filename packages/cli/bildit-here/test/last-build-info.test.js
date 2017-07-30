@@ -41,6 +41,7 @@ describe('readLastBuildInfo and saveLastBuildInfo', () => {
     })
 
     it.only('should show file changes in an added file', async () => {
+      console.log(gitDir)
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
       await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'lalala')
 
