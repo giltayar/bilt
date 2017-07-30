@@ -100,7 +100,7 @@ async function readHashOfFile(file) {
     fs
       .createReadStream(file)
       .pipe(md5Hash)
-      .on('finish', () => {
+      .on('finish', function() {
         resolve(this.read())
       })
       .on('error', reject),
