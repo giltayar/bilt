@@ -66,12 +66,11 @@ describe('last-build-info', () => {
 
       const currentRepoInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
 
-      const changes = buildInfo.calculateChangesToBuildSinceLastBuild(
+      const changes = await buildInfo.calculateChangesToBuildSinceLastBuild(
         gitDir,
         lastBuildInfo,
         currentRepoInfo,
       )
-      console.log('changes', changes)
 
       expect(changes.changedFilesThatNeedBuild).to.have.members(['a.txt', 'c.txt'])
       expect(changes.fromCommit).to.equal(lastBuildInfo.commit)
