@@ -20,6 +20,8 @@ async function readLastBuildInfo(directory) {
   } catch (err) {
     if (err.code === 'ENOEXIST') {
       return undefined
+    } else if (err.code === 'ENOENT') {
+      return undefined
     } else if (err instanceof SyntaxError) {
       console.error('Could not parse .bildit/last-build.json. Building all.')
       return undefined
