@@ -59,6 +59,7 @@ describe('last-build-info', () => {
 
   describe('calculateChangesToBuildSinceLastBuild', () => {
     it.only('should show only changed files if on same commit', async () => {
+      console.log(gitDir)
       const lastBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
 
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
