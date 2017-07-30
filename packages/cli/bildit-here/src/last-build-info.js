@@ -97,6 +97,7 @@ async function readHashesOfFiles(directory, files) {
 const md5Hash = crypto.createHash('md5').setEncoding('hex')
 
 async function readHashOfFile(file) {
+  console.log('reading', file)
   return await new Promise((resolve, reject) =>
     fs
       .createReadStream(file)
