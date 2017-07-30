@@ -4,7 +4,8 @@
   "description": "",
   "main": "src/???.js",
   "files": [
-    "src"
+    "src",
+    "scripts"
   ],
   "scripts": {
   },

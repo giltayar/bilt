@@ -11,6 +11,8 @@
 1. Add changed files, including changes since last build
 1. Define a good CLI
 1. Build the CLI
+1. Make it a simple global install, available to any who want it
+1. Add an auto-upgrade feature?
 
 ## Support docker agents for each job
 
