@@ -28,6 +28,7 @@ describe('readLastBuildInfo and saveLastBuildInfo', () => {
       expect(changes.commit).to.be.ok
       expect(changes.changedFilesInWorkspace).to.be.empty
     })
+
     it('should show file changes in one file that we touch', async () => {
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
 
@@ -36,6 +37,18 @@ describe('readLastBuildInfo and saveLastBuildInfo', () => {
       expect(changes.commit).to.be.ok
       expect(changes.changedFilesInWorkspace).to.deep.equal({
         'a.txt': '9aa6e5f2256c17d2d430b100032b997c',
+      })
+    })
+    it('should show file changes in an added file', async () => {
+      await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
+      await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'lalala')
+
+      const changes = await lastBuildInfo.findChangesInCurrentRepo(gitDir)
+
+      expect(changes.commit).to.be.ok
+      expect(changes.changedFilesInWorkspace).to.deep.equal({
+        'a.txt': '9aa6e5f2256c17d2d430b100032b997c',
+        'c.txt': '9aa6e5f2256c17d2d430b100032b997c',
       })
     })
   })
