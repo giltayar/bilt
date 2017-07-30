@@ -4,7 +4,7 @@ const fs = require('fs')
 const path = require('path')
 const {promisify: p} = require('util')
 const replayGitRepo = require('./replay-git-repo')
-const lastBuildInfo = require('../src/last-build-info')
+const buildInfo = require('../src/last-build-info')
 
 describe('last-build-info', () => {
   let gitDir
@@ -13,19 +13,19 @@ describe('last-build-info', () => {
 
   describe('readLastBuildInfo and saveLastBuildInfo', () => {
     it('should return undefined when no .bildit folder', async () => {
-      expect(await lastBuildInfo.readLastBuildInfo(gitDir)).to.be.undefined
+      expect(await buildInfo.readLastBuildInfo(gitDir)).to.be.undefined
     })
 
     it('should enable saving and re-reading', async () => {
-      await lastBuildInfo.saveLastBuildInfo(gitDir, {something: 4})
+      await buildInfo.saveLastBuildInfo(gitDir, {something: 4})
 
-      expect(await lastBuildInfo.readLastBuildInfo(gitDir)).to.deep.equal({something: 4})
+      expect(await buildInfo.readLastBuildInfo(gitDir)).to.deep.equal({something: 4})
     })
   })
 
   describe('findChangesInCurrentRepo', () => {
     it('should show no changes in files on an untouched workspace', async () => {
-      const changes = await lastBuildInfo.findChangesInCurrentRepo(gitDir)
+      const changes = await buildInfo.findChangesInCurrentRepo(gitDir)
 
       expect(changes.commit).to.be.ok
       expect(changes.changedFilesInWorkspace).to.be.empty
@@ -34,7 +34,7 @@ describe('last-build-info', () => {
     it('should show file changes in one file that we touch', async () => {
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
 
-      const changes = await lastBuildInfo.findChangesInCurrentRepo(gitDir)
+      const changes = await buildInfo.findChangesInCurrentRepo(gitDir)
 
       expect(changes.commit).to.be.ok
       expect(changes.changedFilesInWorkspace).to.deep.equal({
@@ -46,7 +46,7 @@ describe('last-build-info', () => {
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
       await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'lalala')
 
-      const changes = await lastBuildInfo.findChangesInCurrentRepo(gitDir)
+      const changes = await buildInfo.findChangesInCurrentRepo(gitDir)
 
       expect(changes.commit).to.be.ok
       expect(changes.changedFilesInWorkspace).to.deep.equal({
@@ -58,7 +58,7 @@ describe('last-build-info', () => {
 
   describe('calculateChangesToBuildSinceLastBuild', () => {
     it.only('should show only changed files if on same commit', async () => {
-      const lastBuildInfo = await lastBuildInfo.findChangesInCurrentRepo(gitDir)
+      const lastBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
 
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
       await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'lalala')
