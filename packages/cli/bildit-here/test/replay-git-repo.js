@@ -47,4 +47,5 @@ async function replayCommit(directory, commitDirectory) {
 
   await p(execFile)('git', ['add', '.'], {cwd: directory})
   await p(execFile)('git', ['commit', '-am', commitMessage], {cwd: directory})
+  console.log('replayed dir', commitDirectory, 'on', directory)
 }
