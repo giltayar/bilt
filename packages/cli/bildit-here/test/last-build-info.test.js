@@ -15,8 +15,16 @@ describe('readLastBuildInfo and saveLastBuildInfo', () => {
 
   it('should enable saving and re-reading', async () => {
     await lastBuildInfo.saveLastBuildInfo(gitDir, {something: 4})
-    console.log(gitDir)
 
     expect(await lastBuildInfo.readLastBuildInfo(gitDir)).to.deep.equal({something: 4})
+  })
+
+  describe('findChangesInCurrentRepo', () => {
+    it('should show no changes in files on an untouched workspace', async () => {
+      const changes = await lastBuildInfo.findChangesInCurrentRepo(gitDir)
+
+      expect(changes.commit).to.be.true
+      expect(changes.changedFilesInWorkspace).to.be.empty
+    })
   })
 })
