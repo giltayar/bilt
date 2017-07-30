@@ -71,6 +71,7 @@ describe('last-build-info', () => {
         lastBuildInfo,
         currentRepoInfo,
       )
+      console.log('changes', changes)
 
       expect(changes.changedFilesThatNeedBuild).to.have.members(['a.txt', 'c.txt'])
       expect(changes.fromCommit).to.equal(lastBuildInfo.commit)
