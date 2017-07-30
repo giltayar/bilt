@@ -55,4 +55,23 @@ describe('last-build-info', () => {
       })
     })
   })
+
+  describe('calculateChangesToBuildSinceLastBuild', () => {
+    it.only('should show only changed files if on same commit', async () => {
+      const lastBuildInfo = await lastBuildInfo.findChangesInCurrentRepo(gitDir)
+
+      await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
+      await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'lalala')
+
+      const currentRepoInfo = await lastBuildInfo.findChangesInCurrentRepo(gitDir)
+
+      const changedFiles = lastBuildInfo.calculateChangesToBuildSinceLastBuild(
+        gitDir,
+        lastBuildInfo,
+        currentRepoInfo,
+      )
+
+      expect(changedFiles).to.have.members(['a.txt', 'c.txt'])
+    })
+  })
 })
