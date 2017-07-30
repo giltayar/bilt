@@ -6,23 +6,24 @@ const {promisify: p} = require('util')
 const replayGitRepo = require('./replay-git-repo')
 const lastBuildInfo = require('../src/last-build-info')
 
-describe('readLastBuildInfo and saveLastBuildInfo', () => {
+describe('last-build-info', () => {
   let gitDir
 
   beforeEach(async () => (gitDir = await replayGitRepo(path.join(__dirname, 'test-folder'))))
 
-  it('should return undefined when no .bildit folder', async () => {
-    expect(await lastBuildInfo.readLastBuildInfo(gitDir)).to.be.undefined
+  describe('readLastBuildInfo and saveLastBuildInfo', () => {
+    it('should return undefined when no .bildit folder', async () => {
+      expect(await lastBuildInfo.readLastBuildInfo(gitDir)).to.be.undefined
+    })
+
+    it('should enable saving and re-reading', async () => {
+      await lastBuildInfo.saveLastBuildInfo(gitDir, {something: 4})
+
+      expect(await lastBuildInfo.readLastBuildInfo(gitDir)).to.deep.equal({something: 4})
+    })
   })
 
-  it('should enable saving and re-reading', async () => {
-    await lastBuildInfo.saveLastBuildInfo(gitDir, {something: 4})
-
-    expect(await lastBuildInfo.readLastBuildInfo(gitDir)).to.deep.equal({something: 4})
-  })
-})
-
-describe('findChangesInCurrentRepo', () => {
+  describe('findChangesInCurrentRepo', () => {
     it('should show no changes in files on an untouched workspace', async () => {
       const changes = await lastBuildInfo.findChangesInCurrentRepo(gitDir)
 
@@ -54,4 +55,4 @@ describe('findChangesInCurrentRepo', () => {
       })
     })
   })
-
+})
