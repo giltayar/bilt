@@ -12,7 +12,8 @@ describe('last-build-info', () => {
   beforeEach(async () => (gitDir = await replayGitRepo(path.join(__dirname, 'test-folder'))))
 
   describe('readLastBuildInfo and saveLastBuildInfo', () => {
-    it('should return undefined when no .bildit folder', async () => {
+    it.only('should return undefined when no .bildit folder', async () => {
+      console.log(gitDir)
       expect(await buildInfo.readLastBuildInfo(gitDir)).to.be.undefined
     })
 
@@ -58,8 +59,7 @@ describe('last-build-info', () => {
   })
 
   describe('calculateChangesToBuildSinceLastBuild', () => {
-    it.only('should show only changed files if on same commit', async () => {
-      console.log(gitDir)
+    it('should show only changed files if on same commit', async () => {
       const lastBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
 
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
