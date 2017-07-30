@@ -29,10 +29,9 @@ describe('readLastBuildInfo and saveLastBuildInfo', () => {
       expect(changes.changedFilesInWorkspace).to.be.empty
     })
     it('should show file changes in one file that we touch', async () => {
-      const changes = await lastBuildInfo.findChangesInCurrentRepo(gitDir)
-
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
-      console.log(gitDir)
+
+      const changes = await lastBuildInfo.findChangesInCurrentRepo(gitDir)
 
       expect(changes.commit).to.be.ok
       expect(changes.changedFilesInWorkspace).to.deep.equal({'a.txt': 'dsasdasd'})
