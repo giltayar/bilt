@@ -86,6 +86,7 @@ async function readHashesOfFiles(directory, files) {
   const hashAndFiles = await Promise.all(
     files.map(async file => [path.relative(directory, file), await readHashOfFile(file)]),
   )
+  console.log('hasheandfiles', hashAndFiles)
 
   return hashAndFiles.reduce(
     (obj, [file, hash]) => Object.assign(obj, {[file]: hash}),
