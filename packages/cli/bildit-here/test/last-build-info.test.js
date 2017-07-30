@@ -23,7 +23,7 @@ describe('readLastBuildInfo and saveLastBuildInfo', () => {
     it('should show no changes in files on an untouched workspace', async () => {
       const changes = await lastBuildInfo.findChangesInCurrentRepo(gitDir)
 
-      expect(changes.commit).to.be.true
+      expect(changes.commit).to.be.ok
       expect(changes.changedFilesInWorkspace).to.be.empty
     })
   })
