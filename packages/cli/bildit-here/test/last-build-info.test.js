@@ -4,7 +4,7 @@ const path = require('path')
 const replayGitRepo = require('./replay-git-repo')
 const lastBuildInfo = require('../src/last-build-info')
 
-describe('readLastBuildInfo and saveBuildInfo', () => {
+describe('readLastBuildInfo and saveLastBuildInfo', () => {
   let gitDir
 
   beforeEach(async () => (gitDir = await replayGitRepo(path.join(__dirname, 'test-folder'))))
@@ -14,7 +14,7 @@ describe('readLastBuildInfo and saveBuildInfo', () => {
   })
 
   it('should enable saving and re-reading', async () => {
-    await lastBuildInfo.saveBuildInfo(gitDir, {something: 4})
+    await lastBuildInfo.saveLastBuildInfo(gitDir, {something: 4})
     console.log(gitDir)
 
     expect(await lastBuildInfo.readLastBuildInfo(gitDir)).to.deep.equal({something: 4})

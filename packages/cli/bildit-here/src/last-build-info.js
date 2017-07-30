@@ -30,6 +30,15 @@ async function readLastBuildInfo(directory) {
   }
 }
 
+async function saveLastBuildInfo(directory, currentRepoInfo) {
+  await makeDir(path.join(directory, '.bildit'))
+
+  await p(fs.writeFile)(
+    path.join(directory, '.bildit/last-build.json'),
+    JSON.stringify(currentRepoInfo, undefined, 2),
+  )
+}
+
 async function findChangesInCurrentRepo(directory) {
   return {
     commit: gitRepoInfo().sha,
@@ -48,15 +57,6 @@ async function calculateChangesToBuildSinceLastBuild(directory, lastBuildInfo, c
     ),
     fromCommit: await findCommitAfter(directory, lastBuildInfo.commit),
   }
-}
-
-async function saveBuildInfo(directory, currentRepoInfo) {
-  await makeDir(path.join(directory, '.bildit'))
-
-  await p(fs.writeFile)(
-    path.join(directory, '.bildit/last-build.json'),
-    JSON.stringify(currentRepoInfo, undefined, 2),
-  )
 }
 
 async function findCommitAfter(directory, commit) {
@@ -115,7 +115,7 @@ function determineChangedFiles(currentFiles, lastBuildFiles) {
 
 module.exports = {
   readLastBuildInfo,
+  saveLastBuildInfo,
   findChangesInCurrentRepo,
   calculateChangesToBuildSinceLastBuild,
-  saveBuildInfo,
 }

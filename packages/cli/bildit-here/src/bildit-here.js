@@ -8,7 +8,7 @@ const {
   readLastBuildInfo,
   findChangesInCurrentRepo,
   calculateChangesToBuildSinceLastBuild,
-  saveBuildInfo,
+  saveLastBuildInfo,
 } = require('./last-build-info')
 
 main().catch(err => console.log(err.stack))
@@ -42,7 +42,7 @@ async function main() {
     filesChangedSinceLastBuild,
   })
 
-  await saveBuildInfo(directoryToBuild, fileChangesInCurrentRepo)
+  await saveLastBuildInfo(directoryToBuild, fileChangesInCurrentRepo)
 }
 
 async function configureEventsToOutputEventToStdout(pluginRepository) {
