@@ -1,7 +1,11 @@
+#!/usr/bin/env node
 const path = require('path')
 const artifactFinderFactory = require('../../../artifacts/artifact-finder')
 const {createSymlink} = require('../../../fs/symlink')
-;(async () => {
+
+main().catch(err => console.error(err.stack))
+
+async function main() {
   const artifactFinder = await artifactFinderFactory()
 
   const repoDirectory = path.resolve(__dirname, '../../../..')
@@ -18,4 +22,8 @@ const {createSymlink} = require('../../../fs/symlink')
       )
     }),
   )
-})().catch(err => console.error(err.stack))
+
+  await createSymlink(path.join(repoDirectory,
+    'packages/cli/bildit-here/node_modules/@bildit/config-based-plugin-repository'),
+    path.join(repoDirectory, 'packages/plugins/config-based-plugin-repository'))
+}
