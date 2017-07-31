@@ -2,7 +2,7 @@
 
 ## Feature complete local build
 
-1. Add changed files (whichever git says were changed, no makefile support)
+1. If `package.json` was not changed, no need to do `npm install`
 
 ## Local build should use the restartable thingie
 
