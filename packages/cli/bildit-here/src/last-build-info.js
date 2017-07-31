@@ -74,7 +74,10 @@ async function calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, cur
 
 async function readHashesOfFiles(directory, files) {
   const hashAndFiles = await Promise.all(
-    files.map(async file => [path.relative(directory, file), await readHashOfFile(file)]),
+    files.map(async file => [
+      path.relative(directory, file),
+      await readHashOfFile(path.resolve(directory, file)),
+    ]),
   )
 
   return hashAndFiles.reduce(
@@ -85,7 +88,6 @@ async function readHashesOfFiles(directory, files) {
 
 async function readHashOfFile(file) {
   const md5Hash = crypto.createHash('md5').setEncoding('hex')
-
   return await new Promise((resolve, reject) =>
     fs
       .createReadStream(file)
