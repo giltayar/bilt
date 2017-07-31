@@ -23,7 +23,19 @@ async function main() {
     }),
   )
 
-  await createSymlink(path.join(repoDirectory,
-    'packages/cli/bildit-here/node_modules/@bildit/config-based-plugin-repository'),
-    path.join(repoDirectory, 'packages/plugins/config-based-plugin-repository'))
+  await createSymlink(
+    path.join(
+      repoDirectory,
+      'packages/cli/bildit-here/node_modules/@bildit/config-based-plugin-repository',
+    ),
+    path.join(repoDirectory, 'packages/plugins/config-based-plugin-repository'),
+  )
+
+  await createSymlink(
+    path.join(
+      repoDirectory,
+      'packages/repository/repo-build-job/node_modules/@bildit/artifact-finder',
+    ),
+    path.join(repoDirectory, 'packages/artifacts/artifact-finder'),
+  )
 }

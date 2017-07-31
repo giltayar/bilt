@@ -74,6 +74,14 @@ describe('last-build-info', () => {
       )
 
       expect(changes).to.have.members(['a.txt', 'c.txt'])
+
+      const changes2 = await buildInfo.calculateFilesChangedSinceLastBuild(
+        gitDir,
+        currentRepoInfo,
+        currentRepoInfo,
+      )
+
+      expect(changes2).to.be.empty
     })
 
     it('should work even if has more than one commit', async () => {

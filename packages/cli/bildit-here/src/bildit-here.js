@@ -56,17 +56,12 @@ async function configureEventsToOutputEventToStdout(pluginRepository) {
 
 async function figureOutFilesChangedSinceLastBuild(directory) {
   const lastBuildInfo = await readLastBuildInfo(directory)
-  if (!lastBuildInfo) {
-    return {}
-  }
 
   const fileChangesInCurrentRepo = await findChangesInCurrentRepo(directory)
 
-  const filesChangedSinceLastBuild = await calculateFilesChangedSinceLastBuild(
-    directory,
-    lastBuildInfo,
-    fileChangesInCurrentRepo,
-  )
+  const filesChangedSinceLastBuild = lastBuildInfo
+    ? await calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, fileChangesInCurrentRepo)
+    : undefined
 
   return {filesChangedSinceLastBuild, fileChangesInCurrentRepo}
 }

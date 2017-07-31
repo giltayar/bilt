@@ -99,7 +99,7 @@ async function readHashOfFile(file) {
 
 function determineChangedFiles(currentFiles, lastBuildFiles) {
   return Object.entries(currentFiles)
-    .filter(([file, hash]) => !lastBuildFiles[file] || lastBuildFiles[file].hash !== hash)
+    .filter(([file, hash]) => !lastBuildFiles[file] || lastBuildFiles[file] !== hash)
     .map(([file]) => file)
 }
 
