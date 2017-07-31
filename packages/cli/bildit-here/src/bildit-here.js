@@ -3,11 +3,10 @@
 const debug = require('debug')('bildit:bildit-here')
 const pluginRepoFactory = require('@bildit/config-based-plugin-repository')
 const path = require('path')
-const {findFilesChangedFromCommitToCommit} = require('@bildit/git-changed-files')
 const {
   readLastBuildInfo,
   findChangesInCurrentRepo,
-  calculateChangesToBuildSinceLastBuild,
+  calculateFilesChangedSinceLastBuild,
   saveLastBuildInfo,
 } = require('./last-build-info')
 
@@ -60,19 +59,14 @@ async function figureOutFilesChangedSinceLastBuild(directory) {
   if (!lastBuildInfo) {
     return {}
   }
+
   const fileChangesInCurrentRepo = await findChangesInCurrentRepo(directory)
-  const changesToBuildSinceLastBuild = await calculateChangesToBuildSinceLastBuild(
+
+  const filesChangedSinceLastBuild = await calculateFilesChangedSinceLastBuild(
     directory,
     lastBuildInfo,
     fileChangesInCurrentRepo,
   )
-  const filesChangedSinceLastBuild = changesToBuildSinceLastBuild.fromCommit
-    ? await findFilesChangedFromCommitToCommit(
-        directory,
-        changesToBuildSinceLastBuild.fromCommit,
-        fileChangesInCurrentRepo.commit,
-      )
-    : changesToBuildSinceLastBuild.changedFilesThatNeedBuild
 
   return {filesChangedSinceLastBuild, fileChangesInCurrentRepo}
 }

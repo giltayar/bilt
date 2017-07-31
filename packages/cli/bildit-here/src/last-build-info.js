@@ -6,17 +6,12 @@ const childProcess = require('child_process')
 const {promisify: p} = require('util')
 const makeDir = require('make-dir')
 const gitRepoInfo = require('git-repo-info')
+const union = require('set-union')
 const {git: {findChangedFiles: gitFindChangedFiles}} = require('jest-changed-files')
 
 async function readLastBuildInfo(directory) {
   try {
     return JSON.parse(await p(fs.readFile)(path.join(directory, '.bildit/last-build.json')))
-    // return {
-    //   commit: undefined,
-    //   changedFilesInWorkspace: {
-    //     path: 'hash',
-    //   },
-    // }
   } catch (err) {
     if (err.code === 'ENOEXIST') {
       return undefined
@@ -49,37 +44,31 @@ async function findChangesInCurrentRepo(directory) {
   }
 }
 
-async function calculateChangesToBuildSinceLastBuild(directory, lastBuildInfo, currentRepoInfo) {
-  return {
-    changedFilesThatNeedBuild: determineChangedFiles(
+async function calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, currentRepoInfo) {
+  if (lastBuildInfo.commit === currentRepoInfo.commit) {
+    return determineChangedFiles(
       currentRepoInfo.changedFilesInWorkspace,
       lastBuildInfo.changedFilesInWorkspace,
-    ),
-    fromCommit: await findCommitAfter(directory, lastBuildInfo.commit),
-  }
-}
+    )
+  } else {
+    const filesStillChangedFromLastBuild = await determineWhichFilesChangedSinceLastBuild(
+      directory,
+      lastBuildInfo.changedFilesInWorkspace,
+    )
 
-async function findCommitAfter(directory, commit) {
-  try {
-    const commitList = (await p(childProcess.exec)(`git rev-list ${commit}...HEAD`, {
-      cwd: directory,
-    })).stdout
-      .split('\n')
-      .filter(l => !!l)
-
-    // This happens when there is only one commit
-    if (commitList.length === 0) return undefined
-
-    return commitList[commitList.length - 1]
-  } catch (err) {
-    console.log('error!', err.stderr)
-    if (err.stderr.includes('Invalid symmetric difference')) {
-      console.error(
-        `couldn't find the commit ${commit} from buildInfo. Building only changed files in workspace.`,
-      )
-      return undefined
-    }
-    throw err
+    return Array.from(
+      union(
+        union(
+          new Set(filesStillChangedFromLastBuild),
+          new Set(Object.keys(currentRepoInfo.changedFilesInWorkspace)),
+        ),
+        await filesChangedFromCommitToCommit(
+          directory,
+          lastBuildInfo.commit,
+          currentRepoInfo.commit,
+        ),
+      ),
+    )
   }
 }
 
@@ -114,9 +103,30 @@ function determineChangedFiles(currentFiles, lastBuildFiles) {
     .map(([file]) => file)
 }
 
+async function determineWhichFilesChangedSinceLastBuild(directory, changedFilesInWorkspace) {
+  const newHashes = await readHashesOfFiles(directory, Object.keys(changedFilesInWorkspace))
+
+  return determineChangedFiles(newHashes, changedFilesInWorkspace)
+}
+
+async function filesChangedFromCommitToCommit(directory, fromCommit, toCommit) {
+  // git diff-tree --no-commit-id --name-only -r fromCommit toCommit
+  return new Set(
+    (await p(childProcess.execFile)(
+      'git',
+      ['diff-tree', '--no-commit-id', '--name-only', '-r', fromCommit, toCommit],
+      {
+        cwd: directory,
+      },
+    )).stdout
+      .split('\n')
+      .filter(l => !!l),
+  )
+}
+
 module.exports = {
   readLastBuildInfo,
   saveLastBuildInfo,
   findChangesInCurrentRepo,
-  calculateChangesToBuildSinceLastBuild,
+  calculateFilesChangedSinceLastBuild,
 }

@@ -1,7 +1,8 @@
-const {describe, beforeEach} = require('mocha')
-const {expect} = require('chai')
 const fs = require('fs')
 const path = require('path')
+const {execFile} = require('child_process')
+const {describe, beforeEach} = require('mocha')
+const {expect} = require('chai')
 const {promisify: p} = require('util')
 const replayGitRepo = require('./replay-git-repo')
 const buildInfo = require('../src/last-build-info')
@@ -66,14 +67,36 @@ describe('last-build-info', () => {
 
       const currentRepoInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
 
-      const changes = await buildInfo.calculateChangesToBuildSinceLastBuild(
+      const changes = await buildInfo.calculateFilesChangedSinceLastBuild(
         gitDir,
         lastBuildInfo,
         currentRepoInfo,
       )
 
-      expect(changes.changedFilesThatNeedBuild).to.have.members(['a.txt', 'c.txt'])
-      expect(changes.fromCommit).to.be.undefined
+      expect(changes).to.have.members(['a.txt', 'c.txt'])
+    })
+
+    it('should work even if has more than one commit', async () => {
+      const firstBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
+
+      await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
+      await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'lalala')
+
+      await p(execFile)('git', ['add', '.'], {cwd: gitDir})
+      await p(execFile)('git', ['commit', '-am', 'sadfsaf'], {cwd: gitDir})
+
+      await p(fs.writeFile)(path.join(gitDir, 'd.txt'), 'zzz')
+      await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'abc')
+
+      const currentRepoInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
+
+      const changes = await buildInfo.calculateFilesChangedSinceLastBuild(
+        gitDir,
+        firstBuildInfo,
+        currentRepoInfo,
+      )
+
+      expect(changes).to.have.members(['a.txt', 'c.txt', 'd.txt'])
     })
   })
 })
