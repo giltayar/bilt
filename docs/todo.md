@@ -3,12 +3,20 @@
 ## Feature complete local build
 
 1. If `package.json` was not changed, no need to do `npm install`
+1. Check that reverting a file works.
+1. Check that deleting a file works.
 
 ## Local build should use the restartable thingie
 
 1. What she said
+
+## Dependency Graph Build
+
 1. Do dependency check build graph
 1. Add changed files, including changes since last build
+
+## CLI and productization
+
 1. Define a good CLI
 1. Build the CLI
 1. Make it a simple global install, available to any who want it
