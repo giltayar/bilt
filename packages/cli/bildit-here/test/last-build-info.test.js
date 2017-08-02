@@ -8,16 +8,16 @@ const replayGitRepo = require('./replay-git-repo')
 const buildInfo = require('../src/last-build-info')
 
 describe('last-build-info', () => {
-  let gitDir
-
-  beforeEach(async () => (gitDir = await replayGitRepo(path.join(__dirname, 'test-folder'))))
-
   describe('readLastBuildInfo and saveLastBuildInfo', () => {
     it('should return undefined when no .bildit folder', async () => {
+      const gitDir = await replayGitRepo(path.join(__dirname, 'test-folder'))
+
       expect(await buildInfo.readLastBuildInfo(gitDir)).to.be.undefined
     })
 
     it('should enable saving and re-reading', async () => {
+      const gitDir = await replayGitRepo(path.join(__dirname, 'test-folder'))
+
       await buildInfo.saveLastBuildInfo(gitDir, {something: 4})
 
       expect(await buildInfo.readLastBuildInfo(gitDir)).to.deep.equal({something: 4})
@@ -26,6 +26,8 @@ describe('last-build-info', () => {
 
   describe('findChangesInCurrentRepo', () => {
     it('should show no changes in files on an untouched workspace', async () => {
+      const gitDir = await replayGitRepo(path.join(__dirname, 'test-folder'))
+
       const changes = await buildInfo.findChangesInCurrentRepo(gitDir)
 
       expect(changes.commit).to.be.ok
@@ -33,6 +35,8 @@ describe('last-build-info', () => {
     })
 
     it('should show file changes in one file that we touch', async () => {
+      const gitDir = await replayGitRepo(path.join(__dirname, 'test-folder'))
+
       const lastBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
 
@@ -45,6 +49,8 @@ describe('last-build-info', () => {
     })
 
     it('should show file changes in an added file', async () => {
+      const gitDir = await replayGitRepo(path.join(__dirname, 'test-folder'))
+
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
       await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'lalala')
 
@@ -60,6 +66,8 @@ describe('last-build-info', () => {
 
   describe('calculateChangesToBuildSinceLastBuild', () => {
     it('should show only changed files if on same commit', async () => {
+      const gitDir = await replayGitRepo(path.join(__dirname, 'test-folder'))
+
       const lastBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
 
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
@@ -85,6 +93,8 @@ describe('last-build-info', () => {
     })
 
     it('should work even if has more than one commit', async () => {
+      const gitDir = await replayGitRepo(path.join(__dirname, 'test-folder'))
+
       const firstBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
 
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
@@ -105,6 +115,25 @@ describe('last-build-info', () => {
       )
 
       expect(changes).to.have.members(['a.txt', 'c.txt', 'd.txt'])
+    })
+
+    it('should rebuild a reverted file', async () => {
+      const gitDir = await replayGitRepo(path.join(__dirname, 'test-folder'))
+
+      await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
+      await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'lalala2')
+
+      const secondBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
+
+      await p(execFile)('git', ['checkout', '--', 'a.txt'], {cwd: gitDir})
+
+      const repoInfoAfterRevert = await buildInfo.findChangesInCurrentRepo(gitDir)
+      const changesAfterRevert = await buildInfo.calculateFilesChangedSinceLastBuild(
+        gitDir,
+        secondBuildInfo,
+        repoInfoAfterRevert,
+      )
+      expect(changesAfterRevert).to.have.members(['a.txt'])
     })
   })
 })

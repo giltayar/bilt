@@ -100,9 +100,13 @@ async function readHashOfFile(file) {
 }
 
 function determineChangedFiles(currentFiles, lastBuildFiles) {
-  return Object.entries(currentFiles)
+  const filesChangedFromLastBuild = Object.entries(currentFiles)
     .filter(([file, hash]) => !lastBuildFiles[file] || lastBuildFiles[file] !== hash)
     .map(([file]) => file)
+
+  const filesDeletedFromLastBuild = Object.keys(lastBuildFiles).filter(file => !currentFiles[file])
+
+  return filesChangedFromLastBuild.concat(filesDeletedFromLastBuild)
 }
 
 async function determineWhichFilesChangedSinceLastBuild(directory, changedFilesInWorkspace) {
