@@ -8,15 +8,26 @@ module.exports = async ({pluginInfo: {job: {kind}}}) => {
 
   return {
     async runJob(job, {agent}) {
-      const {dependencies, artifacts, artifactsDirectory, directory} = job
+      const {
+        dependencies,
+        artifacts,
+        artifactsDirectory,
+        directory,
+        filesChangedSinceLastBuild,
+      } = job
+      const packageJsonChanged =
+        !filesChangedSinceLastBuild || filesChangedSinceLastBuild.includes('package.json')
 
-      if (dependencies) {
-        debug('linking to dependent packages %o', dependencies)
-        await symlinkDependencies(dependencies, directory, artifacts, artifactsDirectory)
+      if (packageJsonChanged) {
+        if (dependencies) {
+          debug('linking to dependent packages %o', dependencies)
+          await symlinkDependencies(dependencies, directory, artifacts, artifactsDirectory)
+        }
+
+        debug('running npm install in job %o', job)
+        await agent.executeCommand(['npm', 'install'])
       }
 
-      debug('running npm install in job %o', job)
-      await agent.executeCommand(['npm', 'install'])
       const packageJson = JSON.parse(await agent.readFileAsBuffer('package.json'))
 
       if ((packageJson.scripts || {}).build) {

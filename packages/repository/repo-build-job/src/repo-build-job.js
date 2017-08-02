@@ -20,14 +20,16 @@ module.exports = async ({pluginRepository, pluginInfo: {job: {kind}}}) => {
       debug('building artifacts %o', artifacts)
 
       for (const artifact of artifacts) {
-        if (
-          !filesChangedSinceLastBuild ||
-          filesChangedSinceLastBuild.filter(file => file.startsWith(artifact.path + '/')).length > 0
-        ) {
+        const changedFiles =
+          filesChangedSinceLastBuild &&
+          filesChangedSinceLastBuild.filter(file => file.startsWith(artifact.path + '/'))
+
+        if (!changedFiles || changedFiles.length > 0) {
           const job = createJobFromArtifact(
             artifact,
             repoDirectory,
             linkDependencies ? artifacts : undefined,
+            changedFiles,
           )
 
           debug('running sub-job %o', job)
@@ -38,10 +40,15 @@ module.exports = async ({pluginRepository, pluginInfo: {job: {kind}}}) => {
   }
 }
 
-const createJobFromArtifact = (artifact, directory, artifacts) => ({
-  kind: artifact.type,
-  artifactsDirectory: directory,
-  directory: path.join(directory, artifact.path),
-  dependencies: artifacts ? artifact.dependencies : [],
-  artifacts,
-})
+const createJobFromArtifact = (artifact, directory, artifacts, changedFiles) => {
+  const artifactPath = path.join(directory, artifact.path)
+  return {
+    kind: artifact.type,
+    artifactsDirectory: directory,
+    directory: artifactPath,
+    dependencies: artifacts ? artifact.dependencies : [],
+    artifacts,
+    filesChangedSinceLastBuild:
+      changedFiles && changedFiles.map(f => path.relative(artifactPath, f)),
+  }
+}
