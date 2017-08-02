@@ -6,7 +6,8 @@
   "main": "a.js",
   "scripts": {
     "test": "echo testing...",
-    "build": "echo building..."
+    "build": "echo building...",
+    "postinstall": "echo installed..."
   },
   "keywords": [],
   "author": "",

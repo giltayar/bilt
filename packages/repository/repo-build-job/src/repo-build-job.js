@@ -14,6 +14,7 @@ module.exports = async ({pluginRepository, pluginInfo: {job: {kind}}}) => {
     async runJob({directory, repository, linkDependencies, filesChangedSinceLastBuild}, {agent}) {
       debug('running job repo-build-job')
       debug('fetching repository %s', repository)
+      debug('files changed %o', filesChangedSinceLastBuild)
       const repoDirectory = await agent.fetchRepo(repository, {directory})
 
       const artifacts = await artifactFinder.findArtifacts(repoDirectory)
@@ -40,15 +41,12 @@ module.exports = async ({pluginRepository, pluginInfo: {job: {kind}}}) => {
   }
 }
 
-const createJobFromArtifact = (artifact, directory, artifacts, changedFiles) => {
-  const artifactPath = path.join(directory, artifact.path)
-  return {
-    kind: artifact.type,
-    artifactsDirectory: directory,
-    directory: artifactPath,
-    dependencies: artifacts ? artifact.dependencies : [],
-    artifacts,
-    filesChangedSinceLastBuild:
-      changedFiles && changedFiles.map(f => path.relative(artifactPath, f)),
-  }
-}
+const createJobFromArtifact = (artifact, directory, artifacts, changedFiles) => ({
+  kind: artifact.type,
+  artifactsDirectory: directory,
+  directory: path.join(directory, artifact.path),
+  dependencies: artifacts ? artifact.dependencies : [],
+  artifacts,
+  filesChangedSinceLastBuild:
+    changedFiles && changedFiles.map(f => path.relative(artifact.path, f)),
+})
