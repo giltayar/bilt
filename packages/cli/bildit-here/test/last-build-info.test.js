@@ -135,5 +135,24 @@ describe('last-build-info', () => {
       )
       expect(changesAfterRevert).to.have.members(['a.txt'])
     })
+
+    it('should ignore a deleted file', async () => {
+      const gitDir = await replayGitRepo(path.join(__dirname, 'test-folder'))
+
+      await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
+      await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'lalala2')
+
+      const secondBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
+
+      await p(fs.unlink)(path.join(gitDir, 'a.txt'))
+
+      const repoInfoAfterRevert = await buildInfo.findChangesInCurrentRepo(gitDir)
+      const changesAfterRevert = await buildInfo.calculateFilesChangedSinceLastBuild(
+        gitDir,
+        secondBuildInfo,
+        repoInfoAfterRevert,
+      )
+      expect(changesAfterRevert).to.have.members(['a.txt'])
+    })
   })
 })

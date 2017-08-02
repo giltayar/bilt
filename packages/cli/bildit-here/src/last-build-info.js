@@ -91,6 +91,7 @@ async function readHashOfFile(file) {
   return await new Promise((resolve, reject) =>
     fs
       .createReadStream(file)
+      .on('error', err => (err.code === 'ENOENT' ? resolve('<deleted>') : reject(err)))
       .pipe(md5Hash)
       .on('finish', function() {
         resolve(this.read())

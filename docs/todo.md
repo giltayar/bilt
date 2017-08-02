@@ -2,7 +2,6 @@
 
 ## Feature complete local build
 
-1. Check that deleting a file works.
 1. If `package.json` was not changed, no need to do `npm install`
 1. Add `.bilditignore` to solve problem of build artifacts that are in source control (e.g. package-lock.json)
 
