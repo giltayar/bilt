@@ -1,9 +1,5 @@
 # TODO
 
-## Feature complete local build
-
-1. Add `.bilditignore` to solve problem of build artifacts that are in source control (e.g. package-lock.json)
-
 ## Local build should use the restartable thingie
 
 1. What she said
