@@ -2,11 +2,13 @@
 const fs = require('fs')
 const path = require('path')
 const crypto = require('crypto')
+const assert = require('assert')
 const childProcess = require('child_process')
 const {promisify: p} = require('util')
 const makeDir = require('make-dir')
 const gitRepoInfo = require('git-repo-info')
 const union = require('set-union')
+const ignore = require('ignore')
 const {git: {findChangedFiles: gitFindChangedFiles}} = require('jest-changed-files')
 
 async function readLastBuildInfo(directory) {
@@ -39,7 +41,7 @@ async function findChangesInCurrentRepo(directory) {
     commit: gitRepoInfo(directory).sha,
     changedFilesInWorkspace: await readHashesOfFiles(
       directory,
-      await gitFindChangedFiles(directory),
+      await filterByBilditIgnore(directory, await gitFindChangedFiles(directory)),
     ),
   }
 }
@@ -117,7 +119,6 @@ async function determineWhichFilesChangedSinceLastBuild(directory, changedFilesI
 }
 
 async function filesChangedFromCommitToCommit(directory, fromCommit, toCommit) {
-  // git diff-tree --no-commit-id --name-only -r fromCommit toCommit
   return new Set(
     (await p(childProcess.execFile)(
       'git',
@@ -128,6 +129,45 @@ async function filesChangedFromCommitToCommit(directory, fromCommit, toCommit) {
     )).stdout
       .split('\n')
       .filter(l => !!l),
+  )
+}
+
+async function filterByBilditIgnore(directory, files) {
+  return (await Promise.all(
+    files.map(async file => await filterFileByBilditIgnore(directory, file)),
+  )).filter(f => !!f)
+}
+
+async function filterFileByBilditIgnore(directory, file) {
+  const ignoreMask = await findBilditIgnorePattern(directory, file)
+
+  return ignoreMask.ignores(file) ? undefined : file
+}
+
+async function findBilditIgnorePattern(directory, file) {
+  const ignoreMask = ignore()
+  for (const dir of directoriesBetween(directory, file)) {
+    try {
+      ignoreMask.add(await p(fs.readFile)(path.join(dir, '.bilditignore'), {encoding: 'utf-8'}))
+    } catch (err) {
+      if (err.code !== 'ENOENT') throw err
+    }
+  }
+
+  return ignoreMask
+}
+
+function directoriesBetween(directory, file) {
+  assert(file.startsWith(directory))
+
+  const fileDirectory = path.dirname(file)
+
+  const missingSegments = fileDirectory.slice(directory.length + 1).split('/')
+
+  return missingSegments.reduce(
+    (directories, segment) =>
+      directories.concat(path.join(directories[directories.length - 1], segment)),
+    [directory],
   )
 }
 

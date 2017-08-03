@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const {execFile} = require('child_process')
-const {describe, beforeEach} = require('mocha')
+const {describe} = require('mocha')
 const {expect} = require('chai')
 const {promisify: p} = require('util')
 const replayGitRepo = require('./replay-git-repo')
@@ -153,6 +153,49 @@ describe('last-build-info', () => {
         repoInfoAfterRevert,
       )
       expect(changesAfterRevert).to.have.members(['a.txt'])
+    })
+
+    describe.only('.bilditignore', () => {
+      it('should work in root', async () => {
+        const gitDir = await replayGitRepo(path.join(__dirname, 'test-folder'))
+
+        const firstBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
+
+        await p(fs.writeFile)(path.join(gitDir, 'ignore.txt'), 'lalala')
+
+        const secondBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
+
+        const changesAfterSecond = await buildInfo.calculateFilesChangedSinceLastBuild(
+          gitDir,
+          firstBuildInfo,
+          secondBuildInfo,
+        )
+        expect(changesAfterSecond).to.be.empty
+      })
+
+      it('should override in subfolder', async () => {
+        const gitDir = await replayGitRepo(path.join(__dirname, 'test-folder'))
+
+        const firstBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
+
+        await p(fs.writeFile)(path.join(gitDir, 'ignoramus/ignore.txt'), 'lalala')
+        await p(fs.writeFile)(path.join(gitDir, 'ignoramus/a.txt'), 'lalala')
+        await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
+        await p(fs.writeFile)(path.join(gitDir, 'ignoramus/dontignore.txt'), 'lalala')
+
+        const secondBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
+
+        const changesAfterSecond = await buildInfo.calculateFilesChangedSinceLastBuild(
+          gitDir,
+          firstBuildInfo,
+          secondBuildInfo,
+        )
+        expect(changesAfterSecond).to.have.members([
+          'a.txt',
+          'ignoramus/dontignore.txt',
+          'ignoramus/ignore.txt',
+        ])
+      })
     })
   })
 })

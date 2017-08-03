@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "debug": "^2.6.8",
+    "ignore": "^3.3.3",
     "js-yaml": "^3.7.0",
     "lodash": "^4.17.2",
     "parse-author": "^1.0.0"

@@ -25,6 +25,7 @@
     "cpr": "^2.2.0",
     "debug": "^2.6.8",
     "git-repo-info": "^1.4.1",
+    "ignore": "^3.3.3",
     "jest-changed-files": "^20.0.3",
     "make-dir": "^1.0.0",
     "set-union": "^1.0.0"
