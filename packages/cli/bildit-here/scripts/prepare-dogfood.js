@@ -13,6 +13,7 @@ async function main() {
   const artifacts = (await artifactFinder.findArtifacts(repoDirectory)).filter(a =>
     a.path.startsWith('packages/'),
   )
+  console.log(artifacts)
 
   await Promise.all(
     artifacts.map(async artifact => {

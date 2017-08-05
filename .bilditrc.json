@@ -5,7 +5,8 @@
       "jobDispatcher": "@bildit/job-dispatcher",
       "events": "@bildit/in-memory-events",
       "agent": "@bildit/host-agent",
-      "jobRunner": ["@bildit/npm-build-job", "@bildit/repo-build-job"]
+      "jobRunner": ["@bildit/npm-build-job", "@bildit/repo-build-job"],
+      "jobState": "@bildit/in-memory-job-state"
     }
   }
 }

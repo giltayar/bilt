@@ -14,6 +14,7 @@ module.exports = async (directory, context) => {
   const {config: {plugins: {registry}}, filepath: configFilePath} = configResult
   const configFileDir = path.dirname(configFilePath)
   const pluginsFound = new Map()
+  debug('registry: %o', registry)
 
   const pluginRepositoryCreator = context => ({
     async findPlugin(pluginInfo) {

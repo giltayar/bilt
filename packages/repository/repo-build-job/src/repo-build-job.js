@@ -4,37 +4,54 @@ const debug = require('debug')('bildit:repo-build-job')
 const artifactFinderFactory = require('@bildit/artifact-finder')
 const path = require('path')
 
-module.exports = async ({pluginRepository, pluginInfo: {job: {kind}}}) => {
+module.exports = async ({pluginInfo: {job: {kind}}}) => {
   if (kind !== 'repository') return false
 
   const artifactFinder = await artifactFinderFactory()
-  const jobDispatcher = await pluginRepository.findPlugin({kind: 'jobDispatcher'})
 
   return {
-    async runJob({directory, repository, linkDependencies, filesChangedSinceLastBuild}, {agent}) {
+    async runJob(job, {agent, state}) {
+      const {directory, repository, linkDependencies, filesChangedSinceLastBuild} = job
       debug('running job repo-build-job')
       debug('fetching repository %s', repository)
       debug('files changed %o', filesChangedSinceLastBuild)
-      const repoDirectory = await agent.fetchRepo(repository, {directory})
 
-      const artifacts = await artifactFinder.findArtifacts(repoDirectory)
-      debug('building artifacts %o', artifacts)
+      const findArtifacts = async () => {
+        const repoDirectory = await agent.fetchRepo(repository, {directory})
+        const artifactsToBuild = await artifactFinder.findArtifacts(repoDirectory)
 
-      for (const artifact of artifacts) {
-        const changedFiles =
-          filesChangedSinceLastBuild &&
-          filesChangedSinceLastBuild.filter(file => file.startsWith(artifact.path + '/'))
+        return {repoDirectory, artifactsToBuild}
+      }
 
-        if (!changedFiles || changedFiles.length > 0) {
-          const job = createJobFromArtifact(
-            artifact,
-            repoDirectory,
-            linkDependencies ? artifacts : undefined,
-            changedFiles,
-          )
+      const newState = state || (await findArtifacts())
+      const artifactsToBuild = newState.artifactsToBuild
+      debug('found artifacts %o', artifactsToBuild)
 
-          debug('running sub-job %o', job)
-          await jobDispatcher.dispatchJob(job)
+      if (!artifactsToBuild || artifactsToBuild.length === 0) {
+        return
+      }
+      const artifactToBuild = artifactsToBuild[0]
+
+      debug('building artifact %o', artifactToBuild)
+
+      const changedFiles =
+        filesChangedSinceLastBuild &&
+        filesChangedSinceLastBuild.filter(file => file.startsWith(artifactToBuild.path + '/'))
+
+      if (!changedFiles || changedFiles.length > 0) {
+        const artifactJob = createJobFromArtifact(
+          artifactToBuild,
+          newState.repoDirectory,
+          linkDependencies ? artifactsToBuild : undefined,
+          changedFiles,
+        )
+
+        debug('running sub-job %o', artifactJob)
+        return {
+          state: Object.assign({}, newState, {
+            artifactsToBuild: newState.artifactsToBuild.slice(1),
+          }),
+          jobs: [artifactJob].map(job => ({job, awaken: true})),
         }
       }
     },
