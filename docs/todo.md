@@ -3,6 +3,7 @@
 ## Local build should use the restartable thingie
 
 1. What she said
+1. Fix linkDependencies by having allArtifacts also be in state
 
 ## Dependency Graph Build
 

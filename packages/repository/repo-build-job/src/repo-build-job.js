@@ -10,27 +10,31 @@ module.exports = async ({pluginInfo: {job: {kind}}}) => {
   const artifactFinder = await artifactFinderFactory()
 
   return {
-    async runJob(job, {agent, state}) {
-      const {directory, repository, linkDependencies, filesChangedSinceLastBuild} = job
+    async runJob(job, {agent, state, awakenedFrom}) {
       debug('running job repo-build-job')
-      debug('fetching repository %s', repository)
-      debug('files changed %o', filesChangedSinceLastBuild)
+      const {directory, repository, linkDependencies, filesChangedSinceLastBuild} = job
 
       const findArtifacts = async () => {
+        debug('fetching repository %s', repository)
         const repoDirectory = await agent.fetchRepo(repository, {directory})
         const artifactsToBuild = await artifactFinder.findArtifacts(repoDirectory)
 
         return {repoDirectory, artifactsToBuild}
       }
 
+      debug('files changed %o. Searching for artifacts', filesChangedSinceLastBuild)
       const newState = state || (await findArtifacts())
       const artifactsToBuild = newState.artifactsToBuild
       debug('found artifacts %o', artifactsToBuild)
+      const remainingArtifactsToBuild = newState.artifactsToBuild.filter(
+        artifact => !awakenedFrom || awakenedFrom.job.artifact === artifact.artifact,
+      )
+      debug('Remaining to build %o', remainingArtifactsToBuild)
 
-      if (!artifactsToBuild || artifactsToBuild.length === 0) {
+      if (!remainingArtifactsToBuild || remainingArtifactsToBuild.length === 0) {
         return
       }
-      const artifactToBuild = artifactsToBuild[0]
+      const artifactToBuild = remainingArtifactsToBuild[0]
 
       debug('building artifact %o', artifactToBuild)
 
@@ -49,7 +53,7 @@ module.exports = async ({pluginInfo: {job: {kind}}}) => {
         debug('running sub-job %o', artifactJob)
         return {
           state: Object.assign({}, newState, {
-            artifactsToBuild: newState.artifactsToBuild.slice(1),
+            artifactsToBuild: remainingArtifactsToBuild,
           }),
           jobs: [artifactJob].map(job => ({job, awaken: true})),
         }
@@ -60,6 +64,7 @@ module.exports = async ({pluginInfo: {job: {kind}}}) => {
 
 const createJobFromArtifact = (artifact, directory, artifacts, changedFiles) => ({
   kind: artifact.type,
+  artifact: artifact.artifact,
   artifactsDirectory: directory,
   directory: path.join(directory, artifact.path),
   dependencies: artifacts ? artifact.dependencies : [],
