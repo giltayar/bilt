@@ -14,29 +14,34 @@ module.exports = async ({pluginInfo: {job: {kind}}}) => {
       debug('running job repo-build-job')
       const {directory, repository, linkDependencies, filesChangedSinceLastBuild} = job
 
-      const findArtifacts = async () => {
+      const getInitialState = async () => {
         debug('fetching repository %s', repository)
         const repoDirectory = await agent.fetchRepo(repository, {directory})
-        const artifactsToBuild = await artifactFinder.findArtifacts(repoDirectory)
+        const allArtifacts = await artifactFinder.findArtifacts(repoDirectory)
+        const artifactsToBuild = allArtifacts.filter(
+          artifactToBuild =>
+            !filesChangedSinceLastBuild ||
+            filesChangedSinceLastBuild.find(file => file.startsWith(artifactToBuild.path + '/')),
+        )
 
-        return {repoDirectory, artifactsToBuild}
+        return {repoDirectory, artifactsToBuild, allArtifacts}
       }
 
       debug('files changed %o. Searching for artifacts', filesChangedSinceLastBuild)
-      const newState = state || (await findArtifacts())
+      const newState = state || (await getInitialState(filesChangedSinceLastBuild))
       const artifactsToBuild = newState.artifactsToBuild
       debug('found artifacts %o', artifactsToBuild)
       const remainingArtifactsToBuild = newState.artifactsToBuild.filter(
-        artifact => !awakenedFrom || awakenedFrom.job.artifact === artifact.artifact,
+        artifact => !awakenedFrom || awakenedFrom.job.artifact !== artifact.artifact,
       )
-      debug('Remaining to build %o', remainingArtifactsToBuild)
+      debug('Remaining to build %o', remainingArtifactsToBuild.map(artifact => artifact.artifact))
 
       if (!remainingArtifactsToBuild || remainingArtifactsToBuild.length === 0) {
         return
       }
       const artifactToBuild = remainingArtifactsToBuild[0]
 
-      debug('building artifact %o', artifactToBuild)
+      debug('building artifact %o', artifactToBuild.artifact)
 
       const changedFiles =
         filesChangedSinceLastBuild &&
@@ -46,7 +51,7 @@ module.exports = async ({pluginInfo: {job: {kind}}}) => {
         const artifactJob = createJobFromArtifact(
           artifactToBuild,
           newState.repoDirectory,
-          linkDependencies ? artifactsToBuild : undefined,
+          linkDependencies ? newState.allArtifacts : undefined,
           changedFiles,
         )
 
