@@ -2,10 +2,11 @@
 
 ## Local build should use the restartable thingie
 
-1. Implement with a persistent job queue
+1. Implement `--continue` functionality
 
 ## Dependency Graph Build
 
+1. Deal with errors
 1. Do dependency check build graph
 1. Add changed files, including changes since last build
 
@@ -14,7 +15,7 @@
 1. Define a good CLI
 1. Build the CLI
 1. Make it a simple global install, available to any who want it
-1. Add an auto-upgrade feature?
+1. Add an auto-upgrade feature
 
 ## Support docker agents for each job
 

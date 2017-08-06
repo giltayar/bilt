@@ -1,15 +1,13 @@
 {
-  "name": "@bildit/in-memory-job-state",
+  "name": "@bildit/jobs",
   "version": "1.0.0",
   "description": "",
-  "main": "src/in-memory-job-state.js",
+  "main": "src/jobs.js",
   "files": [
     "src",
     "scripts"
   ],
-  "scripts": {
-    "test": "mocha"
-  },
+  "scripts": {},
   "keywords": [
     "ci",
     "bildit"
@@ -21,9 +19,8 @@
     "type": "git"
   },
   "dependencies": {
-    "chai": "^4.1.1",
     "debug": "^2.6.8",
-    "mocha": "^3.5.0"
+    "uuid": "^3.1.0"
   },
   "devDependencies": {
     "eslint": "^4.2.0",
