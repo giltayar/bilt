@@ -1,24 +1,38 @@
 'use strict'
-const debug = require('debug')('bildit:in-memory-job-dispatcher')
+const debug = require('debug')('bildit:leveldb-job-dispatcher')
+const path = require('path')
+const makeDir = require('make-dir')
 const uuid = require('uuid/v4')
+const levelQueue = require('level-q')
+const level = require('level')
+const bytewise = require('bytewise')
 
-module.exports = async ({pluginRepository, events}) => {
+module.exports = async ({pluginRepository, events, directory}) => {
   const jobState = await pluginRepository.findPlugin({kind: 'jobState'})
+  const queue = await initializeDb()
+  await listenAndExecuteJobs()
 
   const awakenFor = new Map()
 
-  async function dispatchJob(job, {awakenedFrom} = {}) {
-    debug('dispatching job %o', job)
-
-    const {jobResult, jobWithId} = await runJob(job, awakenedFrom)
-
-    await dealWithJobResult(jobWithId, jobResult)
-
-    return jobResult
-  }
-
   return {
     dispatchJob,
+  }
+
+  async function dispatchJob(job, {awakenedFrom} = {}) {
+    queue.push({job, awakenedFrom})
+  }
+
+  async function initializeDb() {
+    await makeDir(path.join(directory, '.bildit'))
+
+    const {queue} = levelQueue(
+      level(path.join(directory, '.bildit', 'job-queue'), {
+        keyEncoding: bytewise,
+        valueEncoding: 'json',
+      }),
+    )
+
+    return queue
   }
 
   async function runJob(job, awakenedFrom) {
@@ -47,7 +61,17 @@ module.exports = async ({pluginRepository, events}) => {
     return {jobResult, jobWithId}
   }
 
-  async function dealWithJobResult(jobWithId, jobResult) {
+  async function listenAndExecuteJobs() {
+    queue.listen(async (err, value, key, next) => {
+      const {job, awakenedFrom} = value
+
+      runJob(job, awakenedFrom).then(dealWithJobResult)
+
+      next()
+    })
+  }
+
+  async function dealWithJobResult({jobWithId, jobResult}) {
     const {state, jobs: subJobs} = jobResult || {}
 
     await jobState.setState(jobWithId, state)

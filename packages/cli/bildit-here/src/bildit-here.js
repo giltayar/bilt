@@ -24,7 +24,7 @@ async function main() {
     return
   }
 
-  const pluginRepository = await pluginRepoFactory(directoryToBuild, {})
+  const pluginRepository = await pluginRepoFactory(directoryToBuild, {directory: directoryToBuild})
 
   await configureEventsToOutputEventToStdout(pluginRepository)
 
