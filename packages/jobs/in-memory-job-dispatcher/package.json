@@ -1,8 +1,8 @@
 {
-  "name": "@bildit/job-dispatcher",
+  "name": "@bildit/in-memory-job-dispatcher",
   "version": "1.0.0",
-  "description": "Dispatches jobs to be run by appropriate plign",
-  "main": "src/job-dispatcher.js",
+  "description": "Dispatches jobs but stores everything in memory. Not restartable",
+  "main": "src/in-memory-job-dispatcher.js",
   "scripts": {},
   "keywords": [
     "ci",
