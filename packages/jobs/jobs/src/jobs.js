@@ -14,20 +14,24 @@ async function executeJob(job, {awakenedFrom, pluginRepository, events, kvStore}
   })
   const agent = await pluginRepository.findPlugin({kind: 'agent', job})
 
-  const jobId = job.id || uuid()
-  const jobWithId = Object.assign({}, {id: jobId}, job)
+  const jobWithId = prepareJobForRunning(job)
 
   debug('running job %o awakened from job %s', jobWithId, awakenedFrom && awakenedFrom.job.id)
 
-  await events.publish('START_JOB', {job})
+  await events.publish(!awakenedFrom ? 'START_JOB' : 'AWAKEN_JOB', {job: jobWithId})
 
-  const state = job.id ? await kvStore.get(`jobstate:${job.id}`) : undefined
+  const state = awakenedFrom ? await kvStore.get(`jobstate:${job.id}`) : undefined
   debug('state for job %s found: %o', jobWithId.id, state)
 
   const jobResult = await jobRunner.runJob(jobWithId, {agent, state, awakenedFrom})
   debug('ran job %s', jobWithId.id)
 
-  await events.publish('END_JOB', {jobWithId, jobResult})
+  const {jobs: subJobs = []} = jobResult || {}
+
+  await events.publish(subJobs.length === 0 ? 'END_JOB' : 'HIBERNATE_JOB', {
+    job: jobWithId,
+    jobResult,
+  })
 
   debug('dispatched job %o', jobWithId)
 
@@ -71,6 +75,25 @@ async function awakenParentJobIfNeeded(job, subJobResult, {kvStore, dispatchJob}
   await dispatchJob(parentJob, {awakenedFrom: {job, result: subJobResult}})
 }
 
+async function waitForJob(jobToWaitFor, {events}) {
+  await new Promise((resolve, reject) => {
+    events
+      .subscribe('END_JOB', ({job}) => {
+        console.log('found end of', job)
+        if (job.id === jobToWaitFor.id) resolve()
+      })
+      .catch(reject)
+  })
+}
+
+function prepareJobForRunning(job) {
+  const jobId = job.id || uuid()
+
+  return job.id ? job : Object.assign({}, {id: jobId}, job)
+}
+
 module.exports = {
   runJob,
+  waitForJob,
+  prepareJobForRunning,
 }

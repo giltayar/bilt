@@ -6,7 +6,7 @@ const makeDir = require('make-dir')
 const levelQueue = require('level-q')
 const level = require('level')
 const bytewise = require('bytewise')
-const {runJob} = require('@bildit/jobs')
+const {runJob, prepareJobForRunning} = require('@bildit/jobs')
 
 module.exports = async ({pluginRepository, events, directory}) => {
   const {queue, kvStoreDb} = await initializeDb()
@@ -26,8 +26,12 @@ module.exports = async ({pluginRepository, events, directory}) => {
   }
 
   async function dispatchJob(job, {awakenedFrom} = {}) {
-    debug('dispatching job %o to queue', job)
-    await p(queue.push)({job, awakenedFrom})
+    const preparedJob = prepareJobForRunning(job)
+    debug('dispatching job %o to queue', preparedJob)
+
+    await p(queue.push)({job: preparedJob, awakenedFrom})
+
+    return preparedJob
   }
 
   async function initializeDb() {
@@ -48,6 +52,7 @@ module.exports = async ({pluginRepository, events, directory}) => {
   }
 
   async function listenAndExecuteJobs() {
+    console.log('Listening...')
     queue.listen(async (err, value, key, next) => {
       if (err) {
         console.log('Error listening on queue', err.stack)

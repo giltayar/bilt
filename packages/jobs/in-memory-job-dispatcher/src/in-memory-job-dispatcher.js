@@ -1,11 +1,15 @@
 'use strict'
-const {runJob} = require('@bildit/jobs')
+const {runJob, prepareJobForRunning} = require('@bildit/jobs')
 
 module.exports = async ({pluginRepository, events}) => {
   const kvStore = new Map()
 
   async function dispatchJob(job, {awakenedFrom} = {}) {
-    await runJob(job, {awakenedFrom, pluginRepository, events, kvStore, dispatchJob})
+    const preparedJob = prepareJobForRunning(job)
+
+    await runJob(preparedJob, {awakenedFrom, pluginRepository, events, kvStore, dispatchJob})
+
+    return preparedJob
   }
 
   return {
