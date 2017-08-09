@@ -6,7 +6,12 @@ const makeDir = require('make-dir')
 const levelQueue = require('level-q')
 const level = require('level')
 const bytewise = require('bytewise')
-const {runJob, prepareJobForRunning, deleteJobState} = require('@bildit/jobs')
+const {
+  runJob,
+  prepareJobForRunning,
+  deleteJobState,
+  doesJobAwakenParentJob,
+} = require('@bildit/jobs')
 
 module.exports = async ({pluginRepository, events, directory}) => {
   const {queue, kvStoreDb} = await initializeDb()
@@ -43,15 +48,19 @@ module.exports = async ({pluginRepository, events, directory}) => {
   }
 
   async function hasAbortedJobs() {
+    debug('searching for aborted jobs')
     return await new Promise((resolve, reject) =>
       kvStoreDb
-        .createReadStream({gte: 'job:', lte: 'job:z', keys: true})
-        .on('data', () => {
-          debug('found aborted jobs', job.id)
+        .createReadStream({gte: 'job:', lte: 'job:z', keys: false})
+        .on('data', async function({job}) {
+          if (await doesJobAwakenParentJob(job, {kvStore})) {
+            return
+          }
           resolve(true)
+          this.destroy()
         })
         .on('error', reject)
-        .on('end', resolve(false)),
+        .on('end', () => resolve(false)),
     )
   }
 
@@ -103,9 +112,11 @@ module.exports = async ({pluginRepository, events, directory}) => {
 
     await new Promise((resolve, reject) =>
       kvStoreDb
-        .createReadStream({gte: 'job:', lte: 'job:z', values: true})
-        .on('data', ({job, awakenedFrom}) => {
-          debug('rerunning job %s', job.id)
+        .createReadStream({gte: 'job:', lte: 'job:z', values: true, keys: false})
+        .on('data', async ({job, awakenedFrom}) => {
+          if (await doesJobAwakenParentJob(job, {kvStore})) {
+            return
+          }
           abortedJobs.push(job)
           dispatchJob(job, {awakenedFrom})
         })

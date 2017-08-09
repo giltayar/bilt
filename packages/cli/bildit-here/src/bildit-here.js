@@ -14,15 +14,6 @@ main().catch(err => console.log(err.stack))
 
 async function main() {
   const directoryToBuild = path.resolve(process.argv[2])
-  const {
-    filesChangedSinceLastBuild,
-    fileChangesInCurrentRepo,
-  } = await figureOutFilesChangedSinceLastBuild(directoryToBuild)
-
-  if (filesChangedSinceLastBuild && filesChangedSinceLastBuild.length === 0) {
-    console.error('Nothing to build')
-    return
-  }
 
   const pluginRepository = await pluginRepoFactory(directoryToBuild, {directory: directoryToBuild})
 
@@ -32,8 +23,18 @@ async function main() {
     kind: 'jobDispatcher',
   })
 
+  const {
+    filesChangedSinceLastBuild,
+    fileChangesInCurrentRepo,
+  } = await figureOutFilesChangedSinceLastBuild(directoryToBuild)
+
   let jobsToWaitFor
   if (!await jobDispatcher.hasAbortedJobs()) {
+    if (filesChangedSinceLastBuild && filesChangedSinceLastBuild.length === 0) {
+      console.error('Nothing to build')
+      return
+    }
+
     debug('building folder %s, with file changes %o', directoryToBuild, filesChangedSinceLastBuild)
     jobsToWaitFor = [
       await jobDispatcher.dispatchJob({
@@ -81,7 +82,7 @@ async function waitForJobs(pluginRepository, jobs) {
   const events = await pluginRepository.findPlugin({kind: 'events'})
   const jobsThatAreStillWorking = new Set(jobs.map(job => job.id))
 
-  new Promise(async resolve => {
+  await new Promise(async resolve => {
     await events.subscribe('END_JOB', ({job}) => {
       debug('job %s ended', job.id)
       jobsThatAreStillWorking.delete(job.id)

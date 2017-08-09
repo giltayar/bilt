@@ -1,8 +1,10 @@
 'use strict'
+
 const fs = require('fs')
 const path = require('path')
 const crypto = require('crypto')
 const assert = require('assert')
+const debug = require('debug')('bildit:bildit-here')
 const childProcess = require('child_process')
 const {promisify: p} = require('util')
 const makeDir = require('make-dir')
@@ -28,6 +30,7 @@ async function readLastBuildInfo(directory) {
 }
 
 async function saveLastBuildInfo(directory, currentRepoInfo) {
+  debug('saving last build info %o', currentRepoInfo)
   await makeDir(path.join(directory, '.bildit'))
 
   await p(fs.writeFile)(

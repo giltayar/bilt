@@ -95,9 +95,15 @@ function prepareJobForRunning(job) {
 async function deleteJobState(job, {kvStore}) {
   await kvStore.delete(`jobstate:${job.id}`)
 }
+
+async function doesJobAwakenParentJob(job, {kvStore}) {
+  return !!await kvStore.get(`awaken:${job.id}`)
+}
+
 module.exports = {
   runJob,
   waitForJob,
   prepareJobForRunning,
   deleteJobState,
+  doesJobAwakenParentJob,
 }
