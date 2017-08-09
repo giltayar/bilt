@@ -1,14 +1,5 @@
 # TODO
 
-## Local build should use the restartable thingie
-
-1. Implement `--continue` functionality
-   * How do we restart the big job?
-   * We can store all hibernating in kv store and restart them (leveldb-dispatcher)
-   * We can store it at start of bildit-here, and rerun it
-   * Any job that is not ended, will be stored and rerun (leveldb-dispatcher)
-1. Delete unneeded keys: awaken:_jobid_
-
 ## Dependency Graph Build
 
 1. Deal with errors
