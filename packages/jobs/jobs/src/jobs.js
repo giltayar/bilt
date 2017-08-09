@@ -100,10 +100,19 @@ async function doesJobAwakenParentJob(job, {kvStore}) {
   return !!await kvStore.get(`awaken:${job.id}`)
 }
 
+async function deleteAllAwakeningInformation({kvStore}) {
+  const awakened = await kvStore.listInScope('awaken')
+
+  debug('deleting all awakened state of %o', awakened.map(({key}) => key))
+
+  await Promise.all(awakened.map(({key}) => kvStore.delete(key)))
+}
+
 module.exports = {
   runJob,
   waitForJob,
   prepareJobForRunning,
   deleteJobState,
   doesJobAwakenParentJob,
+  deleteAllAwakeningInformation,
 }

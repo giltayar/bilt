@@ -11,6 +11,7 @@ const {
   prepareJobForRunning,
   deleteJobState,
   doesJobAwakenParentJob,
+  deleteAllAwakeningInformation,
 } = require('@bildit/jobs')
 
 module.exports = async ({pluginRepository, events, directory}) => {
@@ -25,6 +26,20 @@ module.exports = async ({pluginRepository, events, directory}) => {
       }),
     set: p(kvStoreDb.put.bind(kvStoreDb)),
     delete: p(kvStoreDb.del.bind(kvStoreDb)),
+    listInScope: async scope => {
+      const ret = []
+      await new Promise((resolve, reject) =>
+        kvStoreDb
+          .createReadStream({gte: scope + ':', lte: scope + ':\uffff'})
+          .on('data', async ({key, value}) => {
+            ret.push({key, value})
+          })
+          .on('error', reject)
+          .on('end', resolve),
+      )
+
+      return ret
+    },
   }
 
   await ensureJobStateIsRemovedWhenJobsEnd()
@@ -115,6 +130,7 @@ module.exports = async ({pluginRepository, events, directory}) => {
         .createReadStream({gte: 'job:', lte: 'job:z', values: true, keys: false})
         .on('data', async ({job, awakenedFrom}) => {
           if (await doesJobAwakenParentJob(job, {kvStore})) {
+            await deleteJobState(job)
             return
           }
           abortedJobs.push(job)
@@ -123,6 +139,8 @@ module.exports = async ({pluginRepository, events, directory}) => {
         .on('error', reject)
         .on('end', resolve),
     )
+
+    await deleteAllAwakeningInformation({kvStore})
     return abortedJobs
   }
 }
