@@ -92,8 +92,12 @@ function prepareJobForRunning(job) {
   return job.id ? job : Object.assign({}, {id: jobId}, job)
 }
 
+async function deleteJobState(job, {kvStore}) {
+  await kvStore.delete(`jobstate:${job.id}`)
+}
 module.exports = {
   runJob,
   waitForJob,
   prepareJobForRunning,
+  deleteJobState,
 }

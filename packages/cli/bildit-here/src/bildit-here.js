@@ -32,14 +32,24 @@ async function main() {
     kind: 'jobDispatcher',
   })
 
-  debug('building folder %s, with file changes %o', directoryToBuild, filesChangedSinceLastBuild)
-  await jobDispatcher.dispatchJob({
-    kind: 'repository',
-    repository: directoryToBuild,
-    directory: directoryToBuild,
-    linkDependencies: true,
-    filesChangedSinceLastBuild,
-  })
+  let jobsToWaitFor
+  if (!await jobDispatcher.hasAbortedJobs()) {
+    debug('building folder %s, with file changes %o', directoryToBuild, filesChangedSinceLastBuild)
+    jobsToWaitFor = [
+      await jobDispatcher.dispatchJob({
+        kind: 'repository',
+        repository: directoryToBuild,
+        directory: directoryToBuild,
+        linkDependencies: true,
+        filesChangedSinceLastBuild,
+      }),
+    ]
+  } else {
+    debug('continuing previous build')
+    jobsToWaitFor = await jobDispatcher.rerunAbortedJobs()
+  }
+
+  await waitForJobs(pluginRepository, jobsToWaitFor)
 
   await saveLastBuildInfo(directoryToBuild, fileChangesInCurrentRepo)
 }
@@ -64,4 +74,21 @@ async function figureOutFilesChangedSinceLastBuild(directory) {
     : undefined
 
   return {filesChangedSinceLastBuild, fileChangesInCurrentRepo}
+}
+
+async function waitForJobs(pluginRepository, jobs) {
+  debug('waiting for jobs %o', jobs.map(job => job.id))
+  const events = await pluginRepository.findPlugin({kind: 'events'})
+  const jobsThatAreStillWorking = new Set(jobs.map(job => job.id))
+
+  new Promise(async resolve => {
+    await events.subscribe('END_JOB', ({job}) => {
+      debug('job %s ended', job.id)
+      jobsThatAreStillWorking.delete(job.id)
+
+      if (jobsThatAreStillWorking.size === 0) {
+        resolve()
+      }
+    })
+  })
 }

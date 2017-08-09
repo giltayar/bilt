@@ -14,5 +14,8 @@ module.exports = async ({pluginRepository, events}) => {
 
   return {
     dispatchJob,
+    async hasAbortedJobs() {
+      return false
+    },
   }
 }
