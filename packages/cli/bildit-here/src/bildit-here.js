@@ -52,7 +52,7 @@ async function main() {
 
   await waitForJobs(pluginRepository, jobsToWaitFor)
 
-  await saveLastBuildInfo(directoryToBuild, fileChangesInCurrentRepo)
+  await saveLastBuildInfo(directoryToBuild, await findChangesInCurrentRepo(directoryToBuild))
 }
 
 async function configureEventsToOutputEventToStdout(pluginRepository) {
