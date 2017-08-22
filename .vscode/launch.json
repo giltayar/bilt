@@ -21,10 +21,13 @@
       "name": "Launch Test CLI on host-agent",
       "program": "${workspaceRoot}/packages/cli/bildit-here/src/bildit-here.js",
       "args": [
-        "test-repo"
+        "."
       ],
+      "cwd": "${workspaceRoot}/../test-repo",
+      "showAsyncStacks": true,
+      "console": "integratedTerminal",
       "env": {
-        "DEBUG": "*"
+        "DEBUG": "bildit:*"
       }
     },
     {

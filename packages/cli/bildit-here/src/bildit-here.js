@@ -1,8 +1,10 @@
 'use strict'
 
+const path = require('path')
+const fs = require('fs')
+const {promisify: p} = require('util')
 const debug = require('debug')('bildit:bildit-here')
 const pluginRepoFactory = require('@bildit/config-based-plugin-repository')
-const path = require('path')
 const {
   readLastBuildInfo,
   findChangesInCurrentRepo,
@@ -15,18 +17,14 @@ main().catch(err => console.log(err.stack))
 async function main() {
   const directoryToBuild = path.resolve(process.argv[2])
 
-  const pluginRepository = await pluginRepoFactory(directoryToBuild, {directory: directoryToBuild})
-
+  const pluginRepository = await createPluginRepository(directoryToBuild)
   await configureEventsToOutputEventToStdout(pluginRepository)
 
   const jobDispatcher = await pluginRepository.findPlugin({
     kind: 'jobDispatcher',
   })
 
-  const {
-    filesChangedSinceLastBuild,
-    fileChangesInCurrentRepo,
-  } = await figureOutFilesChangedSinceLastBuild(directoryToBuild)
+  const {filesChangedSinceLastBuild} = await figureOutFilesChangedSinceLastBuild(directoryToBuild)
 
   let jobsToWaitFor
   if (!await jobDispatcher.hasAbortedJobs()) {
@@ -91,5 +89,16 @@ async function waitForJobs(pluginRepository, jobs) {
         resolve()
       }
     })
+  })
+}
+
+async function createPluginRepository(directoryToBuild) {
+  const defaultConfig = await JSON.parse(
+    await p(fs.readFile)(path.join(__dirname, 'default-bilditrc.json')),
+  )
+
+  return await pluginRepoFactory({
+    directory: directoryToBuild,
+    defaultConfig,
   })
 }

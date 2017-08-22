@@ -3,15 +3,25 @@ const debug = require('debug')('bildit:plugin-repository')
 const path = require('path')
 const util = require('util')
 const cosmiconfig = require('cosmiconfig')
+const merge = require('lodash.merge')
 
 const pretty = x => util.format('%o', x)
 
-module.exports = async (directory, context) => {
-  const configLoader = cosmiconfig('bildit', {sync: true, rcExtensions: true})
-  const configResult = await configLoader.load(directory)
-  if (!configResult) throw new Error(`Could not find configuration path from ${directory}`)
+module.exports = async context => {
+  const {defaultConfig = {}, directory} = context
+  const configLoader = cosmiconfig('bildit', {rcExtensions: true})
+  const configFromDirectory = await configLoader.load(directory)
+  const config = merge(
+    {},
+    {
+      config: defaultConfig,
+      filepath: directory,
+    },
+    configFromDirectory || {},
+  )
+  debug('config: %o', config)
 
-  const {config: {plugins: {registry}}, filepath: configFilePath} = configResult
+  const {config: {plugins: {registry}}, filepath: configFilePath} = config
   const configFileDir = path.dirname(configFilePath)
   const pluginsFound = new Map()
   debug('registry: %o', registry)
@@ -24,6 +34,7 @@ module.exports = async (directory, context) => {
       const contextWithAdditions = Object.assign({}, context, {
         pluginRepository: this,
         pluginInfo,
+        config,
       })
       // once we have sync loading in cosmiconfig, we can move it back to 'ctor
       const {kind} = pluginInfo
@@ -63,5 +74,5 @@ module.exports = async (directory, context) => {
 
   const events = await temporaryPluginRepositoryForBasePlugins.findPlugin({kind: 'events'})
 
-  return pluginRepositoryCreator(Object.assign({}, context, {events}))
+  return pluginRepositoryCreator({...context, ...{events}})
 }
