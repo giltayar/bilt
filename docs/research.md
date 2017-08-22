@@ -20,3 +20,16 @@
 * [external load balancer](https://traefik.io/): looks interesting. alternative to builtin kubernetes one
 * [deployment](https://www.npmjs.com/package/exoframe): simple deployment of projects
 * [Digital Ocean](https://www.digitalocean.com/): alternative to AWS? In the end, all that matters is price.
+
+## Possible names
+
+* bildit (the current name. I feel like it's too obvious and boring.)
+* artifex (Latin for craftsman. works well with artifact)
+* craft
+* castor (scientific name of beaver, an animal that builds)
+* hardhat (synonym of construction worker)
+* bee (because she works hard. Will be difficult to google?)
+* bild (shorter bildit, which is the current name)
+* beeld (compose bee and bild)
+* bilt (as in the past of bild. sounds nicer,
+  maybe pronounce it "bild" to make it coller?)
