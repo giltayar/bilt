@@ -2,8 +2,8 @@
 
 ## Support docker agents for each job
 
-1. Use a docker agent, to test plugability
-1. Add docker package type
+1. Use a docker agent, to test plugability. Make every job have its own container
+1. Make a real job that uses one docker agent and pulls repo from github.
 1. Add publishing
 
 ## Dependency Graph Build
@@ -24,13 +24,25 @@
 
 1. Make it so that it works in Circle CI
 
+## Misc
+
+1. Error handle bad configuration
+
 ## Use Cases
 
 * Local build.
   * This can theoretically run in Travis/Circle.
   * Support changed files
-* Local build that works on a repo, and uses docker/kubernetes to run builds.
+  * Support docker or host agents
+    * maximum number of parallel agents is configurable
+* Travis/Circle/CI build
+  * Pulls from a repo
+  * Support changed files
+  * Support docker, host, or kubernetes agents
+    * maximum number of parallel agents is configurable
+* Local build that works on a repo, and uses docker to run builds.
   * Web api to check the results/logs
   * console api to check the results/logs
-  * Supports publishing
-* Travis/Circle CI build that use build triggering to run builds.
+  * maximum number of parallel agents is configurable
+* Travis/Circle build that use build triggering to run builds.
+* Simple one job repo build (no monorepo - just build the damn thing from root)

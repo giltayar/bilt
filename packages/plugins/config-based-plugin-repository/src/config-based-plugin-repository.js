@@ -4,6 +4,7 @@ const path = require('path')
 const util = require('util')
 const cosmiconfig = require('cosmiconfig')
 const merge = require('lodash.merge')
+const flattenDeep = require('lodash.flattendeep')
 
 const pretty = x => util.format('%o', x)
 
@@ -31,29 +32,23 @@ module.exports = async context => {
       const possiblePlugin = pluginsFound.get(JSON.stringify(pluginInfo))
       if (possiblePlugin) return possiblePlugin
 
-      const contextWithAdditions = Object.assign({}, context, {
-        pluginRepository: this,
-        pluginInfo,
-        config,
-      })
       // once we have sync loading in cosmiconfig, we can move it back to 'ctor
       const {kind} = pluginInfo
 
-      debug('looking for plugin of kind %s using context %o', kind, contextWithAdditions)
+      debug('looking for plugin of kind %s using context %o', kind, context)
 
       if (!registry[kind]) throw new Error(`No plugins support plugin ${kind}`)
 
-      const pluginModulePathsForKind = [].concat(registry[kind])
-
-      const pluginModulesForKind = pluginModulePathsForKind.map(pluginModulePath =>
-        require(pluginModulePath.startsWith('.')
-          ? path.resolve(configFileDir, pluginModulePath)
-          : pluginModulePath),
+      const pluginModulePathsForKind = normalizePluginModules(registry[kind])
+      const pluginModulesForKind = loadModules(configFileDir, pluginModulePathsForKind)
+      const pluginsForKind = await createPlugins(
+        context,
+        config,
+        this,
+        pluginInfo,
+        pluginModulesForKind,
       )
 
-      const pluginsForKind = await Promise.all(
-        pluginModulesForKind.map(plugin => plugin(contextWithAdditions)),
-      )
       const supportedPlugins = pluginsForKind.filter(plugin => !!plugin)
       if (supportedPlugins.length === 0)
         throw new Error(
@@ -75,4 +70,42 @@ module.exports = async context => {
   const events = await temporaryPluginRepositoryForBasePlugins.findPlugin({kind: 'events'})
 
   return pluginRepositoryCreator({...context, ...{events}})
+}
+
+function normalizePluginModules(modulesEntry) {
+  if (typeof modulesEntry === 'string') {
+    return [{pluginModulePath: modulesEntry, pluginConfig: {}}]
+  } else if (Array.isArray(modulesEntry)) {
+    return flattenDeep(modulesEntry.map(module => normalizePluginModules(module)))
+  } else {
+    return Object.entries(modulesEntry).reduce(
+      (arr, [pluginModulePath, pluginConfig]) => arr.concat({pluginModulePath, pluginConfig}),
+      [],
+    )
+  }
+}
+
+function loadModules(configFileDir, modules) {
+  return modules.map(({pluginModulePath, pluginConfig}) => ({
+    module: require(pluginModulePath.startsWith('.')
+      ? path.resolve(configFileDir, pluginModulePath)
+      : pluginModulePath),
+    pluginConfig,
+  }))
+}
+
+async function createPlugins(context, config, pluginRepository, pluginInfo, pluginModules) {
+  return await Promise.all(
+    pluginModules.map(({module, pluginConfig}) =>
+      module({
+        ...context,
+        ...{
+          pluginRepository,
+          pluginInfo,
+          config,
+          pluginConfig,
+        },
+      }),
+    ),
+  )
 }
