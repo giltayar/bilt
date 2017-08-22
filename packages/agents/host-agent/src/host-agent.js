@@ -6,13 +6,13 @@ const debug = require('debug')('bildit:host-agent')
 
 module.exports = async ({pluginInfo: {job: {directory}}}) => {
   return {
-    async executeCommand(commandArgs, {shell = false} = {}) {
+    async executeCommand(commandArgs) {
       debug('dispatching command %o in directory %s', commandArgs, directory)
       await new Promise((resolve, reject) => {
         const process = childProcess.spawn(commandArgs[0], commandArgs.slice(1), {
           cwd: directory,
           stdio: 'inherit',
-          shell,
+          shell: false,
         })
 
         process.on('close', code => {
