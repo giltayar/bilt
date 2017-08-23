@@ -1,5 +1,5 @@
 const path = require('path')
-const debug = require('debug')('bildit:docker-agent')
+const debug = require('debug')('bildit:local-docker-agent')
 const Docker = require('dockerode')
 const tar = require('tar-stream')
 const {createSymlink: createSymlinkInHost} = require('@bildit/symlink')
@@ -86,6 +86,10 @@ module.exports = async ({pluginInfo: {job: {kind, directory}}, pluginConfig}) =>
     async createSymlink(link, target) {
       debug('creating symlink in directory %s, link %s, target %s', workdir, link, target)
 
+      // This is a very strange symlink - it is created in the host, and therefore resides in `directory`
+      // and yet it points to a directory that is in the docker container, and therefore
+      // uses `workdir`.
+      // This is OK, because the file will always be read _inside_ the container.
       return await createSymlinkInHost(path.join(directory, link), path.join(workdir, target))
     },
   }
