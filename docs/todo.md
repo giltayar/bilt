@@ -2,9 +2,6 @@
 
 ## Support docker agents for each job
 
-1. Use a docker agent, to test plugability. Make every job have its own container
-   1. Remove docker agent at the end of the job, even on error
-1. Add publishing
 1. Make a real job that uses one docker agent and pulls repo from github.
 1. Fix the bug when rerunning an aborted job
 
@@ -20,6 +17,7 @@
 
 ## CLI and productization
 
+1. Add publishing
 1. Define a good CLI
 1. Build the CLI
    1. Support two use cases:

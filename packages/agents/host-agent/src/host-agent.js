@@ -37,5 +37,8 @@ module.exports = async ({pluginInfo: {job: {directory}}}) => {
       return await createSymlinkInHost(path.join(directory, link), path.join(directory, target))
     },
 
+    async destroy() {
+      //
+    },
   }
 }

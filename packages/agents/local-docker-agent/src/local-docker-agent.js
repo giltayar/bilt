@@ -1,4 +1,5 @@
 const path = require('path')
+const assert = require('assert')
 const debug = require('debug')('bildit:local-docker-agent')
 const Docker = require('dockerode')
 const tar = require('tar-stream')
@@ -36,8 +37,10 @@ module.exports = async ({pluginInfo: {job: {kind, directory}}, pluginConfig}) =>
   )
   await container.start()
   debug('started container %s', container.id)
+  let started = true
 
   async function executeCommand(commandArgs, {cwd}) {
+    assert(started, 'container is being used after it was destroyed')
     const finalCommand = cwd ? ['sh', '-c', `cd '${cwd}' && ${commandArgs.join(' ')}`] : commandArgs
     debug(
       'dispatching command %o in directory %s, container %s',
@@ -68,6 +71,7 @@ module.exports = async ({pluginInfo: {job: {kind, directory}}, pluginConfig}) =>
     executeCommand,
 
     async readFileAsBuffer(fileName) {
+      assert(started, 'container is being used after it was destroyed')
       const fullFilename = path.join(workdir, fileName)
 
       debug('reading file %s in container %s', fullFilename, container.id.slice(0, 6))
@@ -80,10 +84,12 @@ module.exports = async ({pluginInfo: {job: {kind, directory}}, pluginConfig}) =>
     },
 
     async fetchRepo() {
+      assert(started, 'container is being used after it was destroyed')
       //
     },
 
     async createSymlink(link, target) {
+      assert(started, 'container is being used after it was destroyed')
       debug('creating symlink in directory %s, link %s, target %s', workdir, link, target)
 
       // This is a very strange symlink - it is created in the host, and therefore resides in `directory`
@@ -91,6 +97,12 @@ module.exports = async ({pluginInfo: {job: {kind, directory}}, pluginConfig}) =>
       // uses `workdir`.
       // This is OK, because the file will always be read _inside_ the container.
       return await createSymlinkInHost(path.join(directory, link), path.join(workdir, target))
+    },
+
+    async destroy() {
+      debug('killing container %s', container.id)
+      await container.remove({force: true, v: true})
+      started = false
     },
   }
 }
