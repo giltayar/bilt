@@ -1,0 +1,32 @@
+{
+  "name": "@bildit/docker-agent",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/docker-agent.js",
+  "files": [
+    "src",
+    "scripts"
+  ],
+  "scripts": {},
+  "keywords": [
+    "ci",
+    "bildit"
+  ],
+  "author": "Gil Tayar <gil@tayar.org>",
+  "license": "Unlicense",
+  "repository": {
+    "url": "https://github.com/giltayar/bildit",
+    "type": "git"
+  },
+  "dependencies": {
+    "debug": "^2.6.8",
+    "dockerode": "^2.5.0",
+    "stream-to-promise": "^2.2.0",
+    "tar-stream": "^1.5.4"
+  },
+  "devDependencies": {
+    "eslint": "^4.2.0",
+    "eslint-plugin-prettier": "^2.1.2",
+    "prettier": "^1.5.2"
+  }
+}

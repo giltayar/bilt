@@ -27,7 +27,7 @@
       "showAsyncStacks": true,
       "console": "integratedTerminal",
       "env": {
-        "DEBUG": "bildit:*"
+        "DEBUG": "bildit:docker-agent"
       }
     },
     {
