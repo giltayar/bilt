@@ -21,7 +21,6 @@
   "dependencies": {
     "debug": "^2.6.8",
     "dockerode": "^2.5.0",
-    "stream-to-promise": "^2.2.0",
     "tar-stream": "^1.5.4"
   },
   "devDependencies": {

@@ -1,8 +1,8 @@
 const path = require('path')
 const debug = require('debug')('bildit:docker-agent')
 const Docker = require('dockerode')
-const streamToPromise = require('stream-to-promise')
 const tar = require('tar-stream')
+const {createSymlink: createSymlinkInHost} = require('@bildit/symlink')
 
 module.exports = async ({pluginInfo: {job: {kind, directory}}, pluginConfig}) => {
   const docker = new Docker({Promise})
@@ -27,20 +27,27 @@ module.exports = async ({pluginInfo: {job: {kind, directory}}, pluginConfig}) =>
     },
     User: user,
   })
-  debug('created container %s from image %s, workdir %s', container.id, image, workdir)
+  debug(
+    'created container %s from image %s, workdir %s mapped to %s',
+    container.id,
+    image,
+    workdir,
+    directory,
+  )
   await container.start()
   debug('started container %s', container.id)
 
-  async function executeCommand(commandArgs) {
+  async function executeCommand(commandArgs, {cwd}) {
+    const finalCommand = cwd ? ['sh', '-c', `cd '${cwd}' && ${commandArgs.join(' ')}`] : commandArgs
     debug(
       'dispatching command %o in directory %s, container %s',
-      commandArgs,
-      directory,
+      finalCommand,
+      path.join(workdir, cwd),
       container.id.slice(0, 6),
     )
     debug('executing %o in container %s', commandArgs, container.id.slice(0, 6))
     const execution = await container.exec({
-      Cmd: commandArgs,
+      Cmd: finalCommand,
       AttachStdout: true,
       AttachStderr: true,
       Tty: true,
@@ -72,8 +79,14 @@ module.exports = async ({pluginInfo: {job: {kind, directory}}, pluginConfig}) =>
       return fileContent
     },
 
-    async fetchRepo(repository, {}) {
-      return repository
+    async fetchRepo() {
+      //
+    },
+
+    async createSymlink(link, target) {
+      debug('creating symlink in directory %s, link %s, target %s', workdir, link, target)
+
+      return await createSymlinkInHost(path.join(directory, link), path.join(workdir, target))
     },
   }
 }

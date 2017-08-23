@@ -16,15 +16,15 @@ module.exports = async ({pluginInfo: {job: {kind}}}) => {
 
       const getInitialState = async () => {
         debug('fetching repository %s', repository)
-        const repoDirectory = await agent.fetchRepo(repository, {directory})
-        const allArtifacts = await artifactFinder.findArtifacts(repoDirectory)
+        await agent.fetchRepo(repository, {directory})
+        const allArtifacts = await artifactFinder.findArtifacts(directory)
         const artifactsToBuild = allArtifacts.filter(
           artifactToBuild =>
             !filesChangedSinceLastBuild ||
             filesChangedSinceLastBuild.find(file => file.startsWith(artifactToBuild.path + '/')),
         )
 
-        return {repoDirectory, artifactsToBuild, allArtifacts}
+        return {directory, artifactsToBuild, allArtifacts}
       }
 
       debug('files changed %o. Searching for artifacts', filesChangedSinceLastBuild)
@@ -50,7 +50,7 @@ module.exports = async ({pluginInfo: {job: {kind}}}) => {
       if (!changedFiles || changedFiles.length > 0) {
         const artifactJob = createJobFromArtifact(
           artifactToBuild,
-          newState.repoDirectory,
+          newState.directory,
           linkDependencies ? newState.allArtifacts : undefined,
           changedFiles,
         )
@@ -70,8 +70,8 @@ module.exports = async ({pluginInfo: {job: {kind}}}) => {
 const createJobFromArtifact = (artifact, directory, artifacts, changedFiles) => ({
   kind: artifact.type,
   artifact: artifact.artifact,
-  artifactsDirectory: directory,
-  directory: path.join(directory, artifact.path),
+  directory,
+  artifactPath: artifact.path,
   dependencies: artifacts ? artifact.dependencies : [],
   artifacts,
   filesChangedSinceLastBuild:

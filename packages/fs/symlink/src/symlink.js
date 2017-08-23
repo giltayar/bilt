@@ -25,5 +25,5 @@ async function createSymlink(link, whichWillPointTo) {
 }
 
 module.exports = {
-  createSymlink
+  createSymlink,
 }

@@ -59,7 +59,7 @@ async function configureEventsToOutputEventToStdout(pluginRepository) {
   await events.subscribe('START_JOB', ({job}) => {
     if (job.kind === 'repository') return
 
-    console.log('####### Building', path.relative(job.artifactsDirectory, job.directory))
+    console.log('####### Building', job.artifactPath || job.directory)
   })
 }
 
