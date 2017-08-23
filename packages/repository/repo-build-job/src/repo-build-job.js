@@ -55,7 +55,7 @@ module.exports = async ({pluginInfo: {job: {kind}}}) => {
           changedFiles,
         )
 
-        debug('running sub-job %o', artifactJob)
+        debug('decided to run sub-job %o', artifactJob)
         return {
           state: Object.assign({}, newState, {
             artifactsToBuild: remainingArtifactsToBuild,

@@ -6,13 +6,7 @@ const makeDir = require('make-dir')
 const levelQueue = require('level-q')
 const level = require('level')
 const bytewise = require('bytewise')
-const {
-  runJob,
-  prepareJobForRunning,
-  deleteJobState,
-  doesJobAwakenParentJob,
-  deleteAllAwakeningInformation,
-} = require('@bildit/jobs')
+const {runJob, prepareJobForRunning, deleteJobState, isSubJob} = require('@bildit/jobs')
 
 module.exports = async ({pluginRepository, events, directory}) => {
   const {queue, kvStoreDb} = await initializeDb()
@@ -53,7 +47,7 @@ module.exports = async ({pluginRepository, events, directory}) => {
   async function dispatchJob(job, {awakenedFrom} = {}) {
     const preparedJob = prepareJobForRunning(job)
 
-    debug('saving job %s to store', preparedJob.id)
+    debug('saving job %s to store prior to dispatching', preparedJob.id)
     await kvStore.set(`job:${preparedJob.id}`, {job: preparedJob, awakenedFrom})
 
     debug('dispatching job %o to queue', preparedJob)
@@ -63,20 +57,34 @@ module.exports = async ({pluginRepository, events, directory}) => {
   }
 
   async function hasAbortedJobs() {
-    debug('searching for aborted jobs')
+    debug('searching for aborted parent jobs')
+
+    const parentJobs = await listParentJobs({kvStore})
+
+    debug('aborted parent jobs found: %o', parentJobs.map(job => job.id))
+    return parentJobs.length > 0
+  }
+
+  async function listJobs() {
+    debug('finding parent jobs')
+    const jobs = []
     return await new Promise((resolve, reject) =>
       kvStoreDb
         .createReadStream({gte: 'job:', lte: 'job:z', keys: false})
-        .on('data', async function({job}) {
-          if (await doesJobAwakenParentJob(job, {kvStore})) {
-            return
-          }
-          resolve(true)
-          this.destroy()
+        .on('data', ({job}) => {
+          jobs.push(job)
         })
         .on('error', reject)
-        .on('end', () => resolve(false)),
+        .on('end', () => resolve(jobs)),
     )
+  }
+
+  async function listParentJobs({kvStore}) {
+    const jobs = await listJobs()
+
+    return (await Promise.all(
+      jobs.map(async job => (!await isSubJob(job, {kvStore}) ? job : null)),
+    )).filter(job => !!job)
   }
 
   async function initializeDb() {
@@ -106,9 +114,14 @@ module.exports = async ({pluginRepository, events, directory}) => {
       const {job, awakenedFrom} = value
 
       debug('got job %s from queue. running it', job.id)
-      runJob(job, {awakenedFrom, pluginRepository, events, kvStore, dispatchJob}).catch(err =>
-        console.error(err.stack),
-      )
+      runJob(job, {awakenedFrom, pluginRepository, events, kvStore, dispatchJob})
+        .then(hibernatedJob => {
+          if (!hibernatedJob) {
+            debug('deleting job %s from store', job.id)
+            kvStore.delete(`job:${job.id}`)
+          }
+        })
+        .catch(err => console.error(err.stack))
 
       next()
     })
@@ -123,24 +136,12 @@ module.exports = async ({pluginRepository, events, directory}) => {
   }
 
   async function rerunAbortedJobs() {
-    const abortedJobs = []
+    debug('listing aborted jobs')
+    const abortedJobs = await listParentJobs({kvStore})
 
-    await new Promise((resolve, reject) =>
-      kvStoreDb
-        .createReadStream({gte: 'job:', lte: 'job:z', values: true, keys: false})
-        .on('data', async ({job, awakenedFrom}) => {
-          if (await doesJobAwakenParentJob(job, {kvStore})) {
-            await deleteJobState(job)
-            return
-          }
-          abortedJobs.push(job)
-          dispatchJob(job, {awakenedFrom})
-        })
-        .on('error', reject)
-        .on('end', resolve),
-    )
+    debug('rerunning aborted jobs: %o', abortedJobs.map(job => job.id))
+    await Promise.all(abortedJobs.map(dispatchJob))
 
-    await deleteAllAwakeningInformation({kvStore})
     return abortedJobs
   }
 }

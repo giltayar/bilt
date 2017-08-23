@@ -4,7 +4,7 @@ const debug = require('debug')('bildit:jobs')
 async function runJob(job, {awakenedFrom, pluginRepository, events, kvStore, dispatchJob}) {
   const result = await executeJob(job, {awakenedFrom, pluginRepository, events, kvStore})
 
-  await dealWithJobResult(result, {kvStore, dispatchJob})
+  return await dealWithJobResult(result, {kvStore, dispatchJob})
 }
 
 async function executeJob(job, {awakenedFrom, pluginRepository, events, kvStore}) {
@@ -20,7 +20,7 @@ async function executeJob(job, {awakenedFrom, pluginRepository, events, kvStore}
 
   await events.publish(!awakenedFrom ? 'START_JOB' : 'AWAKEN_JOB', {job: jobWithId})
 
-  const state = awakenedFrom ? await kvStore.get(`jobstate:${job.id}`) : undefined
+  const state = await kvStore.get(`jobstate:${job.id}`)
   debug('state for job %s found: %o', jobWithId.id, state)
 
   const jobResult = await jobRunner.runJob(jobWithId, {agent, state, awakenedFrom})
@@ -48,6 +48,7 @@ async function executeJob(job, {awakenedFrom, pluginRepository, events, kvStore}
 async function dealWithJobResult({job, jobResult}, {kvStore, dispatchJob}) {
   const {state, jobs: subJobs} = jobResult || {}
 
+  debug('saving job %s state %o', job.id, state)
   await kvStore.set(`jobstate:${job.id}`, state)
 
   await awakenParentJobIfNeeded(job, {result: 'success'}, {kvStore, dispatchJob})
@@ -67,6 +68,13 @@ async function dealWithJobResult({job, jobResult}, {kvStore, dispatchJob}) {
 
     debug('dispatching subjobs of parent job %s', job.id)
     await Promise.all(subJobsWithId.map(async ({job}) => await dispatchJob(job)))
+
+    return job
+  } else {
+    debug('deleting job state for job %s', job.id)
+    await deleteJobState(job, {kvStore})
+
+    return undefined
   }
 }
 
@@ -78,7 +86,7 @@ async function awakenParentJobIfNeeded(job, subJobResult, {kvStore, dispatchJob}
     return
   }
 
-  debug('dispatching parent job %o because %o awakened', parentJob, job)
+  debug('dispatching parent job %o because %s awakened', parentJob, job.id)
   await dispatchJob(parentJob, {awakenedFrom: {job, result: subJobResult}})
 }
 
@@ -101,18 +109,11 @@ function prepareJobForRunning(job) {
 
 async function deleteJobState(job, {kvStore}) {
   await kvStore.delete(`jobstate:${job.id}`)
+  await kvStore.delete(`awaken:${job.id}`)
 }
 
-async function doesJobAwakenParentJob(job, {kvStore}) {
+async function isSubJob(job, {kvStore}) {
   return !!await kvStore.get(`awaken:${job.id}`)
-}
-
-async function deleteAllAwakeningInformation({kvStore}) {
-  const awakened = await kvStore.listInScope('awaken')
-
-  debug('deleting all awakened state of %o', awakened.map(({key}) => key))
-
-  await Promise.all(awakened.map(({key}) => kvStore.delete(key)))
 }
 
 module.exports = {
@@ -120,6 +121,5 @@ module.exports = {
   waitForJob,
   prepareJobForRunning,
   deleteJobState,
-  doesJobAwakenParentJob,
-  deleteAllAwakeningInformation,
+  isSubJob,
 }
