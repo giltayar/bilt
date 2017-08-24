@@ -5,6 +5,10 @@
 1. Add publishing
 1. Make a real job that uses one docker agent and pulls repo from github.
 
+## Tests
+
+1. You're good to go in terms of design - start writing tests
+
 ## Dependency Graph Build
 
 1. Deal with parallel execution:
