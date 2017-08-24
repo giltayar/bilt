@@ -30,8 +30,8 @@ module.exports = async ({pluginInfo: {job: {directory}}}) => {
       return await promisify(fs.readFile)(path.resolve(directory, fileName))
     },
 
-    async writeStringToFile(fileName, stringContent) {
-      return await promisify(fs.writeFile)(path.resolve(directory, fileName), stringContent)
+    async writeBufferToFile(fileName, buffer) {
+      return await promisify(fs.writeFile)(path.resolve(directory, fileName), buffer)
     },
 
     async fetchRepo(repository, {}) {

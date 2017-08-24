@@ -34,6 +34,7 @@
 ## Misc
 
 1. Error handle bad configuration
+1. Retry git push if fails on reject
 
 ## Use Cases
 

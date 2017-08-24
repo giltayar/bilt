@@ -19,6 +19,7 @@ module.exports = async ({pluginConfig: {npmAuthenticationLine, gitAuthentication
       }
 
       await agent.executeCommand(['npm', 'version', 'patch', '--force'], {cwd: artifactPath})
+
       await agent.executeCommand(['git', 'push'], {cwd: artifactPath})
       await agent.executeCommand(['npm', 'publish'], {cwd: artifactPath})
     },

@@ -39,7 +39,7 @@ module.exports = async ({pluginInfo: {job: {kind, directory}}, pluginConfig}) =>
   debug('started container %s', container.id)
   let started = true
 
-  async function executeCommand(commandArgs, {cwd}) {
+  async function executeCommand(commandArgs, {cwd, returnOutput}) {
     assert(started, 'container is being used after it was destroyed')
     const finalCommand = cwd ? ['sh', '-c', `cd '${cwd}' && ${commandArgs.join(' ')}`] : commandArgs
     debug(
@@ -56,15 +56,21 @@ module.exports = async ({pluginInfo: {job: {kind, directory}}, pluginConfig}) =>
       Tty: true,
     })
     const execStream = await execution.start({Tty: true})
+    let output = ''
     await new Promise((resolve, reject) => {
       execStream.output
-        .on('data', data => process.stdout.write(data.toString()))
+        .on('data', data => {
+          process.stdout.write(data.toString())
+          if (returnOutput) output += data.toString()
+        })
         .on('error', reject)
         .on('end', resolve)
     })
     const {ExitCode: code} = await execution.inspect()
     debug('executed %o in container %s with exit %d', commandArgs, container.id.slice(0, 6), code)
     if (code !== 0) throw new Error(`Command failed with errorcode ${code}`)
+
+    return returnOutput ? output : undefined
   }
 
   return {
@@ -83,13 +89,24 @@ module.exports = async ({pluginInfo: {job: {kind, directory}}, pluginConfig}) =>
       return fileContent
     },
 
-    async writeStringToFile(fileName, stringContent) {
+    async writeBufferToFile(fileName, buffer) {
       const fullFilename = path.resolve(directory, fileName)
+
+      await container.putArchive(toTarStream(path.basename(fullFilename), buffer), {
+        path: path.dirname(fullFilename),
+      })
+    },
+
+    async homeDir() {
+      const homeDir = await executeCommand(['echo', '$HOME'], {cwd: '/', returnOutput: true})
+
+      debug('home dir is %s', homeDir)
+
+      return homeDir.trim()
     },
 
     async fetchRepo() {
       assert(started, 'container is being used after it was destroyed')
-      //
     },
 
     async createSymlink(link, target) {
@@ -102,11 +119,6 @@ module.exports = async ({pluginInfo: {job: {kind, directory}}, pluginConfig}) =>
       // This is OK, because the file will always be read _inside_ the container.
       return await createSymlinkInHost(path.join(directory, link), path.join(workdir, target))
     },
-
-    async homeDir() {
-      // TODO
-    },
-
     async destroy() {
       debug('killing container %s', container.id)
       await container.remove({force: true, v: true})
@@ -135,4 +147,12 @@ async function tarStreamToFileContent(tarStream) {
 
     tarStream.pipe(extract)
   })
+}
+
+async function toTarStream(fileName, buffer) {
+  const pack = tar.pack()
+
+  pack.entry({name: fileName}, buffer)
+
+  return pack
 }
