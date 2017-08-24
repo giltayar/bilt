@@ -4,11 +4,11 @@ const path = require('path')
 const debug = require('debug')('bildit:npm-build-job')
 const symlinkDependencies = require('./symlink-dependencies')
 
-module.exports = async ({pluginInfo: {job: {kind}}}) => {
-  if (kind !== 'npm') return false
+module.exports = async ({pluginRepository}) => {
+  const npmPublisher = pluginRepository.findPlugin('publisher:npm')
 
   return {
-    async runJob(job, {agent}) {
+    async build(job, {agent}) {
       const {dependencies, artifacts, artifactPath, filesChangedSinceLastBuild} = job
       const packageJsonChanged =
         !filesChangedSinceLastBuild || filesChangedSinceLastBuild.includes('package.json')
@@ -37,6 +37,10 @@ module.exports = async ({pluginInfo: {job: {kind}}}) => {
         debug('running npm test in job %o', job)
 
         await agent.executeCommand(['npm', 'test'], {cwd: artifactPath})
+      }
+
+      if (publish && !packageJson.private) {
+        npmPublisher.publishPackage(job, {agent})
       }
     },
   }

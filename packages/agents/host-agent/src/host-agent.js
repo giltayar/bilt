@@ -30,9 +30,23 @@ module.exports = async ({pluginInfo: {job: {directory}}}) => {
       return await promisify(fs.readFile)(path.resolve(directory, fileName))
     },
 
+    async writeStringToFile(fileName, stringContent) {
+      return await promisify(fs.writeFile)(path.resolve(directory, fileName), stringContent)
+    },
+
     async fetchRepo(repository, {}) {
       return repository
     },
+
+    async homeDir() {
+      if (!process.env.HOME) {
+        throw new Error(
+          'There is no HOME directory environment variable so cannot determine home directory',
+        )
+      }
+      return process.env.HOME
+    },
+
     async createSymlink(link, target) {
       return await createSymlinkInHost(path.join(directory, link), path.join(directory, target))
     },

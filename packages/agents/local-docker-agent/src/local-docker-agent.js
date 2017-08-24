@@ -83,6 +83,10 @@ module.exports = async ({pluginInfo: {job: {kind, directory}}, pluginConfig}) =>
       return fileContent
     },
 
+    async writeStringToFile(fileName, stringContent) {
+      const fullFilename = path.resolve(directory, fileName)
+    },
+
     async fetchRepo() {
       assert(started, 'container is being used after it was destroyed')
       //
@@ -97,6 +101,10 @@ module.exports = async ({pluginInfo: {job: {kind, directory}}, pluginConfig}) =>
       // uses `workdir`.
       // This is OK, because the file will always be read _inside_ the container.
       return await createSymlinkInHost(path.join(directory, link), path.join(workdir, target))
+    },
+
+    async homeDir() {
+      // TODO
     },
 
     async destroy() {

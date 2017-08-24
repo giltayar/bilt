@@ -4,13 +4,11 @@ const debug = require('debug')('bildit:repo-build-job')
 const artifactFinderFactory = require('@bildit/artifact-finder')
 const path = require('path')
 
-module.exports = async ({pluginInfo: {job: {kind}}}) => {
-  if (kind !== 'repository') return false
-
+module.exports = async () => {
   const artifactFinder = await artifactFinderFactory()
 
   return {
-    async runJob(job, {agent, state, awakenedFrom}) {
+    async build(job, {agent, state, awakenedFrom}) {
       debug('running job repo-build-job')
       const {directory, repository, linkDependencies, filesChangedSinceLastBuild} = job
 

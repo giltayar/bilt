@@ -8,8 +8,8 @@ async function runJob(job, {awakenedFrom, pluginRepository, events, kvStore, dis
 }
 
 async function executeJob(job, {awakenedFrom, pluginRepository, events, kvStore}) {
-  const jobRunner = await pluginRepository.findPlugin({
-    kind: 'jobRunner',
+  const builder = await pluginRepository.findPlugin({
+    kind: `builder:${job.kind}`,
     job,
   })
   const agent = await pluginRepository.findPlugin({kind: 'agent', job})
@@ -23,7 +23,7 @@ async function executeJob(job, {awakenedFrom, pluginRepository, events, kvStore}
   const state = await kvStore.get(`jobstate:${job.id}`)
   debug('state for job %s found: %o', jobWithId.id, state)
 
-  const jobResult = await jobRunner.runJob(jobWithId, {agent, state, awakenedFrom})
+  const jobResult = await builder.build(jobWithId, {agent, state, awakenedFrom})
   debug('ran job %s', jobWithId.id)
 
   const {jobs: subJobs = []} = jobResult || {}
