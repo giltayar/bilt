@@ -1,6 +1,6 @@
 {
   "name": "@bildit/npm-publisher-with-git",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "src/npm-publisher-with-git.js",
   "files": [
