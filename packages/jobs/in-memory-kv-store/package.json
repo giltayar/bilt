@@ -1,6 +1,6 @@
 {
   "name": "@bildit/in-memory-kv-store",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "src/in-memory-kv-store.js",
   "files": [
