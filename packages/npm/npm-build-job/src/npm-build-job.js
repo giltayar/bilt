@@ -4,7 +4,7 @@ const path = require('path')
 const debug = require('debug')('bildit:npm-build-job')
 const symlinkDependencies = require('./symlink-dependencies')
 
-module.exports = async ({pluginRepository, config: {publish}}) => {
+module.exports = async ({pluginRepository, config: {publish, linkLocalPackages}}) => {
   const npmPublisher = await pluginRepository.findPlugin({kind: 'publisher:npm'})
 
   return {
@@ -14,7 +14,7 @@ module.exports = async ({pluginRepository, config: {publish}}) => {
         !filesChangedSinceLastBuild || filesChangedSinceLastBuild.includes('package.json')
 
       if (packageJsonChanged) {
-        if (dependencies && !publish) {
+        if (dependencies && linkLocalPackages) {
           debug('linking to dependent packages %o', dependencies)
           await symlinkDependencies(dependencies, artifactPath, artifacts, agent)
         }

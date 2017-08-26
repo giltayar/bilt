@@ -2,7 +2,7 @@
 
 ## Support docker agents for each job
 
-1. Add publishing - implemented. Now test it.
+1. Publish @bildit
 1. Make a real job that uses one docker agent and pulls repo from github.
 
 ## Tests
@@ -29,6 +29,8 @@
 1. Deal nicely with errors
 1. Make it a simple global install, available to any who want it
 1. Add an auto-upgrade feature
+1. Publish commit should include artifact name
+1. Retry push
 
 ## Supoprt Circle CI
 
