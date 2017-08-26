@@ -2,7 +2,6 @@
 
 ## Support docker agents for each job
 
-1. Publish @bildit
 1. Make a real job that uses one docker agent and pulls repo from github.
 
 ## Tests
