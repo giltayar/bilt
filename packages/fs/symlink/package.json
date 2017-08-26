@@ -1,6 +1,6 @@
 {
   "name": "@bildit/symlink",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "src/symlink.js",
   "files": [
