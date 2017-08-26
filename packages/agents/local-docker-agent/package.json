@@ -1,6 +1,6 @@
 {
   "name": "@bildit/local-docker-agent",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "src/local-docker-agent.js",
   "files": [
