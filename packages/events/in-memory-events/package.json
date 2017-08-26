@@ -1,6 +1,6 @@
 {
   "name": "@bildit/in-memory-events",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Event system that stores publishers and subscribers in memory",
   "main": "src/in-memory-events.js",
   "scripts": {},
