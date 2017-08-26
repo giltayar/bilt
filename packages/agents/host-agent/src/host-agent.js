@@ -7,23 +7,30 @@ const {createSymlink: createSymlinkInHost} = require('@bildit/symlink')
 
 module.exports = async ({pluginInfo: {job: {directory}}}) => {
   return {
-    async executeCommand(commandArgs, {cwd}) {
+    async executeCommand(commandArgs, {cwd, returnOutput} = {}) {
       debug('dispatching command %o in directory %s', commandArgs, directory)
-      await new Promise((resolve, reject) => {
+      const output = await new Promise((resolve, reject) => {
         const process = childProcess.spawn(commandArgs[0], commandArgs.slice(1), {
-          cwd: path.join(directory, cwd),
-          stdio: 'inherit',
+          cwd: path.join(directory, cwd || '.'),
+          stdio: returnOutput ? undefined : 'inherit',
           shell: false,
         })
 
+        let output = ''
+        if (returnOutput) {
+          process.stdout.on('data', data => (output += data.toString()))
+        }
+
         process.on('close', code => {
           if (code !== 0) reject(new Error(`Command failed with errorcode ${code}`))
-          else resolve()
+          else resolve(output)
         })
         process.on('error', err => {
           reject(err)
         })
       })
+
+      return output
     },
 
     async readFileAsBuffer(fileName) {

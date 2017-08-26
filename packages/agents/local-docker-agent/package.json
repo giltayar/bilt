@@ -22,8 +22,6 @@
     "debug": "^2.6.8",
     "dockerode": "^2.5.0",
     "stream-buffers": "^3.0.1",
-    "stream-to-string": "^1.1.0",
-    "string-to-stream": "^1.1.0",
     "tar-stream": "^1.5.4",
     "through2": "^2.0.3"
   },

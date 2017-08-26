@@ -3,7 +3,6 @@ const assert = require('assert')
 const debug = require('debug')('bildit:local-docker-agent')
 const Docker = require('dockerode')
 const tar = require('tar-stream')
-const streamToString = require('stream-to-string')
 
 const {createSymlink: createSymlinkInHost} = require('@bildit/symlink')
 
