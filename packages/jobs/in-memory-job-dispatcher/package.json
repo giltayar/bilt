@@ -1,6 +1,6 @@
 {
   "name": "@bildit/in-memory-job-dispatcher",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Dispatches jobs but stores everything in memory. Not restartable",
   "main": "src/in-memory-job-dispatcher.js",
   "scripts": {},
