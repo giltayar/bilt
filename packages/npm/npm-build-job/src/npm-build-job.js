@@ -14,7 +14,7 @@ module.exports = async ({pluginRepository, config: {publish}}) => {
         !filesChangedSinceLastBuild || filesChangedSinceLastBuild.includes('package.json')
 
       if (packageJsonChanged) {
-        if (dependencies) {
+        if (dependencies && !publish) {
           debug('linking to dependent packages %o', dependencies)
           await symlinkDependencies(dependencies, artifactPath, artifacts, agent)
         }
