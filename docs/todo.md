@@ -2,7 +2,7 @@
 
 ## Support docker agents for each job
 
-1. Add publishing
+1. Add publishing - implemented. Now test it.
 1. Make a real job that uses one docker agent and pulls repo from github.
 
 ## Tests

@@ -12,6 +12,11 @@ const {
   saveLastBuildInfo,
 } = require('./last-build-info')
 
+process.on('unhandledRejection', err => {
+  console.log(err.stack)
+  process.exit(2)
+})
+
 main().catch(err => console.log(err.stack))
 
 async function main() {

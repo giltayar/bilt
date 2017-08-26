@@ -4,8 +4,8 @@ const path = require('path')
 const debug = require('debug')('bildit:npm-build-job')
 const symlinkDependencies = require('./symlink-dependencies')
 
-module.exports = async ({pluginRepository}) => {
-  const npmPublisher = pluginRepository.findPlugin('publisher:npm')
+module.exports = async ({pluginRepository, config: {publish}}) => {
+  const npmPublisher = pluginRepository.findPlugin({kind: 'publisher:npm'})
 
   return {
     async build(job, {agent}) {

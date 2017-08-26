@@ -1,14 +1,12 @@
 {
   "plugins": {
-    "registry": {
-      "pluginFactory": "@bildit/config-based-plugin-repository",
-      "jobDispatcher": "@bildit/leveldb-job-dispatcher",
-      "events": "@bildit/in-memory-events",
-      "agent": "@bildit/host-agent",
-      "jobState": "@bildit/in-memory-job-state",
-      "builder:npm": {"@bildit/npm-build-job": {}},
-      "builder:repository": {"@bildit/repo-build-job": {}},
-      "publisher:npm": {"@bildit/npm-publisher-with-git": {}}
-    }
+    "pluginFactory": "@bildit/config-based-plugin-repository",
+    "jobDispatcher": "@bildit/leveldb-job-dispatcher",
+    "events": "@bildit/in-memory-events",
+    "agent": "@bildit/host-agent",
+    "jobState": "@bildit/in-memory-job-state",
+    "builder:npm": {"@bildit/npm-build-job": {}},
+    "builder:repository": {"@bildit/repo-build-job": {}},
+    "publisher:npm": {"@bildit/npm-publisher-with-git": {}}
   }
 }

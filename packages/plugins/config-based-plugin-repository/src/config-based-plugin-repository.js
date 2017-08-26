@@ -22,10 +22,10 @@ module.exports = async context => {
   )
   debug('config: %o', config)
 
-  const {config: {plugins: {registry}}, filepath: configFilePath} = config
+  const {config: {plugins}, filepath: configFilePath} = config
   const configFileDir = path.dirname(configFilePath)
   const pluginsFound = new Map()
-  debug('registry: %o', registry)
+  debug('registry: %o', plugins)
 
   const pluginRepositoryCreator = context => ({
     async findPlugin(pluginInfo) {
@@ -37,9 +37,9 @@ module.exports = async context => {
 
       debug('looking for plugin of kind %s using context %o', kind, context)
 
-      if (!registry[kind]) throw new Error(`No plugins support plugin ${kind}`)
+      if (!plugins[kind]) throw new Error(`No plugins support plugin ${kind}`)
 
-      const pluginModulePathsForKind = normalizePluginModules(registry[kind])
+      const pluginModulePathsForKind = normalizePluginModules(plugins[kind])
       const pluginModulesForKind = loadModules(configFileDir, pluginModulePathsForKind)
       const pluginsForKind = await createPlugins(
         context,
