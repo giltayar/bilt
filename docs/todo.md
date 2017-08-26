@@ -39,6 +39,7 @@
 
 1. Error handle bad configuration
 1. Retry git push if fails on reject
+1. Pull if image not found when running job
 
 ## Use Cases
 

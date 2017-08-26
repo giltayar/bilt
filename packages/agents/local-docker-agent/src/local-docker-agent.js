@@ -3,6 +3,8 @@ const assert = require('assert')
 const debug = require('debug')('bildit:local-docker-agent')
 const Docker = require('dockerode')
 const tar = require('tar-stream')
+const streamToString = require('stream-to-string')
+
 const {createSymlink: createSymlinkInHost} = require('@bildit/symlink')
 
 module.exports = async ({pluginInfo: {job: {kind, directory}}, pluginConfig}) => {
@@ -39,13 +41,13 @@ module.exports = async ({pluginInfo: {job: {kind, directory}}, pluginConfig}) =>
   debug('started container %s', container.id)
   let started = true
 
-  async function executeCommand(commandArgs, {cwd, returnOutput}) {
+  async function executeCommand(commandArgs, {cwd, returnOutput} = {}) {
     assert(started, 'container is being used after it was destroyed')
     const finalCommand = cwd ? ['sh', '-c', `cd '${cwd}' && ${commandArgs.join(' ')}`] : commandArgs
     debug(
       'dispatching command %o in directory %s, container %s',
       finalCommand,
-      path.join(workdir, cwd),
+      cwd ? path.join(workdir, cwd) : '<default>',
       container.id.slice(0, 6),
     )
     debug('executing %o in container %s', commandArgs, container.id.slice(0, 6))
@@ -53,24 +55,34 @@ module.exports = async ({pluginInfo: {job: {kind, directory}}, pluginConfig}) =>
       Cmd: finalCommand,
       AttachStdout: true,
       AttachStderr: true,
-      Tty: true,
+      Tty: !returnOutput,
     })
-    const execStream = await execution.start({Tty: true})
+    const execStream = await execution.start({Tty: !returnOutput})
     let output = ''
+    const passThrough = require('through2')(function(chunk, enc, cb) {
+      output += chunk.toString()
+      process.stdout.write(chunk.toString())
+      this.push(chunk)
+      cb()
+    })
+    if (returnOutput) {
+      container.modem.demuxStream(execStream.output, passThrough, passThrough)
+    }
     await new Promise((resolve, reject) => {
-      execStream.output
-        .on('data', data => {
+      if (!returnOutput) {
+        execStream.output.on('data', data => {
           process.stdout.write(data.toString())
-          if (returnOutput) output += data.toString()
         })
-        .on('error', reject)
-        .on('end', resolve)
+      }
+      execStream.output.on('error', reject).on('end', resolve)
     })
     const {ExitCode: code} = await execution.inspect()
     debug('executed %o in container %s with exit %d', commandArgs, container.id.slice(0, 6), code)
     if (code !== 0) throw new Error(`Command failed with errorcode ${code}`)
 
-    return returnOutput ? output : undefined
+    if (returnOutput) {
+      return output
+    }
   }
 
   return {
@@ -92,8 +104,20 @@ module.exports = async ({pluginInfo: {job: {kind, directory}}, pluginConfig}) =>
     async writeBufferToFile(fileName, buffer) {
       const fullFilename = path.resolve(directory, fileName)
 
+      const dirname = path.dirname(fullFilename)
+
+      debug('creating directory %s in container %s', dirname, container.id)
+      await executeCommand(['mkdir', '-p', dirname])
+
+      debug(
+        'writing buffer (length %d) to file %s in container %s',
+        buffer.length,
+        fullFilename,
+        container.id,
+      )
+
       await container.putArchive(toTarStream(path.basename(fullFilename), buffer), {
-        path: path.dirname(fullFilename),
+        path: dirname,
       })
     },
 
@@ -149,10 +173,12 @@ async function tarStreamToFileContent(tarStream) {
   })
 }
 
-async function toTarStream(fileName, buffer) {
+function toTarStream(fileName, buffer) {
   const pack = tar.pack()
 
   pack.entry({name: fileName}, buffer)
+
+  pack.finalize()
 
   return pack
 }

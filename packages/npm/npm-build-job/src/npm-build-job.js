@@ -5,7 +5,7 @@ const debug = require('debug')('bildit:npm-build-job')
 const symlinkDependencies = require('./symlink-dependencies')
 
 module.exports = async ({pluginRepository, config: {publish}}) => {
-  const npmPublisher = pluginRepository.findPlugin({kind: 'publisher:npm'})
+  const npmPublisher = await pluginRepository.findPlugin({kind: 'publisher:npm'})
 
   return {
     async build(job, {agent}) {
@@ -40,7 +40,11 @@ module.exports = async ({pluginRepository, config: {publish}}) => {
       }
 
       if (publish && !packageJson.private) {
-        npmPublisher.publishPackage(job, {agent})
+        await npmPublisher.publishPackage(job, {agent})
+      } else {
+        debug(
+          `not publishing because config publish is ${publish} or package json is private (${packageJson.private}`,
+        )
       }
     },
   }

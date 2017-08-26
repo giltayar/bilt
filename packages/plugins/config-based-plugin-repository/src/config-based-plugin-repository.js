@@ -102,7 +102,7 @@ async function createPlugins(context, config, pluginRepository, pluginInfo, plug
         ...{
           pluginRepository,
           pluginInfo,
-          config,
+          config: config.config,
           pluginConfig,
         },
       }),
