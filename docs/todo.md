@@ -7,6 +7,7 @@
 ## Tests
 
 1. You're good to go in terms of design - start writing tests
+1. And write the design document again
 
 ## Dependency Graph Build
 
