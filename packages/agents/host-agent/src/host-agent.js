@@ -5,7 +5,7 @@ const {promisify} = require('util')
 const debug = require('debug')('bildit:host-agent')
 const {createSymlink: createSymlinkInHost} = require('@bildit/symlink')
 
-module.exports = async ({pluginInfo: {job: {directory}}}) => {
+module.exports = async () => {
   return {
     async executeCommand(commandArgs, {cwd, returnOutput} = {}) {
       debug('dispatching command %o in directory %s', commandArgs, directory)

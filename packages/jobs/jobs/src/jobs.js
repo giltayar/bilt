@@ -8,11 +8,8 @@ async function runJob(job, {awakenedFrom, pluginRepository, events, kvStore, dis
 }
 
 async function executeJob(job, {awakenedFrom, pluginRepository, events, kvStore}) {
-  const builder = await pluginRepository.findPlugin({
-    kind: `builder:${job.kind}`,
-    job,
-  })
-  const agent = await pluginRepository.findPlugin({kind: 'agent', job})
+  const builder = await pluginRepository.findPlugin(`builder:${job.kind}`)
+  const agent = await pluginRepository.findPlugin(`agent:${job.kind}`)
 
   const jobWithId = prepareJobForRunning(job)
 

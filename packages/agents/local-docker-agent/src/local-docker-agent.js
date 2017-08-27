@@ -6,15 +6,10 @@ const tar = require('tar-stream')
 
 const {createSymlink: createSymlinkInHost} = require('@bildit/symlink')
 
-module.exports = async ({pluginInfo: {job: {kind, directory}}, pluginConfig}) => {
+module.exports = async ({pluginConfig}) => {
   const docker = new Docker({Promise})
 
-  const {
-    image,
-    start = ['sleep', '100000000'],
-    user = 'root',
-    workdir = '/usr/work',
-  } = pluginConfig[kind]
+  const {image, start = ['sleep', '100000000'], user = 'root', workdir = '/usr/work'} = pluginConfig
 
   const container = await docker.createContainer({
     Image: image,

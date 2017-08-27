@@ -27,6 +27,7 @@
       * Build from filesystem (with symlinking and all)
       * Build from repo (using published artifacts)
 1. Deal nicely with errors
+1. Support "agent" plugin and not just "agent:*" plugin (as a general use case)
 1. Make it a simple global install, available to any who want it
 1. Add an auto-upgrade feature
 1. Publish commit should include artifact name

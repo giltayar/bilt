@@ -1,9 +1,7 @@
 'use strict'
 
 module.exports = async () => {
-
   return {
-    async build(job, {agent}) {
-    },
+    async build(job, {agent}) {},
   }
 }

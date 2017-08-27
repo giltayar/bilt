@@ -25,9 +25,7 @@ async function main() {
   const pluginRepository = await createPluginRepository(directoryToBuild)
   await configureEventsToOutputEventToStdout(pluginRepository)
 
-  const jobDispatcher = await pluginRepository.findPlugin({
-    kind: 'jobDispatcher',
-  })
+  const jobDispatcher = await pluginRepository.findPlugin('jobDispatcher')
 
   const {filesChangedSinceLastBuild} = await figureOutFilesChangedSinceLastBuild(directoryToBuild)
 
@@ -59,7 +57,7 @@ async function main() {
 }
 
 async function configureEventsToOutputEventToStdout(pluginRepository) {
-  const events = await pluginRepository.findPlugin({kind: 'events'})
+  const events = await pluginRepository.findPlugin('events')
 
   await events.subscribe('START_JOB', ({job}) => {
     if (job.kind === 'repository') return
@@ -82,7 +80,7 @@ async function figureOutFilesChangedSinceLastBuild(directory) {
 
 async function waitForJobs(pluginRepository, jobs) {
   debug('waiting for jobs %o', jobs.map(job => job.id))
-  const events = await pluginRepository.findPlugin({kind: 'events'})
+  const events = await pluginRepository.findPlugin('events')
   const jobsThatAreStillWorking = new Set(jobs.map(job => job.id))
 
   await new Promise(async resolve => {
