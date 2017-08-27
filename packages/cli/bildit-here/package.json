@@ -1,6 +1,6 @@
 {
   "name": "@bildit/bildit-here",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "The CLI that builds a local folder",
   "main": "src/bildit-here.js",
   "files": [
