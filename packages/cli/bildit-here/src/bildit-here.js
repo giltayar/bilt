@@ -23,37 +23,33 @@ async function main() {
   const directoryToBuild = path.resolve(process.argv[2])
 
   const pluginRepository = await createPluginRepository(directoryToBuild)
-  await configureEventsToOutputEventToStdout(pluginRepository)
+  try {
+    await configureEventsToOutputEventToStdout(pluginRepository)
 
-  const jobDispatcher = await pluginRepository.findPlugin('jobDispatcher')
+    const jobDispatcher = await pluginRepository.findPlugin('jobDispatcher')
 
-  const {filesChangedSinceLastBuild} = await figureOutFilesChangedSinceLastBuild(directoryToBuild)
+    const {filesChangedSinceLastBuild} = await figureOutFilesChangedSinceLastBuild(directoryToBuild)
 
-  let jobsToWaitFor
-  if (!await jobDispatcher.hasAbortedJobs()) {
-    if (filesChangedSinceLastBuild && filesChangedSinceLastBuild.length === 0) {
-      console.error('Nothing to build')
-      return
-    }
+    const jobsToWaitFor = await runJobs(directoryToBuild, jobDispatcher, filesChangedSinceLastBuild)
 
-    debug('building folder %s, with file changes %o', directoryToBuild, filesChangedSinceLastBuild)
-    jobsToWaitFor = [
-      await jobDispatcher.dispatchJob({
-        kind: 'repository',
-        repository: directoryToBuild,
-        directory: directoryToBuild,
-        linkDependencies: true,
-        filesChangedSinceLastBuild,
-      }),
-    ]
-  } else {
-    debug('continuing previous build')
-    jobsToWaitFor = await jobDispatcher.rerunAbortedJobs()
+    await waitForJobs(pluginRepository, jobsToWaitFor)
+
+    await saveLastBuildInfo(directoryToBuild, await findChangesInCurrentRepo(directoryToBuild))
+  } finally {
+    debug('finalizing plugins')
+    await pluginRepository.finalize()
   }
+}
 
-  await waitForJobs(pluginRepository, jobsToWaitFor)
+async function createPluginRepository(directoryToBuild) {
+  const defaultConfig = await JSON.parse(
+    await p(fs.readFile)(path.join(__dirname, 'default-bilditrc.json')),
+  )
 
-  await saveLastBuildInfo(directoryToBuild, await findChangesInCurrentRepo(directoryToBuild))
+  return await pluginRepoFactory({
+    directory: directoryToBuild,
+    defaultConfig,
+  })
 }
 
 async function configureEventsToOutputEventToStdout(pluginRepository) {
@@ -78,6 +74,29 @@ async function figureOutFilesChangedSinceLastBuild(directory) {
   return {filesChangedSinceLastBuild, fileChangesInCurrentRepo}
 }
 
+async function runJobs(directoryToBuild, jobDispatcher, filesChangedSinceLastBuild) {
+  if (!await jobDispatcher.hasAbortedJobs()) {
+    if (filesChangedSinceLastBuild && filesChangedSinceLastBuild.length === 0) {
+      console.error('Nothing to build')
+      return
+    }
+
+    debug('building folder %s, with file changes %o', directoryToBuild, filesChangedSinceLastBuild)
+    return [
+      await jobDispatcher.dispatchJob({
+        kind: 'repository',
+        repository: directoryToBuild,
+        directory: directoryToBuild,
+        linkDependencies: true,
+        filesChangedSinceLastBuild,
+      }),
+    ]
+  } else {
+    debug('continuing previous build')
+    return await jobDispatcher.rerunAbortedJobs()
+  }
+}
+
 async function waitForJobs(pluginRepository, jobs) {
   debug('waiting for jobs %o', jobs.map(job => job.id))
   const events = await pluginRepository.findPlugin('events')
@@ -92,16 +111,5 @@ async function waitForJobs(pluginRepository, jobs) {
         resolve()
       }
     })
-  })
-}
-
-async function createPluginRepository(directoryToBuild) {
-  const defaultConfig = await JSON.parse(
-    await p(fs.readFile)(path.join(__dirname, 'default-bilditrc.json')),
-  )
-
-  return await pluginRepoFactory({
-    directory: directoryToBuild,
-    defaultConfig,
   })
 }

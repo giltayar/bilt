@@ -25,13 +25,6 @@ async function executeJob(job, {awakenedFrom, pluginRepository, events, kvStore}
 
   const {jobs: subJobs = []} = jobResult || {}
 
-  if (subJobs.length === 0) {
-    // I don't wait for the destruction. If it works, fine, if not - also fine.
-    agent.destroy().catch(err => {
-      console.error(`Failed to destroy agent for job ${job.id}. Ignoring error: ${err}`)
-    })
-  }
-
   await events.publish(subJobs.length === 0 ? 'END_JOB' : 'HIBERNATE_JOB', {
     job: jobWithId,
     jobResult,

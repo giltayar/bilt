@@ -6,8 +6,16 @@ const debug = require('debug')('bildit:host-agent')
 const {createSymlink: createSymlinkInHost} = require('@bildit/symlink')
 
 module.exports = async () => {
+  const info = agent => agent
+
   return {
-    async executeCommand(commandArgs, {cwd, returnOutput} = {}) {
+    async getInstanceForJob({directory}) {
+      return {directory}
+    },
+
+    async executeCommand(agentInstance, commandArgs, {cwd, returnOutput} = {}) {
+      const {directory} = info(agentInstance)
+
       debug('dispatching command %o in directory %s', commandArgs, directory)
       const output = await new Promise((resolve, reject) => {
         const process = childProcess.spawn(commandArgs[0], commandArgs.slice(1), {
@@ -33,16 +41,20 @@ module.exports = async () => {
       return output
     },
 
-    async readFileAsBuffer(fileName) {
+    async readFileAsBuffer(agentInstance, fileName) {
+      const {directory} = info(agentInstance)
+
       return await promisify(fs.readFile)(path.resolve(directory, fileName))
     },
 
-    async writeBufferToFile(fileName, buffer) {
+    async writeBufferToFile(agentInstance, fileName, buffer) {
+      const {directory} = info(agentInstance)
+
       return await promisify(fs.writeFile)(path.resolve(directory, fileName), buffer)
     },
 
-    async fetchRepo(repository, {}) {
-      return repository
+    async fetchRepo() {
+      //
     },
 
     async homeDir() {
@@ -54,11 +66,13 @@ module.exports = async () => {
       return process.env.HOME
     },
 
-    async createSymlink(link, target) {
+    async createSymlink(agentInstance, link, target) {
+      const {directory} = info(agentInstance)
+
       return await createSymlinkInHost(path.join(directory, link), path.join(directory, target))
     },
 
-    async destroy() {
+    async finalize() {
       //
     },
   }

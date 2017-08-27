@@ -9,6 +9,8 @@ module.exports = async ({pluginRepository, config: {publish, linkLocalPackages}}
 
   return {
     async build(job, {agent}) {
+      const agentInstance = await agent.getInstanceForJob(job)
+
       const {dependencies, artifacts, artifactPath, filesChangedSinceLastBuild} = job
       const packageJsonChanged =
         !filesChangedSinceLastBuild || filesChangedSinceLastBuild.includes('package.json')
@@ -16,27 +18,27 @@ module.exports = async ({pluginRepository, config: {publish, linkLocalPackages}}
       if (packageJsonChanged) {
         if (dependencies && linkLocalPackages) {
           debug('linking to dependent packages %o', dependencies)
-          await symlinkDependencies(dependencies, artifactPath, artifacts, agent)
+          await symlinkDependencies({agent, agentInstance}, dependencies, artifactPath, artifacts)
         }
 
         debug('running npm install in job %o', job)
-        await agent.executeCommand(['npm', 'install'], {cwd: artifactPath})
+        await agent.executeCommand(agentInstance, ['npm', 'install'], {cwd: artifactPath})
       }
 
       const packageJson = JSON.parse(
-        await agent.readFileAsBuffer(path.join(artifactPath, 'package.json')),
+        await agent.readFileAsBuffer(agentInstance, path.join(artifactPath, 'package.json')),
       )
 
       if ((packageJson.scripts || {}).build) {
         debug('running npm run build in job %o', job)
 
-        await agent.executeCommand(['npm', 'run', 'build'], {cwd: artifactPath})
+        await agent.executeCommand(agentInstance, ['npm', 'run', 'build'], {cwd: artifactPath})
       }
 
       if ((packageJson.scripts || {}).test) {
         debug('running npm test in job %o', job)
 
-        await agent.executeCommand(['npm', 'test'], {cwd: artifactPath})
+        await agent.executeCommand(agentInstance, ['npm', 'test'], {cwd: artifactPath})
       }
 
       if (publish && !packageJson.private) {

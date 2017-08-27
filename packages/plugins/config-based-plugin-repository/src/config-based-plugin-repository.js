@@ -48,6 +48,13 @@ module.exports = async context => {
 
       return plugin
     },
+    async finalize() {
+      await Promise.all(
+        [...pluginsFound].map(
+          async ([, plugin]) => (plugin.finalize ? await plugin.finalize() : undefined),
+        ),
+      )
+    },
   })
   const temporaryPluginRepositoryForBasePlugins = pluginRepositoryCreator(context)
 

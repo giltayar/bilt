@@ -1,5 +1,4 @@
 const path = require('path')
-const assert = require('assert')
 const debug = require('debug')('bildit:local-docker-agent')
 const Docker = require('dockerode')
 const tar = require('tar-stream')
@@ -8,35 +7,106 @@ const {createSymlink: createSymlinkInHost} = require('@bildit/symlink')
 
 module.exports = async ({pluginConfig}) => {
   const docker = new Docker({Promise})
+  const runningAgents = new Map()
+  const waitingAgents = new Map()
 
   const {image, start = ['sleep', '100000000'], user = 'root', workdir = '/usr/work'} = pluginConfig
 
-  const container = await docker.createContainer({
-    Image: image,
-    Tty: true,
-    Volumes: {
-      [workdir]: {},
-    },
-    Cmd: start,
-    WorkingDir: workdir,
-    Hostconfig: {
-      Binds: [`${directory}:${workdir}`],
-    },
-    User: user,
+  const info = agent => ({
+    container: runningAgents.get(agent.directory),
+    directory: agent.directory,
   })
-  debug(
-    'created container %s from image %s, workdir %s mapped to %s',
-    container.id,
-    image,
-    workdir,
-    directory,
-  )
-  await container.start()
-  debug('started container %s', container.id)
-  let started = true
 
-  async function executeCommand(commandArgs, {cwd, returnOutput} = {}) {
-    assert(started, 'container is being used after it was destroyed')
+  return {
+    async getInstanceForJob({directory}) {
+      if (waitingAgents.has(directory)) {
+        runningAgents.set(directory, waitingAgents.get(directory))
+        waitingAgents.delete(directory)
+
+        return {directory}
+      }
+
+      const container = createContainer(directory)
+
+      runningAgents.set(directory, {container})
+
+      return {directory}
+    },
+
+    executeCommand,
+
+    async readFileAsBuffer(agentInstance, fileName) {
+      const {container} = info(agentInstance)
+      const fullFilename = path.join(workdir, fileName)
+
+      debug('reading file %s in container %s', fullFilename, container.id.slice(0, 6))
+      const fileContent = await tarStreamToFileContent(
+        await container.getArchive({path: fullFilename}),
+      )
+      debug('read and got %s', fileContent.toString())
+
+      return fileContent
+    },
+
+    async writeBufferToFile(agentInstance, fileName, buffer) {
+      const {container, directory} = info(agentInstance)
+
+      const fullFilename = path.resolve(directory, fileName)
+
+      const dirname = path.dirname(fullFilename)
+
+      debug('creating directory %s in container %s', dirname, container.id)
+      await executeCommand(agentInstance, ['mkdir', '-p', dirname])
+
+      debug(
+        'writing buffer (length %d) to file %s in container %s',
+        buffer.length,
+        fullFilename,
+        container.id,
+      )
+
+      await container.putArchive(toTarStream(path.basename(fullFilename), buffer), {
+        path: dirname,
+      })
+    },
+
+    async homeDir(agentInstance) {
+      const homeDir = await executeCommand(agentInstance, ['echo', '$HOME'], {cwd: '/', returnOutput: true})
+
+      debug('home dir is %s', homeDir)
+
+      return homeDir.trim()
+    },
+
+    async fetchRepo(agentInstance) {
+      info(agentInstance)
+    },
+
+    async createSymlink(agentInstance, link, target) {
+      const {directory} = info(agentInstance)
+      debug('creating symlink in directory %s, link %s, target %s', workdir, link, target)
+
+      // This is a very strange symlink - it is created in the host, and therefore resides in `directory`
+      // and yet it points to a directory that is in the docker container, and therefore
+      // uses `workdir`.
+      // This is OK, because the file will always be read _inside_ the container.
+      return await createSymlinkInHost(path.join(directory, link), path.join(workdir, target))
+    },
+
+    async finalize() {
+      await Promise.all(
+        [...waitingAgents, ...runningAgents].map(async ([_, {container}]) => {
+          debug('killing container %s', container.id)
+
+          await container.remove({force: true, v: true})
+        }),
+      )
+    },
+  }
+
+  async function executeCommand(agentInstance, commandArgs, {cwd, returnOutput} = {}) {
+    const {container} = info(agentInstance)
+
     const finalCommand = cwd ? ['sh', '-c', `cd '${cwd}' && ${commandArgs.join(' ')}`] : commandArgs
     debug(
       'dispatching command %o in directory %s, container %s',
@@ -79,69 +149,31 @@ module.exports = async ({pluginConfig}) => {
     }
   }
 
-  return {
-    executeCommand,
+  async function createContainer(directory) {
+    const container = await docker.createContainer({
+      Image: image,
+      Tty: true,
+      Volumes: {
+        [workdir]: {},
+      },
+      Cmd: start,
+      WorkingDir: workdir,
+      Hostconfig: {
+        Binds: [`${directory}:${workdir}`],
+      },
+      User: user,
+    })
+    debug(
+      'created container %s from image %s, workdir %s mapped to %s',
+      container.id,
+      image,
+      workdir,
+      directory,
+    )
+    await container.start()
+    debug('started container %s', container.id)
 
-    async readFileAsBuffer(fileName) {
-      assert(started, 'container is being used after it was destroyed')
-      const fullFilename = path.join(workdir, fileName)
-
-      debug('reading file %s in container %s', fullFilename, container.id.slice(0, 6))
-      const fileContent = await tarStreamToFileContent(
-        await container.getArchive({path: fullFilename}),
-      )
-      debug('read and got %s', fileContent.toString())
-
-      return fileContent
-    },
-
-    async writeBufferToFile(fileName, buffer) {
-      const fullFilename = path.resolve(directory, fileName)
-
-      const dirname = path.dirname(fullFilename)
-
-      debug('creating directory %s in container %s', dirname, container.id)
-      await executeCommand(['mkdir', '-p', dirname])
-
-      debug(
-        'writing buffer (length %d) to file %s in container %s',
-        buffer.length,
-        fullFilename,
-        container.id,
-      )
-
-      await container.putArchive(toTarStream(path.basename(fullFilename), buffer), {
-        path: dirname,
-      })
-    },
-
-    async homeDir() {
-      const homeDir = await executeCommand(['echo', '$HOME'], {cwd: '/', returnOutput: true})
-
-      debug('home dir is %s', homeDir)
-
-      return homeDir.trim()
-    },
-
-    async fetchRepo() {
-      assert(started, 'container is being used after it was destroyed')
-    },
-
-    async createSymlink(link, target) {
-      assert(started, 'container is being used after it was destroyed')
-      debug('creating symlink in directory %s, link %s, target %s', workdir, link, target)
-
-      // This is a very strange symlink - it is created in the host, and therefore resides in `directory`
-      // and yet it points to a directory that is in the docker container, and therefore
-      // uses `workdir`.
-      // This is OK, because the file will always be read _inside_ the container.
-      return await createSymlinkInHost(path.join(directory, link), path.join(workdir, target))
-    },
-    async destroy() {
-      debug('killing container %s', container.id)
-      await container.remove({force: true, v: true})
-      started = false
-    },
+    return container
   }
 }
 
