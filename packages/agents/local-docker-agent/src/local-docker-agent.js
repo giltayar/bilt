@@ -13,7 +13,7 @@ module.exports = async ({pluginConfig}) => {
   const {image, start = ['sleep', '100000000'], user = 'root', workdir = '/usr/work'} = pluginConfig
 
   const info = agent => ({
-    container: runningAgents.get(agent.directory),
+    container: runningAgents.get(agent.directory).container,
     directory: agent.directory,
   })
 
@@ -26,7 +26,7 @@ module.exports = async ({pluginConfig}) => {
         return {directory}
       }
 
-      const container = createContainer(directory)
+      const container = await createContainer(directory)
 
       runningAgents.set(directory, {container})
 

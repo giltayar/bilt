@@ -14,7 +14,7 @@ module.exports = async () => {
 
       const getInitialState = async () => {
         debug('fetching repository %s', repository)
-        const agentInstance = agent.getInstanceForJob({directory})
+        const agentInstance = await agent.getInstanceForJob({directory})
 
         await agent.fetchRepo(agentInstance, repository)
         const allArtifacts = await artifactFinder.findArtifacts(directory)

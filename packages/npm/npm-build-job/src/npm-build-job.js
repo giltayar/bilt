@@ -42,7 +42,7 @@ module.exports = async ({pluginRepository, config: {publish, linkLocalPackages}}
       }
 
       if (publish && !packageJson.private) {
-        await npmPublisher.publishPackage(job, {agent})
+        await npmPublisher.publishPackage(job, {agent, agentInstance})
       } else {
         debug(
           `not publishing because config publish is ${publish} or package json is private (${packageJson.private}`,
