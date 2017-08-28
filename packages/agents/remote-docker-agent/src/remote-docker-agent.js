@@ -3,8 +3,6 @@ const debug = require('debug')('bildit:local-docker-agent')
 const Docker = require('dockerode')
 const tar = require('tar-stream')
 
-const {createSymlink: createSymlinkInHost} = require('@bildit/symlink')
-
 module.exports = async ({
   image = 'alpine',
   start = ['sleep', '100000000'],
@@ -21,19 +19,19 @@ module.exports = async ({
   })
 
   return {
-    async getInstanceForJob({directory}) {
-      if (waitingAgents.has(directory)) {
-        runningAgents.set(directory, waitingAgents.get(directory))
-        waitingAgents.delete(directory)
+    async getInstanceForJob({repository}) {
+      if (waitingAgents.has(repository)) {
+        runningAgents.set(repository, waitingAgents.get(repository))
+        waitingAgents.delete(repository)
 
-        return {directory}
+        return {repository}
       }
 
-      const container = await createContainer(directory)
+      const container = await createContainer(repository)
 
-      runningAgents.set(directory, {container})
+      runningAgents.set(repository, {container})
 
-      return {directory}
+      return {repository}
     },
 
     executeCommand,
@@ -155,26 +153,19 @@ module.exports = async ({
     }
   }
 
-  async function createContainer(directory) {
+  async function createContainer() {
     const container = await docker.createContainer({
       Image: image,
       Tty: true,
-      Volumes: {
-        [workdir]: {},
-      },
       Cmd: start,
       WorkingDir: workdir,
-      Hostconfig: {
-        Binds: [`${directory}:${workdir}`],
-      },
       User: user,
     })
     debug(
-      'created container %s from image %s, workdir %s mapped to %s',
+      'created container %s from image %s, workdir %s',
       container.id,
       image,
       workdir,
-      directory,
     )
     await container.start()
     debug('started container %s', container.id)
