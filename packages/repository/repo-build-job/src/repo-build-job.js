@@ -1,11 +1,10 @@
 'use strict'
 
 const debug = require('debug')('bildit:repo-build-job')
-const artifactFinderFactory = require('@bildit/artifact-finder')
 const path = require('path')
 
-module.exports = async () => {
-  const artifactFinder = await artifactFinderFactory()
+module.exports = async ({pluginRepository}) => {
+  const binaryRunner = await pluginRepository.findPlugin('binaryRunner:npm')
 
   return {
     async build(job, {agent, state, awakenedFrom}) {
@@ -17,7 +16,15 @@ module.exports = async () => {
         const agentInstance = await agent.getInstanceForJob({directory})
 
         await agent.fetchRepo(agentInstance, repository)
-        const allArtifacts = await artifactFinder.findArtifacts(directory)
+        const allArtifacts = JSON.parse(
+          await binaryRunner.run({
+            agent,
+            agentInstance,
+            binary: '@bildit/artifact-finder',
+            commandArgs: [directory],
+            executeCommandOptions: {returnOutput: true},
+          }),
+        )
         const artifactsToBuild = allArtifacts.filter(
           artifactToBuild =>
             !filesChangedSinceLastBuild ||

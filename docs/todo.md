@@ -3,11 +3,6 @@
 ## Support docker agents for each job
 
 1. Make a real job that uses one docker agent and pulls repo from github.
-   1. Implement binaryRunner.runPackage(agent, agentInstance, binary, arguments):
-      output
-      *. It should implement installing package only once on an agentInstance
-      *. It should be a plugin - findPlugin('binaryRunner:npm') to enable things like yarn/npm or in
-         case of binary packages, different package managers
    1. Use it to change repo-build-job to use a binaryRunner.
    1. Now make host-agent and local-docker-agent work with it
    1. Now you can implement remote-docker-agent, which accepts a {repository} and not a {directory}
@@ -17,6 +12,7 @@
 ## Tests
 
 1. You're good to go in terms of design - start writing tests
+1. And write the test for the artifact-finder cli too
 1. And write the design document again
 
 ## Dependency Graph Build

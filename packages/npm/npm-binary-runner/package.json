@@ -1,15 +1,16 @@
 {
-  "name": "@bildit/repo-build-job",
-  "version": "1.0.2",
+  "name": "@bildit/npm-binary-runner",
+  "version": "1.0.0",
   "description": "",
-  "main": "src/repo-build-job.js",
+  "main": "src/npm-binary-runner.js",
   "files": [
-    "src"
+    "src",
+    "scripts"
   ],
   "scripts": {},
   "keywords": [
     "ci",
-    "build"
+    "bildit"
   ],
   "author": "Gil Tayar <gil@tayar.org>",
   "license": "Unlicense",

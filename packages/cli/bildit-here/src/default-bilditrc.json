@@ -13,6 +13,7 @@
     "publisher:npm": {"@bildit/npm-publisher-with-git": {
       "publish": false,
       "linkLocalPackages": true
-    }}
+    }},
+    "binaryRunner:npm": "bildit/npm-binary-runner"
   }
 }

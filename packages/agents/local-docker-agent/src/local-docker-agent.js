@@ -23,17 +23,19 @@ module.exports = async ({
   return {
     async getInstanceForJob({directory}) {
       if (waitingAgents.has(directory)) {
-        runningAgents.set(directory, waitingAgents.get(directory))
+        const agentInstance = waitingAgents.get(directory)
+
+        runningAgents.set(directory, agentInstance)
         waitingAgents.delete(directory)
 
-        return {directory}
+        return {directory, id: agentInstance.container.id}
       }
 
       const container = await createContainer(directory)
 
       runningAgents.set(directory, {container})
 
-      return {directory}
+      return {directory, id: container.id}
     },
 
     executeCommand,

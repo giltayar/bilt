@@ -10,7 +10,7 @@ module.exports = async () => {
 
   return {
     async getInstanceForJob({directory}) {
-      return {directory}
+      return {directory, id: 1}
     },
 
     async executeCommand(agentInstance, commandArgs, {cwd, returnOutput} = {}) {
