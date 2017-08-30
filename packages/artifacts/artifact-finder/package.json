@@ -1,10 +1,10 @@
 {
   "name": "@bildit/artifact-finder",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "main": "src/artifact-finder.js",
   "bin": {
-    "artifact-finder": "artifact-finder-cli.js"
+    "artifact-finder": "scripts/artifact-finder-cli.js"
   },
   "files": [
     "src",
