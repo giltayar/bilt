@@ -10,7 +10,7 @@ module.exports = () => {
       await ensureAgentInstanceHasPackageInstalled(agent, agentInstance, pkg)
 
       debug('executing command %s %o in agent instance %s', pkg, commandArgs, agentInstance.id)
-      return await agent.executeCommand(agentInstance, [pkg, ...commandArgs], executeCommandOptions)
+      return await agent.executeCommand(agentInstance, commandArgs, executeCommandOptions)
     },
   }
 

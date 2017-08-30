@@ -25,7 +25,7 @@ module.exports = async context => {
 
   const pluginRepositoryCreator = context => ({
     async findPlugin(kind) {
-      debug('looking for plugin of kind', kind, context)
+      debug('looking for plugin of kind', kind)
 
       const pluginInfo = plugins[kind]
 
@@ -40,7 +40,7 @@ module.exports = async context => {
       if (alreadyFoundPlugin) return alreadyFoundPlugin
 
       const pluginModule = loadPluginModule(configFileDir, normalizedPluginModuleInfo)
-      debug('creating plugin for kind %s, info %o, in context %o', kind, pluginInfo, context)
+      debug('creating plugin for kind %s, info %o', kind, pluginInfo)
       const plugin = await createPlugin(context, config, this, pluginInfo, pluginModule)
 
       debug('found plugin for kind %s', kind)
