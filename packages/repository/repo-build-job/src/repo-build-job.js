@@ -21,7 +21,7 @@ module.exports = async ({pluginRepository}) => {
             agent,
             agentInstance,
             binary: '@bildit/artifact-finder',
-            commandArgs: ['artifact-finder', directory],
+            commandArgs: ['artifact-finder', '.'],
             executeCommandOptions: {returnOutput: true},
           }),
         )
