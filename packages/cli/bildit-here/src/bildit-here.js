@@ -20,7 +20,7 @@ process.on('unhandledRejection', err => {
 main().catch(err => console.log(err.stack))
 
 async function main() {
-  const isRemoteRepo = process.argv[2].startsWith('http')
+  const isRemoteRepo = process.argv[2].startsWith('http') || process.argv[2].startsWith('git@')
   const directoryToBuild = !isRemoteRepo ? path.resolve(process.argv[2]) : undefined
   const config = !directoryToBuild ? path.resolve(process.argv[3]) : directoryToBuild
   const repository = isRemoteRepo ? process.argv[2] : directoryToBuild
@@ -35,7 +35,12 @@ async function main() {
       ? await figureOutFilesChangedSinceLastBuild(directoryToBuild)
       : {}
 
-    const jobsToWaitFor = await runJobs(repository, jobDispatcher, filesChangedSinceLastBuild)
+    const jobsToWaitFor = await runJobs(
+      repository,
+      isRemoteRepo,
+      jobDispatcher,
+      filesChangedSinceLastBuild,
+    )
 
     await waitForJobs(pluginRepository, jobsToWaitFor)
 
@@ -81,8 +86,8 @@ async function figureOutFilesChangedSinceLastBuild(directory) {
   return {filesChangedSinceLastBuild, fileChangesInCurrentRepo}
 }
 
-async function runJobs(repository, jobDispatcher, filesChangedSinceLastBuild) {
-  if (repository.startsWith('http') || !await jobDispatcher.hasAbortedJobs()) {
+async function runJobs(repository, isRemoteRepo, jobDispatcher, filesChangedSinceLastBuild) {
+  if (isRemoteRepo || !await jobDispatcher.hasAbortedJobs()) {
     if (filesChangedSinceLastBuild && filesChangedSinceLastBuild.length === 0) {
       console.error('Nothing to build')
       return
