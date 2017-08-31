@@ -20,7 +20,7 @@ process.on('unhandledRejection', err => {
 main().catch(err => console.log(err.stack))
 
 async function main() {
-  const isRemoteRepo = process.arv[2].startsWith('http')
+  const isRemoteRepo = process.argv[2].startsWith('http')
   const directoryToBuild = !isRemoteRepo ? path.resolve(process.argv[2]) : undefined
   const config = !directoryToBuild ? path.resolve(process.argv[3]) : directoryToBuild
   const repository = isRemoteRepo ? process.argv[2] : directoryToBuild
@@ -81,18 +81,18 @@ async function figureOutFilesChangedSinceLastBuild(directory) {
   return {filesChangedSinceLastBuild, fileChangesInCurrentRepo}
 }
 
-async function runJobs(directoryToBuild, jobDispatcher, filesChangedSinceLastBuild) {
-  if (!await jobDispatcher.hasAbortedJobs()) {
+async function runJobs(repository, jobDispatcher, filesChangedSinceLastBuild) {
+  if (repository.startsWith('http') || !await jobDispatcher.hasAbortedJobs()) {
     if (filesChangedSinceLastBuild && filesChangedSinceLastBuild.length === 0) {
       console.error('Nothing to build')
       return
     }
 
-    debug('building folder %s, with file changes %o', directoryToBuild, filesChangedSinceLastBuild)
+    debug('building folder %s, with file changes %o', repository, filesChangedSinceLastBuild)
     return [
       await jobDispatcher.dispatchJob({
         kind: 'repository',
-        repository: directoryToBuild,
+        repository,
         linkDependencies: true,
         filesChangedSinceLastBuild,
       }),
