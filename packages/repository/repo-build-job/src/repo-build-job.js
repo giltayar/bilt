@@ -9,13 +9,12 @@ module.exports = async ({pluginRepository}) => {
   return {
     async build(job, {agent, state, awakenedFrom}) {
       debug('running job repo-build-job')
-      const {directory, repository, linkDependencies, filesChangedSinceLastBuild} = job
+      const {repository, linkDependencies, filesChangedSinceLastBuild} = job
 
       const getInitialState = async () => {
         debug('fetching repository %s', repository)
-        const agentInstance = await agent.getInstanceForJob({directory})
+        const agentInstance = await agent.getInstanceForJob({repository})
 
-        await agent.fetchRepo(agentInstance, repository)
         const allArtifacts = JSON.parse(
           await binaryRunner.run({
             agent,
@@ -31,7 +30,7 @@ module.exports = async ({pluginRepository}) => {
             filesChangedSinceLastBuild.find(file => file.startsWith(artifactToBuild.path + '/')),
         )
 
-        return {directory, artifactsToBuild, allArtifacts}
+        return {repository, artifactsToBuild, allArtifacts}
       }
 
       debug('files changed %o. Searching for artifacts', filesChangedSinceLastBuild)
@@ -57,7 +56,7 @@ module.exports = async ({pluginRepository}) => {
       if (!changedFiles || changedFiles.length > 0) {
         const artifactJob = createJobFromArtifact(
           artifactToBuild,
-          newState.directory,
+          newState.repository,
           linkDependencies ? newState.allArtifacts : undefined,
           changedFiles,
         )
@@ -74,10 +73,10 @@ module.exports = async ({pluginRepository}) => {
   }
 }
 
-const createJobFromArtifact = (artifact, directory, artifacts, changedFiles) => ({
+const createJobFromArtifact = (artifact, repository, artifacts, changedFiles) => ({
   kind: artifact.type,
   artifact: artifact.artifact,
-  directory,
+  repository,
   artifactPath: artifact.path,
   dependencies: artifacts ? artifact.dependencies : [],
   artifacts,

@@ -20,21 +20,28 @@ process.on('unhandledRejection', err => {
 main().catch(err => console.log(err.stack))
 
 async function main() {
-  const directoryToBuild = path.resolve(process.argv[2])
+  const isRemoteRepo = process.arv[2].startsWith('http')
+  const directoryToBuild = !isRemoteRepo ? path.resolve(process.argv[2]) : undefined
+  const config = !directoryToBuild ? path.resolve(process.argv[3]) : directoryToBuild
+  const repository = isRemoteRepo ? process.argv[2] : directoryToBuild
 
-  const pluginRepository = await createPluginRepository(directoryToBuild)
+  const pluginRepository = await createPluginRepository(config)
   try {
     await configureEventsToOutputEventToStdout(pluginRepository)
 
     const jobDispatcher = await pluginRepository.findPlugin('jobDispatcher')
 
-    const {filesChangedSinceLastBuild} = await figureOutFilesChangedSinceLastBuild(directoryToBuild)
+    const {filesChangedSinceLastBuild} = directoryToBuild
+      ? await figureOutFilesChangedSinceLastBuild(directoryToBuild)
+      : {}
 
-    const jobsToWaitFor = await runJobs(directoryToBuild, jobDispatcher, filesChangedSinceLastBuild)
+    const jobsToWaitFor = await runJobs(repository, jobDispatcher, filesChangedSinceLastBuild)
 
     await waitForJobs(pluginRepository, jobsToWaitFor)
 
-    await saveLastBuildInfo(directoryToBuild, await findChangesInCurrentRepo(directoryToBuild))
+    if (directoryToBuild) {
+      await saveLastBuildInfo(directoryToBuild, await findChangesInCurrentRepo(directoryToBuild))
+    }
   } finally {
     debug('finalizing plugins')
     await pluginRepository.finalize()
@@ -86,7 +93,6 @@ async function runJobs(directoryToBuild, jobDispatcher, filesChangedSinceLastBui
       await jobDispatcher.dispatchJob({
         kind: 'repository',
         repository: directoryToBuild,
-        directory: directoryToBuild,
         linkDependencies: true,
         filesChangedSinceLastBuild,
       }),

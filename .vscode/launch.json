@@ -21,13 +21,14 @@
       "name": "Launch Test CLI on host-agent",
       "program": "${workspaceRoot}/packages/cli/bildit-here/src/bildit-here.js",
       "args": [
+        "https://github.com/giltayar/bildit-test-repo.git",
         "."
       ],
       "cwd": "${workspaceRoot}/../test-repo",
       "showAsyncStacks": true,
       "console": "integratedTerminal",
       "env": {
-        "DEBUG": "bildit:repo-build-job,bildit:npm-binary-runner,bildit:local-docker-agent"
+        "DEBUG": "bildit:repo-build-job,bildit:remote-docker-agent"
       }
     },
     {

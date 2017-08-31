@@ -23,7 +23,9 @@ module.exports = async ({
   })
 
   return {
-    async getInstanceForJob({directory}) {
+    async getInstanceForJob({repository}) {
+      const directory = repository
+
       if (waitingAgents.has(directory)) {
         const agentInstance = waitingAgents.get(directory)
 
@@ -86,10 +88,6 @@ module.exports = async ({
       debug('home dir is %s', homeDir)
 
       return homeDir.trim()
-    },
-
-    async fetchRepo(agentInstance) {
-      info(agentInstance)
     },
 
     async createSymlink(agentInstance, link, target) {

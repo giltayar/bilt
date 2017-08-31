@@ -9,8 +9,8 @@ module.exports = async () => {
   const info = agent => agent
 
   return {
-    async getInstanceForJob({directory}) {
-      return {directory, id: 1}
+    async getInstanceForJob({repository}) {
+      return {directory: repository, id: 1}
     },
 
     async executeCommand(agentInstance, commandArgs, {cwd, returnOutput} = {}) {
@@ -51,10 +51,6 @@ module.exports = async () => {
       const {directory} = info(agentInstance)
 
       return await promisify(fs.writeFile)(path.resolve(directory, fileName), buffer)
-    },
-
-    async fetchRepo() {
-      //
     },
 
     async homeDir() {

@@ -1,21 +1,23 @@
 const path = require('path')
-const debug = require('debug')('bildit:local-docker-agent')
+const debug = require('debug')('bildit:remote-docker-agent')
 const Docker = require('dockerode')
 const tar = require('tar-stream')
 
 module.exports = async ({
-  image = 'alpine',
-  start = ['sleep', '100000000'],
-  user = 'root',
-  workdir = '/usr/work',
+  pluginConfig: {
+    image = 'alpine',
+    start = ['sleep', '100000000'],
+    user = 'root',
+    workdir = '/usr/work',
+  },
 }) => {
   const docker = new Docker({Promise})
   const runningAgents = new Map()
   const waitingAgents = new Map()
 
   const info = agent => ({
-    container: runningAgents.get(agent.directory).container,
-    directory: agent.directory,
+    container: runningAgents.get(agent.repository).container,
+    repository: agent.repository,
   })
 
   return {
@@ -30,6 +32,8 @@ module.exports = async ({
       const container = await createContainer(repository)
 
       runningAgents.set(repository, {container})
+
+      await fetchRepo(executeCommand, repository)
 
       return {repository}
     },
@@ -82,19 +86,8 @@ module.exports = async ({
       return homeDir.trim()
     },
 
-    async fetchRepo(agentInstance) {
-      info(agentInstance)
-    },
-
     async createSymlink(agentInstance, link, target) {
-      const {directory} = info(agentInstance)
-      debug('creating symlink in directory %s, link %s, target %s', workdir, link, target)
-
-      // This is a very strange symlink - it is created in the host, and therefore resides in `directory`
-      // and yet it points to a directory that is in the docker container, and therefore
-      // uses `workdir`.
-      // This is OK, because the file will always be read _inside_ the container.
-      return await createSymlinkInHost(path.join(directory, link), path.join(workdir, target))
+      throw new Error('symlinking is not supported in remote-docker-agent')
     },
 
     async finalize() {
@@ -161,12 +154,7 @@ module.exports = async ({
       WorkingDir: workdir,
       User: user,
     })
-    debug(
-      'created container %s from image %s, workdir %s',
-      container.id,
-      image,
-      workdir,
-    )
+    debug('created container %s from image %s, workdir %s', container.id, image, workdir)
     await container.start()
     debug('started container %s', container.id)
 
@@ -204,4 +192,12 @@ function toTarStream(fileName, buffer) {
   pack.finalize()
 
   return pack
+}
+
+async function fetchRepo(executeCommand, repository) {
+  debug('cloning repository %s', repository)
+
+  const agentInstance = {repository}
+
+  await executeCommand(agentInstance, ['git', 'clone', repository, '.'])
 }
