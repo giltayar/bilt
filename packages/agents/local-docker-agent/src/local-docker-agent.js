@@ -23,7 +23,7 @@ module.exports = async ({
   })
 
   return {
-    async getInstanceForJob({repository}) {
+    async acquireInstanceForJob({repository}) {
       const directory = repository
 
       if (waitingAgents.has(directory)) {

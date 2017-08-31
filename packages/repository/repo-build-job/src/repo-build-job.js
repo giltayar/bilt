@@ -11,9 +11,10 @@ module.exports = async ({pluginRepository}) => {
       debug('running job repo-build-job')
       const {repository, linkDependencies, filesChangedSinceLastBuild} = job
 
+      let agentInstance
       const getInitialState = async () => {
         debug('fetching repository %s', repository)
-        const agentInstance = await agent.getInstanceForJob({repository})
+        agentInstance = await agent.acquireInstanceForJob({repository})
 
         const allArtifacts = JSON.parse(
           await binaryRunner.run({
@@ -35,6 +36,8 @@ module.exports = async ({pluginRepository}) => {
 
       debug('files changed %o. Searching for artifacts', filesChangedSinceLastBuild)
       const newState = state || (await getInitialState(filesChangedSinceLastBuild))
+      agentInstance = agentInstance || (await agent.acquireInstanceForJob(newState.repository))
+
       const artifactsToBuild = newState.artifactsToBuild
       debug('found artifacts %o', artifactsToBuild)
       const remainingArtifactsToBuild = newState.artifactsToBuild.filter(
@@ -62,6 +65,9 @@ module.exports = async ({pluginRepository}) => {
         )
 
         debug('decided to run sub-job %o', artifactJob)
+
+        agent.releaseInstanceForJob(agentInstance)
+
         return {
           state: Object.assign({}, newState, {
             artifactsToBuild: remainingArtifactsToBuild,

@@ -4,14 +4,11 @@ const path = require('path')
 const debug = require('debug')('bildit:npm-publisher-with-git')
 
 module.exports = async ({
-  pluginConfig: {
-    npmAuthenticationLine,
-    gitAuthenticationKey,
-    gitUserEmail,
-    gitUserName,
-    access: access = 'restricted',
-  },
+  pluginConfig: {npmAuthenticationLine, access: access = 'restricted'},
+  pluginRepository,
 }) => {
+  const vcs = await pluginRepository.findPlugin('vcs')
+
   return {
     async publishPackage(job, {agent, agentInstance}) {
       debug(`publishing for job ${job}`)
@@ -19,15 +16,11 @@ module.exports = async ({
 
       if (npmAuthenticationLine) {
         debug('creating npmrc with authentication line')
+
         await createAuthenticationNpmRc(agent, agentInstance, npmAuthenticationLine)
       }
 
-      if (gitAuthenticationKey) {
-        debug('creating SSH keys')
-        await initializeGit(agent, agentInstance, gitAuthenticationKey, gitUserEmail, gitUserName)
-      }
-
-      await ensureNoDirtyGitFiles(agent, agentInstance, {artifactPath})
+      await ensureNoDirtyGitFiles(vcs, agent, agentInstance, artifactPath)
 
       debug('patching package.json version')
       const versionOutput = await agent.executeCommand(
@@ -43,14 +36,8 @@ module.exports = async ({
       const newVersion = versionOutput.match(/^(v.*)$/m)[0]
 
       debug('committing patch changes %s', newVersion)
-      await agent.executeCommand(agentInstance, ['git', 'commit', '-am', newVersion], {
-        cwd: artifactPath,
-      })
 
-      debug('pushing to remote repo')
-      await agent.executeCommand(agentInstance, ['git', 'push'], {
-        cwd: artifactPath,
-      })
+      await vcs.commitAndPush({agent, agentInstance, message: newVersion})
 
       debug('npm publishing')
       await agent.executeCommand(agentInstance, ['npm', 'publish', '--access', access], {
@@ -70,46 +57,12 @@ async function createAuthenticationNpmRc(agent, agentInstance, npmAuthentication
   )
 }
 
-async function initializeGit(
-  agent,
-  agentInstance,
-  gitAuthenticationKey,
-  gitUserEmail,
-  gitUserName,
-) {
-  const homeDir = await agent.homeDir(agentInstance)
+async function ensureNoDirtyGitFiles(vcs, agent, agentInstance, artifactPath) {
+  const dirtyFiles = vcs.listDirtyFiles({agent, agentInstance})
 
-  await agent.writeBufferToFile(
-    agentInstance,
-    path.join(homeDir, '.ssh', 'id_rsa'),
-    Buffer.from(gitAuthenticationKey),
-  )
-
-  await agent.writeBufferToFile(
-    agentInstance,
-    path.join(homeDir, '.ssh', 'config'),
-    Buffer.from('HOST *\n\tStrictHostKeyChecking no\n'),
-  )
-
-  await agent.executeCommand(agentInstance, [
-    'git',
-    'config',
-    '--global',
-    'user.email',
-    gitUserEmail,
-  ])
-  await agent.executeCommand(agentInstance, ['git', 'config', '--global', 'user.name', gitUserName])
-}
-
-async function ensureNoDirtyGitFiles(agent, agentInstance, {artifactPath}) {
-  const result = await agent.executeCommand(agentInstance, ['git', 'status', '--porcelain'], {
-    cwd: artifactPath,
-    returnOutput: true,
-  })
-
-  if (result.length > 0) {
+  if (dirtyFiles.length > 0) {
     throw new Error(
-      `Cannot publish artifact in ${artifactPath} because it has dirty files:\n${result}`,
+      `Cannot publish artifact in ${artifactPath} because it has dirty files:\n${dirtyFiles}`,
     )
   }
 }

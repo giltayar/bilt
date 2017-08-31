@@ -9,7 +9,7 @@ module.exports = async ({pluginRepository, config: {publish, linkLocalPackages}}
 
   return {
     async build(job, {agent}) {
-      const agentInstance = await agent.getInstanceForJob(job)
+      const agentInstance = await agent.acquireInstanceForJob(job)
 
       const {dependencies, artifacts, artifactPath, filesChangedSinceLastBuild} = job
       const packageJsonChanged =
@@ -48,6 +48,8 @@ module.exports = async ({pluginRepository, config: {publish, linkLocalPackages}}
           `not publishing because config publish is ${publish} or package json is private (${packageJson.private}`,
         )
       }
+
+      agent.releaseInstanceForJob(agentInstance)
     },
   }
 }

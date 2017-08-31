@@ -9,7 +9,7 @@ module.exports = async () => {
   const info = agent => agent
 
   return {
-    async getInstanceForJob({repository}) {
+    async acquireInstanceForJob({repository}) {
       return {directory: repository, id: 1}
     },
 

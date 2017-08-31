@@ -10,32 +10,47 @@ module.exports = async ({
     user = 'root',
     workdir = '/usr/work',
   },
+  pluginRepository,
 }) => {
   const docker = new Docker({Promise})
   const runningAgents = new Map()
   const waitingAgents = new Map()
+  const vcs = await pluginRepository.findPlugin('vcs')
 
-  const info = agent => ({
-    container: runningAgents.get(agent.repository).container,
-    repository: agent.repository,
+  const info = agentInstance => ({
+    container: runningAgents.get(agentInstance.repository).container,
+    repository: agentInstance.repository,
   })
 
   return {
-    async getInstanceForJob({repository}) {
+    async acquireInstanceForJob({repository}) {
       if (waitingAgents.has(repository)) {
         runningAgents.set(repository, waitingAgents.get(repository))
         waitingAgents.delete(repository)
 
-        return {repository}
+        await vcs.fetchRepo({agent: this, agentInstance, repository, directory: 'builddir'})
+
+        return {repository, id: container.id}
       }
 
       const container = await createContainer(repository)
 
       runningAgents.set(repository, {container})
 
-      await fetchRepo(executeCommand, repository)
+      const agentInstance = {repository, id: container.id}
 
-      return {repository}
+      await vcs.fetchRepo({agent: this, agentInstance, repository, directory: 'builddir'})
+
+      return agentInstance
+    },
+    releaseInstanceForJob(agentInstance) {
+      if (!runningAgents.has(agentInstance.repository))
+        throw new Error(
+          `Can't release agent instance for ${agentInstance.repository} because it was never acquired`,
+        )
+
+      waitingAgents.set(agentInstance.repository, runningAgents.get(agentInstance.repository))
+      runningAgents.delete(agentInstance.repository)
     },
 
     executeCommand,
@@ -84,6 +99,10 @@ module.exports = async ({
       debug('home dir is %s', homeDir)
 
       return homeDir.trim()
+    },
+
+    buildDir() {
+      return path.join(workdir, 'builddir')
     },
 
     async createSymlink(agentInstance, link, target) {
