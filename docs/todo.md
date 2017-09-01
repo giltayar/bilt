@@ -1,14 +1,5 @@
 # TODO
 
-## Support docker agents for each job
-
-1. Make a real job that uses one docker agent and pulls repo from github.
-   1. Now you can implement remote-docker-agent, which accepts a {repository} and not a {directory}
-   1. Implement bildit-here so that if it receives a repo and not a directory, it will use
-      remote-docker-agent.
-   1. npm-publisher should initialize git once only
-1. Ensure that only one docker container is used per-build
-
 ## Tests
 
 1. You're good to go in terms of design - start writing tests

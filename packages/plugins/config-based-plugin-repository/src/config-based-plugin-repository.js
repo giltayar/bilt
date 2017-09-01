@@ -44,7 +44,7 @@ module.exports = async context => {
       const plugin = await createPlugin(context, config, this, pluginInfo, pluginModule)
 
       debug('found plugin for kind %s', kind)
-      pluginsFound.set(JSON.stringify(pluginInfo), plugin)
+      pluginsFound.set(JSON.stringify(normalizedPluginModuleInfo), plugin)
 
       return plugin
     },

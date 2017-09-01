@@ -28,12 +28,13 @@ module.exports = async ({
   return {
     async acquireInstanceForJob({repository}) {
       if (waitingAgents.has(repository)) {
-        const agentInstance = waitingAgents.get(repository)
-        debug('awakening agent %s with repository %s', agentInstance.id, repository)
-        runningAgents.set(repository, agentInstance)
+        const {container} = waitingAgents.get(repository)
+        debug('awakening agent %s with repository %s', container.id, repository)
+        runningAgents.set(repository, {container})
 
         waitingAgents.delete(repository)
 
+        const agentInstance = {repository, id: container.id}
         await vcs.fetchRepository({agent: this, agentInstance, repository, directory: 'builddir'})
 
         return {repository, id: container.id}
@@ -45,7 +46,6 @@ module.exports = async ({
       runningAgents.set(repository, {container})
 
       const agentInstance = {repository, id: container.id}
-
       await vcs.fetchRepository({agent: this, agentInstance, repository, directory: 'builddir'})
 
       return agentInstance
