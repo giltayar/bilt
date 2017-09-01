@@ -3,25 +3,35 @@
 const path = require('path')
 const debug = require('debug')('bildit:git-vcs')
 
-module.exports = ({pluginConfig: {gitAuthenticationKey, gitUserEmail, gitUserName}}) => {
+module.exports = ({
+  pluginConfig: {
+    gitAuthenticationKey,
+    gitUserEmail,
+    gitUserName,
+    usedLocally = !gitAuthenticationKey,
+  },
+}) => {
   const initializedAgentInstances = new Set()
 
   return {
-    async fetch({agent, agentInstance, repository}) {
+    async fetchRepository({agent, agentInstance, repository}) {
       await initializeAgentInstanceIfNeeded({agent, agentInstance})
-      debug('cloning repository %s', repository)
 
       try {
+        debug('Checking if repository %s was fetched', repository)
         const status = await agent.executeCommand(agentInstance, ['git', 'status', '--porcelain'], {
           cwd: agent.buildDir(),
           returnOutput: true,
         })
+        debug('Repository %s was fetched')
         if (status.length > 0) {
+          debug('Resetting repository %s', repository)
           await agent.executeCommand(agentInstance, ['git', 'reset', '--hard'], {
             cwd: agent.buildDir(),
           })
         }
       } catch (_) {
+        debug('cloning repository %s', repository)
         await agent.executeCommand(agentInstance, ['git', 'clone', repository, agent.buildDir()])
       }
     },
@@ -37,6 +47,7 @@ module.exports = ({pluginConfig: {gitAuthenticationKey, gitUserEmail, gitUserNam
       })
     },
     async listDirtyFiles({agent, agentInstance}) {
+      debug('listing diry files of repo in agent %s', agentInstance.id)
       const status = await agent.executeCommand(agentInstance, ['git', 'status', '--porcelain'], {
         cwd: agent.buildDir(),
         returnOutput: true,
@@ -47,15 +58,10 @@ module.exports = ({pluginConfig: {gitAuthenticationKey, gitUserEmail, gitUserNam
   }
 
   async function initializeAgentInstanceIfNeeded({agent, agentInstance}) {
+    if (usedLocally) return
     if (initializedAgentInstances.has(agentInstance.id)) return
 
     const homeDir = await agent.homeDir(agentInstance)
-
-    await agent.writeBufferToFile(
-      agentInstance,
-      path.join(homeDir, '.ssh', 'id_rsa'),
-      Buffer.from(gitAuthenticationKey),
-    )
 
     await agent.writeBufferToFile(
       agentInstance,
@@ -63,20 +69,30 @@ module.exports = ({pluginConfig: {gitAuthenticationKey, gitUserEmail, gitUserNam
       Buffer.from('HOST *\n\tStrictHostKeyChecking no\n'),
     )
 
-    await agent.executeCommand(agentInstance, [
-      'git',
-      'config',
-      '--global',
-      'user.email',
-      gitUserEmail,
-    ])
+    if (gitAuthenticationKey) {
+      const idRsaPath = path.join(homeDir, '.ssh', 'id_rsa')
+      await agent.writeBufferToFile(agentInstance, idRsaPath, Buffer.from(gitAuthenticationKey))
 
-    await agent.executeCommand(agentInstance, [
-      'git',
-      'config',
-      '--global',
-      'user.name',
-      gitUserName,
-    ])
+      await agent.executeCommand(agentInstance, ['chmod', '600', idRsaPath])
+    }
+
+    if (gitUserEmail)
+      await agent.executeCommand(agentInstance, [
+        'git',
+        'config',
+        '--global',
+        'user.email',
+        gitUserEmail,
+      ])
+
+    if (gitUserName)
+      await agent.executeCommand(agentInstance, [
+        'git',
+        'config',
+        '--global',
+        'user.name',
+        gitUserName,
+      ])
+    initializedAgentInstances.add(agentInstance.id)
   }
 }

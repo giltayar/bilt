@@ -1,7 +1,10 @@
+'use strict'
+
 const path = require('path')
 const debug = require('debug')('bildit:remote-docker-agent')
 const Docker = require('dockerode')
 const tar = require('tar-stream')
+const through = require('through2')
 
 module.exports = async ({
   pluginConfig: {
@@ -25,13 +28,17 @@ module.exports = async ({
   return {
     async acquireInstanceForJob({repository}) {
       if (waitingAgents.has(repository)) {
-        runningAgents.set(repository, waitingAgents.get(repository))
+        const agentInstance = waitingAgents.get(repository)
+        debug('awakening agent %s with repository %s', agentInstance.id, repository)
+        runningAgents.set(repository, agentInstance)
+
         waitingAgents.delete(repository)
 
-        await vcs.fetchRepo({agent: this, agentInstance, repository, directory: 'builddir'})
+        await vcs.fetchRepository({agent: this, agentInstance, repository, directory: 'builddir'})
 
         return {repository, id: container.id}
       }
+      debug('creating container %s with repository %s', image, repository)
 
       const container = await createContainer(repository)
 
@@ -39,7 +46,7 @@ module.exports = async ({
 
       const agentInstance = {repository, id: container.id}
 
-      await vcs.fetchRepo({agent: this, agentInstance, repository, directory: 'builddir'})
+      await vcs.fetchRepository({agent: this, agentInstance, repository, directory: 'builddir'})
 
       return agentInstance
     },
@@ -139,7 +146,7 @@ module.exports = async ({
     })
     const execStream = await execution.start({Tty: !returnOutput})
     let output = ''
-    const passThrough = require('through2')(function(chunk, enc, cb) {
+    const passThrough = through(function(chunk, enc, cb) {
       output += chunk.toString()
       process.stdout.write(chunk.toString())
       this.push(chunk)
@@ -211,12 +218,4 @@ function toTarStream(fileName, buffer) {
   pack.finalize()
 
   return pack
-}
-
-async function fetchRepo(executeCommand, repository) {
-  debug('cloning repository %s', repository)
-
-  const agentInstance = {repository}
-
-  await executeCommand(agentInstance, ['git', 'clone', repository, '.'])
 }

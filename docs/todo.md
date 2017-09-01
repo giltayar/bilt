@@ -7,6 +7,7 @@
    1. Implement bildit-here so that if it receives a repo and not a directory, it will use
       remote-docker-agent.
    1. npm-publisher should initialize git once only
+1. Ensure that only one docker container is used per-build
 
 ## Tests
 
@@ -28,8 +29,9 @@
 
 1. Define a good CLI
 1. Build the CLI
-   1. Support two use cases:
+   1. Support three use cases:
       * Build from filesystem (with symlinking and all)
+      * Build from filesystem, but from a new directory
       * Build from repo (using published artifacts)
 1. Deal nicely with errors
 1. Support "agent" plugin and not just "agent:*" plugin (as a general use case)
@@ -37,6 +39,7 @@
 1. Add an auto-upgrade feature
 1. Publish commit should include artifact name
 1. Retry push
+1. Reuse docker containers between builds
 
 ## Supoprt Circle CI
 

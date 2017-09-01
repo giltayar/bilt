@@ -36,7 +36,8 @@ module.exports = async ({pluginRepository}) => {
 
       debug('files changed %o. Searching for artifacts', filesChangedSinceLastBuild)
       const newState = state || (await getInitialState(filesChangedSinceLastBuild))
-      agentInstance = agentInstance || (await agent.acquireInstanceForJob(newState.repository))
+      agentInstance =
+        agentInstance || (await agent.acquireInstanceForJob({repository: newState.repository}))
 
       const artifactsToBuild = newState.artifactsToBuild
       debug('found artifacts %o', artifactsToBuild)
