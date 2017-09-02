@@ -37,8 +37,7 @@ describe('local directory use-case', () => {
         expect(stdout).to.equal('')
         expect(stderr.trim()).to.equal('Nothing to build')
       })
-    })
-    describe('with git', () => {
+
       it('should rebuild only changed packages and then rebuild nothing', async () => {
         const testRepo = await setupGitRepo(testRepoSrc)
 
