@@ -20,7 +20,6 @@ module.exports = async function(directory) {
 }
 
 async function findCommitsToReplayInDirectory(directory) {
-  debugger
   const possibleCommitsToReplay = (await p(fs.readdir)(directory)).map(entry =>
     path.join(directory, entry),
   )

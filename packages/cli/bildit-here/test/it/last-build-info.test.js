@@ -5,7 +5,7 @@ const {describe} = require('mocha')
 const {expect} = require('chai')
 const {promisify: p} = require('util')
 const replayGitRepo = require('./replay-git-repo')
-const buildInfo = require('../src/last-build-info')
+const buildInfo = require('../../src/last-build-info')
 
 describe('last-build-info', () => {
   describe('readLastBuildInfo and saveLastBuildInfo', () => {

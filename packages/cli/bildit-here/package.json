@@ -8,7 +8,7 @@
     "scripts"
   ],
   "scripts": {
-    "test": "mocha"
+    "test": "mocha 'test/**/*.test.js'"
   },
   "keywords": [
     "ci",
