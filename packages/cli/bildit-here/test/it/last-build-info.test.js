@@ -155,7 +155,7 @@ describe('last-build-info', () => {
       expect(changesAfterRevert).to.have.members(['a.txt'])
     })
 
-    describe.only('.bilditignore', () => {
+    describe('.bilditignore', () => {
       it('should work in root', async () => {
         const gitDir = await replayGitRepo(path.join(__dirname, 'test-folder'))
 

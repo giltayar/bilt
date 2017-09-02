@@ -1,0 +1,14 @@
+{
+  "name": "b",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "touch postinstalled.txt",
+    "test": "touch tested.txt",
+    "build": "touch built.txt"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

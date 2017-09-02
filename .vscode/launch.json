@@ -8,12 +8,14 @@
       "name": "mocha:bildit-here",
       "type": "node",
       "request": "launch",
-      "protocol": "inspector",
       "program": "${workspaceRoot}/packages/cli/bildit-here/node_modules/mocha/bin/_mocha",
       "args": [
         "test/**/*.test.js"
       ],
-      "cwd": "${workspaceRoot}/packages/cli/bildit-here"
+      "cwd": "${workspaceRoot}/packages/cli/bildit-here",
+      "protocol": "inspector",
+      "console": "integratedTerminal"
+
     },
     {
       "type": "node",
