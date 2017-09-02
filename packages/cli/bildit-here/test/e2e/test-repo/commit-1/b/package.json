@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "postinstall": "touch postinstalled.txt",
-    "test": "touch tested.txt",
-    "build": "touch built.txt"
+    "postinstall": "cp b.txt postinstalled.txt",
+    "test": "cp b.txt tested.txt",
+    "build": "cp b.txt built.txt"
   },
   "keywords": [],
   "author": "",
