@@ -14,15 +14,25 @@ const testRepoSrc = path.resolve(__dirname, 'test-repo')
 
 describe('local directory use-case', () => {
   describe('no publish use case', () => {
-    it.only('should build the directory with all its packages', async () => {
-      const testRepo = await copyToTemp(testRepoSrc)
-      const {stdout, stderr} = p(exec)(`${process.argv0} ${cli} ${testRepo}`)
+    describe('without git', () => {
+      it.only('should build the directory with all its packages', async () => {
+        const testRepo = await copyToTemp(testRepoSrc)
+        const {stdout} = await p(exec)(`${process.argv0} ${cli} ${testRepo}`)
 
-      expect(stdout).to.include('building a')
-      expect(stderr).to.equal('')
+        expect(stdout).to.include('Building a')
+        expect(stdout).to.include('Building b')
+        expect(await fileContents(testRepo, 'a/postinstalled.txt')).to.equal('')
+        expect(await fileContents(testRepo, 'b/postinstalled.txt')).to.equal('')
+        expect(await fileContents(testRepo, 'b/built.txt')).to.equal('')
+        expect(await fileContents(testRepo, 'b/tested.txt')).to.equal('')
+      })
     })
   })
 })
+
+async function fileContents(...paths) {
+  return await p(fs.readFile)(path.join(...paths), 'utf-8')
+}
 
 async function copyToTemp(dir) {
   const tmpDir = await p(fs.mkdtemp)(
@@ -30,8 +40,6 @@ async function copyToTemp(dir) {
   )
 
   await p(cpr)(dir + '/', tmpDir, {overwrite: true})
-
-  console.log(`copied ${dir} => ${tmpDir}`)
 
   return tmpDir
 }

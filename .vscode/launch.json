@@ -10,6 +10,7 @@
       "request": "launch",
       "program": "${workspaceRoot}/packages/cli/bildit-here/node_modules/mocha/bin/_mocha",
       "args": [
+        "--no-timeouts",
         "test/**/*.test.js"
       ],
       "cwd": "${workspaceRoot}/packages/cli/bildit-here",
