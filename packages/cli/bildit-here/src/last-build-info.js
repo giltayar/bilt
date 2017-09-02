@@ -44,7 +44,10 @@ async function findChangesInCurrentRepo(directory) {
     commit: gitRepoInfo(directory).sha,
     changedFilesInWorkspace: await readHashesOfFiles(
       directory,
-      await filterByBilditIgnore(directory, await gitFindChangedFiles(directory)),
+      await filterByBilditIgnore(
+        directory,
+        gitRepoInfo(directory).sha ? await gitFindChangedFiles(directory) : [],
+      ),
     ),
   }
 }

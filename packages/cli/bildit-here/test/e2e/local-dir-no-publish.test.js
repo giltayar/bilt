@@ -15,10 +15,10 @@ const testRepoSrc = path.resolve(__dirname, 'test-repo')
 describe('local directory use-case', () => {
   describe('no publish use case', () => {
     it.only('should build the directory with all its packages', async () => {
-      const testRepo = copyToTemp(testRepoSrc)
+      const testRepo = await copyToTemp(testRepoSrc)
       const {stdout, stderr} = p(exec)(`${process.argv0} ${cli} ${testRepo}`)
 
-      expect(stdout).to.not.equal('')
+      expect(stdout).to.include('building a')
       expect(stderr).to.equal('')
     })
   })

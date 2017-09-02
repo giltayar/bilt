@@ -31,10 +31,23 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch Test CLI on host-agent",
+      "name": "Launch Test CLI on test-repo",
       "program": "${workspaceRoot}/packages/cli/bildit-here/src/bildit-here.js",
       "args": ["git@github.com:giltayar/bildit-test-repo.git", "."],
       "cwd": "${workspaceRoot}/../test-repo",
+      "showAsyncStacks": true,
+      "console": "integratedTerminal",
+      "env": {
+        "DEBUG":
+          "bildit:bildit:remote-docker-agent,bildit:config-based-plugin-repository"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Test CLI on e2e test-repo",
+      "program": "${workspaceRoot}/packages/cli/bildit-here/src/bildit-here.js",
+      "args": ["/var/folders/mc/yh0mjyzn1mx5kn5c4j26b2fc0000gn/T/53168510622OGW1yB"],
       "showAsyncStacks": true,
       "console": "integratedTerminal",
       "env": {

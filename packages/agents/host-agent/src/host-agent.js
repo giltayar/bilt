@@ -12,6 +12,9 @@ module.exports = async () => {
     async acquireInstanceForJob({repository}) {
       return {directory: repository, id: 1}
     },
+    releaseInstanceForJob() {
+      return
+    },
 
     async executeCommand(agentInstance, commandArgs, {cwd, returnOutput} = {}) {
       const {directory} = info(agentInstance)

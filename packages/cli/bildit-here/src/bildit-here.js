@@ -13,11 +13,11 @@ const {
 } = require('./last-build-info')
 
 process.on('unhandledRejection', err => {
-  console.log(err.stack)
+  console.log(err.stack || err)
   process.exit(2)
 })
 
-main().catch(err => console.log(err.stack))
+main().catch(err => console.log(err.stack || err))
 
 async function main() {
   const isRemoteRepo = process.argv[2].startsWith('http') || process.argv[2].startsWith('git@')
@@ -109,9 +109,9 @@ async function runJobs(repository, isRemoteRepo, jobDispatcher, filesChangedSinc
 }
 
 async function waitForJobs(pluginRepository, jobs) {
-  debug('waiting for jobs %o', jobs.map(job => job.id))
+  debug('waiting for jobs %o', (jobs || []).map(job => job.id))
   const events = await pluginRepository.findPlugin('events')
-  const jobsThatAreStillWorking = new Set(jobs.map(job => job.id))
+  const jobsThatAreStillWorking = new Set((jobs || []).map(job => job.id))
 
   await new Promise(async resolve => {
     await events.subscribe('END_JOB', ({job}) => {
