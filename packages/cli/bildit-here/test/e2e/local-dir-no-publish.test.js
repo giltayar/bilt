@@ -1,13 +1,12 @@
 'use strict'
 
 const path = require('path')
-const fs = require('fs')
-const os = require('os')
 const {describe, it} = require('mocha')
 const {expect} = require('chai')
 const {exec} = require('child_process')
 const {promisify: p} = require('util')
-const cpr = require('cpr')
+const {fileContents} = require('../utils/file-utils')
+const {setupFolder, setupGitRepo} = require('../utils/setup')
 
 const cli = path.resolve(__dirname, '../../src/bildit-here.js')
 const testRepoSrc = path.resolve(__dirname, 'test-repo')
@@ -15,8 +14,8 @@ const testRepoSrc = path.resolve(__dirname, 'test-repo')
 describe('local directory use-case', () => {
   describe('no publish use case', () => {
     describe('without git', () => {
-      it.only('should build the directory with all its packages', async () => {
-        const testRepo = await copyToTemp(testRepoSrc)
+      it('should build the directory with all its packages', async () => {
+        const testRepo = await setupFolder(path.join(testRepoSrc, 'commit-1'))
         const {stdout} = await p(exec)(`${process.argv0} ${cli} ${testRepo}`)
 
         expect(stdout).to.include('Building a')
@@ -27,19 +26,22 @@ describe('local directory use-case', () => {
         expect(await fileContents(testRepo, 'b/tested.txt')).to.equal('')
       })
     })
+    describe('with git', () => {
+      it('should build the directory with all its packages and then say there is nothing to rebuild', async () => {
+        const testRepo = await setupGitRepo(testRepoSrc)
+        const {stdout} = await p(exec)(`${process.argv0} ${cli} ${testRepo}`)
+
+        expect(stdout).to.include('Building a')
+        expect(await fileContents(testRepo, 'a/postinstalled.txt')).to.equal('')
+        expect(await fileContents(testRepo, 'b/postinstalled.txt')).to.equal('')
+
+        const {stdout: stdout2, stderr: stderr2} = await p(exec)(
+          `${process.argv0} ${cli} ${testRepo}`,
+        )
+
+        expect(stdout2).to.equal('')
+        expect(stderr2.trim()).to.equal('Nothing to build')
+      })
+    })
   })
 })
-
-async function fileContents(...paths) {
-  return await p(fs.readFile)(path.join(...paths), 'utf-8')
-}
-
-async function copyToTemp(dir) {
-  const tmpDir = await p(fs.mkdtemp)(
-    path.join(os.tmpdir(), (Math.random() * 100000).toString().slice(6)),
-  )
-
-  await p(cpr)(dir + '/', tmpDir, {overwrite: true})
-
-  return tmpDir
-}

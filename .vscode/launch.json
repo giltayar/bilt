@@ -48,7 +48,20 @@
       "request": "launch",
       "name": "Launch Test CLI on e2e test-repo",
       "program": "${workspaceRoot}/packages/cli/bildit-here/src/bildit-here.js",
-      "args": ["/var/folders/mc/yh0mjyzn1mx5kn5c4j26b2fc0000gn/T/53168510622OGW1yB"],
+      "args": ["${workspaceRoot}/packages/cli/bildit-here/test/e2e/test-repo/commit-1"],
+      "showAsyncStacks": true,
+      "console": "integratedTerminal",
+      "env": {
+        "DEBUG":
+          "bildit:bildit:remote-docker-agent,bildit:config-based-plugin-repository"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Test CLI on e2e temp test-repo",
+      "program": "${workspaceRoot}/packages/cli/bildit-here/src/bildit-here.js",
+      "args": ["/var/folders/mc/yh0mjyzn1mx5kn5c4j26b2fc0000gn/T/replay-git-repoJbP0LD"],
       "showAsyncStacks": true,
       "console": "integratedTerminal",
       "env": {
