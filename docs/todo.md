@@ -3,6 +3,9 @@
 ## Tests
 
 1. You're good to go in terms of design - start writing tests
+   * E2E test publishing in host-agent
+   * E2E Test local-docker-agent
+   * E2E Test remote-docker-agent
 1. And write the test for the artifact-finder cli too
 1. And write the design document again
 
@@ -20,17 +23,23 @@
 
 1. Define a good CLI
 1. Build the CLI
-   1. Support three use cases:
-      * Build from filesystem (with symlinking and all)
-      * Build from filesystem, but from a new directory
-      * Build from repo (using published artifacts)
+   1. Support two use cases:
+      * Build from filesystem (with symlinking and all), with changed files support
+      * Build from repo (using published artifacts), for use in Travis CI, with last-succesful-build support
 1. Deal nicely with errors
-1. Support "agent" plugin and not just "agent:*" plugin (as a general use case)
 1. Make it a simple global install, available to any who want it
 1. Add an auto-upgrade feature
 1. Publish commit should include artifact name
 1. Retry push
-1. Reuse docker containers between builds
+
+## Do more testing of packages
+
+1. What she said
+
+## Future productization
+
+1. Add an auto-upgrade feature
+1. Support local-docker-agent and reuse docker containers between builds
 
 ## Supoprt Circle CI
 
