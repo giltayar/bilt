@@ -34,10 +34,11 @@ describe('local directory use-case', () => {
       const testRepo = await setupFolder(path.join(testRepoSrc, 'commit-1'))
       await adjustNpmRegistryLocationInRepo(testRepo, npmRegistryAddress)
 
-      const {stdout} = await p(exec)(`${process.argv[0]} ${cli} ${testRepo}`, {
+      const {stdout, stderr} = await p(exec)(`${process.argv0} ${cli} ${testRepo}`, {
         env: {
           npm_config_registry: `http://${npmRegistryAddress}/`,
           KEYS_DIR: path.resolve(__dirname, 'git-server/keys'),
+          ...process.env,
         },
       })
 

@@ -3,12 +3,14 @@
         "browser": true,
         "commonjs": true,
         "es6": true,
-        "node": true,
-        "mocha": true
+        "node": true
     },
     "parserOptions": {
         "ecmaVersion": 2017,
-        "sourceType": "module"
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "experimentalObjectRestSpread": true
+        }
     },
     "plugins": [
         "prettier"
