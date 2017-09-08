@@ -1,0 +1,14 @@
+{
+  "name": "b",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "cp b.txt postinstalled.txt",
+    "test": "cp b.txt tested.txt",
+    "build": "cp b.txt built.txt"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

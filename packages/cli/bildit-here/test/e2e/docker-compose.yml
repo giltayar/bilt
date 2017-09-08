@@ -1,0 +1,20 @@
+version: '3'
+services:
+  npm-registry:
+    image: strongloop/ephemeral-npm
+    environment:
+        npm_config_registry: https://registry.npmjs.org/
+        NPM_USER: npm-user
+        NPM_PASSWORD: npm-user-password
+    ports:
+        - 4873
+
+  git-server:
+    image: jkarlos/git-server-docker
+    ports:
+        - 22
+        - 3000
+    volumes:
+        - ./repos:/git-server/repos
+        - ./keys:/git-server/keys
+

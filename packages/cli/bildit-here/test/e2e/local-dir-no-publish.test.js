@@ -9,7 +9,7 @@ const {fileContents, writeFile} = require('../utils/file-utils')
 const {setupFolder, setupGitRepo} = require('../utils/setup')
 
 const cli = path.resolve(__dirname, '../../src/bildit-here.js')
-const testRepoSrc = path.resolve(__dirname, 'test-repo')
+const testRepoSrc = path.resolve(__dirname, 'test-repo-no-publish')
 
 describe('local directory use-case', () => {
   describe('no publish use case', () => {
