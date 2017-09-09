@@ -34,20 +34,25 @@ describe('local directory use-case', () => {
       const testRepo = await setupFolder(path.join(testRepoSrc, 'commit-1'))
       await adjustNpmRegistryLocationInRepo(testRepo, npmRegistryAddress)
 
-      const {stdout, stderr} = await p(exec)(`${process.argv0} ${cli} ${testRepo}`, {
-        env: {
-          npm_config_registry: `http://${npmRegistryAddress}/`,
-          KEYS_DIR: path.resolve(__dirname, 'git-server/keys'),
-          ...process.env,
-        },
-      })
+      try {
+        const {stdout, stderr} = await p(exec)(`${process.argv0} ${cli} ${testRepo}`, {
+          env: {
+            npm_config_registry: `http://${npmRegistryAddress}/`,
+            KEYS_DIR: path.resolve(__dirname, 'git-server/keys'),
+            DEBUG: 'bildit:npm-publisher-with-git,bildit:git-vcs',
+            ...process.env,
+          },
+        })
 
-      expect(stdout).to.include('Building a')
-      expect(stdout).to.include('Building b')
-      expect(await fileContents(testRepo, 'a/postinstalled.txt')).to.equal('')
-      expect(await fileContents(testRepo, 'b/postinstalled.txt')).to.equal('')
-      expect(await fileContents(testRepo, 'b/built.txt')).to.equal('')
-      expect(await fileContents(testRepo, 'b/tested.txt')).to.equal('')
+        expect(stdout).to.include('Building a')
+        expect(stdout).to.include('Building b')
+        expect(await fileContents(testRepo, 'a/postinstalled.txt')).to.equal('')
+        expect(await fileContents(testRepo, 'b/postinstalled.txt')).to.equal('')
+        expect(await fileContents(testRepo, 'b/built.txt')).to.equal('')
+        expect(await fileContents(testRepo, 'b/tested.`txt')).to.equal('')
+      } catch (e) {
+        console.error('error running cli', e)
+      }
     })
   })
 })

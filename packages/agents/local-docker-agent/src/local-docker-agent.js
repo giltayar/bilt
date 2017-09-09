@@ -90,9 +90,13 @@ module.exports = async ({
       return homeDir.trim()
     },
 
+    buildDir(agentInstance) {
+      return agentInstance.directory
+    },
+
     async createSymlink(agentInstance, link, target) {
       const {directory} = info(agentInstance)
-      debug('creating symlink in directory %s, link %s, target %s', workdir, link, target)
+      dug('creating symlink in directory %s, link %s, target %s', workdir, link, target)
 
       // This is a very strange symlink - it is created in the host, and therefore resides in `directory`
       // and yet it points to a directory that is in the docker container, and therefore

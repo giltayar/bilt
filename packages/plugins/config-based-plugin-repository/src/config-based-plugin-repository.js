@@ -64,7 +64,7 @@ module.exports = async context => {
 }
 
 function normalizePluginModule(modulesEntry) {
-  if (typeof modulesEntry === 'string') {
+  if (typeof modulesEntry === 'string' || typeof modulesEntry === 'function') {
     return {pluginModulePath: modulesEntry, pluginConfig: {}}
   } else {
     const plugin = Object.entries(modulesEntry)[0]
@@ -74,6 +74,9 @@ function normalizePluginModule(modulesEntry) {
 }
 
 function loadPluginModule(configFileDir, {pluginModulePath, pluginConfig}) {
+  if (typeof pluginModulePath === 'function') {
+    return {pluginModule: pluginModulePath, pluginConfig}
+  }
   return {
     pluginModule: require(pluginModulePath.startsWith('.')
       ? path.resolve(configFileDir, pluginModulePath)

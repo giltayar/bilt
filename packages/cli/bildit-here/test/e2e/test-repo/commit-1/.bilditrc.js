@@ -9,7 +9,14 @@ module.exports = {
       gitAuthenticationKey: fs.readFileSync(path.resolve(process.env.KEYS_DIR, 'id_rsa')),
       gitUserEmail: 'gil@tayar.org',
       gitUserName: 'Gil Tayar',
-    }}
+    }},
+    "binaryRunner:npm": async () => {
+      return {
+        async run({agent, agentInstance, binary: pkg, commandArgs, executeCommandOptions = {}}) {
+          return await agent.executeCommand(agentInstance, commandArgs, executeCommandOptions)
+        },
+      }
+    }
   },
   publish: true
 }

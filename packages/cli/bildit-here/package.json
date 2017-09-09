@@ -24,7 +24,7 @@
     "type": "git"
   },
   "dependencies": {
-    "@bildit/config-based-plugin-repository": "*",
+    "@bildit/config-based-plugin-repository": "^1.0.5",
     "cpr": "^2.2.0",
     "debug": "^2.6.8",
     "git-repo-info": "^1.4.1",

@@ -20,36 +20,41 @@ module.exports = ({
       try {
         debug('Checking if repository %s was fetched', repository)
         const status = await agent.executeCommand(agentInstance, ['git', 'status', '--porcelain'], {
-          cwd: agent.buildDir(),
+          cwd: agent.buildDir(agentInstance),
           returnOutput: true,
         })
         debug('Repository %s was fetched')
         if (status.length > 0) {
           debug('Resetting repository %s', repository)
           await agent.executeCommand(agentInstance, ['git', 'reset', '--hard'], {
-            cwd: agent.buildDir(),
+            cwd: agent.buildDir(agentInstance),
           })
         }
       } catch (_) {
         debug('cloning repository %s', repository)
-        await agent.executeCommand(agentInstance, ['git', 'clone', repository, agent.buildDir()])
+        await agent.executeCommand(agentInstance, [
+          'git',
+          'clone',
+          repository,
+          agent.buildDir(agentInstance),
+        ])
       }
     },
     async commitAndPush({agent, agentInstance, message}) {
       debug('committing patch changes %s', message)
       await agent.executeCommand(agentInstance, ['git', 'commit', '-am', message], {
-        cwd: agent.buildDir(),
+        cwd: agent.buildDir(agentInstance),
       })
 
       debug('pushing to remote repo')
       await agent.executeCommand(agentInstance, ['git', 'push'], {
-        cwd: agent.buildDir(),
+        cwd: agent.buildDir(agentInstance),
       })
     },
     async listDirtyFiles({agent, agentInstance}) {
       debug('listing diry files of repo in agent %s', agentInstance.id)
       const status = await agent.executeCommand(agentInstance, ['git', 'status', '--porcelain'], {
-        cwd: agent.buildDir(),
+        cwd: agent.buildDir(agentInstance),
         returnOutput: true,
       })
 
