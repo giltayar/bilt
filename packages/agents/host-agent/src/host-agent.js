@@ -65,8 +65,8 @@ module.exports = async () => {
       return process.env.HOME
     },
 
-    buildDir(agentInstance) {
-      return agentInstance.directory
+    buildDir() {
+      return '.'
     },
 
     async createSymlink(agentInstance, link, target) {

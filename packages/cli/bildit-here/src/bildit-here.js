@@ -12,18 +12,11 @@ const {
   saveLastBuildInfo,
 } = require('./last-build-info')
 
-process.on('unhandledRejection', err => {
-  console.log(err.stack || err)
-  process.exit(2)
-})
-
-main().catch(err => console.log(err.stack || err))
-
-async function main() {
-  const isRemoteRepo = process.argv[2].startsWith('http') || process.argv[2].startsWith('git@')
-  const directoryToBuild = !isRemoteRepo ? path.resolve(process.argv[2]) : undefined
-  const config = !directoryToBuild ? path.resolve(process.argv[3]) : directoryToBuild
-  const repository = isRemoteRepo ? process.argv[2] : directoryToBuild
+module.exports = async function(repository, configFile) {
+  const isRemoteRepo = repository.startsWith('http') || repository.startsWith('git@')
+  const directoryToBuild = !isRemoteRepo ? path.resolve(repository) : undefined
+  const config = !directoryToBuild ? path.resolve(configFile) : directoryToBuild
+  const finalRepository = isRemoteRepo ? repository : directoryToBuild
 
   const pluginRepository = await createPluginRepository(config)
   try {
@@ -36,7 +29,7 @@ async function main() {
       : {}
 
     const jobsToWaitFor = await runJobs(
-      repository,
+      finalRepository,
       isRemoteRepo,
       jobDispatcher,
       filesChangedSinceLastBuild,

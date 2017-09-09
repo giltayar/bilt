@@ -8,7 +8,7 @@ const {promisify: p} = require('util')
 const {fileContents, writeFile} = require('../utils/file-utils')
 const {setupFolder, setupGitRepo} = require('../utils/setup')
 
-const cli = path.resolve(__dirname, '../../src/bildit-here.js')
+const cli = path.resolve(__dirname, '../../scripts/bildit-here-cli.js')
 const testRepoSrc = path.resolve(__dirname, 'test-repo-no-publish')
 
 describe('local directory use-case', () => {

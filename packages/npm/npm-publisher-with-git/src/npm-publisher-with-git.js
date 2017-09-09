@@ -31,7 +31,7 @@ module.exports = async ({
           returnOutput: true,
         },
       )
-      debug('npm version output is %s', versionOutput, versionOutput.match(/^(v.*)$/m))
+      debug('npm version output is %s', versionOutput)
 
       const newVersion = versionOutput.match(/^(v.*)$/m)[0]
 

@@ -109,7 +109,7 @@ module.exports = async ({
     },
 
     buildDir() {
-      return path.join(workdir, 'builddir')
+      return 'builddir'
     },
 
     async createSymlink(agentInstance, link, target) {

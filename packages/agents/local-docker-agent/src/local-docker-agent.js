@@ -90,8 +90,8 @@ module.exports = async ({
       return homeDir.trim()
     },
 
-    buildDir(agentInstance) {
-      return agentInstance.directory
+    buildDir() {
+      return '.'
     },
 
     async createSymlink(agentInstance, link, target) {

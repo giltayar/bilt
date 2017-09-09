@@ -3,13 +3,12 @@
 const path = require('path')
 const {describe, it, before, after} = require('mocha')
 const {expect} = require('chai')
-const {exec} = require('child_process')
 const {promisify: p} = require('util')
 const {dockerComposeTool, getAddressForService} = require('docker-compose-mocha')
 const {fileContents, writeFile} = require('../utils/file-utils')
-const {setupFolder, setupGitRepo} = require('../utils/setup')
+const {setupGitRepo} = require('../utils/setup')
+const bilditHere = require('../../src/bildit-here')
 
-const cli = path.resolve(__dirname, '../../src/bildit-here.js')
 const testRepoSrc = path.resolve(__dirname, 'test-repo')
 
 describe('local directory use-case', () => {
@@ -31,21 +30,22 @@ describe('local directory use-case', () => {
         'npm-registry',
         4873,
       )
-      const testRepo = await setupFolder(path.join(testRepoSrc, 'commit-1'))
+      const gitServerAddress = await getAddressForService(envName, pathToCompose, 'git-server', 22)
+      const testRepo = await setupGitRepo(
+        path.join(testRepoSrc),
+        `ssh://user@${gitServerAddress}/test-repo`,
+      )
       await adjustNpmRegistryLocationInRepo(testRepo, npmRegistryAddress)
 
       try {
-        const {stdout, stderr} = await p(exec)(`${process.argv0} ${cli} ${testRepo}`, {
-          env: {
-            npm_config_registry: `http://${npmRegistryAddress}/`,
-            KEYS_DIR: path.resolve(__dirname, 'git-server/keys'),
-            DEBUG: 'bildit:npm-publisher-with-git,bildit:git-vcs',
-            ...process.env,
-          },
-        })
+        process.env = {
+          npm_config_registry: `http://${npmRegistryAddress}/`,
+          KEYS_DIR: path.resolve(__dirname, 'git-server/keys'),
+          DEBUG: 'bildit:npm-publisher-with-git,bildit:git-vcs',
+          ...process.env,
+        }
+        await bilditHere(testRepo)
 
-        expect(stdout).to.include('Building a')
-        expect(stdout).to.include('Building b')
         expect(await fileContents(testRepo, 'a/postinstalled.txt')).to.equal('')
         expect(await fileContents(testRepo, 'b/postinstalled.txt')).to.equal('')
         expect(await fileContents(testRepo, 'b/built.txt')).to.equal('')
