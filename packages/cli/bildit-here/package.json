@@ -10,8 +10,8 @@
   "scripts": {
     "test": "mocha 'test/**/*.test.js'",
     "build": "npm run build:e2e-keys && build:e2e-git-repo",
-    "build:e2e-keys": "echo y | ssh-keygen -t rsa -P '' -f test/e2e/git-server/keys/id_rsa",
-    "build:e2e-git-repo": "git init --bar test/e2e/git-server/repos/sample-repo"
+    "build:e2e-keys": "echo y | ssh-keygen -t rsa -P '' -f test/it/bildit-here/git-server/keys/id_rsa",
+    "build:e2e-git-repo": "git init --bare test/it/bildit-here/git-server/repos/test-repo"
   },
   "keywords": [
     "ci",

@@ -9,7 +9,7 @@ const {fileContents, writeFile} = require('../utils/file-utils')
 const {setupGitRepo} = require('../utils/setup')
 const bilditHere = require('../../src/bildit-here')
 
-const testRepoSrc = path.resolve(__dirname, 'test-repo')
+const testRepoSrc = path.resolve(__dirname, 'bildit-here/test-repo')
 
 describe('local directory use-case', () => {
   describe('with publish use case', () => {

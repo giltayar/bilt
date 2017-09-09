@@ -10,13 +10,13 @@ const buildInfo = require('../../src/last-build-info')
 describe('last-build-info', () => {
   describe('readLastBuildInfo and saveLastBuildInfo', () => {
     it('should return undefined when no .bildit folder', async () => {
-      const gitDir = await setupGitRepo(path.join(__dirname, 'test-folder'))
+      const gitDir = await setupGitRepo(path.join(__dirname, 'last-build-info/test-folder'))
 
       expect(await buildInfo.readLastBuildInfo(gitDir)).to.be.undefined
     })
 
     it('should enable saving and re-reading', async () => {
-      const gitDir = await setupGitRepo(path.join(__dirname, 'test-folder'))
+      const gitDir = await setupGitRepo(path.join(__dirname, 'last-build-info/test-folder'))
 
       await buildInfo.saveLastBuildInfo(gitDir, {something: 4})
 
@@ -26,7 +26,7 @@ describe('last-build-info', () => {
 
   describe('findChangesInCurrentRepo', () => {
     it('should show no changes in files on an untouched workspace', async () => {
-      const gitDir = await setupGitRepo(path.join(__dirname, 'test-folder'))
+      const gitDir = await setupGitRepo(path.join(__dirname, 'last-build-info/test-folder'))
 
       const changes = await buildInfo.findChangesInCurrentRepo(gitDir)
 
@@ -35,7 +35,7 @@ describe('last-build-info', () => {
     })
 
     it('should show file changes in one file that we touch', async () => {
-      const gitDir = await setupGitRepo(path.join(__dirname, 'test-folder'))
+      const gitDir = await setupGitRepo(path.join(__dirname, 'last-build-info/test-folder'))
 
       const lastBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
@@ -49,7 +49,7 @@ describe('last-build-info', () => {
     })
 
     it('should show file changes in an added file', async () => {
-      const gitDir = await setupGitRepo(path.join(__dirname, 'test-folder'))
+      const gitDir = await setupGitRepo(path.join(__dirname, 'last-build-info/test-folder'))
 
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
       await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'lalala')
@@ -66,7 +66,7 @@ describe('last-build-info', () => {
 
   describe('calculateChangesToBuildSinceLastBuild', () => {
     it('should show only changed files if on same commit', async () => {
-      const gitDir = await setupGitRepo(path.join(__dirname, 'test-folder'))
+      const gitDir = await setupGitRepo(path.join(__dirname, 'last-build-info/test-folder'))
 
       const lastBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
 
@@ -93,7 +93,7 @@ describe('last-build-info', () => {
     })
 
     it('should work even if has more than one commit', async () => {
-      const gitDir = await setupGitRepo(path.join(__dirname, 'test-folder'))
+      const gitDir = await setupGitRepo(path.join(__dirname, 'last-build-info/test-folder'))
 
       const firstBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
 
@@ -118,7 +118,7 @@ describe('last-build-info', () => {
     })
 
     it('should rebuild a reverted file', async () => {
-      const gitDir = await setupGitRepo(path.join(__dirname, 'test-folder'))
+      const gitDir = await setupGitRepo(path.join(__dirname, 'last-build-info/test-folder'))
 
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
       await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'lalala2')
@@ -137,7 +137,7 @@ describe('last-build-info', () => {
     })
 
     it('should ignore a deleted file', async () => {
-      const gitDir = await setupGitRepo(path.join(__dirname, 'test-folder'))
+      const gitDir = await setupGitRepo(path.join(__dirname, 'last-build-info/test-folder'))
 
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
       await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'lalala2')
@@ -157,7 +157,7 @@ describe('last-build-info', () => {
 
     describe('.bilditignore', () => {
       it('should work in root', async () => {
-        const gitDir = await setupGitRepo(path.join(__dirname, 'test-folder'))
+        const gitDir = await setupGitRepo(path.join(__dirname, 'last-build-info/test-folder'))
 
         const firstBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
 
@@ -174,7 +174,7 @@ describe('last-build-info', () => {
       })
 
       it('should override in subfolder', async () => {
-        const gitDir = await setupGitRepo(path.join(__dirname, 'test-folder'))
+        const gitDir = await setupGitRepo(path.join(__dirname, 'last-build-info/test-folder'))
 
         const firstBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
 
