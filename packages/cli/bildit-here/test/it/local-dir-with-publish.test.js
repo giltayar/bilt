@@ -37,22 +37,18 @@ describe('local directory use-case', () => {
       )
       await adjustNpmRegistryLocationInRepo(testRepo, npmRegistryAddress)
 
-      try {
-        process.env = {
-          npm_config_registry: `http://${npmRegistryAddress}/`,
-          KEYS_DIR: path.resolve(__dirname, 'git-server/keys'),
-          DEBUG: 'bildit:npm-publisher-with-git,bildit:git-vcs',
-          ...process.env,
-        }
-        await bilditHere(testRepo)
-
-        expect(await fileContents(testRepo, 'a/postinstalled.txt')).to.equal('')
-        expect(await fileContents(testRepo, 'b/postinstalled.txt')).to.equal('')
-        expect(await fileContents(testRepo, 'b/built.txt')).to.equal('')
-        expect(await fileContents(testRepo, 'b/tested.`txt')).to.equal('')
-      } catch (e) {
-        console.error('error running cli', e)
+      process.env = {
+        npm_config_registry: `http://${npmRegistryAddress}/`,
+        KEYS_DIR: path.resolve(__dirname, 'bildit-here/git-server/keys'),
+        DEBUG: 'bildit:npm-publisher-with-git,bildit:git-vcs',
+        ...process.env,
       }
+      await bilditHere(testRepo)
+
+      expect(await fileContents(testRepo, 'a/postinstalled.txt')).to.equal('')
+      expect(await fileContents(testRepo, 'b/postinstalled.txt')).to.equal('')
+      expect(await fileContents(testRepo, 'b/built.txt')).to.equal('')
+      expect(await fileContents(testRepo, 'b/tested.`txt')).to.equal('')
     })
   })
 })
