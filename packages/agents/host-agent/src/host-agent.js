@@ -4,6 +4,7 @@ const path = require('path')
 const {promisify} = require('util')
 const debug = require('debug')('bildit:host-agent')
 const {createSymlink: createSymlinkInHost} = require('@bildit/symlink')
+const makeDir = require('make-dir')
 
 module.exports = async () => {
   const info = agent => agent
@@ -16,15 +17,17 @@ module.exports = async () => {
       return
     },
 
-    async executeCommand(agentInstance, commandArgs, {cwd, returnOutput} = {}) {
+    async executeCommand(agentInstance, commandArgs, {cwd, returnOutput, homeDir} = {}) {
       const {directory} = info(agentInstance)
 
       debug('dispatching command %o in directory %s', commandArgs, directory)
+      const orgEnv = process.env
       const output = await new Promise((resolve, reject) => {
         const process = childProcess.spawn(commandArgs[0], commandArgs.slice(1), {
           cwd: path.join(directory, cwd || '.'),
           stdio: returnOutput ? undefined : 'inherit',
           shell: false,
+          env: homeDir ? {HOME: homeDir, ...orgEnv} : undefined,
         })
 
         let output = ''
@@ -53,7 +56,11 @@ module.exports = async () => {
     async writeBufferToFile(agentInstance, fileName, buffer) {
       const {directory} = info(agentInstance)
 
-      return await promisify(fs.writeFile)(path.resolve(directory, fileName), buffer)
+      const fullFilename = path.resolve(directory, fileName)
+      const dir = path.dirname(fullFilename)
+      await makeDir(dir)
+
+      return await promisify(fs.writeFile)(fullFilename, buffer)
     },
 
     async homeDir() {

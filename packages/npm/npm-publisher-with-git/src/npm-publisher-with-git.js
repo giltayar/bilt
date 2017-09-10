@@ -1,17 +1,26 @@
 'use strict'
-
+const {promisify: p} = require('util')
+const fs = require('fs')
+const os = require('os')
 const path = require('path')
 const debug = require('debug')('bildit:npm-publisher-with-git')
 
 module.exports = async ({
-  pluginConfig: {npmAuthenticationLine, access: access = 'restricted'},
+  pluginConfig: {
+    npmAuthenticationLine,
+    access: access = 'restricted',
+    usedLocally = !npmAuthenticationLine,
+  },
   pluginRepository,
 }) => {
   const vcs = await pluginRepository.findPlugin('vcs')
+  const initializedAgentInstances = new Map()
 
   return {
     async publishPackage(job, {agent, agentInstance}) {
       debug(`publishing for job ${job}`)
+      const homeDir = await initializeAgentInstanceIfNeeded({agent, agentInstance})
+
       const {artifactPath} = job
 
       if (npmAuthenticationLine) {
@@ -29,6 +38,7 @@ module.exports = async ({
         {
           cwd: artifactPath,
           returnOutput: true,
+          homeDir,
         },
       )
       debug('npm version output is %s', versionOutput)
@@ -42,8 +52,29 @@ module.exports = async ({
       debug('npm publishing')
       await agent.executeCommand(agentInstance, ['npm', 'publish', '--access', access], {
         cwd: artifactPath,
+        homeDir,
       })
     },
+  }
+
+  async function initializeAgentInstanceIfNeeded({agent, agentInstance}) {
+    if (initializedAgentInstances.has(agentInstance.id))
+      return initializedAgentInstances.get(agentInstance.id).homeDir
+
+    const homeDir =
+      usedLocally && npmAuthenticationLine
+        ? await p(fs.mkdtemp)(os.tmpdir())
+        : await agent.homeDir(agentInstance)
+
+    if (npmAuthenticationLine) {
+      debug('creating npmrc with authentication line')
+
+      await createAuthenticationNpmRc(agent, agentInstance, npmAuthenticationLine)
+    }
+
+    initializedAgentInstances.set(agentInstance.id, {homeDir})
+
+    return homeDir
   }
 }
 

@@ -143,6 +143,7 @@ module.exports = async ({
       AttachStdout: true,
       AttachStderr: true,
       Tty: !returnOutput,
+      Env: homeDir ? [`HOME=${homeDir}`] : undefined,
     })
     const execStream = await execution.start({Tty: !returnOutput})
     let output = ''

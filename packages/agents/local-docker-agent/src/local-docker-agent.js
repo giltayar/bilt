@@ -116,7 +116,7 @@ module.exports = async ({
     },
   }
 
-  async function executeCommand(agentInstance, commandArgs, {cwd, returnOutput} = {}) {
+  async function executeCommand(agentInstance, commandArgs, {cwd, returnOutput, homeDir} = {}) {
     const {container} = info(agentInstance)
 
     const finalCommand = cwd ? ['sh', '-c', `cd '${cwd}' && ${commandArgs.join(' ')}`] : commandArgs
@@ -131,7 +131,8 @@ module.exports = async ({
       Cmd: finalCommand,
       AttachStdout: true,
       AttachStderr: true,
-      Tty: !returnOutput,
+`      Env: homeDir ? [`HOME=${homeDir}`] : undefined,
+`      Tty: !returnOutput,
     })
     const execStream = await execution.start({Tty: !returnOutput})
     let output = ''
