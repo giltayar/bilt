@@ -83,8 +83,10 @@ module.exports = ({
         ? await p(fs.mkdtemp)(os.tmpdir())
         : await agent.homeDir(agentInstance)
 
+    await agent.writeBufferToFile(agentInstance, path.join(homeDir, '.ssh/config'), Buffer.from(''))
+
     if (gitAuthenticationKey) {
-      const idRsaPath = path.join(homeDir, '.ssh', 'id_rsa')
+      const idRsaPath = path.join(homeDir, '.ssh/id_rsa')
       await agent.writeBufferToFile(agentInstance, idRsaPath, Buffer.from(gitAuthenticationKey))
 
       await agent.executeCommand(agentInstance, ['chmod', '600', idRsaPath])
@@ -112,6 +114,6 @@ module.exports = ({
 function gitOverrideLocalConfigEnvVariables(homeDir) {
   return {
     HOME: homeDir,
-    GIT_SSH_COMMAND: `ssh -o StrictHostKeyChecking=no -F ${homeDir}/config -i ${homeDir}/id_rsa`,
+    GIT_SSH_COMMAND: `ssh -o 'StrictHostKeyChecking no' -F '${homeDir}/.ssh/config' -i '${homeDir}/.ssh/id_rsa'`,
   }
 }

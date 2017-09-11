@@ -27,7 +27,7 @@ module.exports = async () => {
           cwd: path.join(directory, cwd || '.'),
           stdio: returnOutput ? undefined : 'inherit',
           shell: false,
-          env: {...orgEnv, env},
+          env: {...orgEnv, ...env},
         })
 
         let output = ''
