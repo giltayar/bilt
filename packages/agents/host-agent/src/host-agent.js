@@ -17,7 +17,7 @@ module.exports = async () => {
       return
     },
 
-    async executeCommand(agentInstance, commandArgs, {cwd, returnOutput, homeDir} = {}) {
+    async executeCommand(agentInstance, commandArgs, {cwd, returnOutput, env} = {}) {
       const {directory} = info(agentInstance)
 
       debug('dispatching command %o in directory %s', commandArgs, directory)
@@ -27,7 +27,7 @@ module.exports = async () => {
           cwd: path.join(directory, cwd || '.'),
           stdio: returnOutput ? undefined : 'inherit',
           shell: false,
-          env: homeDir ? {HOME: homeDir, ...orgEnv} : undefined,
+          env: {...orgEnv, env},
         })
 
         let output = ''

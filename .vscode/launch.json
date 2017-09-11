@@ -15,6 +15,9 @@
       ],
       "cwd": "${workspaceRoot}/packages/cli/bildit-here",
       "protocol": "inspector",
+      "env": {
+        "DEBUG": "bildit:host-agent"
+      },
       "console": "integratedTerminal"
 
     },

@@ -23,12 +23,6 @@ module.exports = async ({
 
       const {artifactPath} = job
 
-      if (npmAuthenticationLine) {
-        debug('creating npmrc with authentication line')
-
-        await createAuthenticationNpmRc(agent, agentInstance, npmAuthenticationLine)
-      }
-
       await ensureNoDirtyGitFiles(vcs, agent, agentInstance, artifactPath)
 
       debug('patching package.json version')
@@ -38,7 +32,7 @@ module.exports = async ({
         {
           cwd: artifactPath,
           returnOutput: true,
-          homeDir,
+          env: {HOME: homeDir},
         },
       )
       debug('npm version output is %s', versionOutput)
@@ -52,7 +46,7 @@ module.exports = async ({
       debug('npm publishing')
       await agent.executeCommand(agentInstance, ['npm', 'publish', '--access', access], {
         cwd: artifactPath,
-        homeDir,
+        env: {HOME: homeDir},
       })
     },
   }
@@ -69,7 +63,7 @@ module.exports = async ({
     if (npmAuthenticationLine) {
       debug('creating npmrc with authentication line')
 
-      await createAuthenticationNpmRc(agent, agentInstance, npmAuthenticationLine)
+      await createAuthenticationNpmRc(agent, agentInstance, npmAuthenticationLine, homeDir)
     }
 
     initializedAgentInstances.set(agentInstance.id, {homeDir})
@@ -78,9 +72,7 @@ module.exports = async ({
   }
 }
 
-async function createAuthenticationNpmRc(agent, agentInstance, npmAuthenticationLine) {
-  const homeDir = await agent.homeDir(agentInstance)
-
+async function createAuthenticationNpmRc(agent, agentInstance, npmAuthenticationLine, homeDir) {
   await agent.writeBufferToFile(
     agentInstance,
     path.join(homeDir, '.npmrc'),
