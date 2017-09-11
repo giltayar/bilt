@@ -33,7 +33,7 @@ describe('local directory use-case', () => {
       const gitServerAddress = await getAddressForService(envName, pathToCompose, 'git-server', 22)
       const testRepo = await setupGitRepo(
         path.join(testRepoSrc),
-        `ssh://user@${gitServerAddress}/test-repo`,
+        `ssh://git@${gitServerAddress}/test-repo`,
       )
       await adjustNpmRegistryLocationInRepo(testRepo, npmRegistryAddress)
 
