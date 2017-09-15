@@ -6,7 +6,6 @@ module.exports = {
     "publisher:npm": {"@bildit/npm-publisher-with-git": {
       access: 'public',
       npmAuthenticationLine: '//localhost:4873/:_authToken="NPM_TOKEN"',
-      npmRegistry: 'http://localhost:4873/',
       usedLocally: true
     }},
     "binaryRunner:npm": async () => {

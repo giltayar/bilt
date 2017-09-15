@@ -8,7 +8,6 @@ const debug = require('debug')('bildit:npm-publisher-with-git')
 module.exports = async ({
   pluginConfig: {
     npmAuthenticationLine,
-    npmRegistry,
     access: access = 'restricted',
     usedLocally = !npmAuthenticationLine,
   },
@@ -45,16 +44,10 @@ module.exports = async ({
       await vcs.commitAndPush({agent, agentInstance, message: newVersion})
 
       debug('npm publishing')
-      await agent.executeCommand(
-        agentInstance,
-        ['npm', 'publish', '--access', access].concat(
-          npmRegistry ? ['--registry', npmRegistry] : [],
-        ),
-        {
-          cwd: artifactPath,
-          env: {HOME: homeDir},
-        },
-      )
+      await agent.executeCommand(agentInstance, ['npm', 'publish', '--access', access], {
+        cwd: artifactPath,
+        env: {HOME: homeDir},
+      })
     },
   }
 

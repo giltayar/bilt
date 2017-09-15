@@ -1,5 +1,6 @@
 'use strict'
 const path = require('path')
+const {execFile} = require('child_process')
 const {expect} = require('chai')
 const {promisify: p} = require('util')
 const {describe, it, before, after} = require('mocha')
@@ -61,9 +62,13 @@ describe('local directory use-case', () => {
       expect(await fileContents(buildDir, 'b/postinstalled.txt')).to.equal('')
       expect(await fileContents(buildDir, 'b/built.txt')).to.equal('')
       expect(await fileContents(buildDir, 'b/tested.txt')).to.equal('')
+
+      checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.1')
+      checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.1')
     })
   })
 })
+
 async function adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress) {
   const npmToken = await p(getNpmToken)(
     `http://${npmRegistryAddress}/`,
@@ -78,4 +83,10 @@ async function adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress) {
     .replace('NPM_TOKEN', npmToken)
 
   await writeFile(modifiedBilditRc, buildDir, '.bilditrc.js')
+}
+
+async function checkVersionExists(pkg, version) {
+  const {stdout} = await p(execFile)('npm', ['view', `${pkg}@${version}`])
+
+  expect(stdout).to.include(version)
 }
