@@ -2,6 +2,7 @@
 
 ## Continuation
 
+* Confusion between buildir and the server's git repo. Both need to be temporary
 * npm publish says:
 
 ```error

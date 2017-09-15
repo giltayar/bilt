@@ -5,18 +5,22 @@ const {exec, execFile} = require('child_process')
 const {promisify: p} = require('util')
 const cpr = require('cpr')
 
-async function setupGitRepo(sourceDirectoryOfCommits, origin, repoDir) {
-  await gitInit(repoDir)
+async function setupBuildDir(sourceDirectoryOfCommits, origin) {
+  const tmpDir = await p(fs.mkdtemp)(path.join(os.tmpdir(), 'replay-git-repo'))
+
+  await gitInit(tmpDir)
 
   const commitsToReplay = await findCommitsToReplayInDirectory(sourceDirectoryOfCommits)
 
   for (const commitDirectory of commitsToReplay) {
-    await replayCommit(repoDir, commitDirectory)
+    await replayCommit(tmpDir, commitDirectory)
   }
 
   if (origin) {
-    await p(execFile)('git', ['remote', 'add', 'origin', origin], {cwd: repoDir})
+    await p(execFile)('git', ['remote', 'add', 'origin', origin], {cwd: tmpDir})
   }
+
+  return tmpDir
 }
 
 async function findCommitsToReplayInDirectory(directory) {
@@ -58,7 +62,16 @@ async function setupFolder(sourceDirectory) {
   return tmpDir
 }
 
+async function setupFolderInLocationDockerContainersCanSee(sourceDirectory) {
+  const tmpDir = await p(fs.mkdtemp)(path.join(__dirname, 'temp-folders-for-docker') + '/')
+
+  await p(cpr)(sourceDirectory + '/', tmpDir, {overwrite: true})
+
+  return tmpDir
+}
+
 module.exports = {
   setupFolder,
-  setupGitRepo,
+  setupBuildDir,
+  setupFolderInLocationDockerContainersCanSee,
 }
