@@ -33,7 +33,7 @@ describe('local directory use-case', () => {
       const gitServerAddress = await getAddressForService(envName, pathToCompose, 'git-server', 22)
       const testRepo = await setupGitRepo(
         path.join(testRepoSrc),
-        `ssh://git@${gitServerAddress}/test-repo`,
+        `ssh://git@${gitServerAddress}/git-server/repos/test-repo`,
       )
       await adjustNpmRegistryLocationInRepo(testRepo, npmRegistryAddress)
 
@@ -55,7 +55,7 @@ describe('local directory use-case', () => {
 async function adjustNpmRegistryLocationInRepo(testRepo, npmRegistryAddress) {
   const bilditRc = await fileContents(testRepo, '.bilditrc.js')
 
-  bilditRc.replace('localhost:4873', npmRegistryAddress)
+  const modifiedBilditRc = bilditRc.replace('localhost:4873', npmRegistryAddress)
 
-  await writeFile(bilditRc, testRepo, '.bilditrc.js')
+  await writeFile(modifiedBilditRc, testRepo, '.bilditrc.js')
 }
