@@ -6,6 +6,7 @@ services:
         npm_config_registry: https://registry.npmjs.org/
         NPM_USER: npm-user
         NPM_PASSWORD: npm-user-password
+        NPM_SECRET: very-secret
     ports:
         - 4873
 

@@ -1,15 +1,12 @@
 'use strict'
 const path = require('path')
-const {describe, it, before, after} = require('mocha')
 const {expect} = require('chai')
 const {promisify: p} = require('util')
+const {describe, it, before, after} = require('mocha')
+const getNpmToken = require('get-npm-token')
 const {dockerComposeTool, getAddressForService} = require('docker-compose-mocha')
 const {fileContents, writeFile} = require('../utils/file-utils')
-const {
-  setupBuildDir,
-  setupFolder,
-  setupFolderInLocationDockerContainersCanSee,
-} = require('../utils/setup')
+const {setupBuildDir, setupFolderInLocationDockerContainersCanSee} = require('../utils/setup')
 const bilditHere = require('../../src/bildit-here')
 
 const testRepoSrc = path.resolve(__dirname, 'bildit-here/test-repo')
@@ -51,7 +48,7 @@ describe('local directory use-case', () => {
         testRepoSrc,
         `ssh://git@${gitServerAddress}/git-server/repos/test-repo`,
       )
-      await adjustNpmRegistryLocationInRepo(buildDir, npmRegistryAddress)
+      await adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress)
 
       process.env = {
         npm_config_registry: `http://${npmRegistryAddress}/`,
@@ -67,10 +64,18 @@ describe('local directory use-case', () => {
     })
   })
 })
-async function adjustNpmRegistryLocationInRepo(testRepo, npmRegistryAddress) {
-  const bilditRc = await fileContents(testRepo, '.bilditrc.js')
+async function adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress) {
+  const npmToken = await p(getNpmToken)(
+    `http://${npmRegistryAddress}/`,
+    'npm-user',
+    'gil@tayar.org',
+    'npm-user-password',
+  )
+  const bilditRc = await fileContents(buildDir, '.bilditrc.js')
 
-  const modifiedBilditRc = bilditRc.replace('localhost:4873', npmRegistryAddress)
+  const modifiedBilditRc = bilditRc
+    .replace(/localhost\:4873/g, npmRegistryAddress)
+    .replace('NPM_TOKEN', npmToken)
 
-  await writeFile(modifiedBilditRc, testRepo, '.bilditrc.js')
+  await writeFile(modifiedBilditRc, buildDir, '.bilditrc.js')
 }
