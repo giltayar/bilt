@@ -60,7 +60,7 @@ describe('local directory use-case', () => {
       expect(await fileContents(buildDir, 'a/postinstalled.txt')).to.equal('')
       expect(await fileContents(buildDir, 'b/postinstalled.txt')).to.equal('')
       expect(await fileContents(buildDir, 'b/built.txt')).to.equal('')
-      expect(await fileContents(buildDir, 'b/tested.`txt')).to.equal('')
+      expect(await fileContents(buildDir, 'b/tested.txt')).to.equal('')
     })
   })
 })
