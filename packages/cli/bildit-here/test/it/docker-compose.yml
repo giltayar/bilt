@@ -15,6 +15,6 @@ services:
         - 22
         - 3000
     volumes:
-        - ./bildit-here/git-server/repos:/git-server/repos
+        - ${GIT_DIR}:/git-server/repos
         - ./bildit-here/git-server/keys:/git-server/keys
 

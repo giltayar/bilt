@@ -20,9 +20,6 @@ Error: Command failed with errorcode 1
     at Process.ChildProcess._handle.onexit (internal/child_process.js:211:5```
 ```
 
-* Also, we're doing git operations directly on test-repo in the monorepo and not in a tempdir. This is because the
-  docker-compose points there.
-
 ## Tests
 
 1. You're good to go in terms of design - start writing tests

@@ -5,22 +5,18 @@ const {exec, execFile} = require('child_process')
 const {promisify: p} = require('util')
 const cpr = require('cpr')
 
-async function setupGitRepo(sourceDirectoryOfCommits, origin) {
-  const tmpDir = await p(fs.mkdtemp)(path.join(os.tmpdir(), 'replay-git-repo'))
-
-  await gitInit(tmpDir)
+async function setupGitRepo(sourceDirectoryOfCommits, origin, repoDir) {
+  await gitInit(repoDir)
 
   const commitsToReplay = await findCommitsToReplayInDirectory(sourceDirectoryOfCommits)
 
   for (const commitDirectory of commitsToReplay) {
-    await replayCommit(tmpDir, commitDirectory)
+    await replayCommit(repoDir, commitDirectory)
   }
 
   if (origin) {
-    await p(execFile)('git', ['remote', 'add', 'origin', origin], {cwd: tmpDir})
+    await p(execFile)('git', ['remote', 'add', 'origin', origin], {cwd: repoDir})
   }
-
-  return tmpDir
 }
 
 async function findCommitsToReplayInDirectory(directory) {
