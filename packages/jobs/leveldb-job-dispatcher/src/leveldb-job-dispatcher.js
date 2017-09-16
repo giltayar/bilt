@@ -8,7 +8,8 @@ const level = require('level')
 const bytewise = require('bytewise')
 const {runJob, prepareJobForRunning, deleteJobState, isSubJob} = require('@bildit/jobs')
 
-module.exports = async ({pluginRepository, events, directory}) => {
+module.exports = async ({pluginRepository, directory}) => {
+  const events = await pluginRepository.findPlugin('events')
   const {queue, kvStoreDb} = await initializeDb()
   await listenAndExecuteJobs()
 

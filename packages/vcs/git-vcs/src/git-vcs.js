@@ -60,6 +60,18 @@ module.exports = ({
         },
       )
     },
+    async push({agent, agentInstance}) {
+      const homeDir = await initializeAgentInstanceIfNeeded({agent, agentInstance})
+      debug('pushing to remote repo')
+      await agent.executeCommand(
+        agentInstance,
+        ['git', 'push', '--set-upstream', 'origin', 'master'],
+        {
+          cwd: agent.buildDir(),
+          env: gitOverrideLocalConfigEnvVariables(homeDir),
+        },
+      )
+    },
     async listDirtyFiles({agent, agentInstance}) {
       debug('listing diry files of repo in agent %s', agentInstance.id)
       const homeDir = await initializeAgentInstanceIfNeeded({agent, agentInstance})

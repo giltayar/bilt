@@ -23,7 +23,7 @@ module.exports = async context => {
   const pluginsFound = new Map()
   debug('registry: %o', plugins)
 
-  const pluginRepositoryCreator = context => ({
+  return {
     async findPlugin(kind) {
       debug('looking for plugin of kind', kind)
 
@@ -55,12 +55,7 @@ module.exports = async context => {
         ),
       )
     },
-  })
-  const temporaryPluginRepositoryForBasePlugins = pluginRepositoryCreator(context)
-
-  const events = await temporaryPluginRepositoryForBasePlugins.findPlugin('events')
-
-  return pluginRepositoryCreator({...context, ...{events}})
+  }
 }
 
 function normalizePluginModule(modulesEntry) {

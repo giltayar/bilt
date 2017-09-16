@@ -4,6 +4,7 @@ const os = require('os')
 const {exec, execFile} = require('child_process')
 const {promisify: p} = require('util')
 const cpr = require('cpr')
+const pluginRepoFactory = require('@bildit/config-based-plugin-repository')
 
 async function setupBuildDir(sourceDirectoryOfCommits, origin) {
   const tmpDir = await p(fs.mkdtemp)(path.join(os.tmpdir(), 'replay-git-repo'))
@@ -18,9 +19,40 @@ async function setupBuildDir(sourceDirectoryOfCommits, origin) {
 
   if (origin) {
     await p(execFile)('git', ['remote', 'add', 'origin', origin], {cwd: tmpDir})
+
+    await pushOrigin(tmpDir)
   }
 
   return tmpDir
+}
+
+async function pushOrigin(buildDir) {
+  const pluginRepository = await pluginRepoFactory({
+    directory: buildDir,
+    defaultConfig: {
+      plugins: {
+        events: '@bildit/in-memory-events',
+        'agent:local-just-for-git-push': '@bildit/host-agent',
+        'vcs-just-for-git-push': {
+          '@bildit/git-vcs': {
+            gitAuthenticationKey: fs.readFileSync(path.resolve(process.env.KEYS_DIR, 'id_rsa')),
+            gitUserEmail: 'gil@tayar.org',
+            gitUserName: 'Gil Tayar',
+            usedLocally: true,
+          },
+        },
+      },
+    },
+  })
+
+  const gitVcs = await pluginRepository.findPlugin('vcs-just-for-git-push')
+  const localAgent = await pluginRepository.findPlugin('agent:local-just-for-git-push')
+  const agentInstance = await localAgent.acquireInstanceForJob({repository: buildDir})
+  try {
+    await gitVcs.push({agent: localAgent, agentInstance})
+  } finally {
+    localAgent.releaseInstanceForJob(agentInstance)
+  }
 }
 
 async function findCommitsToReplayInDirectory(directory) {

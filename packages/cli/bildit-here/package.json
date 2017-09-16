@@ -24,7 +24,7 @@
     "type": "git"
   },
   "dependencies": {
-    "@bildit/config-based-plugin-repository": "^1.0.5",
+    "@bildit/config-based-plugin-repository": "^1.0.6",
     "cpr": "^2.2.0",
     "debug": "^2.6.8",
     "get-npm-token": "^1.0.1",
@@ -37,10 +37,10 @@
   "devDependencies": {
     "chai": "^4.1.0",
     "docker-compose-mocha": "^1.1.0",
-    "eslint": "^4.2.0",
+    "eslint": "^4.7.0",
     "eslint-plugin-prettier": "^2.1.2",
-    "mocha": "^3.4.2",
-    "prettier": "^1.5.2",
+    "mocha": "^3.5.3",
+    "prettier": "^1.7.0",
     "test-fixture": "^1.0.2"
   }
 }
