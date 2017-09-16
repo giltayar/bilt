@@ -2,24 +2,8 @@
 
 ## Continuation
 
-* Confusion between buildir and the server's git repo. Both need to be temporary
-* npm publish says:
-
-```error
-bildit:host-agent dispatching command [ 'npm', 'publish', '--access', 'public' ] in directory /var/folders/rh/t426py3x5rn2d885tc704tcw0000gn/T/replay-git-repo97KQO3 +4s
-npm ERR! publish Failed PUT 403
-npm ERR! code E403
-npm ERR! unregistered users are not allowed to publish package a : a
-
-npm ERR! A complete log of this run can be found in:
-npm ERR!     /var/folders/rh/t426py3x5rn2d885tc704tcw0000gn/Tf2UpI5/.npm/_logs/2017-09-15T15_14_41_256Z-debug.log
-Error: Command failed with errorcode 1
-    at ChildProcess.process.on.code (/Users/giltayar/code/bildit/packages/agents/host-agent/src/host-agent.js:39:34)
-    at emitTwo (events.js:125:13)
-    at ChildProcess.emit (events.js:213:7)
-    at maybeClose (internal/child_process.js:927:16)
-    at Process.ChildProcess._handle.onexit (internal/child_process.js:211:5```
-```
+* Remote test should be fine, but we should push the local repo to the remote before running the test
+  because that is where bildit-here will take it from.
 
 ## Tests
 

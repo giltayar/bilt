@@ -34,7 +34,7 @@ describe('local directory use-case', () => {
       shouldPullImages: false,
     })
 
-    it('should build the directory with all its packages', async () => {
+    it.only('should build the directory with all its packages', async () => {
       const npmRegistryAddress = await getAddressForService(
         envName,
         pathToCompose,
