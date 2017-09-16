@@ -4,7 +4,8 @@ const path = require('path')
 const remoteDockerAgent = {
   "@bildit/remote-docker-agent": {
     image: "giltayar/node-alpine-git",
-    workdir: "/home/node/builddir"
+    workdir: "/home/node/builddir",
+    network: process.env.TEST_NETWORK
   }
 }
 
@@ -15,7 +16,6 @@ module.exports = {
     "publisher:npm": {"@bildit/npm-publisher-with-git": {
       access: 'public',
       npmAuthenticationLine: '//localhost:4873/:_authToken="NPM_TOKEN"',
-      usedLocally: true
     }},
     "vcs": {"@bildit/git-vcs": {
       gitAuthenticationKey: fs.readFileSync(path.resolve(process.env.KEYS_DIR, 'id_rsa')),

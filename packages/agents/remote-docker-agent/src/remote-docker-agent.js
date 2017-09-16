@@ -12,6 +12,7 @@ module.exports = async ({
     start = ['sleep', '100000000'],
     user = 'root',
     workdir = '/usr/work',
+    network = undefined,
   },
   pluginRepository,
 }) => {
@@ -179,6 +180,7 @@ module.exports = async ({
       Tty: true,
       Cmd: start,
       WorkingDir: workdir,
+      HostConfig: network ? {NetworkMode: network} : undefined,
       User: user,
     })
     debug('created container %s from image %s, workdir %s', container.id, image, workdir)

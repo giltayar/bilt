@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "publishConfig": {
+    "registry": "http://npm-registry:4873"
+  },
   "scripts": {
     "postinstall": "touch postinstalled.txt"
   },

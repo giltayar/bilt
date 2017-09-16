@@ -2,8 +2,7 @@
 
 ## Continuation
 
-* Remote test should be fine, but we should push the local repo to the remote before running the test
-  because that is where bildit-here will take it from.
+* connected remote docker agent's container to appropriate network. Now just check that it works.
 
 ## Tests
 

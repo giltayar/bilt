@@ -3,6 +3,9 @@
   "version": "3.2.0",
   "description": "",
   "main": "index.js",
+  "publishConfig": {
+    "registry": "http://npm-registry:4873"
+  },
   "scripts": {
     "postinstall": "cp b.txt postinstalled.txt",
     "test": "cp b.txt tested.txt",

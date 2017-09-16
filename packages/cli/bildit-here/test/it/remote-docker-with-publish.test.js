@@ -46,18 +46,14 @@ describe('local directory use-case', () => {
       process.env = {
         npm_config_registry: `http://${npmRegistryAddress}/`,
         KEYS_DIR: path.resolve(__dirname, 'bildit-here/git-server/keys'),
+        TEST_NETWORK: `${envName.replace('_', '')}_default`,
         ...process.env,
       }
       const remoteRepo = `ssh://git@${gitServerAddress}/git-server/repos/test-repo`
       const buildDir = await setupBuildDir(testRepoSrc, remoteRepo)
-      await adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress)
+      await adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress, 'npm-registry:4873')
 
-      await bilditHere(remoteRepo, buildDir)
-
-      expect(await fileContents(buildDir, 'a/postinstalled.txt')).to.equal('')
-      expect(await fileContents(buildDir, 'b/postinstalled.txt')).to.equal('')
-      expect(await fileContents(buildDir, 'b/built.txt')).to.equal('')
-      expect(await fileContents(buildDir, 'b/tested.txt')).to.equal('')
+      await bilditHere(remoteRepo.replace(gitServerAddress, 'git-server:22'), buildDir)
 
       checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.1')
       checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.1')
@@ -65,9 +61,13 @@ describe('local directory use-case', () => {
   })
 })
 
-async function adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress) {
+async function adjustNpmRegistryInfoInRepo(
+  buildDir,
+  hostNpmRegistryAddress,
+  networkNpmRegistryAddress,
+) {
   const npmToken = await p(getNpmToken)(
-    `http://${npmRegistryAddress}/`,
+    `http://${hostNpmRegistryAddress}/`,
     'npm-user',
     'gil@tayar.org',
     'npm-user-password',
@@ -75,7 +75,7 @@ async function adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress) {
   const bilditRc = await fileContents(buildDir, '.bilditrc.js')
 
   const modifiedBilditRc = bilditRc
-    .replace(/localhost\:4873/g, npmRegistryAddress)
+    .replace(/localhost\:4873/g, networkNpmRegistryAddress)
     .replace('NPM_TOKEN', npmToken)
 
   await writeFile(modifiedBilditRc, buildDir, '.bilditrc.js')
