@@ -10,7 +10,7 @@ const {fileContents, writeFile} = require('../utils/file-utils')
 const {setupBuildDir, setupFolderInLocationDockerContainersCanSee} = require('../utils/setup')
 const bilditHere = require('../../src/bildit-here')
 
-const testRepoSrc = path.resolve(__dirname, 'bildit-here/test-repo-local')
+const testRepoSrc = path.resolve(__dirname, 'bildit-here/test-repo-remote')
 
 describe('local directory use-case', () => {
   describe('with publish use case', () => {
@@ -34,7 +34,7 @@ describe('local directory use-case', () => {
       shouldPullImages: false,
     })
 
-    it.only('should build the directory with all its packages', async () => {
+    it('should build the directory with all its packages', async () => {
       const npmRegistryAddress = await getAddressForService(
         envName,
         pathToCompose,
@@ -43,9 +43,10 @@ describe('local directory use-case', () => {
       )
       const gitServerAddress = await getAddressForService(envName, pathToCompose, 'git-server', 22)
 
-      const remoteRepo = `ssh://git@${gitServerAddress}/git-server/repos/test-repo`
-
-      const buildDir = await setupBuildDir(testRepoSrc, remoteRepo)
+      const buildDir = await setupBuildDir(
+        testRepoSrc,
+        `ssh://git@${gitServerAddress}/git-server/repos/test-repo`,
+      )
       await adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress)
 
       process.env = {
