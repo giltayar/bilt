@@ -1,17 +1,18 @@
 # TODO
 
-## Continuation
-
-* connected remote docker agent's container to appropriate network. Now just check that it works.
 
 ## Tests
 
 1. You're good to go in terms of design - start writing tests
-   * E2E test publishing in host-agent
    * E2E Test local-docker-agent
-   * E2E Test remote-docker-agent
-1. And write the test for the artifact-finder cli too
-1. And write the design document again
+
+## Cleanups
+
+* cleanups:
+  * turn plugin-repository into dynamicRequire
+  * agent should not be passed, as it is not serializable.
+  * fetching repo should not be the agent's responsibility. Not sure who's.
+  * initializeAgent logic should be commonized into a library.
 
 ## Dependency Graph Build
 
