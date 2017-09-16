@@ -34,7 +34,7 @@ describe('local directory use-case', () => {
       shouldPullImages: false,
     })
 
-    it('should build the directory with all its packages', async () => {
+    it.only('should build the directory with all its packages', async () => {
       const npmRegistryAddress = await getAddressForService(
         envName,
         pathToCompose,
@@ -43,18 +43,16 @@ describe('local directory use-case', () => {
       )
       const gitServerAddress = await getAddressForService(envName, pathToCompose, 'git-server', 22)
 
-      const buildDir = await setupBuildDir(
-        testRepoSrc,
-        `ssh://git@${gitServerAddress}/git-server/repos/test-repo`,
-      )
-      await adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress)
-
       process.env = {
         npm_config_registry: `http://${npmRegistryAddress}/`,
         KEYS_DIR: path.resolve(__dirname, 'bildit-here/git-server/keys'),
         ...process.env,
       }
-      await bilditHere(buildDir)
+      const remoteRepo = `ssh://git@${gitServerAddress}/git-server/repos/test-repo`
+      const buildDir = await setupBuildDir(testRepoSrc, remoteRepo)
+      await adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress)
+
+      await bilditHere(remoteRepo, buildDir)
 
       expect(await fileContents(buildDir, 'a/postinstalled.txt')).to.equal('')
       expect(await fileContents(buildDir, 'b/postinstalled.txt')).to.equal('')

@@ -13,7 +13,8 @@ const {
 } = require('./last-build-info')
 
 module.exports = async function(repository, configFile) {
-  const isRemoteRepo = repository.startsWith('http') || repository.startsWith('git@')
+  const isRemoteRepo =
+    repository.startsWith('http:') || repository.startsWith('ssh:') || repository.startsWith('git@')
   const directoryToBuild = !isRemoteRepo ? path.resolve(repository) : undefined
   const config = !directoryToBuild ? path.resolve(configFile) : directoryToBuild
   const finalRepository = isRemoteRepo ? repository : directoryToBuild

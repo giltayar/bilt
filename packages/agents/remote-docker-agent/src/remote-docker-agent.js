@@ -143,7 +143,7 @@ module.exports = async ({
       AttachStdout: true,
       AttachStderr: true,
       Tty: !returnOutput,
-      Env: env ? Object.entries(env).map(([var, value]) => `${var}=${value}`) : undefined,
+      Env: env ? Object.entries(env).map(([variable, value]) => `${variable}=${value}`) : undefined,
     })
     const execStream = await execution.start({Tty: !returnOutput})
     let output = ''
