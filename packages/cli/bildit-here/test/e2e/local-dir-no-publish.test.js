@@ -6,7 +6,7 @@ const {expect} = require('chai')
 const {exec} = require('child_process')
 const {promisify: p} = require('util')
 const {fileContents, writeFile} = require('../utils/file-utils')
-const {setupFolder, setupGitRepo} = require('../utils/setup')
+const {setupFolder, setupBuildDir} = require('../utils/setup')
 
 const cli = path.resolve(__dirname, '../../scripts/bildit-here-cli.js')
 const testRepoSrc = path.resolve(__dirname, 'test-repo-no-publish')
@@ -28,7 +28,7 @@ describe('local directory use-case', () => {
     })
     describe('with git', () => {
       it('should build the directory with all its packages and then say there is nothing to rebuild', async () => {
-        const testRepo = await setupGitRepo(testRepoSrc)
+        const testRepo = await setupBuildDir(testRepoSrc)
 
         await p(exec)(`${process.argv0} ${cli} ${testRepo}`)
 
@@ -39,7 +39,7 @@ describe('local directory use-case', () => {
       })
 
       it('should rebuild only changed packages and then rebuild nothing', async () => {
-        const testRepo = await setupGitRepo(testRepoSrc)
+        const testRepo = await setupBuildDir(testRepoSrc)
 
         await p(exec)(`${process.argv0} ${cli} ${testRepo}`)
 
