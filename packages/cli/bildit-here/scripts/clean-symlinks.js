@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 const path = require('path')
 const artifactFinderFactory = require('../../../artifacts/artifact-finder')
-const {createSymlink} = require('../../../fs/symlink')
 const fs = require('fs')
 const {promisify: p} = require('util')
 

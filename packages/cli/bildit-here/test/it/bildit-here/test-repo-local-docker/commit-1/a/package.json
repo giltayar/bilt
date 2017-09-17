@@ -1,0 +1,15 @@
+{
+  "name": "this-pkg-does-not-exist-in-npmjs.a",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "publishConfig": {
+    "registry": "http://npm-registry:4873"
+  },
+  "scripts": {
+    "postinstall": "touch postinstalled.txt"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

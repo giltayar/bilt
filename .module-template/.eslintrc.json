@@ -36,6 +36,6 @@
         "no-unused-vars": "warn",
         "constructor-super": "warn",
         "valid-typeof": "warn",
-        "mocha-no-only/mocha-no-only": "error"
+        "mocha-no-only/mocha-no-only": ["error"]
     }
 }

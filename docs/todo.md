@@ -9,19 +9,16 @@
 ## Cleanups
 
 * cleanups:
-  * turn plugin-repository into dynamicRequire
+  * turn plugin-repository into dynamicRequire(module, config)
   * agent should not be passed, as it is not serializable.
   * fetching repo should not be the agent's responsibility. Not sure who's.
   * initializeAgent logic should be commonized into a library.
 
 ## Dependency Graph Build
 
-1. Deal with parallel execution:
-   * job output collection
-   * agents
-   * maximum number of agents
 1. Do dependency check build graph
    1. Deal with errors
+   1. Only one job at a time, still
 1. Add changed files, including changes since last build
 
 ## CLI and productization
@@ -36,6 +33,10 @@
 1. Add an auto-upgrade feature
 1. Publish commit should include artifact name
 1. Retry push
+1. Deal with parallel execution:
+   * job output collection
+   * agents
+   * maximum number of agents
 
 ## Do more testing of packages
 

@@ -8,6 +8,7 @@
     "scripts"
   ],
   "scripts": {
+    "eslint": "eslint '**/*.js'"
   },
   "keywords": [
     "ci",
@@ -25,6 +26,7 @@
   "devDependencies": {
     "eslint": "^4.2.0",
     "eslint-plugin-prettier": "^2.1.2",
+    "eslint-plugin-mocha-no-only": "0.0.5",
     "prettier": "^1.5.2"
   }
 }

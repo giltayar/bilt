@@ -1,8 +1,9 @@
+'use strict'
+const {describe, it} = require('mocha')
+const {expect} = require('chai')
 const fs = require('fs')
 const path = require('path')
 const {execFile} = require('child_process')
-const {describe} = require('mocha')
-const {expect} = require('chai')
 const {promisify: p} = require('util')
 const {setupBuildDir} = require('../utils/setup')
 const buildInfo = require('../../src/last-build-info')
