@@ -53,7 +53,7 @@ describe('local directory use-case', () => {
       const buildDir = await setupBuildDir(testRepoSrc, remoteRepo)
       await adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress, 'npm-registry:4873')
 
-      await bilditHere(remoteRepo.replace(gitServerAddress, 'git-server:22'), buildDir)
+      await bilditHere(buildDir)
 
       checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.1')
       checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.1')

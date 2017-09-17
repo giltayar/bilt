@@ -131,7 +131,7 @@ module.exports = async ({
       Cmd: finalCommand,
       AttachStdout: true,
       AttachStderr: true,
-      Env: env ? Object.entries(env).map(([var, value]) => `${var}=${value}`) : undefined,
+      Env: env ? Object.entries(env).map(([varName, value]) => `${varName}=${value}`) : undefined,
       Tty: !returnOutput,
     })
     const execStream = await execution.start({Tty: !returnOutput})

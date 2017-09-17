@@ -1,5 +1,8 @@
 # TODO
 
+## Continuation
+
+* wrote local-docker test. It fails because buildDir is in temp and inaccessible to docker
 
 ## Tests
 
