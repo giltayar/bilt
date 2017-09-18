@@ -6,7 +6,11 @@ const {promisify: p} = require('util')
 const cpr = require('cpr')
 const pluginRepoFactory = require('@bildit/config-based-plugin-repository')
 
-async function setupBuildDir(sourceDirectoryOfCommits, origin) {
+async function setupBuildDir(
+  sourceDirectoryOfCommits,
+  originForInitialPush = undefined,
+  finalOrigin = undefined,
+) {
   const tmpDir = await p(fs.mkdtemp)(path.join(__dirname, 'temp-folders-for-docker') + '/')
 
   await gitInit(tmpDir)
@@ -17,10 +21,13 @@ async function setupBuildDir(sourceDirectoryOfCommits, origin) {
     await replayCommit(tmpDir, commitDirectory)
   }
 
-  if (origin) {
-    await p(execFile)('git', ['remote', 'add', 'origin', origin], {cwd: tmpDir})
+  if (originForInitialPush) {
+    await p(execFile)('git', ['remote', 'add', 'origin', originForInitialPush], {cwd: tmpDir})
 
     await pushOrigin(tmpDir)
+  }
+  if (finalOrigin) {
+    await p(execFile)('git', ['remote', 'set-url', 'origin', finalOrigin], {cwd: tmpDir})
   }
 
   return tmpDir

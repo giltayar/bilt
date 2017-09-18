@@ -48,7 +48,11 @@ describe('local directory use-case', () => {
         ...process.env,
       }
       const remoteRepo = `ssh://git@${gitServerAddress}/git-server/repos/test-repo`
-      const buildDir = await setupBuildDir(testRepoSrc, remoteRepo)
+      const buildDir = await setupBuildDir(
+        testRepoSrc,
+        remoteRepo,
+        remoteRepo.replace(gitServerAddress, 'git-server:22'),
+      )
       await adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress, 'npm-registry:4873')
 
       await bilditHere(buildDir)
