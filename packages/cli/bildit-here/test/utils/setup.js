@@ -7,7 +7,7 @@ const cpr = require('cpr')
 const pluginRepoFactory = require('@bildit/config-based-plugin-repository')
 
 async function setupBuildDir(sourceDirectoryOfCommits, origin) {
-  const tmpDir = await p(fs.mkdtemp)(path.join(os.tmpdir(), 'replay-git-repo'))
+  const tmpDir = await p(fs.mkdtemp)(path.join(__dirname, 'temp-folders-for-docker') + '/')
 
   await gitInit(tmpDir)
 
@@ -85,16 +85,6 @@ async function replayCommit(directory, commitDirectory) {
 }
 
 async function setupFolder(sourceDirectory) {
-  const tmpDir = await p(fs.mkdtemp)(
-    path.join(os.tmpdir(), (Math.random() * 100000).toString().slice(6)),
-  )
-
-  await p(cpr)(sourceDirectory + '/', tmpDir, {overwrite: true})
-
-  return tmpDir
-}
-
-async function setupFolderInLocationDockerContainersCanSee(sourceDirectory) {
   const tmpDir = await p(fs.mkdtemp)(path.join(__dirname, 'temp-folders-for-docker') + '/')
 
   await p(cpr)(sourceDirectory + '/', tmpDir, {overwrite: true})
@@ -105,5 +95,4 @@ async function setupFolderInLocationDockerContainersCanSee(sourceDirectory) {
 module.exports = {
   setupFolder,
   setupBuildDir,
-  setupFolderInLocationDockerContainersCanSee,
 }

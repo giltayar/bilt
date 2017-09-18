@@ -7,7 +7,7 @@ const {describe, it, before, after} = require('mocha')
 const getNpmToken = require('get-npm-token')
 const {dockerComposeTool, getAddressForService} = require('docker-compose-mocha')
 const {fileContents, writeFile} = require('../utils/file-utils')
-const {setupBuildDir, setupFolderInLocationDockerContainersCanSee} = require('../utils/setup')
+const {setupBuildDir, setupFolder} = require('../utils/setup')
 const bilditHere = require('../../src/bildit-here')
 
 const testRepoSrc = path.resolve(__dirname, 'bildit-here/test-repo-local')
@@ -18,9 +18,7 @@ describe('local directory use-case', () => {
 
     let gitServerRepoDir
     before(async () => {
-      gitServerRepoDir = await setupFolderInLocationDockerContainersCanSee(
-        path.join(__dirname, 'bildit-here/git-server/repos/'),
-      )
+      gitServerRepoDir = await setupFolder(path.join(__dirname, 'bildit-here/git-server/repos/'))
     })
 
     const envName = dockerComposeTool(before, after, pathToCompose, {

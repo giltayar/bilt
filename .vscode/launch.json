@@ -16,7 +16,7 @@
       "cwd": "${workspaceRoot}/packages/cli/bildit-here",
       "protocol": "inspector",
       "env": {
-        "DEBUG": "bildit:remote-docker-agent"
+        "DEBUG": "bildit:local-docker-agent"
       },
       "console": "integratedTerminal"
 

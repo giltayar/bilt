@@ -12,10 +12,12 @@ module.exports = async ({
     user = 'root',
     workdir = '/usr/work',
   },
+  pluginRepository,
 }) => {
   const docker = new Docker({Promise})
   const runningAgents = new Map()
   const waitingAgents = new Map()
+  const vcs = await pluginRepository.findPlugin('vcs')
 
   const info = agent => ({
     container: runningAgents.get(agent.directory).container,
@@ -23,23 +25,38 @@ module.exports = async ({
   })
 
   return {
-    async acquireInstanceForJob({repository}) {
-      const directory = repository
-
+    async acquireInstanceForJob({repository: directory}) {
       if (waitingAgents.has(directory)) {
-        const agentInstance = waitingAgents.get(directory)
+        const {container} = waitingAgents.get(directory)
+        debug('awakening agent %s with repository %s', container.id, directory)
+        runningAgents.set(directory, {container})
 
-        runningAgents.set(directory, agentInstance)
         waitingAgents.delete(directory)
 
-        return {directory, id: agentInstance.container.id}
+        const agentInstance = {directory, id: container.id}
+        await vcs.fetchRepository({agent: this, agentInstance, directory, directory: 'builddir'})
+
+        return {directory, id: container.id}
       }
+      debug('creating container %s with repository %s', image, directory)
 
       const container = await createContainer(directory)
 
       runningAgents.set(directory, {container})
 
-      return {directory, id: container.id}
+      const agentInstance = {directory, id: container.id}
+      await vcs.fetchRepository({agent: this, agentInstance, directory, directory: 'builddir'})
+
+      return agentInstance
+    },
+    releaseInstanceForJob(agentInstance) {
+      if (!runningAgents.has(agentInstance.directory))
+        throw new Error(
+          `Can't release agent instance for ${agentInstance.directory} because it was never acquired`,
+        )
+
+      waitingAgents.set(agentInstance.directory, runningAgents.get(agentInstance.directory))
+      runningAgents.delete(agentInstance.directory)
     },
 
     executeCommand,

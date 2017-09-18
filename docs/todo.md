@@ -2,7 +2,7 @@
 
 ## Continuation
 
-* wrote local-docker test. It fails because buildDir is in temp and inaccessible to docker
+* wrote local-docker test. It fails because bug.FG
 
 ## Tests
 
