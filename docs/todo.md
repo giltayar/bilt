@@ -2,21 +2,12 @@
 
 ## Continuation
 
-* wrote local-docker test. It fails because the remote points to the host address and not the inner
-  address of the docker network. But it works in remote docker test! Huh?
-
-## Tests
-
-1. You're good to go in terms of design - start writing tests
-   * E2E Test local-docker-agent
-
 ## Cleanups
 
-* cleanups:
-  * turn plugin-repository into dynamicRequire(module, config)
-  * agent should not be passed, as it is not serializable.
-  * fetching repo should not be the agent's responsibility. Not sure who's.
-  * initializeAgent logic should be commonized into a library.
+* turn plugin-repository into dynamicRequire(module, config)
+* agent should not be passed, as it is not serializable.
+* fetching repo should not be the agent's responsibility. Not sure who's.
+* initializeAgent logic should be commonized into a library.
 
 ## Dependency Graph Build
 

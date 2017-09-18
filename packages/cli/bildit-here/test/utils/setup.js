@@ -1,6 +1,5 @@
 const fs = require('fs')
 const path = require('path')
-const os = require('os')
 const {exec, execFile} = require('child_process')
 const {promisify: p} = require('util')
 const cpr = require('cpr')
