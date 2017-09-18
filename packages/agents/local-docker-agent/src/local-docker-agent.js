@@ -11,6 +11,7 @@ module.exports = async ({
     start = ['sleep', '100000000'],
     user = 'root',
     workdir = '/usr/work',
+    network = undefined,
   },
   pluginRepository,
 }) => {
@@ -190,6 +191,7 @@ module.exports = async ({
       WorkingDir: workdir,
       Hostconfig: {
         Binds: [`${directory}:${workdir}`],
+        ...(network ? {NetworkMode: network} : {}),
       },
       User: user,
     })

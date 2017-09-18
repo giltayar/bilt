@@ -2,7 +2,8 @@
 
 ## Continuation
 
-* wrote local-docker test. It fails because bug.FG
+* wrote local-docker test. It fails because the remote points to the host address and not the inner
+  address of the docker network. But it works in remote docker test! Huh?
 
 ## Tests
 
