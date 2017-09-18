@@ -22,7 +22,7 @@ module.exports = () => {
     }
 
     debug('installing package %s in agent instance %s', pkg, agentInstance.id)
-    await agent.executeCommand(agentInstance, ['npm', 'install', '--global', pkg])
+    await agent.executeCommand(agentInstance, ['npm', 'install', '--production', '--global', pkg])
     debug('installed package %s in agent instance %s', pkg, agentInstance.id)
 
     agentInstanceIdsAlreadyInstalled.add(agentInstance.id)

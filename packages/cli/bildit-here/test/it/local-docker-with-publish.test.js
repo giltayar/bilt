@@ -12,7 +12,7 @@ const bilditHere = require('../../src/bildit-here')
 
 const testRepoSrc = path.resolve(__dirname, 'bildit-here/test-repo-local-docker')
 
-describe('local directory use-case', () => {
+describe('local directory (with docker) use-case', () => {
   describe('with publish use case', () => {
     const pathToCompose = path.join(__dirname, 'docker-compose.yml')
 
@@ -41,11 +41,13 @@ describe('local directory use-case', () => {
       )
       const gitServerAddress = await getAddressForService(envName, pathToCompose, 'git-server', 22)
 
+      const npmRegistry = `http://${npmRegistryAddress}/`
+
       process.env = {
-        npm_config_registry: `http://${npmRegistryAddress}/`,
+        ...process.env,
+      npm_config_registry: npmRegistry,
         KEYS_DIR: path.resolve(__dirname, 'bildit-here/git-server/keys'),
         TEST_NETWORK: `${envName.replace('_', '')}_default`,
-        ...process.env,
       }
       const remoteRepo = `ssh://git@${gitServerAddress}/git-server/repos/test-repo`
       const buildDir = await setupBuildDir(
@@ -57,8 +59,8 @@ describe('local directory use-case', () => {
 
       await bilditHere(buildDir)
 
-      checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.1')
-      checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.1')
+      checkVersionExists(npmRegistry, 'this-pkg-does-not-exist-in-npmjs.a', '1.0.1')
+      checkVersionExists(npmRegistry, 'this-pkg-does-not-exist-in-npmjs.b', '3.2.1')
     })
   })
 })
@@ -83,8 +85,8 @@ async function adjustNpmRegistryInfoInRepo(
   await writeFile(modifiedBilditRc, buildDir, '.bilditrc.js')
 }
 
-async function checkVersionExists(pkg, version) {
-  const {stdout} = await p(execFile)('npm', ['view', `${pkg}@${version}`])
+async function checkVersionExists(registry, pkg, version) {
+  const {stdout} = await p(execFile)('npm', ['view', `${pkg}@${version}`, '--registry', registry])
 
   expect(stdout).to.include(version)
 }

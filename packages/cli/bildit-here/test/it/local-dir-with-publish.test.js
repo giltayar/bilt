@@ -44,9 +44,9 @@ describe('local directory use-case', () => {
       const remoteRepo = `ssh://git@${gitServerAddress}/git-server/repos/test-repo`
 
       process.env = {
+        ...process.env,
         npm_config_registry: `http://${npmRegistryAddress}/`,
         KEYS_DIR: path.resolve(__dirname, 'bildit-here/git-server/keys'),
-        ...process.env,
       }
 
       const buildDir = await setupBuildDir(testRepoSrc, remoteRepo)
