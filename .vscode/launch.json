@@ -5,6 +5,23 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "mocha:plugin-import",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceRoot}/packages/plugins/plugin-import/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--no-timeouts",
+        "test/**/*.test.js"
+      ],
+      "cwd": "${workspaceRoot}/packages/plugins/plugin-import",
+      "protocol": "inspector",
+      "env": {
+        "DEBUG": "*"
+      },
+      "console": "integratedTerminal"
+
+    },
+    {
       "name": "mocha:bildit-here",
       "type": "node",
       "request": "launch",
