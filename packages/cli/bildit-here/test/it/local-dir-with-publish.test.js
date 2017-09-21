@@ -1,18 +1,20 @@
 'use strict'
 const path = require('path')
-const {execFile} = require('child_process')
 const {expect} = require('chai')
-const {promisify: p} = require('util')
 const {describe, it, before, after} = require('mocha')
-const getNpmToken = require('get-npm-token')
 const {dockerComposeTool, getAddressForService} = require('docker-compose-mocha')
-const {fileContents, writeFile} = require('../utils/file-utils')
-const {setupBuildDir, setupFolder} = require('../utils/setup')
+const {fileContents} = require('../utils/file-utils')
+const {
+  setupBuildDir,
+  setupFolder,
+  adjustNpmRegistryInfoInRepo,
+  checkVersionExists,
+} = require('../utils/setup')
 const bilditHere = require('../../src/bildit-here')
 
 const testRepoSrc = path.resolve(__dirname, 'bildit-here/test-repo-local')
 
-describe.only('local directory with publish use-case', () => {
+describe('local directory with publish use-case', () => {
   const pathToCompose = path.join(__dirname, 'docker-compose.yml')
 
   let gitServerRepoDir
@@ -61,30 +63,3 @@ describe.only('local directory with publish use-case', () => {
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.1', npmRegistryAddress)
   })
 })
-
-async function adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress) {
-  const npmToken = await p(getNpmToken)(
-    `http://${npmRegistryAddress}/`,
-    'npm-user',
-    'gil@tayar.org',
-    'npm-user-password',
-  )
-  const bilditRc = await fileContents(buildDir, 'bildit.config.js')
-
-  const modifiedBilditRc = bilditRc
-    .replace(/localhost\:4873/g, npmRegistryAddress)
-    .replace('NPM_TOKEN', npmToken)
-
-  await writeFile(modifiedBilditRc, buildDir, 'bildit.config.js')
-}
-
-async function checkVersionExists(pkg, version, npmRegistryAddress) {
-  const {stdout} = await p(execFile)('npm', [
-    'view',
-    `${pkg}@${version}`,
-    '--registry',
-    `http://${npmRegistryAddress}/`,
-  ])
-
-  expect(stdout).to.include(version)
-}

@@ -53,6 +53,7 @@ async function createPimport(isRemoteRepo, directoryToBuild, configFile) {
   debug('loading configuration')
   const {config: buildConfig, filepath} = await cosmiConfig('bildit', {
     configPath: isRemoteRepo ? configFile : undefined,
+    rcExtensions: true,
   }).load(isRemoteRepo ? undefined : directoryToBuild)
 
   const defaultBilditConfig = await JSON.parse(
