@@ -45,7 +45,7 @@ describe('local directory (with docker) use-case', () => {
 
       process.env = {
         ...process.env,
-      npm_config_registry: npmRegistry,
+        npm_config_registry: npmRegistry,
         KEYS_DIR: path.resolve(__dirname, 'bildit-here/git-server/keys'),
         TEST_NETWORK: `${envName.replace('_', '')}_default`,
       }
@@ -59,8 +59,8 @@ describe('local directory (with docker) use-case', () => {
 
       await bilditHere(buildDir)
 
-      checkVersionExists(npmRegistry, 'this-pkg-does-not-exist-in-npmjs.a', '1.0.1')
-      checkVersionExists(npmRegistry, 'this-pkg-does-not-exist-in-npmjs.b', '3.2.1')
+      await checkVersionExists(npmRegistry, 'this-pkg-does-not-exist-in-npmjs.a', '1.0.1')
+      await checkVersionExists(npmRegistry, 'this-pkg-does-not-exist-in-npmjs.b', '3.2.1')
     })
   })
 })

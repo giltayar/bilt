@@ -57,8 +57,8 @@ describe.only('local directory with publish use-case', () => {
     expect(await fileContents(buildDir, 'b/built.txt')).to.equal('')
     expect(await fileContents(buildDir, 'b/tested.txt')).to.equal('')
 
-    checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.1')
-    checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.1')
+    await checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.1', npmRegistryAddress)
+    await checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.1', npmRegistryAddress)
   })
 })
 
@@ -78,8 +78,13 @@ async function adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress) {
   await writeFile(modifiedBilditRc, buildDir, 'bildit.config.js')
 }
 
-async function checkVersionExists(pkg, version) {
-  const {stdout} = await p(execFile)('npm', ['view', `${pkg}@${version}`])
+async function checkVersionExists(pkg, version, npmRegistryAddress) {
+  const {stdout} = await p(execFile)('npm', [
+    'view',
+    `${pkg}@${version}`,
+    '--registry',
+    `http://${npmRegistryAddress}/`,
+  ])
 
   expect(stdout).to.include(version)
 }

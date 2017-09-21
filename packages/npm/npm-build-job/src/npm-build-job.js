@@ -4,7 +4,11 @@ const path = require('path')
 const debug = require('debug')('bildit:npm-build-job')
 const symlinkDependencies = require('./symlink-dependencies')
 
-module.exports = async ({pimport, config: {publish, linkLocalPackages}}) => {
+module.exports = async ({
+  pimport,
+  config: {publish, linkLocalPackages},
+  appConfig: {publish: appPublish},
+}) => {
   const npmPublisher = await pimport('publisher:npm')
 
   return {
@@ -41,7 +45,7 @@ module.exports = async ({pimport, config: {publish, linkLocalPackages}}) => {
         await agent.executeCommand(agentInstance, ['npm', 'test'], {cwd: artifactPath})
       }
 
-      if (publish && !packageJson.private) {
+      if ((publish || appPublish) && !packageJson.private) {
         await npmPublisher.publishPackage(job, {agent, agentInstance})
       } else {
         debug(

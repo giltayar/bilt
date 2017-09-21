@@ -56,8 +56,8 @@ describe('remote docker use-case', () => {
 
       await bilditHere(remoteRepo.replace(gitServerAddress, 'git-server:22'), buildDir)
 
-      checkVersionExists(npmRegistry, 'this-pkg-does-not-exist-in-npmjs.a', '1.0.1')
-      checkVersionExists(npmRegistry, 'this-pkg-does-not-exist-in-npmjs.b', '3.2.1')
+      await checkVersionExists(npmRegistry, 'this-pkg-does-not-exist-in-npmjs.a', '1.0.1')
+      await checkVersionExists(npmRegistry, 'this-pkg-does-not-exist-in-npmjs.b', '3.2.1')
     })
   })
 })
