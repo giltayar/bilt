@@ -11,9 +11,9 @@ module.exports = async ({
     access: access = 'restricted',
     usedLocally = !npmAuthenticationLine,
   },
-  pluginRepository,
+  pimport,
 }) => {
-  const vcs = await pluginRepository.findPlugin('vcs')
+  const vcs = await pimport('vcs')
   const initializedAgentInstances = new Map()
 
   return {

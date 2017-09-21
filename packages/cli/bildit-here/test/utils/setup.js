@@ -3,7 +3,7 @@ const path = require('path')
 const {exec, execFile} = require('child_process')
 const {promisify: p} = require('util')
 const cpr = require('cpr')
-const pluginRepoFactory = require('@bildit/config-based-plugin-repository')
+const pluginImport = require('plugin-import')
 
 async function setupBuildDir(
   sourceDirectoryOfCommits,
@@ -33,10 +33,9 @@ async function setupBuildDir(
 }
 
 async function pushOrigin(buildDir) {
-  const pluginRepository = await pluginRepoFactory({
-    directory: buildDir,
-    defaultConfig: {
-      plugins: {
+  const pimport = await pluginImport(
+    [
+      {
         events: '@bildit/in-memory-events',
         'agent:local-just-for-git-push': '@bildit/host-agent',
         'vcs-just-for-git-push': {
@@ -48,11 +47,14 @@ async function pushOrigin(buildDir) {
           },
         },
       },
+    ],
+    {
+      baseDirectory: buildDir,
     },
-  })
+  )
 
-  const gitVcs = await pluginRepository.findPlugin('vcs-just-for-git-push')
-  const localAgent = await pluginRepository.findPlugin('agent:local-just-for-git-push')
+  const gitVcs = await pimport('vcs-just-for-git-push')
+  const localAgent = await pimport('agent:local-just-for-git-push')
   const agentInstance = await localAgent.acquireInstanceForJob({repository: buildDir})
   try {
     await gitVcs.push({agent: localAgent, agentInstance})

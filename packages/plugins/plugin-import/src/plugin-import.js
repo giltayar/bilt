@@ -1,5 +1,5 @@
 'use strict'
-const debug = require('debug')('bildit:config-based-plugin-repository')
+const debug = require('debug')('plugin-import')
 const path = require('path')
 const merge = require('lodash.merge')
 

@@ -1,6 +1,4 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-  "javascript.validate.enable": false,
-  "mocha.files.glob": "**/test/**/*.test.js",
-  "mocha.enabled": true
+  "javascript.validate.enable": false
 }

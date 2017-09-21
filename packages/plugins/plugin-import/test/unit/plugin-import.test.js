@@ -131,6 +131,36 @@ describe('plugin-import', function() {
     })
   })
 
+  it('should support undefined pluginLists', async () => {
+    const pimport = pluginImport([
+      {
+        foo: () => {
+          return 1
+        },
+      },
+      undefined,
+    ])
+    const plugin = await pimport('foo')
+
+    expect(plugin).to.equal(1)
+  })
+
+  it('should support undefined appConfigs', async () => {
+    const pimport = pluginImport(
+      [
+        {
+          foo: ({appConfig}) => {
+            return appConfig
+          },
+        },
+      ],
+      {appConfigs: [{a: 1}, undefined, {a: 2}]},
+    )
+    const plugin = await pimport('foo')
+
+    expect(plugin).to.eql({a: 2})
+  })
+
   it('should pass the correct information when loading the plugin', async () => {
     const pimport = pluginImport([{foo: {'./more/my-init-args-returner': {a: 2}}}], {
       baseDirectory: __dirname,

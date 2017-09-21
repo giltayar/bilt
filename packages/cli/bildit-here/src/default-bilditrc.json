@@ -1,6 +1,5 @@
 {
   "plugins": {
-    "pluginFactory": "@bildit/config-based-plugin-repository",
     "jobDispatcher": "@bildit/leveldb-job-dispatcher",
     "events": "@bildit/in-memory-events",
     "agent:npm": "@bildit/host-agent",

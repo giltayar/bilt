@@ -13,12 +13,12 @@ module.exports = async ({
     workdir = '/usr/work',
     network = undefined,
   },
-  pluginRepository,
+  pimport,
 }) => {
   const docker = new Docker({Promise})
   const runningAgents = new Map()
   const waitingAgents = new Map()
-  const vcs = await pluginRepository.findPlugin('vcs')
+  const vcs = await pimport('vcs')
 
   const info = agent => ({
     container: runningAgents.get(agent.directory).container,

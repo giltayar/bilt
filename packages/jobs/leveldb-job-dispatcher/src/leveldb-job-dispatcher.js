@@ -8,8 +8,8 @@ const level = require('level')
 const bytewise = require('bytewise')
 const {runJob, prepareJobForRunning, deleteJobState, isSubJob} = require('@bildit/jobs')
 
-module.exports = async ({pluginRepository, directory}) => {
-  const events = await pluginRepository.findPlugin('events')
+module.exports = async ({pimport, directory}) => {
+  const events = await pimport('events')
   const {queue, kvStoreDb} = await initializeDb()
   await listenAndExecuteJobs()
 
@@ -115,7 +115,7 @@ module.exports = async ({pluginRepository, directory}) => {
       const {job, awakenedFrom} = value
 
       debug('got job %s from queue. running it', job.id)
-      runJob(job, {awakenedFrom, pluginRepository, events, kvStore, dispatchJob})
+      runJob(job, {awakenedFrom, pimport, events, kvStore, dispatchJob})
         .then(hibernatedJob => {
           if (!hibernatedJob) {
             debug('deleting job %s from store', job.id)

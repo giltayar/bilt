@@ -60,7 +60,7 @@
       "console": "integratedTerminal",
       "env": {
         "DEBUG":
-          "bildit:bildit:remote-docker-agent,bildit:config-based-plugin-repository"
+          ""
       }
     },
     {
@@ -73,7 +73,7 @@
       "console": "integratedTerminal",
       "env": {
         "DEBUG":
-          "bildit:bildit:remote-docker-agent,bildit:config-based-plugin-repository"
+          ""
       }
     },
     {
@@ -86,7 +86,7 @@
       "console": "integratedTerminal",
       "env": {
         "DEBUG":
-          "bildit:bildit:remote-docker-agent,bildit:config-based-plugin-repository"
+          "bildit:bildit:remote-docker-agent"
       }
     },
     {

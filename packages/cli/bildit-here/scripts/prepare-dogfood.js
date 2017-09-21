@@ -25,11 +25,8 @@ async function main() {
   )
 
   await createSymlink(
-    path.join(
-      repoDirectory,
-      'packages/cli/bildit-here/node_modules/@bildit/config-based-plugin-repository',
-    ),
-    path.join(repoDirectory, 'packages/plugins/config-based-plugin-repository'),
+    path.join(repoDirectory, 'packages/cli/bildit-here/node_modules/plugin-import'),
+    path.join(repoDirectory, 'packages/plugins/plugin-import'),
   )
 
   await createSymlink(

@@ -4,7 +4,9 @@ const path = require('path')
 const fs = require('fs')
 const {promisify: p} = require('util')
 const debug = require('debug')('bildit:bildit-here')
-const pluginRepoFactory = require('@bildit/config-based-plugin-repository')
+const pluginImport = require('plugin-import')
+const cosmiConfig = require('cosmiconfig')
+
 const {
   readLastBuildInfo,
   findChangesInCurrentRepo,
@@ -15,17 +17,17 @@ const {
 module.exports = async function(repository, configFile) {
   const isRemoteRepo =
     repository.startsWith('http:') || repository.startsWith('ssh:') || repository.startsWith('git@')
-  const directoryToBuild = !isRemoteRepo ? path.resolve(repository) : undefined
-  const config = !directoryToBuild ? path.resolve(configFile) : directoryToBuild
+
+  const directoryToBuild = isRemoteRepo ? undefined : path.resolve(repository)
   const finalRepository = isRemoteRepo ? repository : directoryToBuild
 
-  const pluginRepository = await createPluginRepository(config)
+  const pimport = createPimport(isRemoteRepo, directoryToBuild, configFile)
   try {
-    await configureEventsToOutputEventToStdout(pluginRepository)
+    await configureEventsToOutputEventToStdout(pimport)
 
-    const jobDispatcher = await pluginRepository.findPlugin('jobDispatcher')
+    const jobDispatcher = await pimport('jobDispatcher')
 
-    const {filesChangedSinceLastBuild} = directoryToBuild
+    const {filesChangedSinceLastBuild} = !isRemoteRepo
       ? await figureOutFilesChangedSinceLastBuild(directoryToBuild)
       : {}
 
@@ -36,30 +38,34 @@ module.exports = async function(repository, configFile) {
       filesChangedSinceLastBuild,
     )
 
-    await waitForJobs(pluginRepository, jobsToWaitFor)
+    await waitForJobs(pimport, jobsToWaitFor)
 
-    if (directoryToBuild) {
+    if (!isRemoteRepo) {
       await saveLastBuildInfo(directoryToBuild, await findChangesInCurrentRepo(directoryToBuild))
     }
   } finally {
     debug('finalizing plugins')
-    await pluginRepository.finalize()
+    await pimport.finalize()
   }
 }
 
-async function createPluginRepository(directoryToBuild) {
-  const defaultConfig = await JSON.parse(
+async function createPimport(isRemoteRepo, directoryToBuild, configFile) {
+  const buildConfig = (await cosmiConfig('bildit', {
+    configPath: isRemoteRepo ? configFile : undefined,
+  })).load(isRemoteRepo ? undefined : directoryToBuild)
+
+  const defaultBilditConfig = await JSON.parse(
     await p(fs.readFile)(path.join(__dirname, 'default-bilditrc.json')),
   )
 
-  return await pluginRepoFactory({
-    directory: directoryToBuild,
-    defaultConfig,
+  return pluginImport([defaultBilditConfig.plugins, buildConfig.plugins], {
+    baseDirectory: isRemoteRepo ? path.dirname(path.resolve(configFile)) : directoryToBuild,
+    appConfigs: [defaultBilditConfig.config, buildConfig.config],
   })
 }
 
-async function configureEventsToOutputEventToStdout(pluginRepository) {
-  const events = await pluginRepository.findPlugin('events')
+async function configureEventsToOutputEventToStdout(pimport) {
+  const events = await pimport('events')
 
   await events.subscribe('START_JOB', ({job}) => {
     if (job.kind === 'repository') return
@@ -102,9 +108,9 @@ async function runJobs(repository, isRemoteRepo, jobDispatcher, filesChangedSinc
   }
 }
 
-async function waitForJobs(pluginRepository, jobs) {
+async function waitForJobs(pimport, jobs) {
   debug('waiting for jobs %o', (jobs || []).map(job => job.id))
-  const events = await pluginRepository.findPlugin('events')
+  const events = await pimport('events')
   const jobsThatAreStillWorking = new Set((jobs || []).map(job => job.id))
 
   await new Promise(async resolve => {

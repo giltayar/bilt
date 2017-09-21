@@ -3,8 +3,8 @@
 const debug = require('debug')('bildit:repo-build-job')
 const path = require('path')
 
-module.exports = async ({pluginRepository}) => {
-  const binaryRunner = await pluginRepository.findPlugin('binaryRunner:npm')
+module.exports = async ({pimport}) => {
+  const binaryRunner = await pimport('binaryRunner:npm')
 
   return {
     async build(job, {agent, state, awakenedFrom}) {

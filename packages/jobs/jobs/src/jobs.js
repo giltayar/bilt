@@ -1,15 +1,15 @@
 const uuid = require('uuid/v4')
 const debug = require('debug')('bildit:jobs')
 
-async function runJob(job, {awakenedFrom, pluginRepository, events, kvStore, dispatchJob}) {
-  const result = await executeJob(job, {awakenedFrom, pluginRepository, events, kvStore})
+async function runJob(job, {awakenedFrom, pimport, events, kvStore, dispatchJob}) {
+  const result = await executeJob(job, {awakenedFrom, pimport, events, kvStore})
 
   return await dealWithJobResult(result, {kvStore, dispatchJob})
 }
 
-async function executeJob(job, {awakenedFrom, pluginRepository, events, kvStore}) {
-  const builder = await pluginRepository.findPlugin(`builder:${job.kind}`)
-  const agent = await pluginRepository.findPlugin(`agent:${job.kind}`)
+async function executeJob(job, {awakenedFrom, pimport, events, kvStore}) {
+  const builder = await pimport(`builder:${job.kind}`)
+  const agent = await pimport(`agent:${job.kind}`)
 
   const jobWithId = prepareJobForRunning(job)
 
