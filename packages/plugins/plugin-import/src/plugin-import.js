@@ -3,9 +3,9 @@ const debug = require('debug')('bildit:config-based-plugin-repository')
 const path = require('path')
 const merge = require('lodash.merge')
 
-module.exports = (pluginLists, {baseDirectory = '', appConfigsList = []} = {}) => {
+module.exports = (pluginLists, {baseDirectory = '', appConfigs = []} = {}) => {
   const plugins = pluginLists.reduce((acc, curr) => merge({}, acc, curr), {})
-  const appConfig = appConfigsList.reduce((acc, curr) => merge({}, acc, curr), {})
+  const appConfig = appConfigs.reduce((acc, curr) => merge({}, acc, curr), {})
   debug('plugins: %o\nappConfig: %o', plugins, appConfig)
 
   const pluginsFound = new Map()
@@ -22,8 +22,10 @@ module.exports = (pluginLists, {baseDirectory = '', appConfigsList = []} = {}) =
     const normalizedPluginModuleInfo = normalizePluginModule(pluginInfo)
 
     const alreadyFoundPlugin = pluginsFound.get(JSON.stringify(normalizedPluginModuleInfo))
-    debug('already created plugin kind %s for %o, returning it', kind, normalizedPluginModuleInfo)
-    if (alreadyFoundPlugin) return alreadyFoundPlugin
+    if (alreadyFoundPlugin) {
+      debug('already created plugin kind %s for %o, returning it', kind, normalizedPluginModuleInfo)
+      return alreadyFoundPlugin
+    }
 
     const pluginModuleWithConfig = loadPluginModule(baseDirectory, normalizedPluginModuleInfo)
     debug('creating plugin for kind %s, info %o', kind, pluginInfo)
