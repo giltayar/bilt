@@ -4,7 +4,6 @@
 
 ## Cleanups
 
-* turn plugin-repository into dynamicRequire(module, config)
 * agent should not be passed, as it is not serializable.
 * fetching repo should not be the agent's responsibility. Not sure who's.
 * initializeAgent logic should be commonized into a library.

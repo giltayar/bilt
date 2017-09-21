@@ -39,6 +39,23 @@
 
     },
     {
+      "name": "mocha:agent-commons",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceRoot}/packages/agents/agent-commons/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--no-timeouts",
+        "test/**/*.test.js"
+      ],
+      "cwd": "${workspaceRoot}/packages/agents/agent-commons",
+      "protocol": "inspector",
+      "env": {
+        "DEBUG": ""
+      },
+      "console": "integratedTerminal"
+
+    },
+    {
       "type": "node",
       "request": "attach",
       "name": "Attach to Remote",

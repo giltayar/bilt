@@ -2,7 +2,7 @@
 
 const debug = require('debug')('bildit:npm-binary-runner')
 
-module.exports = () => {
+module.exports = async () => {
   const agentInstanceIdsAlreadyInstalled = new Set()
 
   return {

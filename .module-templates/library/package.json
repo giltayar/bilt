@@ -1,14 +1,16 @@
 {
-  "name": "@bildit/???",
+  "name": "@bildit/templatetemplate",
   "version": "1.0.0",
   "description": "",
-  "main": "src/???.js",
+  "main": "src/templatetemplate.js",
   "files": [
     "src",
     "scripts"
   ],
   "scripts": {
-    "eslint": "eslint '**/*.js'"
+    "test": "mocha --no-timeouts 'test/**/*.test.js' && npm run eslint",
+    "eslint": "eslint '**/*.js'",
+    "publish:all": "npm version patch && npm publish"
   },
   "keywords": [
     "ci",
@@ -24,9 +26,11 @@
     "debug": "^3.0.0"
   },
   "devDependencies": {
+    "chai": "^4.1.2",
     "eslint": "^4.2.0",
-    "eslint-plugin-prettier": "^2.1.2",
     "eslint-plugin-mocha-no-only": "0.0.5",
+    "eslint-plugin-prettier": "^2.1.2",
+    "mocha": "^3.5.0",
     "prettier": "^1.5.2"
   }
 }
