@@ -76,13 +76,13 @@ async function adjustNpmRegistryInfoInRepo(
     'gil@tayar.org',
     'npm-user-password',
   )
-  const bilditRc = await fileContents(buildDir, '.bilditrc.js')
+  const bilditRc = await fileContents(buildDir, 'bildit.config.js')
 
   const modifiedBilditRc = bilditRc
     .replace(/localhost\:4873/g, networkNpmRegistryAddress)
     .replace('NPM_TOKEN', npmToken)
 
-  await writeFile(modifiedBilditRc, buildDir, '.bilditrc.js')
+  await writeFile(modifiedBilditRc, buildDir, 'bildit.config.js')
 }
 
 async function checkVersionExists(registry, pkg, version) {

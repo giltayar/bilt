@@ -21,7 +21,7 @@ module.exports = async function(repository, configFile) {
   const directoryToBuild = isRemoteRepo ? undefined : path.resolve(repository)
   const finalRepository = isRemoteRepo ? repository : directoryToBuild
 
-  const pimport = createPimport(isRemoteRepo, directoryToBuild, configFile)
+  const pimport = await createPimport(isRemoteRepo, directoryToBuild, configFile)
   try {
     await configureEventsToOutputEventToStdout(pimport)
 
@@ -50,18 +50,27 @@ module.exports = async function(repository, configFile) {
 }
 
 async function createPimport(isRemoteRepo, directoryToBuild, configFile) {
-  const buildConfig = (await cosmiConfig('bildit', {
+  debug('loading configuration')
+  const {config: buildConfig, filepath} = await cosmiConfig('bildit', {
     configPath: isRemoteRepo ? configFile : undefined,
-  })).load(isRemoteRepo ? undefined : directoryToBuild)
+  }).load(isRemoteRepo ? undefined : directoryToBuild)
 
   const defaultBilditConfig = await JSON.parse(
     await p(fs.readFile)(path.join(__dirname, 'default-bilditrc.json')),
   )
 
   return pluginImport([defaultBilditConfig.plugins, buildConfig.plugins], {
-    baseDirectory: isRemoteRepo ? path.dirname(path.resolve(configFile)) : directoryToBuild,
-    appConfigs: [defaultBilditConfig.config, buildConfig.config],
+    baseDirectory: path.dirname(filepath),
+    appConfigs: [removePlugins(defaultBilditConfig), removePlugins(buildConfig)],
   })
+
+  function removePlugins(obj) {
+    const copy = {...obj}
+
+    delete copy.plugins
+
+    return copy
+  }
 }
 
 async function configureEventsToOutputEventToStdout(pimport) {

@@ -6,7 +6,7 @@ const path = require('path')
 const debug = require('debug')('bildit:npm-publisher-with-git')
 
 module.exports = async ({
-  pluginConfig: {
+  config: {
     npmAuthenticationLine,
     access: access = 'restricted',
     usedLocally = !npmAuthenticationLine,
