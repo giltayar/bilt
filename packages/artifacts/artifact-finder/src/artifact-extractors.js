@@ -1,7 +1,7 @@
 'use strict'
 const path = require('path')
 const yaml = require('js-yaml')
-const find = require('lodash/find')
+const find = require('lodash.find')
 const pathOf = require('./path-of')
 const parseAuthor = require('parse-author')
 

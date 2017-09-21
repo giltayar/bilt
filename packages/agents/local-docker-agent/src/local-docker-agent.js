@@ -6,7 +6,7 @@ const tar = require('tar-stream')
 const {createSymlink: createSymlinkInHost} = require('@bildit/symlink')
 
 module.exports = async ({
-  pluginConfig: {
+  config: {
     image = 'alpine',
     start = ['sleep', '100000000'],
     user = 'root',

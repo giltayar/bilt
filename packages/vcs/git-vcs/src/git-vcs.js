@@ -6,12 +6,7 @@ const {promisify: p} = require('util')
 const debug = require('debug')('bildit:git-vcs')
 
 module.exports = ({
-  pluginConfig: {
-    gitAuthenticationKey,
-    gitUserEmail,
-    gitUserName,
-    usedLocally = !gitAuthenticationKey,
-  },
+  config: {gitAuthenticationKey, gitUserEmail, gitUserName, usedLocally = !gitAuthenticationKey},
 }) => {
   const initializedAgentInstances = new Map()
 

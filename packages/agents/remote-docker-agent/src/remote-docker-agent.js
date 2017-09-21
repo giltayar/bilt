@@ -7,7 +7,7 @@ const tar = require('tar-stream')
 const through = require('through2')
 
 module.exports = async ({
-  pluginConfig: {
+  config: {
     image = 'alpine',
     start = ['sleep', '100000000'],
     user = 'root',
@@ -113,13 +113,13 @@ module.exports = async ({
       return 'builddir'
     },
 
-    async createSymlink(agentInstance, link, target) {
+    async createSymlink() {
       throw new Error('symlinking is not supported in remote-docker-agent')
     },
 
     async finalize() {
       await Promise.all(
-        [...waitingAgents, ...runningAgents].map(async ([_, {container}]) => {
+        [...waitingAgents, ...runningAgents].map(async ([, {container}]) => {
           debug('killing container %s', container.id)
 
           await container.remove({force: true, v: true})

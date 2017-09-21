@@ -1,6 +1,6 @@
 'use strict'
-const flatten = require('lodash/flatten')
-const find = require('lodash/find')
+const flatten = require('lodash.flatten')
+const find = require('lodash.find')
 const path = require('path')
 
 const artifactWalker = async (

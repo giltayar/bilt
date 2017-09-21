@@ -1,7 +1,8 @@
 'use strict'
 const {runJob, prepareJobForRunning} = require('@bildit/jobs')
 
-module.exports = async ({pimport, events}) => {
+module.exports = async ({pimport}) => {
+  const events = await pimport('events')
   const kvStore = new Map()
 
   async function dispatchJob(job, {awakenedFrom} = {}) {
