@@ -33,7 +33,7 @@ describe('agent-instance-intitializer', function() {
 
     const ret2 = await plugin.foo({agent: 1, agentInstance: {id: 4}}, 3, 4)
 
-    expect(ret2).to.be.undefined
+    expect(ret2).to.equal(1 + 2 + 3 + 4)
     expect(initialized).to.eql({agent: 1, agentInstance: {id: 4}, a: 3, b: 4, c: 1, d: 2})
   })
 

@@ -4,7 +4,7 @@ const initializationFunction = Symbol('initializionFunction')
 
 module.exports = module => {
   return async (...args) => {
-    const initializedAgentInstances = new Set()
+    const initializedAgentInstances = new Map()
 
     const plugin = await module(ensureAgentInstanceInitialized, ...args)
     const initialization = plugin[initializationFunction]
@@ -12,11 +12,13 @@ module.exports = module => {
     return plugin
 
     async function ensureAgentInstanceInitialized({agent, agentInstance}, ...args) {
-      if (initializedAgentInstances.has(agentInstance.id)) return
+      if (initializedAgentInstances.has(agentInstance.id)) {
+        return initializedAgentInstances.get(agentInstance.id)
+      }
 
       const ret = await initialization({agent, agentInstance}, ...args)
 
-      initializedAgentInstances.add(agentInstance.id)
+      initializedAgentInstances.set(agentInstance.id, ret)
 
       return ret
     }
