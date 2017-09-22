@@ -22,11 +22,17 @@
    1. Support two use cases:
       * Build from filesystem (with symlinking and all), with changed files support
       * Build from repo (using published artifacts), for use in Travis CI, with last-succesful-build support
+      * Build specific commit/branch
 1. Deal nicely with errors
 1. Make it a simple global install, available to any who want it
-1. Add an auto-upgrade feature
+
+## Fine Tuning
+
 1. Publish commit should include artifact name
 1. Retry push
+
+## Parallel Execution
+
 1. Deal with parallel execution:
    * job output collection
    * agents
