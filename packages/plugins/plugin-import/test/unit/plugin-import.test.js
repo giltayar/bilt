@@ -62,6 +62,8 @@ describe('plugin-import', function() {
     expect(foo).to.equal(bar)
     expect(foo.returnConfig()).to.equal(bar.returnConfig())
     expect(foo.returnConfig()).to.eql({a: 42})
+    expect(foo.returnKind()).to.equal('foo')
+    expect(bar.returnKind()).to.equal('foo')
   })
 
   it('should load different instances for different configs', async () => {
@@ -169,10 +171,17 @@ describe('plugin-import', function() {
 
     const initArgs = (await pimport('foo')).returnInitArgs()
 
-    expect(Object.keys(initArgs)).to.have.members(['appConfig', 'directory', 'config', 'pimport'])
+    expect(Object.keys(initArgs)).to.have.members([
+      'appConfig',
+      'directory',
+      'config',
+      'pimport',
+      'kind',
+    ])
     expect(initArgs).to.have.property('pimport', pimport)
     expect(initArgs).to.have.property('directory', __dirname)
     expect(initArgs).to.have.deep.property('appConfig', {app: 1})
     expect(initArgs).to.have.deep.property('config', {a: 2})
+    expect(initArgs).to.have.deep.property('kind', 'foo')
   })
 })

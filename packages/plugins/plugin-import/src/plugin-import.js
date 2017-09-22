@@ -29,7 +29,7 @@ module.exports = (pluginLists, {baseDirectory = '', appConfigs = []} = {}) => {
 
     const pluginModuleWithConfig = loadPluginModule(baseDirectory, normalizedPluginModuleInfo)
     debug('creating plugin for kind %s, info %o', kind, pluginInfo)
-    const plugin = await createPlugin(pimport, pluginInfo, pluginModuleWithConfig)
+    const plugin = await createPlugin(pimport, pluginInfo, kind, pluginModuleWithConfig)
 
     debug('found plugin for kind %s', kind)
     pluginsFound.set(JSON.stringify(normalizedPluginModuleInfo), plugin)
@@ -45,11 +45,12 @@ module.exports = (pluginLists, {baseDirectory = '', appConfigs = []} = {}) => {
 
   return pimport
 
-  function createPlugin(pimport, pluginInfo, {pluginModule, pluginConfig}) {
+  function createPlugin(pimport, pluginInfo, kind, {pluginModule, pluginConfig}) {
     return pluginModule({
       pimport,
       config: pluginConfig,
       appConfig,
+      kind,
       directory: baseDirectory,
     })
   }
