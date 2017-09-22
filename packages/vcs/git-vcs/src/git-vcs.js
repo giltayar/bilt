@@ -8,7 +8,7 @@ const {initializer} = require('@bildit/agent-commons')
 
 module.exports = initializer(
   (
-    ensureAgentInstanceInitialized,
+    {ensureAgentInstanceInitialized},
     {
       config: {
         gitAuthenticationKey,
@@ -16,11 +16,12 @@ module.exports = initializer(
         gitUserName,
         usedLocally = !gitAuthenticationKey,
       },
+      pimport,
     },
   ) => {
     return {
-      async fetchRepository({agent, agentInstance, repository}) {
-        const homeDir = await ensureAgentInstanceInitialized({agent, agentInstance})
+      async fetchRepository({agentInstance, repository}) {
+        const {homeDir, agent} = await ensureAgentInstanceInitialized({agentInstance})
 
         try {
           debug('Checking if repository %s was fetched', repository)
@@ -52,9 +53,9 @@ module.exports = initializer(
           )
         }
       },
-      async commitAndPush({agent, agentInstance, message}) {
+      async commitAndPush({agentInstance, message}) {
         debug('committing patch changes %s', message)
-        const homeDir = await ensureAgentInstanceInitialized({agent, agentInstance})
+        const {homeDir, agent} = await ensureAgentInstanceInitialized({agentInstance})
 
         await agent.executeCommand(agentInstance, ['git', 'commit', '-am', message], {
           cwd: agent.buildDir(),
@@ -71,9 +72,9 @@ module.exports = initializer(
           },
         )
       },
-      async push({agent, agentInstance}) {
+      async push({agentInstance}) {
         debug('pushing to remote repo')
-        const homeDir = await ensureAgentInstanceInitialized({agent, agentInstance})
+        const {homeDir, agent} = await ensureAgentInstanceInitialized({agentInstance})
         await agent.executeCommand(
           agentInstance,
           ['git', 'push', '--set-upstream', 'origin', 'master'],
@@ -83,9 +84,9 @@ module.exports = initializer(
           },
         )
       },
-      async listDirtyFiles({agent, agentInstance}) {
+      async listDirtyFiles({agentInstance}) {
         debug('listing diry files of repo in agent %s', agentInstance.id)
-        const homeDir = await ensureAgentInstanceInitialized({agent, agentInstance})
+        const {homeDir, agent} = await ensureAgentInstanceInitialized({agentInstance})
 
         const status = await agent.executeCommand(agentInstance, ['git', 'status', '--porcelain'], {
           cwd: agent.buildDir(),
@@ -96,7 +97,8 @@ module.exports = initializer(
         return status.split('\n').map(line => line.slice(3))
       },
 
-      async [initializer.initializationFunction]({agent, agentInstance}) {
+      async [initializer.initializationFunction]({agentInstance}) {
+        const agent = await pimport(agentInstance.kind)
         const homeDir =
           usedLocally && gitAuthenticationKey
             ? await p(fs.mkdtemp)(os.tmpdir())
@@ -129,7 +131,7 @@ module.exports = initializer(
             {env: gitOverrideLocalConfigEnvVariables(homeDir)},
           )
 
-        return homeDir
+        return {homeDir, agent}
       },
     }
   },

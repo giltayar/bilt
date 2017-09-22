@@ -6,17 +6,17 @@ module.exports = module => {
   return async (...args) => {
     const initializedAgentInstances = new Map()
 
-    const plugin = await module(ensureAgentInstanceInitialized, ...args)
+    const plugin = await module({ensureAgentInstanceInitialized}, ...args)
     const initialization = plugin[initializationFunction]
 
     return plugin
 
-    async function ensureAgentInstanceInitialized({agent, agentInstance}, ...args) {
+    async function ensureAgentInstanceInitialized({agentInstance}, ...args) {
       if (initializedAgentInstances.has(agentInstance.id)) {
         return initializedAgentInstances.get(agentInstance.id)
       }
 
-      const ret = await initialization({agent, agentInstance}, ...args)
+      const ret = await initialization({agentInstance}, ...args)
 
       initializedAgentInstances.set(agentInstance.id, ret)
 

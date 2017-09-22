@@ -6,12 +6,12 @@ const debug = require('debug')('bildit:host-agent')
 const {createSymlink: createSymlinkInHost} = require('@bildit/symlink')
 const makeDir = require('make-dir')
 
-module.exports = async () => {
+module.exports = async ({kind}) => {
   const info = agent => agent
 
   return {
     async acquireInstanceForJob({repository}) {
-      return {directory: repository, id: 1}
+      return {directory: repository, id: 1, kind}
     },
     releaseInstanceForJob() {
       return

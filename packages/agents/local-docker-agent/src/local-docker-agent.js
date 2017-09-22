@@ -14,6 +14,7 @@ module.exports = async ({
     network = undefined,
   },
   pimport,
+  kind,
 }) => {
   const docker = new Docker({Promise})
   const runningAgents = new Map()
@@ -37,7 +38,7 @@ module.exports = async ({
         const agentInstance = {directory, id: container.id}
         await vcs.fetchRepository({agent: this, agentInstance, directory, directory: 'builddir'})
 
-        return {directory, id: container.id}
+        return {directory, id: container.id, kind}
       }
       debug('creating container %s with repository %s', image, directory)
 
@@ -45,7 +46,7 @@ module.exports = async ({
 
       runningAgents.set(directory, {container})
 
-      const agentInstance = {directory, id: container.id}
+      const agentInstance = {directory, id: container.id, kind}
       await vcs.fetchRepository({agent: this, agentInstance, directory, directory: 'builddir'})
 
       return agentInstance

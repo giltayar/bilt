@@ -8,9 +8,10 @@ module.exports = {
       npmAuthenticationLine: '//localhost:4873/:_authToken="NPM_TOKEN"',
       usedLocally: true
     }},
-    "binaryRunner:npm": async () => {
+    "binaryRunner:npm": async ({pimport}) => {
       return {
-        async run({agent, agentInstance, binary: pkg, commandArgs, executeCommandOptions = {}}) {
+        async run({agentInstance, binary: pkg, commandArgs, executeCommandOptions = {}}) {
+          const agent = await pimport(agentInstance.kind)
           return await agent.executeCommand(agentInstance, commandArgs, executeCommandOptions)
         },
       }

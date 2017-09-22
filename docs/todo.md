@@ -2,9 +2,10 @@
 
 ## Continuation
 
+* go over all instances of agent, agentInstance and remove the agent.
+
 ## Cleanups
 
-* agent should not be passed, as it is not serializable.
 * fetching repo should not be the agent's responsibility. Not sure who's.
 
 ## Dependency Graph Build

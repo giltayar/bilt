@@ -8,7 +8,7 @@ const {initializer} = require('@bildit/agent-commons')
 
 module.exports = initializer(
   async (
-    ensureAgentInstanceInitialized,
+    {ensureAgentInstanceInitialized},
     {
       config: {
         npmAuthenticationLine,
@@ -20,9 +20,9 @@ module.exports = initializer(
   ) => {
     const vcs = await pimport('vcs')
     return {
-      async publishPackage(job, {agent, agentInstance}) {
+      async publishPackage(job, {agentInstance}) {
         debug(`publishing for job ${job}`)
-        const homeDir = await ensureAgentInstanceInitialized({agent, agentInstance})
+        const {homeDir, agent} = await ensureAgentInstanceInitialized({agentInstance})
 
         const {artifactPath} = job
 
@@ -44,7 +44,7 @@ module.exports = initializer(
 
         debug('committing patch changes %s', newVersion)
 
-        await vcs.commitAndPush({agent, agentInstance, message: newVersion})
+        await vcs.commitAndPush({agentInstance, message: newVersion})
 
         debug('npm publishing')
         await agent.executeCommand(agentInstance, ['npm', 'publish', '--access', access], {
@@ -52,7 +52,8 @@ module.exports = initializer(
           env: {HOME: homeDir},
         })
       },
-      async [initializer.initializationFunction]({agent, agentInstance}) {
+      async [initializer.initializationFunction]({agentInstance}) {
+        const agent = await pimport(agentInstance.kind)
         const homeDir =
           usedLocally && npmAuthenticationLine
             ? await p(fs.mkdtemp)(os.tmpdir())
@@ -64,7 +65,7 @@ module.exports = initializer(
           await createAuthenticationNpmRc(agent, agentInstance, npmAuthenticationLine, homeDir)
         }
 
-        return homeDir
+        return {homeDir, agent}
       },
     }
   },
@@ -79,7 +80,7 @@ async function createAuthenticationNpmRc(agent, agentInstance, npmAuthentication
 }
 
 async function ensureNoDirtyGitFiles(vcs, agent, agentInstance, artifactPath) {
-  const dirtyFiles = vcs.listDirtyFiles({agent, agentInstance})
+  const dirtyFiles = vcs.listDirtyFiles({agentInstance})
 
   if (dirtyFiles.length > 0) {
     throw new Error(
