@@ -20,8 +20,8 @@ module.exports = initializer(
   ) => {
     const vcs = await pimport('vcs')
     return {
-      async publishPackage(job, {agentInstance, directory}) {
-        debug(`publishing for job ${job}`)
+      async publishPackage(job, {agentInstance,directory}) {
+        debug(`publishing for job %o`, job)
         const {homeDir, agent} = await ensureAgentInstanceInitialized({agentInstance})
 
         const {artifactPath} = job
@@ -33,7 +33,7 @@ module.exports = initializer(
           agentInstance,
           ['npm', 'version', 'patch', '--force', '--no-git-tag-version'],
           {
-            cwd: path.join(directory, artifactPath),
+            cwd: directory,
             returnOutput: true,
             env: {HOME: homeDir},
           },
@@ -48,7 +48,7 @@ module.exports = initializer(
 
         debug('npm publishing')
         await agent.executeCommand(agentInstance, ['npm', 'publish', '--access', access], {
-          cwd: path.join(directory, artifactPath),
+          cwd: directory,
           env: {HOME: homeDir},
         })
       },
