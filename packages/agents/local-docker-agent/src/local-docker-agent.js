@@ -13,6 +13,7 @@ module.exports = async ({
     workdir = '/usr/work',
     network = undefined,
   },
+  appConfig: {directory},
   kind,
 }) => {
   const docker = new Docker({Promise})
@@ -35,7 +36,7 @@ module.exports = async ({
       }
       debug('creating container %s', image)
 
-      const container = await createContainer()
+      const container = await createContainer(directory)
 
       runningAgents.set(container.id, container)
 
@@ -92,6 +93,11 @@ module.exports = async ({
       debug('home dir is %s', homeDir)
 
       return homeDir.trim()
+    },
+    translateHostPathToAgentPath(hostPath) {
+      const relative = path.relative(directory, hostPath)
+
+      return path.join(workdir, relative)
     },
 
     buildDir() {

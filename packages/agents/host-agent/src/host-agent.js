@@ -73,7 +73,9 @@ module.exports = async ({kind, appConfig: {directory}}) => {
     buildDir() {
       return '.'
     },
-
+    translateHostPathToAgentPath(path) {
+      return path
+    },
     async createSymlink(agentInstance, link, target) {
       return await createSymlinkInHost(path.join(directory, link), path.join(directory, target))
     },
