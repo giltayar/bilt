@@ -12,7 +12,7 @@ const bilditHere = require('../../src/bildit-here')
 
 const testRepoSrc = path.resolve(__dirname, 'bildit-here/test-repo-local-docker')
 
-describe.only('local directory (with docker) with publish use-case', () => {
+describe('local directory (with docker) with publish use-case', () => {
   const pathToCompose = path.join(__dirname, 'docker-compose.yml')
 
   let gitServerRepoDir

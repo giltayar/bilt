@@ -2,17 +2,6 @@
 
 ## Continuation
 
-* DONE - Remove repository/directory from agents
-* Send directory/repository to 'agent' plugin config in bildit-here
-* Have all build jobs call repositoryFetcher.
-* Add repository-fetcher plugin, which will be a null op for local, and a git repo fetcher on remote.
-* Add support for 'xxx' configuration that is passed to all 'xxx:*' configurations. Sort of like a default 'xxx'
-  * change usage of directory in local/host agents from appConfig to config.
-
-## Cleanups
-
-* fetching repo should not be the agent's responsibility. Not sure who's.
-
 ## Dependency Graph Build
 
 1. Do dependency check build graph
