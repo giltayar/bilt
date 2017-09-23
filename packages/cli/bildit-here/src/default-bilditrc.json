@@ -15,6 +15,6 @@
     }},
     "binaryRunner:npm": "@bildit/npm-binary-runner",
     "vcs": "@bildit/git-vcs",
-    "repository-fetcher": "@bildit/noop-repository-fetcher"
+    "repositoryFetcher": "@bildit/noop-repository-fetcher"
   }
 }

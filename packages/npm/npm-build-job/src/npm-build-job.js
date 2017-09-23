@@ -10,14 +10,17 @@ module.exports = async ({
   appConfig: {publish: appPublish},
 }) => {
   const npmPublisher = await pimport('publisher:npm')
-  const repositoryFetcher = await pimport('repository-fetcher')
+  const repositoryFetcher = await pimport('repositoryFetcher')
 
   return {
     async build(job, {agent}) {
       const agentInstance = await agent.acquireInstanceForJob()
       const {dependencies, artifacts, artifactPath, filesChangedSinceLastBuild} = job
 
-      const {directory} = await repositoryFetcher.fetchRepository({subdirectory: artifactPath})
+      const {directory} = await repositoryFetcher.fetchRepository({
+        agentInstance,
+        subdirectory: artifactPath,
+      })
 
       const packageJsonChanged =
         !filesChangedSinceLastBuild || filesChangedSinceLastBuild.includes('package.json')

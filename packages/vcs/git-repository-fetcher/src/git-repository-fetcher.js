@@ -40,7 +40,7 @@ module.exports = initializer(
           })
         }
 
-        return {directory: path.join(directory, subdirectory)}
+        return {directory: subdirectory ? path.join(directory, subdirectory) : directory}
       },
     }
   },

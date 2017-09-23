@@ -20,7 +20,7 @@ module.exports = async function(repository, configFile) {
 
   const directoryToBuild = isRemoteRepo ? undefined : path.resolve(repository)
 
-  const pimport = await createPimport(isRemoteRepo, directoryToBuild, configFile)
+  const pimport = await createPimport(isRemoteRepo, directoryToBuild, repository, configFile)
   try {
     await configureEventsToOutputEventToStdout(pimport)
 
@@ -48,7 +48,7 @@ module.exports = async function(repository, configFile) {
   }
 }
 
-async function createPimport(isRemoteRepo, directoryToBuild, configFile) {
+async function createPimport(isRemoteRepo, directoryToBuild, repository, configFile) {
   debug('loading configuration')
   const {config: buildConfig, filepath} = await cosmiConfig('bildit', {
     configPath: isRemoteRepo ? configFile : undefined,
@@ -64,7 +64,10 @@ async function createPimport(isRemoteRepo, directoryToBuild, configFile) {
     appConfigs: [
       removePlugins(defaultBilditConfig),
       removePlugins(buildConfig),
-      {directory: isRemoteRepo ? undefined : directoryToBuild},
+      {
+        directory: isRemoteRepo ? undefined : directoryToBuild,
+        repository: isRemoteRepo ? repository : undefined,
+      },
     ],
   })
 

@@ -43,7 +43,7 @@ module.exports = async ({
       return {id: container.id, kind}
     },
     releaseInstanceForJob(agentInstance) {
-      if (runningAgents.has(agentInstance.id))
+      if (!runningAgents.has(agentInstance.id))
         throw new Error(
           `Can't release agent instance for ${agentInstance.id} because it was never acquired`,
         )
@@ -108,7 +108,7 @@ module.exports = async ({
 
     async finalize() {
       await Promise.all(
-        [...waitingAgents, ...runningAgents].map(async ([, {container}]) => {
+        [...waitingAgents, ...runningAgents].map(async ([, container]) => {
           debug('killing container %s', container.id)
 
           await container.remove({force: true, v: true})

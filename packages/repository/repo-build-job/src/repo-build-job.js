@@ -5,7 +5,7 @@ const path = require('path')
 
 module.exports = async ({pimport}) => {
   const binaryRunner = await pimport('binaryRunner:npm')
-  const repositoryFetcher = await pimport('repository-fetcher')
+  const repositoryFetcher = await pimport('repositoryFetcher')
 
   return {
     async build(job, {agent, state, awakenedFrom}) {
@@ -62,14 +62,13 @@ module.exports = async ({pimport}) => {
   async function getInitialState(agentInstance, directory, filesChangedSinceLastBuild) {
     debug('files changed %o. Searching for artifacts', filesChangedSinceLastBuild)
 
-    const allArtifacts = JSON.parse(
-      await binaryRunner.run({
-        agentInstance,
-        binary: '@bildit/artifact-finder',
-        commandArgs: ['artifact-finder', directory],
-        executeCommandOptions: {returnOutput: true},
-      }),
-    )
+    const text = await binaryRunner.run({
+      agentInstance,
+      binary: '@bildit/artifact-finder',
+      commandArgs: ['artifact-finder', directory],
+      executeCommandOptions: {returnOutput: true},
+    })
+    const allArtifacts = JSON.parse(text)
     const artifactsToBuild = allArtifacts.filter(
       artifactToBuild =>
         !filesChangedSinceLastBuild ||
