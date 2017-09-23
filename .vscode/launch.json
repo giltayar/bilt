@@ -33,7 +33,7 @@
       "cwd": "${workspaceRoot}/packages/cli/bildit-here",
       "protocol": "inspector",
       "env": {
-        "DEBUG": ""
+        "DEBUG": "bildit:*"
       },
       "console": "integratedTerminal"
 

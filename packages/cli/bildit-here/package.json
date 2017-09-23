@@ -25,23 +25,23 @@
     "type": "git"
   },
   "dependencies": {
-    "plugin-import": "^1.0.0",
     "cosmiconfig": "^3.0.1",
     "cpr": "^2.2.0",
-    "debug": "^2.6.8",
+    "debug": "^2.6.9",
     "get-npm-token": "^1.0.1",
     "git-repo-info": "^1.4.1",
     "ignore": "^3.3.3",
     "jest-changed-files": "^20.0.3",
     "make-dir": "^1.0.0",
+    "plugin-import": "^1.0.7",
     "set-union": "^1.0.0"
   },
   "devDependencies": {
     "chai": "^4.1.0",
     "docker-compose-mocha": "^1.1.0",
-    "eslint": "^4.7.0",
+    "eslint": "^4.7.2",
     "eslint-plugin-mocha-no-only": "0.0.5",
-    "eslint-plugin-prettier": "^2.1.2",
+    "eslint-plugin-prettier": "^2.3.1",
     "mocha": "^3.5.3",
     "prettier": "^1.7.0",
     "test-fixture": "^1.0.2"

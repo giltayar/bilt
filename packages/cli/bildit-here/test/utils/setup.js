@@ -60,7 +60,7 @@ async function pushOrigin(buildDir) {
   const localAgent = await pimport('agent:local-just-for-git-push')
   const agentInstance = await localAgent.acquireInstanceForJob()
   try {
-    await gitVcs.push({agentInstance, buildDir})
+    await gitVcs.push({agentInstance, directory: buildDir})
   } finally {
     localAgent.releaseInstanceForJob(agentInstance)
   }

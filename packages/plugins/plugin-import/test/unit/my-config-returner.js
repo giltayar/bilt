@@ -7,6 +7,6 @@ module.exports = async ({config, kind}) => {
     },
     returnKind() {
       return kind
-    }
+    },
   }
 }

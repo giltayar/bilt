@@ -14,7 +14,7 @@ module.exports = async ({pimport}) => {
 
       const agentInstance = await agent.acquireInstanceForJob()
 
-      const directory = await repositoryFetcher.fetch()
+      const {directory} = await repositoryFetcher.fetchRepository({agentInstance})
 
       const newState =
         state || (await getInitialState(agentInstance, directory, filesChangedSinceLastBuild))

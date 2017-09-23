@@ -6,7 +6,7 @@ const {promisify: p} = require('util')
 const {initializer} = require('@bildit/agent-commons')
 
 const gitInitializer = module =>
-  initializer((...moduleArgs) => {
+  initializer(async (...moduleArgs) => {
     const [
       ,
       {
@@ -20,47 +20,45 @@ const gitInitializer = module =>
       },
     ] = moduleArgs
 
-    return async (...args) => {
-      const plugin = await module(...args)
+    const plugin = await module(...moduleArgs)
 
-      return {...plugin, [initializer.initializationFunction]: initializeGit}
+    return {...plugin, [initializer.initializationFunction]: initializeGit}
 
-      async function initializeGit({agentInstance}) {
-        const agent = await pimport(agentInstance.kind)
-        const homeDir =
-          usedLocally && gitAuthenticationKey
-            ? await p(fs.mkdtemp)(os.tmpdir())
-            : await agent.homeDir(agentInstance)
+    async function initializeGit({agentInstance}) {
+      const agent = await pimport(agentInstance.kind)
+      const homeDir =
+        usedLocally && gitAuthenticationKey
+          ? await p(fs.mkdtemp)(os.tmpdir())
+          : await agent.homeDir(agentInstance)
 
-        await agent.writeBufferToFile(
+      await agent.writeBufferToFile(
+        agentInstance,
+        path.join(homeDir, '.ssh/config'),
+        Buffer.from(''),
+      )
+
+      if (gitAuthenticationKey) {
+        const idRsaPath = path.join(homeDir, '.ssh/id_rsa')
+        await agent.writeBufferToFile(agentInstance, idRsaPath, Buffer.from(gitAuthenticationKey))
+
+        await agent.executeCommand(agentInstance, ['chmod', '600', idRsaPath])
+      }
+
+      if (gitUserEmail)
+        await agent.executeCommand(
           agentInstance,
-          path.join(homeDir, '.ssh/config'),
-          Buffer.from(''),
+          ['git', 'config', '--global', 'user.email', gitUserEmail],
+          {env: gitOverrideLocalConfigEnvVariables(homeDir)},
         )
 
-        if (gitAuthenticationKey) {
-          const idRsaPath = path.join(homeDir, '.ssh/id_rsa')
-          await agent.writeBufferToFile(agentInstance, idRsaPath, Buffer.from(gitAuthenticationKey))
+      if (gitUserName)
+        await agent.executeCommand(
+          agentInstance,
+          ['git', 'config', '--global', 'user.name', gitUserName],
+          {env: gitOverrideLocalConfigEnvVariables(homeDir)},
+        )
 
-          await agent.executeCommand(agentInstance, ['chmod', '600', idRsaPath])
-        }
-
-        if (gitUserEmail)
-          await agent.executeCommand(
-            agentInstance,
-            ['git', 'config', '--global', 'user.email', gitUserEmail],
-            {env: gitOverrideLocalConfigEnvVariables(homeDir)},
-          )
-
-        if (gitUserName)
-          await agent.executeCommand(
-            agentInstance,
-            ['git', 'config', '--global', 'user.name', gitUserName],
-            {env: gitOverrideLocalConfigEnvVariables(homeDir)},
-          )
-
-        return {homeDir, agent}
-      }
+      return {homeDir, agent}
     }
   })
 

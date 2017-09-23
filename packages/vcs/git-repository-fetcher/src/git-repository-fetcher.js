@@ -7,7 +7,7 @@ const computeDirectoryNameFromRepository = require('./compute-directory-name')
 module.exports = initializer(
   async ({ensureAgentInstanceInitialized}, {appConfig: {repository}}) => {
     return {
-      async fetchRepository({agentInstance, subdir}) {
+      async fetchRepository({agentInstance, subdirectory}) {
         const {agent, homeDir} = await ensureAgentInstanceInitialized({agentInstance})
 
         const buildDir = agent.buildDir()
@@ -40,7 +40,7 @@ module.exports = initializer(
           })
         }
 
-        return {directory: path.join(directory, subdir)}
+        return {directory: path.join(directory, subdirectory)}
       },
     }
   },

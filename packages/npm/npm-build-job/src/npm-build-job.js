@@ -17,7 +17,7 @@ module.exports = async ({
       const agentInstance = await agent.acquireInstanceForJob()
       const {dependencies, artifacts, artifactPath, filesChangedSinceLastBuild} = job
 
-      const directory = await repositoryFetcher.fetch({subdirectory: artifactPath})
+      const {directory} = await repositoryFetcher.fetchRepository({subdirectory: artifactPath})
 
       const packageJsonChanged =
         !filesChangedSinceLastBuild || filesChangedSinceLastBuild.includes('package.json')
