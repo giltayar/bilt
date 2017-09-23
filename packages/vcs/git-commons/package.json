@@ -1,0 +1,36 @@
+{
+  "name": "@bildit/git-commons",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/git-commons.js",
+  "files": [
+    "src",
+    "scripts"
+  ],
+  "scripts": {
+    "test": "mocha --no-timeouts 'test/**/*.test.js' && npm run eslint",
+    "eslint": "eslint '**/*.js'",
+    "publish:all": "npm version patch && npm publish"
+  },
+  "keywords": [
+    "ci",
+    "bildit"
+  ],
+  "author": "Gil Tayar <gil@tayar.org>",
+  "license": "Unlicense",
+  "repository": {
+    "url": "https://github.com/giltayar/bildit",
+    "type": "git"
+  },
+  "dependencies": {
+    "debug": "^3.0.0"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "eslint": "^4.2.0",
+    "eslint-plugin-mocha-no-only": "0.0.5",
+    "eslint-plugin-prettier": "^2.1.2",
+    "mocha": "^3.5.0",
+    "prettier": "^1.5.2"
+  }
+}

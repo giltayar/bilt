@@ -9,7 +9,7 @@ TARGET=packages/$PACKAGE_NAME
 pushd $SCRIPTDIR/..
 
 mkdir $TARGET
-cp -R -n $TEMPLATE/* $TARGET
+cp -R -n $TEMPLATE/. $TARGET
 
 for i in `find $TARGET -type f`; do
     sed -i '' "s/templatetemplate/$PACKAGE_NAME/g" "$i"

@@ -14,52 +14,42 @@ module.exports = async ({
     workdir = '/usr/work',
     network = undefined,
   },
-  pimport,
   kind,
 }) => {
   const docker = new Docker({Promise})
   const runningAgents = new Map()
   const waitingAgents = new Map()
-  const vcs = await pimport('vcs')
 
   const info = agentInstance => ({
-    container: runningAgents.get(agentInstance.repository).container,
-    repository: agentInstance.repository,
+    container: runningAgents.get(agentInstance.id),
   })
 
   return {
-    async acquireInstanceForJob({repository}) {
-      if (waitingAgents.has(repository)) {
-        const {container} = waitingAgents.get(repository)
-        debug('awakening agent %s with repository %s', container.id, repository)
-        runningAgents.set(repository, {container})
+    async acquireInstanceForJob() {
+      if (waitingAgents.length > 0) {
+        const container = waitingAgents.iterator().next()
+        waitingAgents.delete(container.id)
+        debug('awakening agent %s', container.id)
+        runningAgents.set(container.id, container)
 
-        waitingAgents.delete(repository)
-
-        const agentInstance = {repository, id: container.id}
-        await vcs.fetchRepository({agent: this, agentInstance, repository, directory: 'builddir'})
-
-        return {repository, id: container.id, kind}
+        return {id: container.id, kind}
       }
-      debug('creating container %s with repository %s', image, repository)
+      debug('creating container %s', image)
 
-      const container = await createContainer(repository)
+      const container = await createContainer()
 
-      runningAgents.set(repository, {container})
+      runningAgents.set(container.id, container)
 
-      const agentInstance = {repository, id: container.id, kind}
-      await vcs.fetchRepository({agent: this, agentInstance, repository, directory: 'builddir'})
-
-      return agentInstance
+      return {id: container.id, kind}
     },
     releaseInstanceForJob(agentInstance) {
-      if (!runningAgents.has(agentInstance.repository))
+      if (runningAgents.has(agentInstance.id))
         throw new Error(
-          `Can't release agent instance for ${agentInstance.repository} because it was never acquired`,
+          `Can't release agent instance for ${agentInstance.id} because it was never acquired`,
         )
 
-      waitingAgents.set(agentInstance.repository, runningAgents.get(agentInstance.repository))
-      runningAgents.delete(agentInstance.repository)
+      waitingAgents.set(agentInstance.id, runningAgents.get(agentInstance.id))
+      runningAgents.delete(agentInstance.id)
     },
 
     executeCommand,
@@ -78,11 +68,9 @@ module.exports = async ({
     },
 
     async writeBufferToFile(agentInstance, fileName, buffer) {
-      const {container, directory} = info(agentInstance)
+      const {container} = info(agentInstance)
 
-      const fullFilename = path.resolve(directory, fileName)
-
-      const dirname = path.dirname(fullFilename)
+      const dirname = path.dirname(fileName)
 
       debug('creating directory %s in container %s', dirname, container.id)
       await executeCommand(agentInstance, ['mkdir', '-p', dirname])
@@ -90,11 +78,11 @@ module.exports = async ({
       debug(
         'writing buffer (length %d) to file %s in container %s',
         buffer.length,
-        fullFilename,
+        fileName,
         container.id,
       )
 
-      await container.putArchive(toTarStream(path.basename(fullFilename), buffer), {
+      await container.putArchive(toTarStream(path.basename(fileName), buffer), {
         path: dirname,
       })
     },

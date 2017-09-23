@@ -6,25 +6,23 @@ const debug = require('debug')('bildit:host-agent')
 const {createSymlink: createSymlinkInHost} = require('@bildit/symlink')
 const makeDir = require('make-dir')
 
-module.exports = async ({kind}) => {
+module.exports = async ({kind, appConfig: {directory}}) => {
   const info = agent => agent
 
   return {
-    async acquireInstanceForJob({repository}) {
-      return {directory: repository, id: 1, kind}
+    async acquireInstanceForJob() {
+      return {id: 1, kind}
     },
     releaseInstanceForJob() {
       return
     },
 
     async executeCommand(agentInstance, commandArgs, {cwd, returnOutput, env} = {}) {
-      const {directory} = info(agentInstance)
-
-      debug('dispatching command %o in directory %s', commandArgs, directory)
+      debug('dispatching command %o in directory %s', commandArgs, cwd)
       const orgEnv = process.env
       const output = await new Promise((resolve, reject) => {
         const process = childProcess.spawn(commandArgs[0], commandArgs.slice(1), {
-          cwd: path.join(directory, cwd || '.'),
+          cwd,
           stdio: returnOutput ? undefined : 'inherit',
           shell: false,
           env: {...orgEnv, ...env},
@@ -77,8 +75,6 @@ module.exports = async ({kind}) => {
     },
 
     async createSymlink(agentInstance, link, target) {
-      const {directory} = info(agentInstance)
-
       return await createSymlinkInHost(path.join(directory, link), path.join(directory, target))
     },
 

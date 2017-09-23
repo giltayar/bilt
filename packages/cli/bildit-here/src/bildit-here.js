@@ -19,7 +19,6 @@ module.exports = async function(repository, configFile) {
     repository.startsWith('http:') || repository.startsWith('ssh:') || repository.startsWith('git@')
 
   const directoryToBuild = isRemoteRepo ? undefined : path.resolve(repository)
-  const finalRepository = isRemoteRepo ? repository : directoryToBuild
 
   const pimport = await createPimport(isRemoteRepo, directoryToBuild, configFile)
   try {
@@ -32,7 +31,7 @@ module.exports = async function(repository, configFile) {
       : {}
 
     const jobsToWaitFor = await runJobs(
-      finalRepository,
+      repository,
       isRemoteRepo,
       jobDispatcher,
       filesChangedSinceLastBuild,
@@ -62,7 +61,11 @@ async function createPimport(isRemoteRepo, directoryToBuild, configFile) {
 
   return pluginImport([defaultBilditConfig.plugins, buildConfig.plugins], {
     baseDirectory: path.dirname(filepath),
-    appConfigs: [removePlugins(defaultBilditConfig), removePlugins(buildConfig)],
+    appConfigs: [
+      removePlugins(defaultBilditConfig),
+      removePlugins(buildConfig),
+      {directory: isRemoteRepo ? undefined : directoryToBuild},
+    ],
   })
 
   function removePlugins(obj) {
@@ -103,7 +106,7 @@ async function runJobs(repository, isRemoteRepo, jobDispatcher, filesChangedSinc
       return
     }
 
-    debug('building folder %s, with file changes %o', repository, filesChangedSinceLastBuild)
+    debug('building with file changes %o', filesChangedSinceLastBuild)
     return [
       await jobDispatcher.dispatchJob({
         kind: 'repository',

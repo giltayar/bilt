@@ -13,75 +13,60 @@ module.exports = async ({
     workdir = '/usr/work',
     network = undefined,
   },
-  pimport,
   kind,
 }) => {
   const docker = new Docker({Promise})
   const runningAgents = new Map()
   const waitingAgents = new Map()
-  const vcs = await pimport('vcs')
 
-  const info = agent => ({
-    container: runningAgents.get(agent.directory).container,
-    directory: agent.directory,
+  const info = agentInstance => ({
+    container: runningAgents.get(agentInstance.id),
   })
 
   return {
-    async acquireInstanceForJob({repository: directory}) {
-      if (waitingAgents.has(directory)) {
-        const {container} = waitingAgents.get(directory)
-        debug('awakening agent %s with repository %s', container.id, directory)
-        runningAgents.set(directory, {container})
+    async acquireInstanceForJob() {
+      if (waitingAgents.length > 0) {
+        const container = waitingAgents.iterator().next()
+        waitingAgents.delete(container.id)
+        debug('awakening agent %s', container.id)
+        runningAgents.set(container.id, container)
 
-        waitingAgents.delete(directory)
-
-        const agentInstance = {directory, id: container.id}
-        await vcs.fetchRepository({agent: this, agentInstance, directory, directory: 'builddir'})
-
-        return {directory, id: container.id, kind}
+        return {id: container.id, kind}
       }
-      debug('creating container %s with repository %s', image, directory)
+      debug('creating container %s', image)
 
-      const container = await createContainer(directory)
+      const container = await createContainer()
 
-      runningAgents.set(directory, {container})
+      runningAgents.set(container.id, container)
 
-      const agentInstance = {directory, id: container.id, kind}
-      await vcs.fetchRepository({agent: this, agentInstance, directory, directory: 'builddir'})
-
-      return agentInstance
+      return {id: container.id, kind}
     },
     releaseInstanceForJob(agentInstance) {
-      if (!runningAgents.has(agentInstance.directory))
+      if (runningAgents.has(agentInstance.id))
         throw new Error(
-          `Can't release agent instance for ${agentInstance.directory} because it was never acquired`,
+          `Can't release agent instance for ${agentInstance.repository} because it was never acquired`,
         )
 
-      waitingAgents.set(agentInstance.directory, runningAgents.get(agentInstance.directory))
-      runningAgents.delete(agentInstance.directory)
+      waitingAgents.set(agentInstance.id, runningAgents.get(agentInstance.id))
+      runningAgents.delete(agentInstance.id)
     },
 
     executeCommand,
 
     async readFileAsBuffer(agentInstance, fileName) {
       const {container} = info(agentInstance)
-      const fullFilename = path.join(workdir, fileName)
 
-      debug('reading file %s in container %s', fullFilename, container.id.slice(0, 6))
-      const fileContent = await tarStreamToFileContent(
-        await container.getArchive({path: fullFilename}),
-      )
+      debug('reading file %s in container %s', fileName, container.id.slice(0, 6))
+      const fileContent = await tarStreamToFileContent(await container.getArchive({path: fileName}))
       debug('read and got %s', fileContent.toString())
 
       return fileContent
     },
 
     async writeBufferToFile(agentInstance, fileName, buffer) {
-      const {container, directory} = info(agentInstance)
+      const {container} = info(agentInstance)
 
-      const fullFilename = path.resolve(directory, fileName)
-
-      const dirname = path.dirname(fullFilename)
+      const dirname = path.dirname(fileName)
 
       debug('creating directory %s in container %s', dirname, container.id)
       await executeCommand(agentInstance, ['mkdir', '-p', dirname])
@@ -89,11 +74,11 @@ module.exports = async ({
       debug(
         'writing buffer (length %d) to file %s in container %s',
         buffer.length,
-        fullFilename,
+        fileName,
         container.id,
       )
 
-      await container.putArchive(toTarStream(path.basename(fullFilename), buffer), {
+      await container.putArchive(toTarStream(path.basename(fileName), buffer), {
         path: dirname,
       })
     },
@@ -114,8 +99,7 @@ module.exports = async ({
     },
 
     async createSymlink(agentInstance, link, target) {
-      const {directory} = info(agentInstance)
-      dug('creating symlink in directory %s, link %s, target %s', workdir, link, target)
+      debug('creating symlink in directory %s, link %s, target %s', workdir, link, target)
 
       // This is a very strange symlink - it is created in the host, and therefore resides in `directory`
       // and yet it points to a directory that is in the docker container, and therefore

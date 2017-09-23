@@ -5,46 +5,26 @@ const path = require('path')
 
 module.exports = async ({pimport}) => {
   const binaryRunner = await pimport('binaryRunner:npm')
+  const repositoryFetcher = await pimport('repository-fetcher')
 
   return {
     async build(job, {agent, state, awakenedFrom}) {
       debug('running job repo-build-job')
-      const {repository, linkDependencies, filesChangedSinceLastBuild} = job
+      const {linkDependencies, filesChangedSinceLastBuild} = job
 
-      let agentInstance
-      const getInitialState = async () => {
-        debug('fetching repository %s', repository)
-        agentInstance = await agent.acquireInstanceForJob({repository})
+      const agentInstance = await agent.acquireInstanceForJob()
 
-        const allArtifacts = JSON.parse(
-          await binaryRunner.run({
-            agent,
-            agentInstance,
-            binary: '@bildit/artifact-finder',
-            commandArgs: ['artifact-finder', '.'],
-            executeCommandOptions: {returnOutput: true},
-          }),
-        )
-        const artifactsToBuild = allArtifacts.filter(
-          artifactToBuild =>
-            !filesChangedSinceLastBuild ||
-            filesChangedSinceLastBuild.find(file => file.startsWith(artifactToBuild.path + '/')),
-        )
+      const directory = await repositoryFetcher.fetch()
 
-        return {repository, artifactsToBuild, allArtifacts}
-      }
+      const newState =
+        state || (await getInitialState(agentInstance, directory, filesChangedSinceLastBuild))
 
-      debug('files changed %o. Searching for artifacts', filesChangedSinceLastBuild)
-      const newState = state || (await getInitialState(filesChangedSinceLastBuild))
-      agentInstance =
-        agentInstance || (await agent.acquireInstanceForJob({repository: newState.repository}))
-
-      const artifactsToBuild = newState.artifactsToBuild
+      const {artifactsToBuild} = newState
       debug('found artifacts %o', artifactsToBuild)
       const remainingArtifactsToBuild = newState.artifactsToBuild.filter(
         artifact => !awakenedFrom || awakenedFrom.job.artifact !== artifact.artifact,
       )
-      debug('Remaining to build %o', remainingArtifactsToBuild.map(artifact => artifact.artifact))
+      debug('remaining to build %o', remainingArtifactsToBuild.map(artifact => artifact.artifact))
 
       if (!remainingArtifactsToBuild || remainingArtifactsToBuild.length === 0) {
         return
@@ -77,6 +57,26 @@ module.exports = async ({pimport}) => {
         }
       }
     },
+  }
+
+  async function getInitialState(agentInstance, directory, filesChangedSinceLastBuild) {
+    debug('files changed %o. Searching for artifacts', filesChangedSinceLastBuild)
+
+    const allArtifacts = JSON.parse(
+      await binaryRunner.run({
+        agentInstance,
+        binary: '@bildit/artifact-finder',
+        commandArgs: ['artifact-finder', directory],
+        executeCommandOptions: {returnOutput: true},
+      }),
+    )
+    const artifactsToBuild = allArtifacts.filter(
+      artifactToBuild =>
+        !filesChangedSinceLastBuild ||
+        filesChangedSinceLastBuild.find(file => file.startsWith(artifactToBuild.path + '/')),
+    )
+
+    return {artifactsToBuild, allArtifacts}
   }
 }
 

@@ -20,20 +20,20 @@ module.exports = initializer(
   ) => {
     const vcs = await pimport('vcs')
     return {
-      async publishPackage(job, {agentInstance}) {
+      async publishPackage(job, {agentInstance, directory}) {
         debug(`publishing for job ${job}`)
         const {homeDir, agent} = await ensureAgentInstanceInitialized({agentInstance})
 
         const {artifactPath} = job
 
-        await ensureNoDirtyGitFiles(vcs, agent, agentInstance, artifactPath)
+        await ensureNoDirtyGitFiles(vcs, agent, agentInstance, directory, artifactPath)
 
         debug('patching package.json version')
         const versionOutput = await agent.executeCommand(
           agentInstance,
           ['npm', 'version', 'patch', '--force', '--no-git-tag-version'],
           {
-            cwd: artifactPath,
+            cwd: path.join(directory, artifactPath),
             returnOutput: true,
             env: {HOME: homeDir},
           },
@@ -44,11 +44,11 @@ module.exports = initializer(
 
         debug('committing patch changes %s', newVersion)
 
-        await vcs.commitAndPush({agentInstance, message: newVersion})
+        await vcs.commitAndPush({agentInstance, directory, message: newVersion})
 
         debug('npm publishing')
         await agent.executeCommand(agentInstance, ['npm', 'publish', '--access', access], {
-          cwd: artifactPath,
+          cwd: path.join(directory, artifactPath),
           env: {HOME: homeDir},
         })
       },
@@ -79,8 +79,11 @@ async function createAuthenticationNpmRc(agent, agentInstance, npmAuthentication
   )
 }
 
-async function ensureNoDirtyGitFiles(vcs, agent, agentInstance, artifactPath) {
-  const dirtyFiles = vcs.listDirtyFiles({agentInstance})
+async function ensureNoDirtyGitFiles(vcs, agent, agentInstance, directory, artifactPath) {
+  const dirtyFiles = vcs.listDirtyFiles({
+    agentInstance,
+    directory: path.join(directory, artifactPath),
+  })
 
   if (dirtyFiles.length > 0) {
     throw new Error(
