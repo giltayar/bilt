@@ -67,7 +67,9 @@ module.exports = initializer(
           env: {HOME: homeDir},
         })
 
-        buildSteps.push(...vcs.getCommitAndPushBuildSteps({howToBuild: commitAndPushHowToBuild}))
+        buildSteps.push(
+          ...vcs.getCommitAndPushBuildSteps({howToBuild: commitAndPushHowToBuild}).buildSteps,
+        )
 
         return {buildSteps}
       },

@@ -5,7 +5,7 @@ const {initializer, gitOverrideLocalConfigEnvVariables} = require('@bildit/git-c
 
 module.exports = initializer(({ensureAgentInstanceInitialized}, {config, pimport}) => {
   return {
-    async setupBuildSteps({job, agentInstance, directory, message}) {
+    async setupBuildSteps({agentInstance, directory, message}) {
       const {homeDir} = await ensureAgentInstanceInitialized({agentInstance}, {config, pimport})
 
       return {howToBuild: {homeDir, directory, agentInstance, message}}

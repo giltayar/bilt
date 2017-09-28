@@ -20,7 +20,7 @@ async function executeJob(job, {awakenedFrom, pimport, events, kvStore}) {
   const state = await kvStore.get(`jobstate:${job.id}`)
   debug('state for job %s found: %o', jobWithId.id, state)
 
-  const {state: newState, jobs} = await runTheBuild(builder, agent, jobWithId, state, awakenedFrom)
+  const {state: newState, jobs = []} = await runTheBuild(builder, agent, jobWithId, state, awakenedFrom)
   debug('ran job %s', jobWithId.id)
 
   await events.publish(jobs.length === 0 ? 'END_JOB' : 'HIBERNATE_JOB', {
@@ -35,7 +35,7 @@ async function executeJob(job, {awakenedFrom, pimport, events, kvStore}) {
 }
 
 async function build(buildSteps, agent) {
-  for (const {executeCommandArg} in buildSteps) {
+  for (const executeCommandArg of buildSteps) {
     await agent.executeCommand(executeCommandArg)
   }
 }
@@ -50,7 +50,7 @@ async function runTheBuild(builder, agent, job, state, awakenedFrom) {
       awakenedFrom,
     })
     try {
-      const {buildSteps = [], state, jobs} = builder.getBuildSteps({howToBuild})
+      const {buildSteps = [], state, jobs} = builder.getBuildSteps({howToBuild, job})
       await build(buildSteps, agent, job)
 
       return {state, jobs}

@@ -14,7 +14,7 @@ module.exports = async ({
 
   return {
     async setupBuildSteps({job, agentInstance}) {
-      const agent = await pimport(`agent:${agentInstance.kind}`)
+      const agent = await pimport(agentInstance.kind)
       const {dependencies, artifacts, artifactPath, filesChangedSinceLastBuild} = job
 
       const {directory} = await repositoryFetcher.fetchRepository({
@@ -30,9 +30,6 @@ module.exports = async ({
           debug('linking to dependent packages %o', dependencies)
           await symlinkDependencies({agent, agentInstance}, dependencies, artifactPath, artifacts)
         }
-
-        debug('running npm install in job %o', job)
-        await agent.executeCommand({agentInstance, command: ['npm', 'install'], cwd: directory})
       }
 
       const packageJson = JSON.parse(
@@ -42,19 +39,24 @@ module.exports = async ({
       const {howToBuild: howToBuildForPublish} = await npmPublisher.setupBuildSteps({
         job,
         agentInstance,
+        directory,
       })
 
-      return {packageJson, howToBuildForPublish, agentInstance, directory}
+      return {howToBuild: {packageJson, howToBuildForPublish, agentInstance, directory}}
     },
     getBuildSteps({
       howToBuild: {packageJson, howToBuildForPublish, agentInstance, directory},
       job,
     }) {
-      const ret = []
+      const buildSteps = []
+
+      debug('running npm install in job %o', job)
+      buildSteps.push({agentInstance, command: ['npm', 'install'], cwd: directory})
+
       if ((packageJson.scripts || {}).build) {
         debug('adding npm run build in job %s', job.id)
 
-        ret.push({
+        buildSteps.push({
           agentInstance,
           command: ['npm', 'run', 'build'],
           cwd: directory,
@@ -64,16 +66,20 @@ module.exports = async ({
       if ((packageJson.scripts || {}).test) {
         debug('adding npm test in job %s', job.id)
 
-        ret.push({agentInstance, command: ['npm', 'test'], cwd: directory})
+        buildSteps.push({agentInstance, command: ['npm', 'test'], cwd: directory})
       }
 
       if ((publish || appPublish) && !packageJson.private) {
-        ret.push(...npmPublisher.getBuildSteps({howToBuild: howToBuildForPublish}))
+        buildSteps.push(
+          ...npmPublisher.getBuildSteps({howToBuild: howToBuildForPublish}).buildSteps,
+        )
       } else {
         debug(
           `not publishing because config publish is ${publish} or package json is private (${packageJson.private}`,
         )
       }
+
+      return {buildSteps}
     },
   }
 }

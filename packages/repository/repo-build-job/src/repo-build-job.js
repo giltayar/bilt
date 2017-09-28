@@ -29,7 +29,7 @@ module.exports = async ({pimport}) => {
       debug('remaining to build %o', remainingArtifactsToBuild.map(artifact => artifact.artifact))
 
       if (!remainingArtifactsToBuild || remainingArtifactsToBuild.length === 0) {
-        return
+        return {}
       }
       const artifactToBuild = remainingArtifactsToBuild[0]
 
