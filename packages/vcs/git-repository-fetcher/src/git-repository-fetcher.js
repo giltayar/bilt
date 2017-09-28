@@ -16,26 +16,28 @@ module.exports = initializer(
 
         try {
           debug('Checking if repository %s was fetched', repository)
-          const status = await agent.executeCommand(
+          const status = await agent.executeCommand({
             agentInstance,
-            ['git', 'status', '--porcelain'],
-            {
-              cwd: directory,
-              returnOutput: true,
-              env: gitOverrideLocalConfigEnvVariables(homeDir),
-            },
-          )
+            command: ['git', 'status', '--porcelain'],
+            cwd: directory,
+            returnOutput: true,
+            env: gitOverrideLocalConfigEnvVariables(homeDir),
+          })
           debug('Repository %s was fetched')
           if (status.length > 0) {
             debug('Resetting repository %s', repository)
-            await agent.executeCommand(agentInstance, ['git', 'reset', '--hard'], {
+            await agent.executeCommand({
+              agentInstance,
+              command: ['git', 'reset', '--hard'],
               cwd: directory,
               env: gitOverrideLocalConfigEnvVariables(homeDir),
             })
           }
         } catch (_) {
           debug('cloning repository %s', repository)
-          await agent.executeCommand(agentInstance, ['git', 'clone', repository, directory], {
+          await agent.executeCommand({
+            agentInstance,
+            command: ['git', 'clone', repository, directory],
             env: gitOverrideLocalConfigEnvVariables(homeDir),
           })
         }

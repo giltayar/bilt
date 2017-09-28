@@ -12,9 +12,9 @@ module.exports = {
     },
     'binaryRunner:npm': async ({pimport}) => {
       return {
-        async run({agentInstance, binary: pkg, commandArgs, executeCommandOptions = {}}) {
-          const agent = await pimport(agentInstance.kind)
-          return await agent.executeCommand(agentInstance, commandArgs, executeCommandOptions)
+        async run({executeCommandArg}) {
+          const agent = await pimport(executeCommandArg.agentInstance.kind)
+          return await agent.executeCommand(executeCommandArg)
         },
       }
     },

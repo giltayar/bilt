@@ -12,20 +12,20 @@ module.exports = initializer(({ensureAgentInstanceInitialized}, {config, pimport
         {config, pimport},
       )
 
-      await agent.executeCommand(agentInstance, ['git', 'commit', '-am', message], {
+      await agent.executeCommand({
+        agentInstance,
+        command: ['git', 'commit', '-am', message],
         cwd: directory,
         env: gitOverrideLocalConfigEnvVariables(homeDir),
       })
 
       debug('pushing to remote repo')
-      await agent.executeCommand(
+      await agent.executeCommand({
         agentInstance,
-        ['git', 'push', '--set-upstream', 'origin', 'master'],
-        {
-          cwd: directory,
-          env: gitOverrideLocalConfigEnvVariables(homeDir),
-        },
-      )
+        command: ['git', 'push', '--set-upstream', 'origin', 'master'],
+        cwd: directory,
+        env: gitOverrideLocalConfigEnvVariables(homeDir),
+      })
     },
     async push({agentInstance, directory}) {
       debug('pushing to remote repo')
@@ -33,14 +33,12 @@ module.exports = initializer(({ensureAgentInstanceInitialized}, {config, pimport
         {agentInstance},
         {config, pimport},
       )
-      await agent.executeCommand(
+      await agent.executeCommand({
         agentInstance,
-        ['git', 'push', '--set-upstream', 'origin', 'master'],
-        {
-          cwd: directory,
-          env: gitOverrideLocalConfigEnvVariables(homeDir),
-        },
-      )
+        command: ['git', 'push', '--set-upstream', 'origin', 'master'],
+        cwd: directory,
+        env: gitOverrideLocalConfigEnvVariables(homeDir),
+      })
     },
     async listDirtyFiles({agentInstance, directory}) {
       debug('listing diry files of repo in agent %s', agentInstance.id)
@@ -49,7 +47,9 @@ module.exports = initializer(({ensureAgentInstanceInitialized}, {config, pimport
         {config, pimport},
       )
 
-      const status = await agent.executeCommand(agentInstance, ['git', 'status', '--porcelain'], {
+      const status = await agent.executeCommand({
+        agentInstance,
+        command: ['git', 'status', '--porcelain'],
         cwd: directory,
         returnOutput: true,
         env: gitOverrideLocalConfigEnvVariables(homeDir),

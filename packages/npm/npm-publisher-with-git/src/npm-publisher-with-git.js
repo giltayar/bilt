@@ -20,7 +20,7 @@ module.exports = initializer(
   ) => {
     const vcs = await pimport('vcs')
     return {
-      async publishPackage(job, {agentInstance,directory}) {
+      async publishPackage(job, {agentInstance, directory}) {
         debug(`publishing for job %o`, job)
         const {homeDir, agent} = await ensureAgentInstanceInitialized({agentInstance})
 
@@ -29,15 +29,13 @@ module.exports = initializer(
         await ensureNoDirtyGitFiles(vcs, agent, agentInstance, directory, artifactPath)
 
         debug('patching package.json version')
-        const versionOutput = await agent.executeCommand(
+        const versionOutput = await agent.executeCommand({
           agentInstance,
-          ['npm', 'version', 'patch', '--force', '--no-git-tag-version'],
-          {
-            cwd: directory,
-            returnOutput: true,
-            env: {HOME: homeDir},
-          },
-        )
+          command: ['npm', 'version', 'patch', '--force', '--no-git-tag-version'],
+          cwd: directory,
+          returnOutput: true,
+          env: {HOME: homeDir},
+        })
         debug('npm version output is %s', versionOutput)
 
         const newVersion = versionOutput.match(/^(v.*)$/m)[0]
@@ -47,7 +45,9 @@ module.exports = initializer(
         await vcs.commitAndPush({agentInstance, directory, message: newVersion})
 
         debug('npm publishing')
-        await agent.executeCommand(agentInstance, ['npm', 'publish', '--access', access], {
+        await agent.executeCommand({
+          agentInstance,
+          command: ['npm', 'publish', '--access', access],
           cwd: directory,
           env: {HOME: homeDir},
         })

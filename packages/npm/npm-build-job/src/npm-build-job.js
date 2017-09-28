@@ -32,7 +32,7 @@ module.exports = async ({
         }
 
         debug('running npm install in job %o', job)
-        await agent.executeCommand(agentInstance, ['npm', 'install'], {cwd: directory})
+        await agent.executeCommand({agentInstance, command: ['npm', 'install'], cwd: directory})
       }
 
       const packageJson = JSON.parse(
@@ -42,13 +42,17 @@ module.exports = async ({
       if ((packageJson.scripts || {}).build) {
         debug('running npm run build in job %o', job)
 
-        await agent.executeCommand(agentInstance, ['npm', 'run', 'build'], {cwd: directory})
+        await agent.executeCommand({
+          agentInstance,
+          command: ['npm', 'run', 'build'],
+          cwd: directory,
+        })
       }
 
       if ((packageJson.scripts || {}).test) {
         debug('running npm test in job %o', job)
 
-        await agent.executeCommand(agentInstance, ['npm', 'test'], {cwd: directory})
+        await agent.executeCommand({agentInstance, command: ['npm', 'test'], cwd: directory})
       }
 
       if ((publish || appPublish) && !packageJson.private) {

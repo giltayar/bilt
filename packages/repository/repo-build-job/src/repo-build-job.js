@@ -63,10 +63,12 @@ module.exports = async ({pimport}) => {
     debug('files changed %o. Searching for artifacts', filesChangedSinceLastBuild)
 
     const text = await binaryRunner.run({
-      agentInstance,
       binary: '@bildit/artifact-finder',
-      commandArgs: ['artifact-finder', directory],
-      executeCommandOptions: {returnOutput: true},
+      executeCommandArg: {
+        agentInstance,
+        command: ['artifact-finder', directory],
+        returnOutput: true,
+      },
     })
     const allArtifacts = JSON.parse(text)
     const artifactsToBuild = allArtifacts.filter(

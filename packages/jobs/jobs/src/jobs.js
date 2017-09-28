@@ -21,6 +21,11 @@ async function executeJob(job, {awakenedFrom, pimport, events, kvStore}) {
   debug('state for job %s found: %o', jobWithId.id, state)
 
   const jobResult = await builder.build(jobWithId, {agent, state, awakenedFrom})
+  // const {whatToBuild} = await builder.determineWhatToBuild(jobWithId, {agent, state, awakenedFrom})
+  // const {buildSteps, jobResult} = builder.determineBuildSteps({whatToBuild})
+  // await build(buildSteps, agent)
+  // await builder.cleanupBuild({whatToBuild})
+
   debug('ran job %s', jobWithId.id)
 
   const {jobs: subJobs = []} = jobResult || {}
@@ -33,6 +38,12 @@ async function executeJob(job, {awakenedFrom, pimport, events, kvStore}) {
   debug('dispatched job %o', jobWithId)
 
   return {jobResult, job: jobWithId}
+}
+
+async function build(buildSteps, agent) {
+  for (const {executeCommandArg} in buildSteps) {
+    await agent.executeCommand(executeCommandArg)
+  }
 }
 
 async function dealWithJobResult({job, jobResult}, {kvStore, dispatchJob}) {

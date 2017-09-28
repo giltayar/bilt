@@ -17,11 +17,11 @@ module.exports = async ({kind, appConfig: {directory}}) => {
       return
     },
 
-    async executeCommand(agentInstance, commandArgs, {cwd, returnOutput, env} = {}) {
-      debug('dispatching command %o in directory %s', commandArgs, cwd)
+    async executeCommand({command, cwd, returnOutput, env} = {}) {
+      debug('dispatching command %o in directory %s', command, cwd)
       const orgEnv = process.env
       const output = await new Promise((resolve, reject) => {
-        const process = childProcess.spawn(commandArgs[0], commandArgs.slice(1), {
+        const process = childProcess.spawn(command[0], command.slice(1), {
           cwd,
           stdio: returnOutput ? undefined : 'inherit',
           shell: false,

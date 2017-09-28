@@ -70,7 +70,7 @@ module.exports = async ({
       const dirname = path.dirname(fileName)
 
       debug('creating directory %s in container %s', dirname, container.id)
-      await executeCommand(agentInstance, ['mkdir', '-p', dirname])
+      await executeCommand({agentInstance, command: ['mkdir', '-p', dirname]})
 
       debug(
         'writing buffer (length %d) to file %s in container %s',
@@ -85,7 +85,9 @@ module.exports = async ({
     },
 
     async homeDir(agentInstance) {
-      const homeDir = await executeCommand(agentInstance, ['echo', '$HOME'], {
+      const homeDir = await executeCommand({
+        agentInstance,
+        command: ['echo', '$HOME'],
         cwd: '/',
         returnOutput: true,
       })
@@ -125,17 +127,17 @@ module.exports = async ({
     },
   }
 
-  async function executeCommand(agentInstance, commandArgs, {cwd, returnOutput, env} = {}) {
+  async function executeCommand({agentInstance, command, cwd, returnOutput, env} = {}) {
     const {container} = info(agentInstance)
 
-    const finalCommand = cwd ? ['sh', '-c', `cd '${cwd}' && ${commandArgs.join(' ')}`] : commandArgs
+    const finalCommand = cwd ? ['sh', '-c', `cd '${cwd}' && ${command.join(' ')}`] : command
     debug(
       'dispatching command %o in directory %s, container %s',
       finalCommand,
       cwd ? path.join(workdir, cwd) : '<default>',
       container.id.slice(0, 6),
     )
-    debug('executing %o in container %s', commandArgs, container.id.slice(0, 6))
+    debug('executing %o in container %s', command, container.id.slice(0, 6))
     const execution = await container.exec({
       Cmd: finalCommand,
       AttachStdout: true,
@@ -163,7 +165,7 @@ module.exports = async ({
       execStream.output.on('error', reject).on('end', resolve)
     })
     const {ExitCode: code} = await execution.inspect()
-    debug('executed %o in container %s with exit %d', commandArgs, container.id.slice(0, 6), code)
+    debug('executed %o in container %s with exit %d', command, container.id.slice(0, 6), code)
     if (code !== 0) throw new Error(`Command failed with errorcode ${code}`)
 
     if (returnOutput) {
