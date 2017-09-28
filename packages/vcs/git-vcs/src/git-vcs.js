@@ -5,14 +5,16 @@ const {initializer, gitOverrideLocalConfigEnvVariables} = require('@bildit/git-c
 
 module.exports = initializer(({ensureAgentInstanceInitialized}, {config, pimport}) => {
   return {
-    async commitAndPush({agentInstance, directory, message}) {
-      debug('committing patch changes %s', message)
-      const {homeDir, agent} = await ensureAgentInstanceInitialized(
-        {agentInstance},
-        {config, pimport},
-      )
+    async setupBuildSteps({job, agentInstance, directory, message}) {
+      const {homeDir} = await ensureAgentInstanceInitialized({agentInstance}, {config, pimport})
 
-      await agent.executeCommand({
+      return {howToBuild: {homeDir, directory, agentInstance, message}}
+    },
+    getCommitAndPushBuildSteps({howToBuild: {homeDir, directory, agentInstance, message}}) {
+      debug('committing patch changes %s', message)
+      const buildSteps = []
+
+      buildSteps.push({
         agentInstance,
         command: ['git', 'commit', '-am', message],
         cwd: directory,
@@ -20,12 +22,14 @@ module.exports = initializer(({ensureAgentInstanceInitialized}, {config, pimport
       })
 
       debug('pushing to remote repo')
-      await agent.executeCommand({
+      buildSteps.push({
         agentInstance,
         command: ['git', 'push', '--set-upstream', 'origin', 'master'],
         cwd: directory,
         env: gitOverrideLocalConfigEnvVariables(homeDir),
       })
+
+      return {buildSteps}
     },
     async push({agentInstance, directory}) {
       debug('pushing to remote repo')

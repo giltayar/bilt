@@ -18,7 +18,8 @@
     "type": "git"
   },
   "dependencies": {
-    "debug": "^2.6.8"
+    "debug": "^2.6.8",
+    "eslint-plugin-mocha-no-only": "0.0.5"
   },
   "devDependencies": {
     "eslint": "^4.2.0",

@@ -3,6 +3,7 @@ const {promisify: p} = require('util')
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
+const semver = require('semver')
 const debug = require('debug')('bildit:npm-publisher-with-git')
 const {initializer} = require('@bildit/agent-commons')
 
@@ -20,7 +21,7 @@ module.exports = initializer(
   ) => {
     const vcs = await pimport('vcs')
     return {
-      async publishPackage(job, {agentInstance, directory}) {
+      async setupBuildSteps({job, agentInstance, directory}) {
         debug(`publishing for job %o`, job)
         const {homeDir, agent} = await ensureAgentInstanceInitialized({agentInstance})
 
@@ -29,28 +30,46 @@ module.exports = initializer(
         await ensureNoDirtyGitFiles(vcs, agent, agentInstance, directory, artifactPath)
 
         debug('patching package.json version')
-        const versionOutput = await agent.executeCommand({
+        const {version} = JSON.parse(
+          await agent.readFileAsBuffer(agentInstance, path.join(directory, 'package.json')),
+        )
+        debug('npm version is %s', version)
+
+        const newVersion = semver.inc(version, 'patch', true)
+
+        debug('committing patch changes %s', newVersion)
+
+        const {howToBuild: commitAndPushHowToBuild} = await vcs.setupBuildSteps({
+          agentInstance,
+          directory,
+          message: newVersion,
+        })
+
+        return {howToBuild: {homeDir, directory, agentInstance, commitAndPushHowToBuild}}
+      },
+      getBuildSteps({howToBuild: {homeDir, directory, agentInstance, commitAndPushHowToBuild}}) {
+        debug('npm publishing')
+
+        const buildSteps = []
+
+        buildSteps.push({
           agentInstance,
           command: ['npm', 'version', 'patch', '--force', '--no-git-tag-version'],
           cwd: directory,
           returnOutput: true,
           env: {HOME: homeDir},
         })
-        debug('npm version output is %s', versionOutput)
 
-        const newVersion = versionOutput.match(/^(v.*)$/m)[0]
-
-        debug('committing patch changes %s', newVersion)
-
-        await vcs.commitAndPush({agentInstance, directory, message: newVersion})
-
-        debug('npm publishing')
-        await agent.executeCommand({
+        buildSteps.push({
           agentInstance,
           command: ['npm', 'publish', '--access', access],
           cwd: directory,
           env: {HOME: homeDir},
         })
+
+        buildSteps.push(...vcs.getCommitAndPushBuildSteps({howToBuild: commitAndPushHowToBuild}))
+
+        return {buildSteps}
       },
       async [initializer.initializationFunction]({agentInstance}) {
         const agent = await pimport(agentInstance.kind)

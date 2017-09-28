@@ -8,20 +8,22 @@ module.exports = async ({pimport}) => {
   const repositoryFetcher = await pimport('repositoryFetcher')
 
   return {
-    async build(job, {agent, state, awakenedFrom}) {
+    async setupBuildSteps({job, agentInstance, state, awakenedFrom}) {
       debug('running job repo-build-job')
-      const {linkDependencies, filesChangedSinceLastBuild} = job
-
-      const agentInstance = await agent.acquireInstanceForJob()
+      const {filesChangedSinceLastBuild} = job
 
       const {directory} = await repositoryFetcher.fetchRepository({agentInstance})
 
       const newState =
         state || (await getInitialState(agentInstance, directory, filesChangedSinceLastBuild))
 
-      const {artifactsToBuild} = newState
+      return {howToBuild: {state: newState, awakenedFrom}}
+    },
+    getBuildSteps({howToBuild: {state, awakenedFrom}, job}) {
+      const {artifactsToBuild} = state
+      const {linkDependencies, filesChangedSinceLastBuild} = job
       debug('found artifacts %o', artifactsToBuild)
-      const remainingArtifactsToBuild = newState.artifactsToBuild.filter(
+      const remainingArtifactsToBuild = state.artifactsToBuild.filter(
         artifact => !awakenedFrom || awakenedFrom.job.artifact !== artifact.artifact,
       )
       debug('remaining to build %o', remainingArtifactsToBuild.map(artifact => artifact.artifact))
@@ -40,19 +42,18 @@ module.exports = async ({pimport}) => {
       if (!changedFiles || changedFiles.length > 0) {
         const artifactJob = createJobFromArtifact(
           artifactToBuild,
-          newState.repository,
-          linkDependencies ? newState.allArtifacts : undefined,
+          state.repository,
+          linkDependencies ? state.allArtifacts : undefined,
           changedFiles,
         )
 
         debug('decided to run sub-job %o', artifactJob)
 
-        agent.releaseInstanceForJob(agentInstance)
-
         return {
-          state: Object.assign({}, newState, {
-            artifactsToBuild: remainingArtifactsToBuild,
-          }),
+          state: {
+            ...state,
+            ...{artifactsToBuild: remainingArtifactsToBuild},
+          },
           jobs: [artifactJob].map(job => ({job, awaken: true})),
         }
       }

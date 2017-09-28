@@ -13,8 +13,8 @@ module.exports = async ({
   const repositoryFetcher = await pimport('repositoryFetcher')
 
   return {
-    async build(job, {agent}) {
-      const agentInstance = await agent.acquireInstanceForJob()
+    async setupBuildSteps({job, agentInstance}) {
+      const agent = await pimport(`agent:${agentInstance.kind}`)
       const {dependencies, artifacts, artifactPath, filesChangedSinceLastBuild} = job
 
       const {directory} = await repositoryFetcher.fetchRepository({
@@ -39,10 +39,22 @@ module.exports = async ({
         await agent.readFileAsBuffer(agentInstance, path.join(directory, 'package.json')),
       )
 
-      if ((packageJson.scripts || {}).build) {
-        debug('running npm run build in job %o', job)
+      const {howToBuild: howToBuildForPublish} = await npmPublisher.setupBuildSteps({
+        job,
+        agentInstance,
+      })
 
-        await agent.executeCommand({
+      return {packageJson, howToBuildForPublish, agentInstance, directory}
+    },
+    getBuildSteps({
+      howToBuild: {packageJson, howToBuildForPublish, agentInstance, directory},
+      job,
+    }) {
+      const ret = []
+      if ((packageJson.scripts || {}).build) {
+        debug('adding npm run build in job %s', job.id)
+
+        ret.push({
           agentInstance,
           command: ['npm', 'run', 'build'],
           cwd: directory,
@@ -50,20 +62,18 @@ module.exports = async ({
       }
 
       if ((packageJson.scripts || {}).test) {
-        debug('running npm test in job %o', job)
+        debug('adding npm test in job %s', job.id)
 
-        await agent.executeCommand({agentInstance, command: ['npm', 'test'], cwd: directory})
+        ret.push({agentInstance, command: ['npm', 'test'], cwd: directory})
       }
 
       if ((publish || appPublish) && !packageJson.private) {
-        await npmPublisher.publishPackage(job, {agentInstance, directory})
+        ret.push(...npmPublisher.getBuildSteps({howToBuild: howToBuildForPublish}))
       } else {
         debug(
           `not publishing because config publish is ${publish} or package json is private (${packageJson.private}`,
         )
       }
-
-      agent.releaseInstanceForJob(agentInstance)
     },
   }
 }

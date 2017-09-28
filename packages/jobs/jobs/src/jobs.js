@@ -20,24 +20,18 @@ async function executeJob(job, {awakenedFrom, pimport, events, kvStore}) {
   const state = await kvStore.get(`jobstate:${job.id}`)
   debug('state for job %s found: %o', jobWithId.id, state)
 
-  const jobResult = await builder.build(jobWithId, {agent, state, awakenedFrom})
-  // const {whatToBuild} = await builder.determineWhatToBuild(jobWithId, {agent, state, awakenedFrom})
-  // const {buildSteps, jobResult} = builder.determineBuildSteps({whatToBuild})
-  // await build(buildSteps, agent)
-  // await builder.cleanupBuild({whatToBuild})
-
+  const {state: newState, jobs} = await runTheBuild(builder, agent, jobWithId, state, awakenedFrom)
   debug('ran job %s', jobWithId.id)
 
-  const {jobs: subJobs = []} = jobResult || {}
-
-  await events.publish(subJobs.length === 0 ? 'END_JOB' : 'HIBERNATE_JOB', {
+  await events.publish(jobs.length === 0 ? 'END_JOB' : 'HIBERNATE_JOB', {
     job: jobWithId,
-    jobResult,
+    state: newState,
+    jobs,
   })
 
   debug('dispatched job %o', jobWithId)
 
-  return {jobResult, job: jobWithId}
+  return {state: newState, jobs, job: jobWithId}
 }
 
 async function build(buildSteps, agent) {
@@ -46,9 +40,31 @@ async function build(buildSteps, agent) {
   }
 }
 
-async function dealWithJobResult({job, jobResult}, {kvStore, dispatchJob}) {
-  const {state, jobs: subJobs} = jobResult || {}
+async function runTheBuild(builder, agent, job, state, awakenedFrom) {
+  const agentInstance = await agent.acquireInstanceForJob()
+  try {
+    const {howToBuild} = await builder.setupBuildSteps({
+      job,
+      agentInstance,
+      state,
+      awakenedFrom,
+    })
+    try {
+      const {buildSteps = [], state, jobs} = builder.getBuildSteps({howToBuild})
+      await build(buildSteps, agent, job)
 
+      return {state, jobs}
+    } finally {
+      if (builder.cleanupBuild) {
+        await builder.cleanupBuild({howToBuild})
+      }
+    }
+  } finally {
+    agent.releaseInstanceForJob(agentInstance)
+  }
+}
+
+async function dealWithJobResult({job, state, jobs: subJobs}, {kvStore, dispatchJob}) {
   debug('saving job %s state %o', job.id, state)
   await kvStore.set(`jobstate:${job.id}`, state)
 
