@@ -35,6 +35,7 @@
 ## Do more testing of packages
 
 1. What she said
+1. Also write Readmes for everything
 
 ## Future productization
 
