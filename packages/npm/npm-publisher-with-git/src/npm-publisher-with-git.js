@@ -57,14 +57,14 @@ module.exports = initializer(
           command: ['npm', 'version', 'patch', '--force', '--no-git-tag-version'],
           cwd: directory,
           returnOutput: true,
-          env: {HOME: homeDir},
+          env: {npm_config_userconfig: path.join(homeDir, '.npmrc')},
         })
 
         buildSteps.push({
           agentInstance,
           command: ['npm', 'publish', '--access', access],
           cwd: directory,
-          env: {HOME: homeDir},
+          env: {npm_config_userconfig: path.join(homeDir, '.npmrc')},
         })
 
         buildSteps.push(
@@ -81,7 +81,11 @@ module.exports = initializer(
             : await agent.homeDir(agentInstance)
 
         if (npmAuthenticationLine) {
-          debug('creating npmrc with authentication line')
+          debug(
+            'creating npmrc with authentication line %s in homedir %s',
+            npmAuthenticationLine,
+            homeDir,
+          )
 
           await createAuthenticationNpmRc(agent, agentInstance, npmAuthenticationLine, homeDir)
         }
