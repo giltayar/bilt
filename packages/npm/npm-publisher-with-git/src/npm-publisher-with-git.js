@@ -101,12 +101,12 @@ async function createAuthenticationNpmRc(agent, agentInstance, npmAuthentication
 }
 
 async function ensureNoDirtyGitFiles(vcs, agent, agentInstance, directory, artifactPath) {
-  const dirtyFiles = vcs.listDirtyFiles({
+  const dirtyFiles = await vcs.listDirtyFiles({
     agentInstance,
-    directory: path.join(directory, artifactPath),
+    directory,
   })
 
-  if (dirtyFiles.length > 0) {
+  if (dirtyFiles.filter(l => !!l).length > 0) {
     throw new Error(
       `Cannot publish artifact in ${artifactPath} because it has dirty files:\n${dirtyFiles}`,
     )

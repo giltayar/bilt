@@ -16,6 +16,12 @@ module.exports = initializer(({ensureAgentInstanceInitialized}, {config, pimport
 
       buildSteps.push({
         agentInstance,
+        command: ['git', 'add', '.'],
+        cwd: directory,
+        env: gitOverrideLocalConfigEnvVariables(homeDir),
+      })
+      buildSteps.push({
+        agentInstance,
         command: ['git', 'commit', '-am', message],
         cwd: directory,
         env: gitOverrideLocalConfigEnvVariables(homeDir),

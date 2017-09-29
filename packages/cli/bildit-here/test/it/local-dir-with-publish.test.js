@@ -14,7 +14,7 @@ const bilditHere = require('../../src/bildit-here')
 
 const testRepoSrc = path.resolve(__dirname, 'bildit-here/test-repo-local')
 
-describe('local directory with publish use-case', () => {
+describe.only('local directory with publish use-case', () => {
   const pathToCompose = path.join(__dirname, 'docker-compose.yml')
 
   let gitServerRepoDir
@@ -50,8 +50,13 @@ describe('local directory with publish use-case', () => {
       KEYS_DIR: path.resolve(__dirname, 'bildit-here/git-server/keys'),
     }
 
-    const buildDir = await setupBuildDir(testRepoSrc, remoteRepo)
-    await adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress)
+    const buildDir = await setupBuildDir(
+      testRepoSrc,
+      remoteRepo,
+      undefined,
+      async buildDir => await adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress),
+    )
+
     await bilditHere(buildDir)
 
     expect(await fileContents(buildDir, 'a/postinstalled.txt')).to.equal('')

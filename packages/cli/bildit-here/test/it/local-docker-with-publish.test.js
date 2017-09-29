@@ -53,9 +53,9 @@ describe('local directory (with docker) with publish use-case', () => {
       testRepoSrc,
       remoteRepo,
       remoteRepo.replace(gitServerAddress, 'git-server:22'),
+      async buildDir =>
+        await adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress, 'npm-registry:4873'),
     )
-    await adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress, 'npm-registry:4873')
-
     await bilditHere(buildDir)
 
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.1', npmRegistryAddress)

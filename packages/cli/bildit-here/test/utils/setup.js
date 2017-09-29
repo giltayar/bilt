@@ -12,6 +12,7 @@ async function setupBuildDir(
   sourceDirectoryOfCommits,
   originForInitialPush = undefined,
   finalOrigin = undefined,
+  modifyBuildDirFunc,
 ) {
   const tmpDir = await p(fs.mkdtemp)(path.join(__dirname, 'temp-folders-for-docker') + '/')
 
@@ -21,6 +22,12 @@ async function setupBuildDir(
 
   for (const commitDirectory of commitsToReplay) {
     await replayCommit(tmpDir, commitDirectory)
+  }
+  if (modifyBuildDirFunc) {
+    await modifyBuildDirFunc(tmpDir)
+
+    await p(execFile)('git', ['add', '.'], {cwd: tmpDir})
+    await p(execFile)('git', ['commit', '-am', 'modifications...'], {cwd: tmpDir})
   }
 
   if (originForInitialPush) {

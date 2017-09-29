@@ -49,8 +49,13 @@ describe('remote docker with publisgh use-case', () => {
       TEST_NETWORK: `${envName.replace('_', '')}_default`,
     }
     const remoteRepo = `ssh://git@${gitServerAddress}/git-server/repos/test-repo`
-    const buildDir = await setupBuildDir(testRepoSrc, remoteRepo)
-    await adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress, 'npm-registry:4873')
+    const buildDir = await setupBuildDir(
+      testRepoSrc,
+      remoteRepo,
+      undefined,
+      async buildDir =>
+        await adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress, 'npm-registry:4873'),
+    )
 
     await bilditHere(
       remoteRepo.replace(gitServerAddress, 'git-server:22'),
