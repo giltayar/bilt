@@ -36,11 +36,13 @@ module.exports = async ({
         await agent.readFileAsBuffer(agentInstance, path.join(directory, 'package.json')),
       )
 
-      const {howToBuild: howToBuildForPublish} = await npmPublisher.setupBuildSteps({
-        job,
-        agentInstance,
-        directory,
-      })
+      const {howToBuild: howToBuildForPublish = {}} = shouldPublish(packageJson)
+        ? await npmPublisher.setupBuildSteps({
+            job,
+            agentInstance,
+            directory,
+          })
+        : {}
 
       return {howToBuild: {packageJson, howToBuildForPublish, agentInstance, directory}}
     },
@@ -69,7 +71,7 @@ module.exports = async ({
         buildSteps.push({agentInstance, command: ['npm', 'test'], cwd: directory})
       }
 
-      if ((publish || appPublish) && !packageJson.private) {
+      if (shouldPublish(packageJson)) {
         buildSteps.push(
           ...npmPublisher.getBuildSteps({howToBuild: howToBuildForPublish}).buildSteps,
         )
@@ -81,5 +83,9 @@ module.exports = async ({
 
       return {buildSteps}
     },
+  }
+
+  function shouldPublish(packageJson) {
+    return (publish || appPublish) && !packageJson.private
   }
 }
