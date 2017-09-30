@@ -177,11 +177,35 @@ describe('plugin-import', function() {
       'config',
       'pimport',
       'kind',
+      'plugins',
     ])
     expect(initArgs).to.have.property('pimport', pimport)
     expect(initArgs).to.have.property('directory', __dirname)
     expect(initArgs).to.have.deep.property('appConfig', {app: 1})
     expect(initArgs).to.have.deep.property('config', {a: 2})
     expect(initArgs).to.have.deep.property('kind', 'foo')
+  })
+
+  it('should autoload other services when the factory has a `services` property', async () => {
+    const service = ({plugins: [a, b]}) => {
+      return {
+        a() {
+          return a
+        },
+        b() {
+          return b
+        },
+      }
+    }
+    service.plugins = ['aService', 'bService']
+
+    const aService = () => 4
+    const bService = () => 5
+    const pimport = pluginImport([{foo: service, aService, bService}])
+
+    const foo = await pimport('foo')
+
+    expect(foo.a()).to.equal(4)
+    expect(foo.b()).to.equal(5)
   })
 })

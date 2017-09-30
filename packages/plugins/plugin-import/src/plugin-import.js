@@ -1,6 +1,6 @@
 'use strict'
-const debug = require('debug')('plugin-import')
 const path = require('path')
+const debug = require('debug')('plugin-import')
 const merge = require('lodash.merge')
 
 module.exports = (pluginLists, {baseDirectory = '', appConfigs = []} = {}) => {
@@ -45,20 +45,34 @@ module.exports = (pluginLists, {baseDirectory = '', appConfigs = []} = {}) => {
 
   return pimport
 
-  function createPlugin(pimport, pluginInfo, kind, {pluginModule, pluginConfig}) {
-    return pluginModule({
+  async function createPlugin(pimport, pluginInfo, kind, {pluginModule, pluginConfig}) {
+    const dependentPlugins = pluginModule.plugins || []
+    const plugins = []
+
+    for (const plugin of dependentPlugins) {
+      plugins.push(await pimport(plugin))
+    }
+
+    return await pluginModule({
       pimport,
       config: pluginConfig,
       appConfig,
       kind,
       directory: baseDirectory,
+      plugins,
     })
   }
 }
 
 function normalizePluginModule(modulesEntry) {
-  if (typeof modulesEntry === 'string' || typeof modulesEntry === 'function') {
+  if (typeof modulesEntry === 'string') {
     return {pluginModulePath: modulesEntry, pluginConfig: {}}
+  } else if (typeof modulesEntry === 'function') {
+    return {
+      pluginModulePath: modulesEntry,
+      pluginConfig: {},
+      somethingToMakeItUnique: modulesEntry.name || Math.randomO(),
+    }
   } else {
     const plugin = Object.entries(modulesEntry)[0]
 
