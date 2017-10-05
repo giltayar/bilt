@@ -72,57 +72,23 @@
       },
       "console": "integratedTerminal"
 
-    }
-    {
-      "type": "node",
-      "request": "attach",
-      "name": "Attach to Remote",
-      "address": "localhost",
-      "port": 9229,
-      "localRoot": "${workspaceRoot}",
-      "remoteRoot":
-        "Absolute path to the remote directory containing the program",
-      "protocol": "inspector"
     },
     {
+      "name": "mocha:repo-build-job",
       "type": "node",
       "request": "launch",
-      "name": "Launch Test CLI on test-repo",
-      "program": "${workspaceRoot}/packages/cli/bildit-here/src/bildit-here.js",
-      "args": ["git@github.com:giltayar/bildit-test-repo.git", "."],
-      "cwd": "${workspaceRoot}/../test-repo",
-      "showAsyncStacks": true,
-      "console": "integratedTerminal",
+      "program": "${workspaceRoot}/packages/repository/repo-build-job/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--no-timeouts",
+        "test/**/*.test.js"
+      ],
+      "cwd": "${workspaceRoot}/packages/repository/repo-build-job",
+      "protocol": "inspector",
       "env": {
-        "DEBUG":
-          ""
-      }
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Launch Test CLI on e2e test-repo",
-      "program": "${workspaceRoot}/packages/cli/bildit-here/src/bildit-here.js",
-      "args": ["${workspaceRoot}/packages/cli/bildit-here/test/e2e/test-repo/commit-1"],
-      "showAsyncStacks": true,
-      "console": "integratedTerminal",
-      "env": {
-        "DEBUG":
-          ""
-      }
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Launch Test CLI on e2e temp test-repo",
-      "program": "${workspaceRoot}/packages/cli/bildit-here/src/bildit-here.js",
-      "args": ["/var/folders/mc/yh0mjyzn1mx5kn5c4j26b2fc0000gn/T/replay-git-repoJbP0LD"],
-      "showAsyncStacks": true,
-      "console": "integratedTerminal",
-      "env": {
-        "DEBUG":
-          "bildit:bildit:remote-docker-agent"
-      }
+        "DEBUG": ""
+      },
+      "console": "integratedTerminal"
+
     },
     {
       "type": "node",

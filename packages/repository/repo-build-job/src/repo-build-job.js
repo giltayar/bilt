@@ -24,8 +24,10 @@ module.exports = ({plugins: [binaryRunner, repositoryFetcher]}) => {
 
       return {howToBuild: {state, awakenedFrom, initialAllArtifacts}}
     },
-    getBuildSteps({howToBuild: {state, awakenedFrom, initialAllArtifacts}, job}) {
-      const {linkDependencies, filesChangedSinceLastBuild} = job
+    getBuildSteps({
+      howToBuild: {state, awakenedFrom, initialAllArtifacts},
+      job: {linkDependencies, filesChangedSinceLastBuild},
+    }) {
       const remainingArtifactsToBuild = initialAllArtifacts
         ? initialAllArtifacts.filter(
             artifactToBuild =>
