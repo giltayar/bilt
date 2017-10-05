@@ -2,22 +2,7 @@
 
 ## Continuation
 
-* Almost all bildit-here pass again, except e2e which fails with:
-
-```bash
-/Users/giltayar/.nvm/versions/node/v8.4.0/bin/artifact-finder -> /Users/giltayar/.nvm/versions/node/v8.4.0/lib/node_modules/@bildit/artifact-finder/scripts/artifact-finder-cli.js
-+ @bildit/artifact-finder@1.0.5
-updated 1 package in 2.52s
-####### Building a
-Error: spawn git ENOENT
-    at _errnoException (util.js:1041:11)
-    at Process.ChildProcess._handle.onexit (internal/child_process.js:192:19)
-    at onErrorNT (internal/child_process.js:374:16)
-    at _combinedTickCallback (internal/process/next_tick.js:138:11)
-    at process._tickCallback (internal/process/next_tick.js:180:9)
-```
-
-* Add dependency to repo-build-job
+* Write repo-build-job to use dependency graph thingie, and test it.
 
 ## Dependency Graph Build
 

@@ -18,12 +18,14 @@
     "type": "git"
   },
   "dependencies": {
-    "debug": "^2.6.8",
-    "eslint-plugin-mocha-no-only": "0.0.5"
+    "debug": "^2.6.8"
   },
   "devDependencies": {
+    "chai": "^4.1.2",
     "eslint": "^4.2.0",
+    "eslint-plugin-mocha-no-only": "0.0.5",
     "eslint-plugin-prettier": "^2.1.2",
+    "mocha": "^3.5.3",
     "prettier": "^1.5.2"
   }
 }
