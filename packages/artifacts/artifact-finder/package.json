@@ -1,6 +1,6 @@
 {
   "name": "@bildit/artifact-finder",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "",
   "main": "src/artifact-finder.js",
   "bin": {
@@ -12,7 +12,8 @@
   ],
   "scripts": {
     "test": "mocha",
-    "debug": "mocha --inspect-brk"
+    "debug": "mocha --inspect-brk",
+    "prepublishOnly": "npm version patch"
   },
   "author": "Gil Tayar <gil@tayar.org>",
   "license": "Unlicense",
@@ -21,7 +22,7 @@
     "type": "git"
   },
   "dependencies": {
-    "debug": "^2.6.8",
+    "debug": "^2.6.9",
     "ignore": "^3.3.3",
     "js-yaml": "^3.7.0",
     "lodash.find": "^4.6.0",

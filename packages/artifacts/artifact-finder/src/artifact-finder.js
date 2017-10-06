@@ -6,6 +6,7 @@ const ignore = require('ignore')
 const path = require('path')
 const fs = require('fs')
 const {promisify} = require('util')
+const debug = require('debug')('bildit:artifact-finder')
 
 module.exports = async () => {
   return {
@@ -24,6 +25,7 @@ module.exports = async () => {
         extractors.extractorMerger,
       )
       const filteredDependenciesArtifacts = artifactDependenciesFilter(artifacts)
+      debug('found artifacts: %o', filteredDependenciesArtifacts)
 
       return filteredDependenciesArtifacts
     },

@@ -4,6 +4,7 @@ const yaml = require('js-yaml')
 const find = require('lodash.find')
 const pathOf = require('./path-of')
 const parseAuthor = require('parse-author')
+const debug = require('debug')('bildit:artifact-finder')
 
 module.exports = fileFetcher => {
   return {
@@ -15,7 +16,7 @@ module.exports = fileFetcher => {
       const packageJsonContents = await fileFetcher(filename)
       try {
         const packageJson = JSON.parse(packageJsonContents)
-        return {
+        const ret = {
           artifact: packageJson.name,
           path: pathOf(filename, basedir),
           type: 'npm',
@@ -28,6 +29,8 @@ module.exports = fileFetcher => {
               packageJson.author ? packageJson.author || parseAuthor(packageJson.author).email : [],
             ),
         }
+        debug('found npm artifact %o', ret)
+        return ret
       } catch (e) {
         if (e instanceof SyntaxError) {
           console.error(`package.json ${filename} did not parse`, e)
@@ -37,11 +40,14 @@ module.exports = fileFetcher => {
     },
     async dockerExtractor(filename, basedir) {
       if (path.basename(filename) === 'Dockerfile') {
-        return {
+        const ret = {
           artifact: path.basename(path.dirname(filename)),
           path: pathOf(filename, basedir),
           type: 'docker',
         }
+        debug('found docker artifact %o', ret)
+
+        return ret
       } else {
         return undefined
       }
