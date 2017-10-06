@@ -14,7 +14,7 @@ describe('repo-build-job', function() {
         {artifact: 'b', path: 'b'},
         {artifact: 'c', path: 'ccc'},
       ]
-      const repoJob = {filesChangedSinceLastBuild: undefined, linkDependencies: false}
+      const repoJob = {}
 
       const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
 
@@ -29,12 +29,26 @@ describe('repo-build-job', function() {
       ]
       const repoJob = {
         filesChangedSinceLastBuild: ['a/foo.js', 'ccc/x.js', 'ccc/z.z'],
-        linkDependencies: false,
       }
 
       const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
 
       expect(jobsThatRan.map(j => j.artifact)).to.eql(['a', 'c'])
+    })
+
+    it('should execute builds based on dependency order', () => {
+      const artifacts = [
+        {artifact: 'b', path: 'b', dependencies: ['c']},
+        {artifact: 'c', path: 'ccc', dependencies: ['d', 'd2']},
+        {artifact: 'd', path: 'd', dependencies: ['a']},
+        {artifact: 'd2', path: 'd', dependencies: []},
+        {artifact: 'a', path: 'a'},
+      ]
+      const repoJob = {}
+
+      const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
+
+      expect(jobsThatRan.map(j => j.artifact)).to.eql(['d2', 'a', 'd', 'c', 'b'])
     })
   })
 })

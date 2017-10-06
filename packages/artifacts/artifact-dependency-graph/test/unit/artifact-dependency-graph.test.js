@@ -47,20 +47,3 @@ describe('artifact-dependency-graph', function() {
     })
   })
 })
-
-/*
-]lass TestDependencyTree(unittest.TestCase):
-
-    def test_builds_that_can_be_built(self):
-        forest = {
-            1: set(),
-            2: {1},
-            3: {2},
-            4: {3, 1},
-            5: set(),
-            6: {5, 3}
-        }
-        self.assertItemsEqual(list(builds_that_can_be_built(forest, set())), [1, 5])
-        self.assertItemsEqual(list(builds_that_can_be_built(forest, {1, 5})), [2])
-        self.assertItemsEqual(list(builds_that_can_be_built(forest, {1, 5, 3})), [2, 4, 6])
-*/

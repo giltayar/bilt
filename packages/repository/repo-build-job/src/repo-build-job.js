@@ -1,7 +1,11 @@
 'use strict'
-
-const debug = require('debug')('bildit:repo-build-job')
 const path = require('path')
+const {
+  artifactsToBuildFromChange,
+  buildsThatCanBeBuilt,
+  createDependencyGraph,
+} = require('@bildit/artifact-dependency-graph')
+const debug = require('debug')('bildit:repo-build-job')
 
 module.exports = ({plugins: [binaryRunner, repositoryFetcher]}) => {
   return {
@@ -28,60 +32,65 @@ module.exports = ({plugins: [binaryRunner, repositoryFetcher]}) => {
       howToBuild: {state, awakenedFrom, initialAllArtifacts},
       job: {linkDependencies, filesChangedSinceLastBuild},
     }) {
-      const remainingArtifactsToBuild = initialAllArtifacts
-        ? initialAllArtifacts.filter(
-            artifactToBuild =>
-              !filesChangedSinceLastBuild ||
-              filesChangedSinceLastBuild.find(file => file.startsWith(artifactToBuild.path + '/')),
-          )
-        : state.artifactsToBuild.filter(
-            artifact => !awakenedFrom || awakenedFrom.job.artifact !== artifact.artifact,
-          )
+      state = state || {
+        allArtifacts: initialAllArtifacts,
+        dependencyGraph: artifactsToBuildFromChange(
+          createDependencyGraph(initialAllArtifacts),
+          artifactsFromChanges(initialAllArtifacts, filesChangedSinceLastBuild),
+        ),
+        alreadyBuiltArtifacts: [],
+      }
+      const alreadyBuiltArtifacts = awakenedFrom
+        ? state.alreadyBuiltArtifacts.concat(awakenedFrom.job.artifact)
+        : []
 
-      state = state || {allArtifacts: initialAllArtifacts}
+      const artifactsToBuild = buildsThatCanBeBuilt(state.dependencyGraph, alreadyBuiltArtifacts)
 
-      debug('remaining to build %o', remainingArtifactsToBuild.map(artifact => artifact.artifact))
-
-      if (!remainingArtifactsToBuild || remainingArtifactsToBuild.length === 0) {
+      if (!artifactsToBuild || artifactsToBuild.length === 0) {
         return {}
       }
-      const artifactToBuild = remainingArtifactsToBuild[0]
+      const artifactToBuild = artifactsToBuild[0]
 
-      debug('building artifact %o', artifactToBuild.artifact)
+      debug('building artifact %s', artifactToBuild)
 
-      const changedFiles =
-        filesChangedSinceLastBuild &&
-        filesChangedSinceLastBuild.filter(file => file.startsWith(artifactToBuild.path + '/'))
+      const artifactJob = createJobFromArtifact(
+        state.allArtifacts.find(a => a.artifact === artifactToBuild),
+        linkDependencies ? state.allArtifacts : undefined,
+        filesChangedSinceLastBuild,
+      )
 
-      if (!changedFiles || changedFiles.length > 0) {
-        const artifactJob = createJobFromArtifact(
-          artifactToBuild,
-          linkDependencies ? state.allArtifacts : undefined,
-          changedFiles,
-        )
+      debug('decided to run sub-job %o', artifactJob)
 
-        debug('decided to run sub-job %o', artifactJob)
-
-        return {
-          state: {
-            ...state,
-            ...{artifactsToBuild: remainingArtifactsToBuild},
-          },
-          jobs: [artifactJob].map(job => ({job, awaken: true})),
-        }
+      return {
+        state: {
+          ...state,
+          ...{alreadyBuiltArtifacts},
+        },
+        jobs: [artifactJob].map(job => ({job, awaken: true})),
       }
     },
   }
 }
 
+function artifactsFromChanges(artifacts, filesChangedSinceLastBuild) {
+  return artifacts
+    .filter(
+      artifact =>
+        !filesChangedSinceLastBuild ||
+        filesChangedSinceLastBuild.find(file => file.startsWith(artifact.path + '/')),
+    )
+    .map(artifact => artifact.artifact)
+}
+
 module.exports.plugins = ['binaryRunner:npm', 'repositoryFetcher']
 
-const createJobFromArtifact = (artifact, artifacts, changedFiles) => ({
+const createJobFromArtifact = (artifact, artifacts, filesChangedSinceLastBuild) => ({
   kind: artifact.type,
   artifact: artifact.artifact,
   artifactPath: artifact.path,
   dependencies: artifacts ? artifact.dependencies : [],
   artifacts,
   filesChangedSinceLastBuild:
-    changedFiles && changedFiles.map(f => path.relative(artifact.path, f)),
+    filesChangedSinceLastBuild &&
+    filesChangedSinceLastBuild.map(f => path.relative(artifact.path, f)),
 })

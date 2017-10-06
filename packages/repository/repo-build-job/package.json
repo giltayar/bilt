@@ -18,6 +18,7 @@
     "type": "git"
   },
   "dependencies": {
+    "@bildit/artifact-dependency-graph": "^1.0.0",
     "debug": "^2.6.8"
   },
   "devDependencies": {

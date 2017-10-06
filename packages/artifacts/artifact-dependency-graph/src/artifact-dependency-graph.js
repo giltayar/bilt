@@ -1,6 +1,7 @@
 'use strict'
+
 const createDependencyGraph = artifacts =>
-  new Map(artifacts.map(({artifact, dependencies}) => [artifact, dependencies || []]))
+  objectFromEntries(artifacts.map(({artifact, dependencies}) => [artifact, dependencies || []]))
 
 function artifactsToBuildFromChange(dependencyGraph, changedArtifacts) {
   const closure = new Set(changedArtifacts)
@@ -38,6 +39,16 @@ const buildsThatCanBeBuilt = (dependencyGraph, alreadyBuiltArtifacts) => {
 
 const difference = (arr, brr) => arr.filter(aMember => !brr.includes(aMember))
 const intersection = (arr, bset) => arr.filter(aMember => bset.has(aMember))
+
+function objectFromEntries(entries) {
+  const ret = Object.create(null)
+
+  for (const [key, value] of entries) {
+    ret[key] = value
+  }
+
+  return ret
+}
 
 module.exports = {
   createDependencyGraph,

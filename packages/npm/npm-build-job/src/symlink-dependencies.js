@@ -2,7 +2,7 @@
 const debug = require('debug')('bildit:npm-build-job')
 const path = require('path')
 
-module.exports = async function(dependencies, directory, artifacts, {agent, agentInstance}) {
+async function symlinkDependencies(dependencies, directory, artifacts, {agent, agentInstance}) {
   const artifactToPathMap = new Map(artifacts.map(artifact => [artifact.artifact, artifact.path]))
 
   await Promise.all(
@@ -15,3 +15,5 @@ module.exports = async function(dependencies, directory, artifacts, {agent, agen
     }),
   )
 }
+
+module.exports = symlinkDependencies
