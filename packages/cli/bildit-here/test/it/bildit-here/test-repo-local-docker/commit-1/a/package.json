@@ -9,6 +9,9 @@
   "scripts": {
     "postinstall": "touch postinstalled.txt"
   },
+  "dependencies": {
+    "this-pkg-does-not-exist-in-npmjs.b": "3.2.1"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC"

@@ -34,7 +34,7 @@
       "cwd": "${workspaceRoot}/packages/cli/bildit-here",
       "protocol": "inspector",
       "env": {
-        "DEBUG": ""
+        "DEBUG": "bildit:artifact-finder,bildit:host-agent,bildit:repo-build-job"
       },
       "console": "integratedTerminal"
 

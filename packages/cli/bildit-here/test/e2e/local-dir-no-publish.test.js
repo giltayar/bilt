@@ -6,26 +6,13 @@ const {expect} = require('chai')
 const {exec} = require('child_process')
 const {promisify: p} = require('util')
 const {fileContents, writeFile} = require('../utils/file-utils')
-const {setupFolder, setupBuildDir} = require('../utils/setup')
+const {setupBuildDir} = require('../utils/setup')
 
 const cli = path.resolve(__dirname, '../../scripts/bildit-here-cli.js')
 const testRepoSrc = path.resolve(__dirname, 'test-repo-no-publish')
 
 describe('local directory use-case', () => {
   describe('no publish use case', () => {
-    describe('without git', () => {
-      it('should build the directory with all its packages', async () => {
-        const testRepo = await setupFolder(path.join(testRepoSrc, 'commit-1'))
-        const {stdout} = await p(exec)(`${process.argv0} ${cli} ${testRepo}`)
-
-        expect(stdout).to.include('Building a')
-        expect(stdout).to.include('Building b')
-        expect(await fileContents(testRepo, 'a/postinstalled.txt')).to.equal('')
-        expect(await fileContents(testRepo, 'b/postinstalled.txt')).to.equal('')
-        expect(await fileContents(testRepo, 'b/built.txt')).to.equal('')
-        expect(await fileContents(testRepo, 'b/tested.txt')).to.equal('')
-      })
-    })
     describe('with git', () => {
       it('should build the directory with all its packages and then say there is nothing to rebuild', async () => {
         const testRepo = await setupBuildDir(testRepoSrc)

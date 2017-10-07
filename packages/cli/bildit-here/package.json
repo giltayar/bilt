@@ -8,7 +8,7 @@
     "scripts"
   ],
   "scripts": {
-    "test": "mocha --no-timeouts 'test/**/*.test.js'",
+    "test": "mocha --no-timeouts 'test/**/*.test.js' && npm run eslint",
     "eslint": "eslint '**/*.js'",
     "build": "npm run build:e2e-keys && build:e2e-git-repo",
     "build:e2e-keys": "echo y | ssh-keygen -t rsa -P '' -f test/it/bildit-here/git-server/keys/id_rsa",

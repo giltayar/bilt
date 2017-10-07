@@ -8,10 +8,8 @@ module.exports = async ({
   pimport,
   config: {publish, linkLocalPackages},
   appConfig: {publish: appPublish},
+  plugins: [npmPublisher, repositoryFetcher, npmAgentCommander],
 }) => {
-  const npmPublisher = await pimport('publisher:npm')
-  const repositoryFetcher = await pimport('repositoryFetcher')
-
   return {
     async setupBuildSteps({job, agentInstance}) {
       const agent = await pimport(agentInstance.kind)
@@ -36,39 +34,61 @@ module.exports = async ({
         await agent.readFileAsBuffer(agentInstance, path.join(directory, 'package.json')),
       )
 
+      const npmAgentCommanderSetup = await npmAgentCommander.setup({agentInstance})
+
       const {howToBuild: howToBuildForPublish = {}} = shouldPublish(packageJson)
         ? await npmPublisher.setupBuildSteps({
             job,
             agentInstance,
             directory,
+            packageJson,
           })
         : {}
 
-      return {howToBuild: {packageJson, howToBuildForPublish, agentInstance, directory}}
+      return {
+        howToBuild: {
+          packageJson,
+          howToBuildForPublish,
+          agentInstance,
+          directory,
+          npmAgentCommanderSetup,
+        },
+      }
     },
     getBuildSteps({
-      howToBuild: {packageJson, howToBuildForPublish, agentInstance, directory},
+      howToBuild: {
+        packageJson,
+        howToBuildForPublish,
+        agentInstance,
+        directory,
+        npmAgentCommanderSetup,
+      },
       job,
     }) {
       const buildSteps = []
 
+      const transform = command =>
+        npmAgentCommander.transformAgentCommand(command, {setup: npmAgentCommanderSetup})
+
       debug('running npm install in job %o', job)
-      buildSteps.push({agentInstance, command: ['npm', 'install'], cwd: directory})
+      buildSteps.push(transform({agentInstance, command: ['npm', 'install'], cwd: directory}))
 
       if ((packageJson.scripts || {}).build) {
         debug('adding npm run build in job %s', job.id)
 
-        buildSteps.push({
-          agentInstance,
-          command: ['npm', 'run', 'build'],
-          cwd: directory,
-        })
+        buildSteps.push(
+          transform({
+            agentInstance,
+            command: ['npm', 'run', 'build'],
+            cwd: directory,
+          }),
+        )
       }
 
       if ((packageJson.scripts || {}).test) {
         debug('adding npm test in job %s', job.id)
 
-        buildSteps.push({agentInstance, command: ['npm', 'test'], cwd: directory})
+        buildSteps.push(transform({agentInstance, command: ['npm', 'test'], cwd: directory}))
       }
 
       if (shouldPublish(packageJson)) {
@@ -89,3 +109,5 @@ module.exports = async ({
     return (publish || appPublish) && !packageJson.private
   }
 }
+
+module.exports.plugins = ['publisher:npm', 'repositoryFetcher', 'agentCommander:npm']

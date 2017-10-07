@@ -19,8 +19,8 @@ module.exports = {
   plugins: {
     'agent:npm': remoteDockerAgent,
     'agent:repository': remoteDockerAgent,
-    'publisher:npm': {
-      '@bildit/npm-publisher-with-git': {
+    'agentCommander:npm': {
+      '@bildit/npm-agent-commander': {
         access: 'public',
         npmAuthenticationLine: '//localhost:4873/:_authToken="NPM_TOKEN"',
       },

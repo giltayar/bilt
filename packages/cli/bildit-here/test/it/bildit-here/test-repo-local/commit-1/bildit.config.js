@@ -3,8 +3,8 @@ const path = require('path')
 
 module.exports = {
   plugins: {
-    'publisher:npm': {
-      '@bildit/npm-publisher-with-git': {
+    'agentCommander:npm': {
+      '@bildit/npm-agent-commander': {
         access: 'public',
         npmAuthenticationLine: '//localhost:4873/:_authToken="NPM_TOKEN"',
         usedLocally: true,

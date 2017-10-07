@@ -40,11 +40,9 @@ describe('local directory (with docker) with publish use-case', () => {
     )
     const gitServerAddress = await getAddressForService(envName, pathToCompose, 'git-server', 22)
 
-    const npmRegistry = `http://${npmRegistryAddress}/`
-
     process.env = {
       ...process.env,
-      npm_config_registry: npmRegistry,
+      npm_config_registry: 'http://npm-registry:4873',
       KEYS_DIR: path.resolve(__dirname, 'bildit-here/git-server/keys'),
       TEST_NETWORK: `${envName.replace('_', '')}_default`,
     }

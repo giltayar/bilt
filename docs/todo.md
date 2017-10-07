@@ -2,7 +2,8 @@
 
 ## Continuation
 
-* Write repo-build-job to use dependency graph thingie, and test it.
+* Write bildit-here it tests to check that it's building according to dependencies
+* Deal with errors in repo-build-job
 
 ## Dependency Graph Build
 

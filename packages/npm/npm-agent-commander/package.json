@@ -1,8 +1,8 @@
 {
-  "name": "@bildit/agent-commons",
-  "version": "1.0.2",
+  "name": "@bildit/npm-agent-commander",
+  "version": "1.0.0",
   "description": "",
-  "main": "src/agent-commons.js",
+  "main": "src/npm-agent-commander.js",
   "files": [
     "src",
     "scripts"
@@ -23,6 +23,7 @@
     "type": "git"
   },
   "dependencies": {
+    "@bildit/agent-commons": "^1.0.2",
     "debug": "^3.0.0"
   },
   "devDependencies": {
