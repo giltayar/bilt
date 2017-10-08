@@ -19,7 +19,6 @@ module.exports = async ({pimport, plugins: [npmAgentCommander, gitAgentCommander
       const gitAgentCommanderSetup = await gitAgentCommander.setup({agentInstance})
 
       await ensureNoDirtyGitFiles(
-        vcs,
         agent,
         agentInstance,
         directory,
@@ -98,13 +97,14 @@ module.exports = async ({pimport, plugins: [npmAgentCommander, gitAgentCommander
     })
 
     debug('pushing to remote repo')
+
     buildSteps.push({
       agentInstance,
       command: ['git', 'push', '--set-upstream', 'origin', 'master'],
       cwd: directory,
     })
 
-    return {buildSteps}
+    return buildSteps
   }
 
   async function ensureNoDirtyGitFiles(

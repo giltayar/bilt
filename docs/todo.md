@@ -2,8 +2,8 @@
 
 ## Continuation
 
-* Write bildit-here it tests to check that it's building according to dependencies
-* Deal with errors in repo-build-job
+* git-commander-agent wrote. local-dir e2e test is starting to work, but not there yet.
+* We also need to turn npm-publisher-with-git into a regular library and not a service.
 
 ## Dependency Graph Build
 
