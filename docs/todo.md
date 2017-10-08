@@ -2,9 +2,6 @@
 
 ## Continuation
 
-* git-commander-agent wrote. local-dir e2e test is starting to work, but not there yet.
-* We also need to turn npm-publisher-with-git into a regular library and not a service.
-
 ## Dependency Graph Build
 
 1. Do dependency check build graph
