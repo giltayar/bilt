@@ -14,7 +14,7 @@ async function setupBuildDir(
   finalOrigin = undefined,
   modifyBuildDirFunc,
 ) {
-  const tmpDir = await p(fs.mkdtemp)(path.join(__dirname, 'temp-folders-for-docker') + '/')
+  const tmpDir = await p(fs.mkdtemp)('/tmp/')
 
   await gitInit(tmpDir)
 
@@ -113,7 +113,7 @@ async function replayCommit(directory, commitDirectory) {
 }
 
 async function setupFolder(sourceDirectory) {
-  const tmpDir = await p(fs.mkdtemp)(path.join(__dirname, 'temp-folders-for-docker') + '/')
+  const tmpDir = await p(fs.mkdtemp)('/tmp/')
 
   await p(cpr)(sourceDirectory + '/', tmpDir, {overwrite: true})
 
