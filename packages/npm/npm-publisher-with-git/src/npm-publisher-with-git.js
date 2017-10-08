@@ -90,19 +90,23 @@ module.exports = async ({pimport, plugins: [npmAgentCommander, gitAgentCommander
         cwd: directory,
       }),
     )
-    buildSteps.push({
-      agentInstance,
-      command: ['git', 'commit', '-am', message],
-      cwd: directory,
-    })
+    buildSteps.push(
+      transform({
+        agentInstance,
+        command: ['git', 'commit', '-am', message],
+        cwd: directory,
+      }),
+    )
 
     debug('pushing to remote repo')
 
-    buildSteps.push({
-      agentInstance,
-      command: ['git', 'push', '--set-upstream', 'origin', 'master'],
-      cwd: directory,
-    })
+    buildSteps.push(
+      transform({
+        agentInstance,
+        command: ['git', 'push', '--set-upstream', 'origin', 'master'],
+        cwd: directory,
+      }),
+    )
 
     return buildSteps
   }

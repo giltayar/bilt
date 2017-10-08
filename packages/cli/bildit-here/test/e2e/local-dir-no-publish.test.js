@@ -20,6 +20,7 @@ describe('local directory use-case', () => {
         await p(exec)(`${process.argv0} ${cli} ${testRepo}`)
 
         const {stdout, stderr} = await p(exec)(`${process.argv0} ${cli} ${testRepo}`)
+        console.log(stdout, stderr)
 
         expect(stdout).to.equal('')
         expect(stderr.trim()).to.equal('Nothing to build')
