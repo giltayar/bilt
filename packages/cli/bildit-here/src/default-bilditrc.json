@@ -9,7 +9,6 @@
     "builder:repository": {"@bildit/repo-build-job": {}},
     "builder:npm": {"@bildit/npm-build-job": {}},
     "builder:docker": {"@bildit/docker-build-job": {}},
-    "publisher:npm": "@bildit/npm-publisher-with-git",
     "binaryRunner:npm": "@bildit/npm-binary-runner",
     "vcs": "@bildit/git-vcs",
     "repositoryFetcher": "@bildit/noop-repository-fetcher",

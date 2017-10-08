@@ -3,12 +3,13 @@
 const path = require('path')
 const debug = require('debug')('bildit:npm-build-job')
 const symlinkDependencies = require('./symlink-dependencies')
+const {getPublishBuildSteps, setupPublishBuildSteps} = require('./npm-publisher-with-git')
 
 module.exports = async ({
   pimport,
   config: {publish, linkLocalPackages},
   appConfig: {publish: appPublish},
-  plugins: [npmPublisher, repositoryFetcher, npmAgentCommander],
+  plugins: [repositoryFetcher, npmAgentCommander, gitAgentCommander],
 }) => {
   return {
     async setupBuildSteps({job, agentInstance}) {
@@ -35,33 +36,36 @@ module.exports = async ({
       )
 
       const npmAgentCommanderSetup = await npmAgentCommander.setup({agentInstance})
+      const gitAgentCommanderSetup = await gitAgentCommander.setup({agentInstance})
 
-      const {howToBuild: howToBuildForPublish = {}} = shouldPublish(packageJson)
-        ? await npmPublisher.setupBuildSteps({
-            job,
-            agentInstance,
-            directory,
-            packageJson,
-          })
-        : {}
+      if (shouldPublish(packageJson)) {
+        await setupPublishBuildSteps({
+          job,
+          agent,
+          agentInstance,
+          directory,
+          gitAgentCommander,
+          gitAgentCommanderSetup,
+        })
+      }
 
       return {
         howToBuild: {
           packageJson,
-          howToBuildForPublish,
           agentInstance,
           directory,
           npmAgentCommanderSetup,
+          gitAgentCommanderSetup,
         },
       }
     },
     getBuildSteps({
       howToBuild: {
         packageJson,
-        howToBuildForPublish,
         agentInstance,
         directory,
         npmAgentCommanderSetup,
+        gitAgentCommanderSetup,
       },
       job,
     }) {
@@ -93,7 +97,15 @@ module.exports = async ({
 
       if (shouldPublish(packageJson)) {
         buildSteps.push(
-          ...npmPublisher.getBuildSteps({howToBuild: howToBuildForPublish}).buildSteps,
+          ...getPublishBuildSteps({
+            directory,
+            packageJson,
+            agentInstance,
+            npmAgentCommander,
+            npmAgentCommanderSetup,
+            gitAgentCommander,
+            gitAgentCommanderSetup,
+          }),
         )
       } else {
         debug(
@@ -110,4 +122,4 @@ module.exports = async ({
   }
 }
 
-module.exports.plugins = ['publisher:npm', 'repositoryFetcher', 'agentCommander:npm']
+module.exports.plugins = ['repositoryFetcher', 'agentCommander:npm', 'agentCommander:git']
