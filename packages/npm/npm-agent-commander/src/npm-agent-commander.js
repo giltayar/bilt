@@ -9,10 +9,7 @@ const debug = require('debug')('bildit:npm-agent-commander')
 module.exports = initializer(
   async (
     {ensureAgentInstanceInitialized},
-    {
-      config: {npmAuthenticationLine, access = 'restricted', usedLocally = !npmAuthenticationLine},
-      pimport,
-    },
+    {config: {npmAuthenticationLine, access = 'restricted'}, pimport},
   ) => {
     return {
       async setup({agentInstance}) {
@@ -34,10 +31,9 @@ module.exports = initializer(
       async [initializer.initializationFunction]({agentInstance}) {
         debug('initializing agent instance with npm', agentInstance.id)
         const agent = await pimport(agentInstance.kind)
-        const homeDir =
-          usedLocally && npmAuthenticationLine
-            ? await p(fs.mkdtemp)(os.tmpdir())
-            : await agent.homeDir(agentInstance)
+        const homeDir = npmAuthenticationLine
+          ? await p(fs.mkdtemp)(os.tmpdir())
+          : await agent.homeDir(agentInstance)
 
         if (npmAuthenticationLine) {
           debug(

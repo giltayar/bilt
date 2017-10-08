@@ -53,7 +53,6 @@ async function pushOrigin(buildDir) {
             gitAuthenticationKey: fs.readFileSync(path.resolve(process.env.KEYS_DIR, 'id_rsa')),
             gitUserEmail: 'gil@tayar.org',
             gitUserName: 'Gil Tayar',
-            usedLocally: true,
           },
         },
       },

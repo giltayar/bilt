@@ -7,7 +7,6 @@ module.exports = {
       '@bildit/npm-agent-commander': {
         access: 'public',
         npmAuthenticationLine: '//localhost:4873/:_authToken="NPM_TOKEN"',
-        usedLocally: true,
       },
     },
     'binaryRunner:npm': async ({pimport}) => {
@@ -23,7 +22,6 @@ module.exports = {
         gitAuthenticationKey: fs.readFileSync(path.resolve(process.env.KEYS_DIR, 'id_rsa')),
         gitUserEmail: 'gil@tayar.org',
         gitUserName: 'Gil Tayar',
-        usedLocally: true,
       },
     },
   },

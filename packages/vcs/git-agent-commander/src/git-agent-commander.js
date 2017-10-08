@@ -9,15 +9,7 @@ const debug = require('debug')('bildit:npm-agent-commander')
 module.exports = initializer(
   async (
     {ensureAgentInstanceInitialized},
-    {
-      config: {
-        gitAuthenticationKey,
-        gitUserEmail,
-        gitUserName,
-        usedLocally = !gitAuthenticationKey,
-      },
-      pimport,
-    },
+    {config: {gitAuthenticationKey, gitUserEmail, gitUserName}, pimport},
   ) => {
     return {
       async setup({agentInstance}) {
@@ -35,16 +27,17 @@ module.exports = initializer(
 
       async [initializer.initializationFunction]({agentInstance}) {
         const agent = await pimport(agentInstance.kind)
-        const homeDir =
-          usedLocally && gitAuthenticationKey
-            ? await p(fs.mkdtemp)(os.tmpdir())
-            : await agent.homeDir(agentInstance)
+        const homeDir = gitAuthenticationKey
+          ? await p(fs.mkdtemp)(os.tmpdir())
+          : await agent.homeDir(agentInstance)
 
-        await agent.writeBufferToFile(
-          agentInstance,
-          path.join(homeDir, '.ssh/config'),
-          Buffer.from(''),
-        )
+        if (gitAuthenticationKey) {
+          await agent.writeBufferToFile(
+            agentInstance,
+            path.join(homeDir, '.ssh/config'),
+            Buffer.from(''),
+          )
+        }
 
         if (gitAuthenticationKey) {
           const idRsaPath = path.join(homeDir, '.ssh/id_rsa')
