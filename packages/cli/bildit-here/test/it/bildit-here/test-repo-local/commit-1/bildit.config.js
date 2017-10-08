@@ -18,8 +18,8 @@ module.exports = {
         },
       }
     },
-    vcs: {
-      '@bildit/git-vcs': {
+    'agentCommander:git': {
+      '@bildit/git-agent-commander': {
         gitAuthenticationKey: fs.readFileSync(path.resolve(process.env.KEYS_DIR, 'id_rsa')),
         gitUserEmail: 'gil@tayar.org',
         gitUserName: 'Gil Tayar',

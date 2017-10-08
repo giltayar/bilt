@@ -1,13 +1,17 @@
 {
-  "name": "@bildit/git-vcs",
-  "version": "1.0.1",
+  "name": "@bildit/git-agent-commander",
+  "version": "1.0.0",
   "description": "",
-  "main": "src/git-vcs.js",
+  "main": "src/git-agent-commander.js",
   "files": [
     "src",
     "scripts"
   ],
-  "scripts": {},
+  "scripts": {
+    "test": "mocha --no-timeouts 'test/**/*.test.js' && npm run eslint",
+    "eslint": "eslint '**/*.js'",
+    "publish:all": "npm version patch && npm publish"
+  },
   "keywords": [
     "ci",
     "bildit"
@@ -19,11 +23,14 @@
     "type": "git"
   },
   "dependencies": {
-    "debug": "^2.6.8"
+    "debug": "^3.0.0"
   },
   "devDependencies": {
+    "chai": "^4.1.2",
     "eslint": "^4.2.0",
+    "eslint-plugin-mocha-no-only": "0.0.5",
     "eslint-plugin-prettier": "^2.1.2",
+    "mocha": "^3.5.0",
     "prettier": "^1.5.2"
   }
 }

@@ -25,12 +25,10 @@ module.exports = {
         npmAuthenticationLine: '//localhost:4873/:_authToken="NPM_TOKEN"',
       },
     },
-    vcs: {
-      '@bildit/git-vcs': gitConfig,
+    'agentCommander:git': {
+      '@bildit/git-agent-commander': gitConfig,
     },
-    repositoryFetcher: {
-      '@bildit/git-repository-fetcher': gitConfig,
-    },
+    repositoryFetcher: '@bildit/git-repository-fetcher',
   },
   publish: true,
 }

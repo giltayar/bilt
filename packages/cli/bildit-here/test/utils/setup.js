@@ -48,8 +48,8 @@ async function pushOrigin(buildDir) {
       {
         events: '@bildit/in-memory-events',
         'agent:local-just-for-git-push': '@bildit/host-agent',
-        'vcs-just-for-git-push': {
-          '@bildit/git-vcs': {
+        'git-agent-commander-just-for-git-push': {
+          '@bildit/git-agent-commander': {
             gitAuthenticationKey: fs.readFileSync(path.resolve(process.env.KEYS_DIR, 'id_rsa')),
             gitUserEmail: 'gil@tayar.org',
             gitUserName: 'Gil Tayar',
@@ -63,11 +63,21 @@ async function pushOrigin(buildDir) {
     },
   )
 
-  const gitVcs = await pimport('vcs-just-for-git-push')
   const localAgent = await pimport('agent:local-just-for-git-push')
+  const gitAgentCommander = await pimport('git-agent-commander-just-for-git-push')
   const agentInstance = await localAgent.acquireInstanceForJob()
   try {
-    await gitVcs.push({agentInstance, directory: buildDir})
+    const gitAgentCommanderSetup = await gitAgentCommander.setup({agentInstance})
+    const transform = command =>
+      gitAgentCommander.transformAgentCommand(command, {setup: gitAgentCommanderSetup})
+
+    await localAgent.executeCommand(
+      transform({
+        agentInstance,
+        command: ['git', 'push', '--set-upstream', 'origin', 'master'],
+        cwd: buildDir,
+      }),
+    )
   } finally {
     localAgent.releaseInstanceForJob(agentInstance)
   }
