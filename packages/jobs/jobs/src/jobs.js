@@ -20,18 +20,26 @@ async function executeJob(job, {awakenedFrom, pimport, events, kvStore}) {
   const state = await kvStore.get(`jobstate:${job.id}`)
   debug('state for job %s found: %o', jobWithId.id, state)
 
-  const {state: newState, jobs = []} = await runTheBuild(builder, agent, jobWithId, state, awakenedFrom)
+  const {state: newState, jobs = [], success, err} = await runTheBuild(
+    builder,
+    agent,
+    jobWithId,
+    state,
+    awakenedFrom,
+  )
   debug('ran job %s', jobWithId.id)
 
   await events.publish(jobs.length === 0 ? 'END_JOB' : 'HIBERNATE_JOB', {
     job: jobWithId,
     state: newState,
     jobs,
+    success,
+    err,
   })
 
   debug('dispatched job %o', jobWithId)
 
-  return {state: newState, jobs, job: jobWithId}
+  return {state: newState, jobs, job: jobWithId, success, err}
 }
 
 async function build(buildSteps, agent) {
@@ -53,7 +61,9 @@ async function runTheBuild(builder, agent, job, state, awakenedFrom) {
       const {buildSteps = [], state, jobs} = builder.getBuildSteps({howToBuild, job})
       await build(buildSteps, agent, job)
 
-      return {state, jobs}
+      return {state, jobs, success: true}
+    } catch (err) {
+      return {state, success: false, err}
     } finally {
       if (builder.cleanupBuild) {
         await builder.cleanupBuild({howToBuild})
@@ -64,11 +74,16 @@ async function runTheBuild(builder, agent, job, state, awakenedFrom) {
   }
 }
 
-async function dealWithJobResult({job, state, jobs: subJobs}, {kvStore, dispatchJob}) {
-  debug('saving job %s state %o', job.id, state)
-  await kvStore.set(`jobstate:${job.id}`, state)
+async function dealWithJobResult(
+  {job, state, jobs: subJobs, success, err},
+  {kvStore, dispatchJob},
+) {
+  if (success) {
+    debug('saving job %s state %o', job.id, state)
+    await kvStore.set(`jobstate:${job.id}`, state)
+  }
 
-  await awakenParentJobIfNeeded(job, {result: 'success'}, {kvStore, dispatchJob})
+  await awakenParentJobIfNeeded(job, {success, err}, {kvStore, dispatchJob})
 
   if (subJobs && subJobs.length > 0) {
     const subJobsWithId = subJobs.map(({job, awaken}) => ({

@@ -40,9 +40,16 @@ module.exports = ({plugins: [binaryRunner, repositoryFetcher]}) => {
         ),
         alreadyBuiltArtifacts: [],
       }
-      const alreadyBuiltArtifacts = awakenedFrom
-        ? state.alreadyBuiltArtifacts.concat(awakenedFrom.job.artifact)
-        : []
+      const alreadyBuiltArtifacts =
+        awakenedFrom && awakenedFrom.success
+          ? state.alreadyBuiltArtifacts.concat(awakenedFrom.job.artifact)
+          : awakenedFrom && !awakenedFrom.success
+            ? state.alreadyBuiltArtifacts.concat(
+                Object.keys(
+                  artifactsToBuildFromChange(state.dependencyGraph, [awakenedFrom.job.artifact]),
+                ),
+              )
+            : []
 
       const artifactsToBuild = buildsThatCanBeBuilt(state.dependencyGraph, alreadyBuiltArtifacts)
 

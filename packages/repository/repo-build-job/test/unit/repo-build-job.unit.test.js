@@ -50,6 +50,21 @@ describe('repo-build-job', function() {
 
       expect(jobsThatRan.map(j => j.artifact)).to.eql(['d2', 'a', 'd', 'c', 'b'])
     })
+
+    it.only('should not execute jobs that are dependent on a failed job', () => {
+      const artifacts = [
+        {artifact: 'b', path: 'b', dependencies: ['c']},
+        {artifact: 'c', path: 'ccc', dependencies: ['d', 'd2']},
+        {artifact: 'd', path: 'd', dependencies: ['a'], failBuild: true},
+        {artifact: 'd2', path: 'd', dependencies: []},
+        {artifact: 'a', path: 'a'},
+      ]
+      const repoJob = {}
+
+      const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
+
+      expect(jobsThatRan.map(j => j.artifact)).to.eql(['d2', 'a', 'd'])
+    })
   })
 })
 
@@ -69,7 +84,10 @@ function runRepoJob(artifacts, repoJob, repoBuildJobRunner) {
       howToBuild: {
         state: jobResult.state,
         initialAllArtifacts: undefined,
-        awakenedFrom: {job: doneJob},
+        awakenedFrom: {
+          job: doneJob,
+          success: !artifacts.find(a => a.artifact === doneJob.artifact).failBuild,
+        },
       },
       job: repoJob,
     })

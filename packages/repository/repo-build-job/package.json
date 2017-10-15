@@ -6,7 +6,10 @@
   "files": [
     "src"
   ],
-  "scripts": {},
+  "scripts": {
+    "test": "mocha --no-timeouts 'test/**/*.test.js' && npm run eslint",
+    "eslint": "eslint '**/*.js'"
+  },
   "keywords": [
     "ci",
     "build"
