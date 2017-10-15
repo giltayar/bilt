@@ -2,21 +2,6 @@
 
 ## Continuation
 
-## Dependency Graph Build
-
-1. Do dependency check build graph
-   1. Deal with errors:
-
-```python
-        if result not in (SUCCESS, WARNINGS):
-            builds_to_skip_due_to_error = transitive_closure(to_build, set([build_name])).keys()
-            log.msg('change #{}, build {} failed. Killing future builds of {}'
-                    .format(changeid, build_name, builds_to_skip_due_to_error))
-            already_built.update(set(builds_to_skip_due_to_error))
-            yield self.setState('already_built-' + str(changeid), list(already_built))
-            return
-```
-
 ## CLI and productization
 
 1. Define a good CLI
