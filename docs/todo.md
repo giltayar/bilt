@@ -4,19 +4,29 @@
 
 ## CLI and productization
 
-1. Define a good CLI
+1. Changes due to CLI definition:
+   * Change format of pimport configuration to have a `package` key for which package to use, and not
+     the elaborate sub-object we use today. This will enable users to override stuff there without
+     knowing which package to use.
+   * Change `agentCommander:*` to `commands:*`.
+   * Support additional dependencies defined in bilditrc per-package.
+   * Support per-package last build info, and kill the whole leveldb plugin.
+   * Kill all cases of git push. Determine package version the bibuild way.
+   * Support reading bilditrc per-package.
+   * Support definition of steps
+   * Support enabling/disabling steps globally.
+   * Kill all appConfig usage in builders.
 1. Build the CLI
-   1. Support two use cases:
-      * Build from filesystem (with symlinking and all), with changed files support
-      * Build from repo (using published artifacts), for use in Travis CI, with last-succesful-build support
-      * Build specific commit/branch
-1. Deal nicely with errors
-1. Make it a simple global install, available to any who want it
+1. Deal nicely with output
+1. Support partial building, e.g. `--root`.
+1. Make it a simple global install, available to any who wants it
 
 ## Fine Tuning
 
 1. Publish commit should include artifact name
-1. Retry push
+1. Support npm-docker artifacts
+1. Check that it really works in CircleCI
+1. Dogfood and use it also in applitools projects.
 
 ## Parallel Execution
 
@@ -35,33 +45,8 @@
 1. Add an auto-upgrade feature
 1. Support local-docker-agent and reuse docker containers between builds
 
-## Supoprt Circle CI
-
-1. Make it so that it works in Circle CI using regular build
-1. Add support for triggered builds
-
 ## Misc
 
 1. Error handle bad configuration
-1. Retry git push if fails on reject
 1. Pull if image not found when running job
 1. npm binary runner should not install if package already exists
-
-## Use Cases
-
-* Local build.
-  * This can theoretically run in Travis/Circle.
-  * Support changed files
-  * Support docker or host agents
-    * maximum number of parallel agents is configurable
-* Travis/Circle/CI build
-  * Pulls from a repo
-  * Support changed files
-  * Support docker, host, or kubernetes agents
-    * maximum number of parallel agents is configurable
-* Local build that works on a repo, and uses docker to run builds.
-  * Web api to check the results/logs
-  * console api to check the results/logs
-  * maximum number of parallel agents is configurable
-* Travis/Circle build that use build triggering to run builds.
-* Simple one job repo build (no monorepo - just build the damn thing from root)

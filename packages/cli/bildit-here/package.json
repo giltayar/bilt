@@ -34,7 +34,8 @@
     "jest-changed-files": "^20.0.3",
     "make-dir": "^1.0.0",
     "plugin-import": "^1.0.7",
-    "set-union": "^1.0.0"
+    "set-union": "^1.0.0",
+    "yargs": "^9.0.1"
   },
   "devDependencies": {
     "chai": "^4.1.0",
