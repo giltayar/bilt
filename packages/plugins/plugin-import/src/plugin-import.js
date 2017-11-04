@@ -1,5 +1,6 @@
 'use strict'
 const path = require('path')
+const assert = require('assert')
 const debug = require('debug')('plugin-import')
 const merge = require('lodash.merge')
 
@@ -19,20 +20,22 @@ module.exports = (pluginLists, {baseDirectory = '', appConfigs = []} = {}) => {
 
     if (!pluginInfo) throw new Error(`No plugins support plugin ${kind}`)
 
-    const normalizedPluginModuleInfo = normalizePluginModule(pluginInfo)
+    const normalizedPluginInfo = normalizePluginModule(pluginInfo)
 
-    const alreadyFoundPlugin = pluginsFound.get(JSON.stringify(normalizedPluginModuleInfo))
+    const pluginKey = JSON.stringify(normalizedPluginInfo)
+
+    const alreadyFoundPlugin = pluginsFound.get(pluginKey)
     if (alreadyFoundPlugin) {
-      debug('already created plugin kind %s for %o, returning it', kind, normalizedPluginModuleInfo)
+      debug('already created plugin kind %s for %o, returning it', kind, normalizedPluginInfo)
       return alreadyFoundPlugin
     }
 
-    const pluginModuleWithConfig = loadPluginModule(baseDirectory, normalizedPluginModuleInfo)
+    const pluginModuleWithConfig = loadPluginModule(baseDirectory, normalizedPluginInfo)
     debug('creating plugin for kind %s, info %o', kind, pluginInfo)
     const plugin = await createPlugin(pimport, pluginInfo, kind, pluginModuleWithConfig)
 
     debug('found plugin for kind %s', kind)
-    pluginsFound.set(JSON.stringify(normalizedPluginModuleInfo), plugin)
+    pluginsFound.set(pluginKey, plugin)
 
     return plugin
   }
@@ -66,28 +69,30 @@ module.exports = (pluginLists, {baseDirectory = '', appConfigs = []} = {}) => {
 
 function normalizePluginModule(modulesEntry) {
   if (typeof modulesEntry === 'string') {
-    return {pluginModulePath: modulesEntry, pluginConfig: {}}
+    return {package: modulesEntry}
   } else if (typeof modulesEntry === 'function') {
     return {
-      pluginModulePath: modulesEntry,
-      pluginConfig: {},
+      package: modulesEntry,
       somethingToMakeItUnique: modulesEntry.name || Math.randomO(),
     }
   } else {
-    const plugin = Object.entries(modulesEntry)[0]
+    assert(modulesEntry.package, 'plugin configuration must have a "package" field')
 
-    return {pluginModulePath: plugin[0], pluginConfig: plugin[1]}
+    return modulesEntry
   }
 }
 
-function loadPluginModule(baseDirectory, {pluginModulePath, pluginConfig}) {
-  if (typeof pluginModulePath === 'function') {
-    return {pluginModule: pluginModulePath, pluginConfig}
+function loadPluginModule(baseDirectory, pluginConfig) {
+  const pluginConfigWithoutPackage = {...pluginConfig}
+  delete pluginConfigWithoutPackage.package
+
+  if (typeof pluginConfig.package === 'function') {
+    return {pluginModule: pluginConfig.package, pluginConfig: pluginConfigWithoutPackage}
   }
   return {
-    pluginModule: require(pluginModulePath.startsWith('.')
-      ? path.resolve(baseDirectory, pluginModulePath)
-      : pluginModulePath),
-    pluginConfig,
+    pluginModule: require(pluginConfig.package.startsWith('.')
+      ? path.resolve(baseDirectory, pluginConfig.package)
+      : pluginConfig.package),
+    pluginConfig: pluginConfigWithoutPackage,
   }
 }

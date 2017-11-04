@@ -9,7 +9,7 @@ const pluginImport = require('../..')
 
 describe('plugin-import', function() {
   it('should load plugins from the baseDirectory', async () => {
-    const pimport = pluginImport([{foo: {'./my-init-args-returner': {a: 2}}}], {
+    const pimport = pluginImport([{foo: {package: './my-init-args-returner', a: 2}}], {
       baseDirectory: path.join(__dirname, 'more'),
       appConfigs: [{app: 1}],
     })
@@ -49,8 +49,8 @@ describe('plugin-import', function() {
     const pimport = pluginImport(
       [
         {
-          foo: {'./my-config-returner': {...aConfig}},
-          bar: {'./my-config-returner': {...aConfig}},
+          foo: {package: './my-config-returner', ...aConfig},
+          bar: {package: './my-config-returner', ...aConfig},
         },
       ],
       {baseDirectory: __dirname},
@@ -70,8 +70,8 @@ describe('plugin-import', function() {
     const pimport = pluginImport(
       [
         {
-          foo: {'./my-config-returner': {a: 42}},
-          bar: {'./my-config-returner': {a: 43}},
+          foo: {package: './my-config-returner', a: 42},
+          bar: {package: './my-config-returner', a: 43},
         },
       ],
       {baseDirectory: __dirname},
@@ -98,18 +98,16 @@ describe('plugin-import', function() {
         },
         {
           bar: {
-            './my-config-returner': {
-              aConfig: 1,
-              cConfig: 'c',
-            },
+            package: './my-config-returner',
+            aConfig: 1,
+            cConfig: 'c',
           },
         },
         {
           bar: {
-            './my-config-returner': {
-              aConfig: 'a',
-              bConfig: 'b',
-            },
+            package: './my-config-returner',
+            aConfig: 'a',
+            bConfig: 'b',
           },
           foo: async ({appConfig, pimport}) => ({
             returnAppConfig2() {
@@ -164,7 +162,7 @@ describe('plugin-import', function() {
   })
 
   it('should pass the correct information when loading the plugin', async () => {
-    const pimport = pluginImport([{foo: {'./more/my-init-args-returner': {a: 2}}}], {
+    const pimport = pluginImport([{foo: {package: './more/my-init-args-returner', a: 2}}], {
       baseDirectory: __dirname,
       appConfigs: [{app: 1}],
     })
