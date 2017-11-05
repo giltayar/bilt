@@ -17,7 +17,7 @@
       "cwd": "${workspaceRoot}/packages/plugins/plugin-import",
       "protocol": "inspector",
       "env": {
-        "DEBUG": "*"
+        "DEBUG": "plugin-import"
       },
       "console": "integratedTerminal"
 

@@ -2,12 +2,15 @@
 
 ## Continuation
 
+* bildit-here test fails after config refactoring changes. Fix it.
+
 ## CLI and productization
 
 1. Changes due to CLI definition:
    * Change format of pimport configuration to have a `package` key for which package to use, and not
      the elaborate sub-object we use today. This will enable users to override stuff there without
      knowing which package to use.
+   * pimport should normalize before merging pluginLists
    * Change `agentCommander:*` to `commands:*`.
    * Support additional dependencies defined in bilditrc per-package.
    * Support per-package last build info, and kill the whole leveldb plugin.

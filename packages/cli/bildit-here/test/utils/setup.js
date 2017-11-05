@@ -49,11 +49,10 @@ async function pushOrigin(buildDir) {
         events: '@bildit/in-memory-events',
         'agent:local-just-for-git-push': '@bildit/host-agent',
         'git-agent-commander-just-for-git-push': {
-          '@bildit/git-agent-commander': {
-            gitAuthenticationKey: fs.readFileSync(path.resolve(process.env.KEYS_DIR, 'id_rsa')),
-            gitUserEmail: 'gil@tayar.org',
-            gitUserName: 'Gil Tayar',
-          },
+          package: '@bildit/git-agent-commander',
+          gitAuthenticationKey: fs.readFileSync(path.resolve(process.env.KEYS_DIR, 'id_rsa')),
+          gitUserEmail: 'gil@tayar.org',
+          gitUserName: 'Gil Tayar',
         },
       },
     ],

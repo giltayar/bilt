@@ -2,11 +2,10 @@ const fs = require('fs')
 const path = require('path')
 
 const remoteDockerAgent = {
-  '@bildit/remote-docker-agent': {
-    image: 'giltayar/node-alpine-git',
-    workdir: '/home/node/builddir',
-    network: process.env.TEST_NETWORK,
-  },
+  package: '@bildit/remote-docker-agent',
+  image: 'giltayar/node-alpine-git',
+  workdir: '/home/node/builddir',
+  network: process.env.TEST_NETWORK,
 }
 
 const gitConfig = {
@@ -20,13 +19,13 @@ module.exports = {
     'agent:npm': remoteDockerAgent,
     'agent:repository': remoteDockerAgent,
     'agentCommander:npm': {
-      '@bildit/npm-agent-commander': {
-        access: 'public',
-        npmAuthenticationLine: '//localhost:4873/:_authToken="NPM_TOKEN"',
-      },
+      package: '@bildit/npm-agent-commander',
+      access: 'public',
+      npmAuthenticationLine: '//localhost:4873/:_authToken="NPM_TOKEN"',
     },
     'agentCommander:git': {
-      '@bildit/git-agent-commander': gitConfig,
+      package: '@bildit/git-agent-commander',
+      ...gitConfig,
     },
     repositoryFetcher: '@bildit/git-repository-fetcher',
   },
