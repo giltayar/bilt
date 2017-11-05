@@ -9,7 +9,7 @@ module.exports = async ({
   pimport,
   config: {publish, linkLocalPackages},
   appConfig: {publish: appPublish},
-  plugins: [repositoryFetcher, npmAgentCommander, gitAgentCommander],
+  plugins: [repositoryFetcher, npmCommander, gitCommander],
 }) => {
   return {
     async setupBuildSteps({job, agentInstance}) {
@@ -35,8 +35,8 @@ module.exports = async ({
         await agent.readFileAsBuffer(agentInstance, path.join(directory, 'package.json')),
       )
 
-      const npmAgentCommanderSetup = await npmAgentCommander.setup({agentInstance})
-      const gitAgentCommanderSetup = await gitAgentCommander.setup({agentInstance})
+      const npmCommanderSetup = await npmCommander.setup({agentInstance})
+      const gitCommanderSetup = await gitCommander.setup({agentInstance})
 
       if (shouldPublish(packageJson)) {
         await setupPublishBuildSteps({
@@ -44,8 +44,8 @@ module.exports = async ({
           agent,
           agentInstance,
           directory,
-          gitAgentCommander,
-          gitAgentCommanderSetup,
+          gitCommander,
+          gitCommanderSetup,
         })
       }
 
@@ -54,8 +54,8 @@ module.exports = async ({
           packageJson,
           agentInstance,
           directory,
-          npmAgentCommanderSetup,
-          gitAgentCommanderSetup,
+          npmCommanderSetup,
+          gitCommanderSetup,
         },
       }
     },
@@ -64,15 +64,15 @@ module.exports = async ({
         packageJson,
         agentInstance,
         directory,
-        npmAgentCommanderSetup,
-        gitAgentCommanderSetup,
+        npmCommanderSetup,
+        gitCommanderSetup,
       },
       job,
     }) {
       const buildSteps = []
 
       const transform = command =>
-        npmAgentCommander.transformAgentCommand(command, {setup: npmAgentCommanderSetup})
+        npmCommander.transformAgentCommand(command, {setup: npmCommanderSetup})
 
       debug('running npm install in job %o', job)
       buildSteps.push(transform({agentInstance, command: ['npm', 'install'], cwd: directory}))
@@ -101,10 +101,10 @@ module.exports = async ({
             directory,
             packageJson,
             agentInstance,
-            npmAgentCommander,
-            npmAgentCommanderSetup,
-            gitAgentCommander,
-            gitAgentCommanderSetup,
+            npmCommander,
+            npmCommanderSetup,
+            gitCommander,
+            gitCommanderSetup,
           }),
         )
       } else {
@@ -122,4 +122,4 @@ module.exports = async ({
   }
 }
 
-module.exports.plugins = ['repositoryFetcher', 'agentCommander:npm', 'agentCommander:git']
+module.exports.plugins = ['repositoryFetcher', 'commander:npm', 'commander:git']

@@ -12,8 +12,8 @@ async function setupPublishBuildSteps({
   agent,
   agentInstance,
   directory,
-  gitAgentCommander,
-  gitAgentCommanderSetup,
+  gitCommander,
+  gitCommanderSetup,
 }) {
   debug(`sdetup publishing for job %s`, job.id)
   const {artifactPath} = job
@@ -23,8 +23,8 @@ async function setupPublishBuildSteps({
     agentInstance,
     directory,
     artifactPath,
-    gitAgentCommander,
-    gitAgentCommanderSetup,
+    gitCommander,
+    gitCommanderSetup,
   )
 }
 
@@ -32,15 +32,15 @@ function getPublishBuildSteps({
   directory,
   packageJson,
   agentInstance,
-  npmAgentCommander,
-  npmAgentCommanderSetup,
-  gitAgentCommander,
-  gitAgentCommanderSetup,
+  npmCommander,
+  npmCommanderSetup,
+  gitCommander,
+  gitCommanderSetup,
 }) {
   debug('npm publishing')
 
   const transform = command =>
-    npmAgentCommander.transformAgentCommand(command, {setup: npmAgentCommanderSetup})
+    npmCommander.transformAgentCommand(command, {setup: npmCommanderSetup})
 
   const buildSteps = []
 
@@ -66,8 +66,8 @@ function getPublishBuildSteps({
       agentInstance,
       directory,
       packageJson,
-      gitAgentCommander,
-      gitAgentCommanderSetup,
+      gitCommander,
+      gitCommanderSetup,
     ),
   )
 
@@ -78,8 +78,8 @@ function getCommitAndPushBuildSteps(
   agentInstance,
   directory,
   packageJson,
-  gitAgentCommander,
-  gitAgentCommanderSetup,
+  gitCommander,
+  gitCommanderSetup,
 ) {
   const {version} = packageJson
   const newVersion = semver.inc(version, 'patch', true)
@@ -90,7 +90,7 @@ function getCommitAndPushBuildSteps(
   debug('committing patch changes %s', message)
 
   const transform = command =>
-    gitAgentCommander.transformAgentCommand(command, {setup: gitAgentCommanderSetup})
+    gitCommander.transformAgentCommand(command, {setup: gitCommanderSetup})
   const buildSteps = []
 
   buildSteps.push(
@@ -126,12 +126,12 @@ async function ensureNoDirtyGitFiles(
   agentInstance,
   directory,
   artifactPath,
-  gitAgentCommander,
-  gitAgentCommanderSetup,
+  gitCommander,
+  gitCommanderSetup,
 ) {
   debug('listing diry files of repo in agent %s', agentInstance.id)
   const transform = command =>
-    gitAgentCommander.transformAgentCommand(command, {setup: gitAgentCommanderSetup})
+    gitCommander.transformAgentCommand(command, {setup: gitCommanderSetup})
 
   const status = await agent.executeCommand(
     transform({

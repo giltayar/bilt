@@ -12,7 +12,7 @@
     "binaryRunner:npm": "@bildit/npm-binary-runner",
     "vcs": "@bildit/git-vcs",
     "repositoryFetcher": "@bildit/noop-repository-fetcher",
-    "agentCommander:npm": "@bildit/npm-agent-commander",
-    "agentCommander:git": "@bildit/git-agent-commander"
+    "commander:npm": "@bildit/npm-commander",
+    "commander:git": "@bildit/git-commander"
   }
 }

@@ -3,7 +3,7 @@ const path = require('path')
 const debug = require('debug')('bildit:git-repository-fetcher')
 const computeDirectoryNameFromRepository = require('./compute-directory-name')
 
-module.exports = async ({appConfig: {repository}, pimport, plugins: [gitAgentCommander]}) => {
+module.exports = async ({appConfig: {repository}, pimport, plugins: [gitCommander]}) => {
   return {
     async fetchRepository({agentInstance, subdirectory}) {
       const agent = await pimport(agentInstance.kind)
@@ -11,9 +11,9 @@ module.exports = async ({appConfig: {repository}, pimport, plugins: [gitAgentCom
 
       const directory = path.join(buildDir, computeDirectoryNameFromRepository(repository))
 
-      const gitAgentCommanderSetup = await gitAgentCommander.setup({agentInstance})
+      const gitCommanderSetup = await gitCommander.setup({agentInstance})
       const transform = command =>
-        gitAgentCommander.transformAgentCommand(command, {setup: gitAgentCommanderSetup})
+        gitCommander.transformAgentCommand(command, {setup: gitCommanderSetup})
 
       try {
         debug('Checking if repository %s was fetched', repository)
@@ -50,4 +50,4 @@ module.exports = async ({appConfig: {repository}, pimport, plugins: [gitAgentCom
     },
   }
 }
-module.exports.plugins = ['agentCommander:git']
+module.exports.plugins = ['commander:git']
