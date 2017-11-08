@@ -60,13 +60,7 @@ module.exports = async ({
       }
     },
     getBuildSteps({
-      howToBuild: {
-        packageJson,
-        agentInstance,
-        directory,
-        npmCommanderSetup,
-        gitCommanderSetup,
-      },
+      howToBuild: {packageJson, agentInstance, directory, npmCommanderSetup, gitCommanderSetup},
       job,
     }) {
       const buildSteps = []

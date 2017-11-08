@@ -64,7 +64,7 @@ artifact:
       command: just-like-run
       condition: steps.build || steps.install # will be eval-ed with a steps object
                                               # that includes booleans for each of the steps
-    - build-or-test-or-any-other-default-step # use this to insert one of the built-in steps of the plugin
+    - id:   build-or-test-or-any-other-default-step # use this to insert one of the built-in steps of the plugin
 ```
 
 ## Changed Files

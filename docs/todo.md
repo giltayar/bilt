@@ -5,13 +5,14 @@
 ## CLI and productization
 
 1. Changes due to CLI definition:
+   * Support definition of steps in plugin info
+   * Kill all appConfig usage in builders.
    * Support reading bilditrc per-package.
+   * Support definition of steps in per-package
+   * Support enabling/disabling steps globally. (low priority)
    * Support additional dependencies defined in bilditrc per-package.
-   * Support definition of steps
-   * Support enabling/disabling steps globally.
    * Support per-package last build info, and kill the whole leveldb plugin.
    * Kill all cases of git push. Determine package version the bibuild way.
-   * Kill all appConfig usage in builders.
 1. Build the CLI
 1. Deal nicely with output
 1. Support partial building, e.g. `--root`.
