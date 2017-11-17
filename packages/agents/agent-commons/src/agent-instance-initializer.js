@@ -12,13 +12,14 @@ module.exports = module => {
     return plugin
 
     async function ensureAgentInstanceInitialized({agentInstance}, ...args) {
-      if (initializedAgentInstances.has(agentInstance.id)) {
-        return initializedAgentInstances.get(agentInstance.id)
+      const key = `${agentInstance.id}:${JSON.stringify(args)}`
+      if (initializedAgentInstances.has(key)) {
+        return initializedAgentInstances.get(key)
       }
 
       const ret = await initialization({agentInstance}, ...args)
 
-      initializedAgentInstances.set(agentInstance.id, ret)
+      initializedAgentInstances.set(key, ret)
 
       return ret
     }

@@ -2,9 +2,12 @@
 
 ## Continuation
 
+1. Change the wix-version-incrementor line and test the npm-build-job code.
+
 ## CLI and productization
 
 1. Changes due to CLI definition:
+   * Change npm build to use array of build step definitions
    * Support definition of steps in plugin info
    * Kill all appConfig usage in builders.
    * Support reading bilditrc per-package.
@@ -20,10 +23,15 @@
 
 ## Fine Tuning
 
-1. Publish commit should include artifact name
 1. Support npm-docker artifacts
-1. Check that it really works in CircleCI
-1. Dogfood and use it also in applitools projects.
+1. Start using it in applitools projects.
+1. Make it work in CircleCI with caching the .bildit directory.
+1. Enable it to build itself
+
+## Do more testing of packages
+
+1. What she said
+1. Also write Readmes for everything
 
 ## Parallel Execution
 
@@ -31,11 +39,7 @@
    * job output collection
    * agents
    * maximum number of agents
-
-## Do more testing of packages
-
-1. What she said
-1. Also write Readmes for everything
+1. Can we do parallel execution in CircleCI?
 
 ## Future productization
 

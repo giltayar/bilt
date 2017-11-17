@@ -1,15 +1,14 @@
 'use strict'
-
+const vm = require('vm')
 const path = require('path')
 const debug = require('debug')('bildit:npm-build-job')
 const symlinkDependencies = require('./symlink-dependencies')
-const {getPublishBuildSteps, setupPublishBuildSteps} = require('./npm-publisher-with-git')
 
 module.exports = async ({
   pimport,
   config: {publish, linkLocalPackages},
   appConfig: {publish: appPublish},
-  plugins: [repositoryFetcher, npmCommander, gitCommander],
+  plugins: [repositoryFetcher, npmCommander, npmBinaryRunner],
 }) => {
   return {
     async setupBuildSteps({job, agentInstance}) {
@@ -35,19 +34,11 @@ module.exports = async ({
         await agent.readFileAsBuffer(agentInstance, path.join(directory, 'package.json')),
       )
 
-      const npmCommanderSetup = await npmCommander.setup({agentInstance})
-      const gitCommanderSetup = await gitCommander.setup({agentInstance})
-
       if (shouldPublish(packageJson)) {
-        await setupPublishBuildSteps({
-          job,
-          agent,
-          agentInstance,
-          directory,
-          gitCommander,
-          gitCommanderSetup,
-        })
+        await npmBinaryRunner.run({binary: 'wix-version-incrementor????'})
       }
+
+      const npmCommanderSetup = await npmCommander.setup({agentInstance})
 
       return {
         howToBuild: {
@@ -55,57 +46,17 @@ module.exports = async ({
           agentInstance,
           directory,
           npmCommanderSetup,
-          gitCommanderSetup,
         },
       }
     },
-    getBuildSteps({
-      howToBuild: {packageJson, agentInstance, directory, npmCommanderSetup, gitCommanderSetup},
-      job,
-    }) {
-      const buildSteps = []
 
+    getBuildSteps({howToBuild: {packageJson, agentInstance, directory, npmCommanderSetup}}) {
       const transform = command =>
         npmCommander.transformAgentCommand(command, {setup: npmCommanderSetup})
 
-      debug('running npm install in job %o', job)
-      buildSteps.push(transform({agentInstance, command: ['npm', 'install'], cwd: directory}))
-
-      if ((packageJson.scripts || {}).build) {
-        debug('adding npm run build in job %s', job.id)
-
-        buildSteps.push(
-          transform({
-            agentInstance,
-            command: ['npm', 'run', 'build'],
-            cwd: directory,
-          }),
-        )
-      }
-
-      if ((packageJson.scripts || {}).test) {
-        debug('adding npm test in job %s', job.id)
-
-        buildSteps.push(transform({agentInstance, command: ['npm', 'test'], cwd: directory}))
-      }
-
-      if (shouldPublish(packageJson)) {
-        buildSteps.push(
-          ...getPublishBuildSteps({
-            directory,
-            packageJson,
-            agentInstance,
-            npmCommander,
-            npmCommanderSetup,
-            gitCommander,
-            gitCommanderSetup,
-          }),
-        )
-      } else {
-        debug(
-          `not publishing because config publish is ${publish} or package json is private (${packageJson.private}`,
-        )
-      }
+      const buildSteps = builtinSteps
+        .filter(s => evaluateStepCondition(s, {packageJson, publish: shouldPublish(packageJson)}))
+        .map(s => transform({agentInstance, cwd: directory, ...s}))
 
       return {buildSteps}
     },
@@ -116,4 +67,40 @@ module.exports = async ({
   }
 }
 
-module.exports.plugins = ['repositoryFetcher', 'commander:npm', 'commander:git']
+function evaluateStepCondition({condition}, context) {
+  return vm.runInContext(condition, vm.createContext(context))
+}
+
+const builtinSteps = [
+  {
+    id: 'install',
+    name: 'Install',
+    command: ['npm', 'install'],
+  },
+  {
+    id: 'increment-version',
+    name: 'Increment Package Version',
+    command: 'wix-version-incrementor????',
+    condition: '!packageJson.private && publish',
+  },
+  {
+    id: 'build',
+    name: 'Build',
+    command: ['npm run build'],
+    condition: 'packageJson.scripts.build',
+  },
+  {
+    id: 'test',
+    name: 'Test',
+    command: ['npm', 'test'],
+    condition: 'packageJson.scripts.test',
+  },
+  {
+    id: 'publish',
+    name: 'Publish',
+    command: ['npm', 'publish'],
+    condition: '!packageJson.private && publish',
+  },
+]
+
+module.exports.plugins = ['repositoryFetcher', 'commander:npm', 'binaryRunner:npm']

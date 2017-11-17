@@ -1,0 +1,22 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "packages/npm/npm-binary-runner"
+		},
+		{
+			"path": "packages/npm/npm-build-job"
+		},
+		{
+			"path": "packages/npm/npm-commander"
+		},
+		{
+			"path": "packages/cli/bildit-here"
+		}
+	],
+	"settings": {
+		"javascript.validate.enable": false
+	}
+}

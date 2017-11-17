@@ -9,8 +9,10 @@ module.exports = initializer(async ({ensureAgentInstanceInitialized}, {pimport})
       const {agentInstance, command} = executeCommandArg
       const agent = await ensureAgentInstanceInitialized({agentInstance}, pkg)
 
-      debug('executing command %s %o in agent instance %s', pkg, command, agentInstance.id)
-      return await agent.executeCommand(executeCommandArg)
+      if (executeCommandArg) {
+        debug('executing command %s %o in agent instance %s', pkg, command, agentInstance.id)
+        return await agent.executeCommand(executeCommandArg)
+      }
     },
     async [initializer.initializationFunction]({agentInstance}, pkg) {
       const agent = await pimport(agentInstance.kind)
@@ -24,5 +26,6 @@ module.exports = initializer(async ({ensureAgentInstanceInitialized}, {pimport})
 
       return agent
     },
+    singleton: false,
   }
 })
