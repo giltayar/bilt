@@ -3,7 +3,11 @@
   "version": "1.0.2",
   "description": "Job Runner for NPM Jobs",
   "main": "src/npm-build-job.js",
-  "scripts": {},
+  "scripts": {
+    "test": "mocha --no-timeouts 'test/**/*.test.js' && npm run eslint",
+    "eslint": "eslint '**/*.js'",
+    "publish:all": "npm version patch && npm publish"
+  },
   "keywords": [
     "ci",
     "npm"

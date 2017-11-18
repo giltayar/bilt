@@ -1,5 +1,4 @@
 'use strict'
-const assert = require('assert')
 const {describe, it} = require('mocha')
 const {expect} = require('chai')
 const versionCalc = require('../../src/version-calculations')
