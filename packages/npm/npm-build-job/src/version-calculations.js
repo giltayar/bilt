@@ -1,17 +1,6 @@
 'use strict'
 
-function fieldsToVersion(versionFields) {
-  return (
-    versionFields[0] +
-    '.' +
-    versionFields[1] +
-    '.' +
-    versionFields[2] +
-    (versionFields[3] ? '-' + versionFields[3] : '')
-  )
-}
-
-exports.calculateCurrentPublished = function calculateCurrentPublished(version, publishedVersions) {
+function calculateCurrentPublished(version, publishedVersions) {
   const publishedVersionsOfMinorBranch = findPublishedVersionsOfMinorBranch(
     publishedVersions,
     majorMinorVersionOf(version),
@@ -32,10 +21,7 @@ exports.calculateCurrentPublished = function calculateCurrentPublished(version, 
   return publishedVersions.indexOf(currentVersion) > -1 && currentVersion
 }
 
-exports.calculateNextVersionPackage = function calculateNextVersionPackage(
-  version,
-  publishedVersions,
-) {
+function calculateNextVersionPackage(version, publishedVersions) {
   const publishedVersionsOfMinorBranch = findPublishedVersionsOfMinorBranch(
     publishedVersions,
     majorMinorVersionOf(version),
@@ -54,6 +40,17 @@ exports.calculateNextVersionPackage = function calculateNextVersionPackage(
   versionFields[2] = Math.max(patchVersionOf(version), nextPatchVersion)
 
   return fieldsToVersion(versionFields)
+}
+
+function fieldsToVersion(versionFields) {
+  return (
+    versionFields[0] +
+    '.' +
+    versionFields[1] +
+    '.' +
+    versionFields[2] +
+    (versionFields[3] ? '-' + versionFields[3] : '')
+  )
 }
 
 function findPublishedVersionsOfMinorBranch(publishedVersions, minorVersion) {
@@ -85,4 +82,9 @@ function take(array, lengthToTake) {
   }
 
   return ret
+}
+
+module.exports = {
+  calculateCurrentPublished,
+  calculateNextVersionPackage,
 }

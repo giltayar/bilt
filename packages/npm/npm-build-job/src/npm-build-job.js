@@ -3,6 +3,7 @@ const vm = require('vm')
 const path = require('path')
 const debug = require('debug')('bildit:npm-build-job')
 const symlinkDependencies = require('./symlink-dependencies')
+const findNextVersion = require('./find-next-version')
 
 module.exports = async ({
   pimport,
@@ -34,11 +35,20 @@ module.exports = async ({
         await agent.readFileAsBuffer(agentInstance, path.join(directory, 'package.json')),
       )
 
-      if (shouldPublish(packageJson)) {
-        await npmBinaryRunner.run({binary: 'wix-version-incrementor????'})
-      }
-
       const npmCommanderSetup = await npmCommander.setup({agentInstance})
+      const shouldPublish = (publish || appPublish) && !packageJson.private
+      let nextVersion
+
+      if (shouldPublish) {
+        nextVersion = await findNextVersion(
+          agent,
+          agentInstance,
+          directory,
+          packageJson,
+          npmCommander,
+          npmCommanderSetup,
+        )
+      }
 
       return {
         howToBuild: {
@@ -46,29 +56,32 @@ module.exports = async ({
           agentInstance,
           directory,
           npmCommanderSetup,
+          nextVersion,
+          shouldPublish,
         },
       }
     },
 
-    getBuildSteps({howToBuild: {packageJson, agentInstance, directory, npmCommanderSetup}}) {
+    getBuildSteps({howToBuild}) {
+      const {agentInstance, directory, npmCommanderSetup} = howToBuild
       const transform = command =>
         npmCommander.transformAgentCommand(command, {setup: npmCommanderSetup})
 
       const buildSteps = builtinSteps
-        .filter(s => evaluateStepCondition(s, {packageJson, publish: shouldPublish(packageJson)}))
+        .filter(s => evaluateStepCondition(s, howToBuild))
         .map(s => transform({agentInstance, cwd: directory, ...s}))
 
       return {buildSteps}
     },
   }
-
-  function shouldPublish(packageJson) {
-    return (publish || appPublish) && !packageJson.private
-  }
 }
 
 function evaluateStepCondition({condition}, context) {
-  return vm.runInContext(condition, vm.createContext(context))
+  if (typeof condition === 'string') {
+    return vm.runInContext(condition, vm.createContext(context))
+  } else {
+    return condition(context)
+  }
 }
 
 const builtinSteps = [
@@ -80,26 +93,26 @@ const builtinSteps = [
   {
     id: 'increment-version',
     name: 'Increment Package Version',
-    command: 'wix-version-incrementor????',
-    condition: '!packageJson.private && publish',
+    command: ({nextVersion}) => ['npm', 'version', '--no-git-tag-version', nextVersion],
+    condition: ({packageJson, shouldPublish}) => !packageJson.private && shouldPublish,
   },
   {
     id: 'build',
     name: 'Build',
     command: ['npm run build'],
-    condition: 'packageJson.scripts.build',
+    condition: ({packageJson}) => packageJson.scripts && packageJson.scripts.build,
   },
   {
     id: 'test',
     name: 'Test',
     command: ['npm', 'test'],
-    condition: 'packageJson.scripts.test',
+    condition: ({packageJson}) => packageJson.scripts && packageJson.scripts.test,
   },
   {
     id: 'publish',
     name: 'Publish',
     command: ['npm', 'publish'],
-    condition: '!packageJson.private && publish',
+    condition: ({packageJson, shouldPublish}) => !packageJson.private && shouldPublish,
   },
 ]
 

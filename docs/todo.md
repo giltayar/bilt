@@ -2,8 +2,10 @@
 
 ## Continuation
 
-1. Change npm-version-increment step to be a function and not a command?
-1. Change the wix-version-incrementor line and test the npm-build-job code.
+* npm-build-job big step refactoring written, not tested.
+
+1. Test findNextVersion
+1. Test npm-build-job
 
 ## CLI and productization
 
