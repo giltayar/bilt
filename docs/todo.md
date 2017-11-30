@@ -2,7 +2,8 @@
 
 ## Continuation
 
-* npm-build-job big step refactoring written, not tested.
+* Started writing npm-build-job.find-next-version test: problem is that it is trying to access registry.npmjs
+  and I was on the plane. How can we make it not access a mirror registry?
 
 1. Test findNextVersion
 1. Test npm-build-job

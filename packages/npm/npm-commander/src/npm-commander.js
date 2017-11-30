@@ -9,7 +9,7 @@ const debug = require('debug')('bildit:npm-commander')
 module.exports = initializer(
   async (
     {ensureAgentInstanceInitialized},
-    {config: {npmAuthenticationLine, access = 'restricted'}, pimport},
+    {config: {npmAuthenticationLine, npmRegistry = undefined, access = 'restricted'}, pimport},
   ) => {
     return {
       async setup({agentInstance}) {
@@ -22,7 +22,7 @@ module.exports = initializer(
           ...commandArgs,
           env: {
             npm_config_userconfig: path.join(homeDir, '.npmrc'),
-            npm_config_registry: process.env.npm_config_registry,
+            npm_config_registry: npmRegistry || process.env.npm_config_registry,
           },
           ...(commandArgs.command[1] === 'publish' ? {access} : {}),
         }

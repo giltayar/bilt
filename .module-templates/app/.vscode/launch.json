@@ -14,7 +14,7 @@
         "test/**/*.test.js"
       ],
       "env": {
-        "DEBUG": "applitools:${workspaceFolderBasename}*"
+        "DEBUG": "${workspaceFolderBasename}*"
       },
       "cwd": "${workspaceRoot}",
       "protocol": "inspector",

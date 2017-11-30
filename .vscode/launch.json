@@ -4,41 +4,6 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-
-    {
-      "name": "mocha:plugin-import",
-      "type": "node",
-      "request": "launch",
-      "program": "${workspaceRoot}/packages/plugins/plugin-import/node_modules/mocha/bin/_mocha",
-      "args": [
-        "--no-timeouts",
-        "test/**/*.test.js"
-      ],
-      "cwd": "${workspaceRoot}/packages/plugins/plugin-import",
-      "protocol": "inspector",
-      "env": {
-        "DEBUG": "plugin-import"
-      },
-      "console": "integratedTerminal"
-
-    },
-    {
-      "name": "mocha:bildit-here",
-      "type": "node",
-      "request": "launch",
-      "program": "${workspaceRoot}/packages/cli/bildit-here/node_modules/mocha/bin/_mocha",
-      "args": [
-        "--no-timeouts",
-        "test/**/*.test.js"
-      ],
-      "cwd": "${workspaceRoot}/packages/cli/bildit-here",
-      "protocol": "inspector",
-      "env": {
-        "DEBUG": "bildit:artifact-finder,bildit:host-agent,bildit:repo-build-job"
-      },
-      "console": "integratedTerminal"
-
-    },
     {
       "name": "mocha:agent-commons",
       "type": "node",

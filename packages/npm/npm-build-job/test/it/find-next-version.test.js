@@ -14,13 +14,14 @@ const npmCommanderService = require('@bildit/npm-commander')
 const findNextVersion = require('../../src/find-next-version')
 
 describe('findNextVersion', function() {
-  const pathToCompose = path.join(__dirname, 'docker-compose.yaml')
+  const pathToCompose = path.join(__dirname, 'docker-compose.yml')
   const envName = dockerComposeTool(before, after, pathToCompose, {
     shouldPullImages: (process.env.NODE_ENV || 'development') !== 'development',
     brutallyKill: true,
   })
 
-  it('should find the next version of an existing package', async () => {
+  it.only('should find the next version of an existing package', async () => {
+    const dir = await createPackage()
     const pimport = await createPimport(envName, pathToCompose, dir)
 
     const hostAgent = await pimport('host-agent')
@@ -29,7 +30,6 @@ describe('findNextVersion', function() {
     const npmCommander = await pimport('npm-commander')
     const npmCommanderSetup = await npmCommander.setup({agentInstance})
 
-    const dir = await createPackage()
     const packageJson = JSON.parse(await p(fs.readFile)(path.join(dir, 'package.json')))
     await publishPackage(dir, hostAgent, agentInstance, npmCommander, npmCommanderSetup)
 
@@ -41,6 +41,8 @@ describe('findNextVersion', function() {
       npmCommander,
       npmCommanderSetup,
     )
+
+    await hostAgent.releaseInstanceForJob(agentInstance)
 
     expect(nextVersion).to.equal('3.10.1968')
   })
@@ -65,6 +67,7 @@ async function createPimport(envName, pathToCompose, dir) {
         'host-agent': hostAgentService,
         'npm-commander': {
           package: npmCommanderService,
+          npmRegistry: `http://${npmRegistryAddress}`,
           npmAuthenticationLine: `//${npmRegistryAddress}/:_authToken="${npmToken}"`,
         },
       },
@@ -91,7 +94,7 @@ async function publishPackage(dir, agent, agentInstance, npmCommander, npmComman
       {
         agentInstance,
         command: ['npm', 'publish'],
-        directory: dir,
+        cwd: dir,
       },
       {setup: npmCommanderSetup},
     ),
