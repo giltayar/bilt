@@ -34,8 +34,8 @@ async function getRegistryPackageInfo(
 ) {
   const packageName = packageJson.name
 
-  const output = agent.executeCommand(
-    npmCommander.transformAgemtnCommander(
+  const output = await agent.executeCommand(
+    npmCommander.transformAgentCommand(
       {
         agentInstance,
         command: ['npm', 'view', '--json', packageName],

@@ -1,0 +1,12 @@
+{
+  "name": "this-package-not-in-npm-reg-a",
+  "version": "3.10.1967",
+  "description": "",
+  "main": "some-code.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

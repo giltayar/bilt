@@ -9,7 +9,7 @@ module.exports = async ({
   pimport,
   config: {publish, linkLocalPackages},
   appConfig: {publish: appPublish},
-  plugins: [repositoryFetcher, npmCommander, npmBinaryRunner],
+  plugins: [repositoryFetcher, npmCommander],
 }) => {
   return {
     async setupBuildSteps({job, agentInstance}) {
@@ -116,4 +116,4 @@ const builtinSteps = [
   },
 ]
 
-module.exports.plugins = ['repositoryFetcher', 'commander:npm', 'binaryRunner:npm']
+module.exports.plugins = ['repositoryFetcher', 'commander:npm']
