@@ -44,6 +44,21 @@ describe('plugin-import', function() {
 
     expect(plugin).to.equal(1)
   })
+  it('should load inline plugin without a name', async () => {
+    const pimport = pluginImport([
+      {
+        foo: (
+          0,
+          () => {
+            return 2
+          }
+        ),
+      },
+    ])
+    const plugin = await pimport('foo')
+
+    expect(plugin).to.equal(2)
+  })
   it('should load same instance for same config', async () => {
     const aConfig = {a: 42}
     const pimport = pluginImport(

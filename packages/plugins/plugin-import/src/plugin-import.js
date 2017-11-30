@@ -73,7 +73,7 @@ function normalizePluginModule(modulesEntry) {
   } else if (typeof modulesEntry === 'function') {
     return {
       package: modulesEntry,
-      somethingToMakeItUnique: modulesEntry.name || Math.randomO(),
+      somethingToMakeItUnique: modulesEntry.name || Math.random(),
     }
   } else {
     assert(modulesEntry.package, 'plugin configuration must have a "package" field')
