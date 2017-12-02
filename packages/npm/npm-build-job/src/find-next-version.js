@@ -34,20 +34,26 @@ async function getRegistryPackageInfo(
 ) {
   const packageName = packageJson.name
 
-  const output = await agent.executeCommand(
-    npmCommander.transformAgentCommand(
-      {
-        agentInstance,
-        command: ['npm', 'view', '--json', packageName],
-        cwd: directory,
-        returnOutput: true,
-      },
-      {setup: npmCommanderSetup},
-    ),
-  )
+  try {
+    const output = await agent.executeCommand(
+      npmCommander.transformAgentCommand(
+        {
+          agentInstance,
+          command: ['npm', 'view', '--json', packageName],
+          cwd: directory,
+          returnOutput: true,
+        },
+        {setup: npmCommanderSetup},
+      ),
+    )
+    return JSON.parse(output)
+  } catch (err) {
+    if (JSON.parse(err.output).error.code === 'E404') {
+      return undefined
+    }
 
-  if (output.includes('npm ERR! code E404')) return undefined
-  else return JSON.parse(output)
+    throw err
+  }
 }
 
 function normalizeVersions(versions) {

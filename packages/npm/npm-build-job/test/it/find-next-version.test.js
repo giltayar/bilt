@@ -20,17 +20,26 @@ describe('findNextVersion', function() {
     brutallyKill: true,
   })
 
-  it.only('should find the next version of an existing package', async () => {
-    const dir = await createPackage()
+  let dir
+  let hostAgent
+  let agentInstance
+  let packageJson
+  let npmCommander
+  let npmCommanderSetup
+  before(async () => {
+    dir = await createPackage()
     const pimport = await createPimport(envName, pathToCompose, dir)
 
-    const hostAgent = await pimport('host-agent')
-    const agentInstance = await hostAgent.acquireInstanceForJob()
+    hostAgent = await pimport('host-agent')
+    agentInstance = await hostAgent.acquireInstanceForJob()
 
-    const npmCommander = await pimport('npm-commander')
-    const npmCommanderSetup = await npmCommander.setup({agentInstance})
+    npmCommander = await pimport('npm-commander')
+    npmCommanderSetup = await npmCommander.setup({agentInstance})
 
-    const packageJson = JSON.parse(await p(fs.readFile)(path.join(dir, 'package.json')))
+    packageJson = JSON.parse(await p(fs.readFile)(path.join(dir, 'package.json')))
+  })
+
+  it('should find the next version of an existing package', async () => {
     await publishPackage(dir, hostAgent, agentInstance, npmCommander, npmCommanderSetup)
 
     const nextVersion = await findNextVersion(
@@ -42,9 +51,22 @@ describe('findNextVersion', function() {
       npmCommanderSetup,
     )
 
-    await hostAgent.releaseInstanceForJob(agentInstance)
-
     expect(nextVersion).to.equal('3.10.1968')
+  })
+
+  it('should return undefined if no package', async () => {
+    const packageJson = {name: 'this-package-does-not-exist-hahahaha', version: '4.5.9'}
+
+    const nextVersion = await findNextVersion(
+      hostAgent,
+      agentInstance,
+      dir,
+      packageJson,
+      npmCommander,
+      npmCommanderSetup,
+    )
+
+    expect(nextVersion).to.equal('4.5.9')
   })
 })
 

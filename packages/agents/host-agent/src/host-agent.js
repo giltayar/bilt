@@ -34,10 +34,16 @@ module.exports = async ({kind, appConfig: {directory}}) => {
         }
 
         process.on('close', code => {
-          if (code !== 0) reject(new Error(`Command failed with errorcode ${code}`))
-          else resolve(output)
+          if (code !== 0) {
+            const err = new Error(`Command ${command.join(' ')} failed with errorcode ${code}`)
+            err.output = output
+            reject(err)
+          } else {
+            resolve(output)
+          }
         })
         process.on('error', err => {
+          err.output = output
           reject(err)
         })
       })
