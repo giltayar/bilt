@@ -2,11 +2,9 @@
 
 ## Continuation
 
-* Started writing npm-build-job.find-next-version test: problem is that it is trying to access registry.npmjs
-  and I was on the plane. How can we make it not access a mirror registry?
-
-1. Test findNextVersion
-1. Test npm-build-job
+* write npm-build-job test for all the build job.
+* Then run the whole bildit-here test to make sure everything's back to normal
+* When it is, then npm-build-job uses steps (default) for its run!
 
 ## CLI and productization
 
