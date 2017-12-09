@@ -2,8 +2,8 @@
 
 ## Continuation
 
-* write npm-build-job test for all the build job.
-* Then run the whole bildit-here test to make sure everything's back to normal
+* local-docker-agent buildit test fails, because npm view returns note info in stderr, which is not filtered
+*    we need to separate stdout and stderr in agent.executeCommand
 * When it is, then npm-build-job uses steps (default) for its run!
 
 ## CLI and productization

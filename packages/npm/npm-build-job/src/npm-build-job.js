@@ -95,7 +95,13 @@ const builtinSteps = [
   {
     id: 'increment-version',
     name: 'Increment Package Version',
-    command: ({nextVersion}) => ['npm', 'version', '--no-git-tag-version', nextVersion],
+    command: ({nextVersion}) => [
+      'npm',
+      'version',
+      '--no-git-tag-version',
+      '--allow-same-version',
+      nextVersion,
+    ],
     condition: ({packageJson, shouldPublish}) => !packageJson.private && shouldPublish,
   },
   {

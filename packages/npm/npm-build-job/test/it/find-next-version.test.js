@@ -6,17 +6,17 @@ const setup = require('./setup')
 const findNextVersion = require('../../src/find-next-version')
 
 describe('findNextVersion', function() {
-  const {dir, agent, agentInstance, packageJson, npmCommander, npmCommanderSetup} = setup(
-    before,
-    after,
-  )
+  const {agent, agentInstance, npmCommander, npmCommanderSetup, setupPackage} = setup(before, after)
 
   it('should find the next version of an existing package', async () => {
+    const {dir, packageJson} = await setupPackage('this-package-not-in-npm-reg-a', {
+      shouldPublish: true,
+    })
     const nextVersion = await findNextVersion(
       agent(),
       agentInstance(),
-      dir(),
-      packageJson(),
+      dir,
+      packageJson,
       npmCommander(),
       npmCommanderSetup(),
     )
@@ -25,12 +25,15 @@ describe('findNextVersion', function() {
   })
 
   it('should return undefined if no package', async () => {
+    const {dir} = await setupPackage('this-package-not-in-npm-reg-b', {
+      shouldPublish: false,
+    })
     const packageJson = {name: 'this-package-does-not-exist-hahahaha', version: '4.5.9'}
 
     const nextVersion = await findNextVersion(
       agent(),
       agentInstance(),
-      dir(),
+      dir,
       packageJson,
       npmCommander(),
       npmCommanderSetup(),

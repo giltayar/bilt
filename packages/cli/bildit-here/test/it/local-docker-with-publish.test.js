@@ -12,7 +12,7 @@ const bilditHere = require('../../src/bildit-here')
 
 const testRepoSrc = path.resolve(__dirname, 'bildit-here/test-repo-local-docker')
 
-describe('local directory (with docker) with publish use-case', () => {
+describe.only('local directory (with docker) with publish use-case', () => {
   const pathToCompose = path.join(__dirname, 'docker-compose.yml')
 
   let gitServerRepoDir
@@ -56,7 +56,7 @@ describe('local directory (with docker) with publish use-case', () => {
     )
     await bilditHere(buildDir)
 
-    await checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.1', npmRegistryAddress)
-    await checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.1', npmRegistryAddress)
+    await checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.0', npmRegistryAddress)
+    await checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.0', npmRegistryAddress)
   })
 })

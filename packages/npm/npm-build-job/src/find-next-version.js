@@ -46,6 +46,8 @@ async function getRegistryPackageInfo(
         {setup: npmCommanderSetup},
       ),
     )
+    if (!output) return undefined
+
     return JSON.parse(output)
   } catch (err) {
     if (JSON.parse(err.output).error.code === 'E404') {

@@ -17,43 +17,45 @@ function setup(before, after) {
     brutallyKill: true,
   })
 
-  let dir
   let pimport
   let hostAgent
   let agentInstance
-  let packageJson
   let npmCommander
   let npmCommanderSetup
   before(async () => {
-    dir = await createPackage()
-    pimport = await createPimport(envName, pathToCompose, dir)
+    pimport = await createPimport(envName, pathToCompose, process.cwd)
 
     hostAgent = await pimport('host-agent')
     agentInstance = await hostAgent.acquireInstanceForJob()
 
     npmCommander = await pimport('npm-commander')
     npmCommanderSetup = await npmCommander.setup({agentInstance})
-
-    packageJson = JSON.parse(await p(fs.readFile)(path.join(dir, 'package.json')))
-    await publishPackage(dir, hostAgent, agentInstance, npmCommander, npmCommanderSetup)
   })
 
   return {
-    dir: () => dir,
     pimport: () => pimport,
     agent: () => hostAgent,
     agentInstance: () => agentInstance,
-    packageJson: () => packageJson,
     npmCommander: () => npmCommander,
     npmCommanderSetup: () => npmCommanderSetup,
+    async setupPackage(packageDir, {shouldPublish = true}) {
+      const dir = await createPackage(packageDir)
+      const packageJson = JSON.parse(await p(fs.readFile)(path.join(dir, 'package.json')))
+
+      if (shouldPublish) {
+        await publishPackage(dir, hostAgent, agentInstance, npmCommander, npmCommanderSetup)
+      }
+
+      return {dir, packageJson}
+    },
   }
 }
 
-async function createPackage() {
+async function createPackage(packageDir) {
   const tmpDir = await p(fs.mkdtemp)(os.tmpdir() + '/')
 
   await p(fs.copyFile)(
-    path.join(__dirname, 'this-package-not-in-npm-reg-a', 'package.json'),
+    path.join(__dirname, packageDir, 'package.json'),
     path.join(tmpDir, 'package.json'),
   )
 

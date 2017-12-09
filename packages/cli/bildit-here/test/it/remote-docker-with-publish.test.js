@@ -60,7 +60,7 @@ describe('remote docker with publisgh use-case', () => {
       path.join(buildDir, 'bildit.config.js'),
     )
 
-    await checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.1', npmRegistryAddress)
-    await checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.1', npmRegistryAddress)
+    await checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.0', npmRegistryAddress)
+    await checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.0', npmRegistryAddress)
   })
 })
