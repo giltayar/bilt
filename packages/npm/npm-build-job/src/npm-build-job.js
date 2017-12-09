@@ -69,6 +69,7 @@ module.exports = async ({
 
       const buildSteps = builtinSteps
         .filter(s => evaluateStepCondition(s, howToBuild))
+        .map(s => (typeof s.command === 'function' ? {...s, command: s.command(howToBuild)} : s))
         .map(s => transform({agentInstance, cwd: directory, ...s}))
 
       return {buildSteps}
@@ -77,6 +78,7 @@ module.exports = async ({
 }
 
 function evaluateStepCondition({condition}, context) {
+  if (!condition) return true
   if (typeof condition === 'string') {
     return vm.runInContext(condition, vm.createContext(context))
   } else {
@@ -99,7 +101,7 @@ const builtinSteps = [
   {
     id: 'build',
     name: 'Build',
-    command: ['npm run build'],
+    command: ['npm', 'run', 'build'],
     condition: ({packageJson}) => packageJson.scripts && packageJson.scripts.build,
   },
   {

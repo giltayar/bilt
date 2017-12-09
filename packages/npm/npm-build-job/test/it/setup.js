@@ -18,6 +18,7 @@ function setup(before, after) {
   })
 
   let dir
+  let pimport
   let hostAgent
   let agentInstance
   let packageJson
@@ -25,7 +26,7 @@ function setup(before, after) {
   let npmCommanderSetup
   before(async () => {
     dir = await createPackage()
-    const pimport = await createPimport(envName, pathToCompose, dir)
+    pimport = await createPimport(envName, pathToCompose, dir)
 
     hostAgent = await pimport('host-agent')
     agentInstance = await hostAgent.acquireInstanceForJob()
@@ -39,6 +40,7 @@ function setup(before, after) {
 
   return {
     dir: () => dir,
+    pimport: () => pimport,
     agent: () => hostAgent,
     agentInstance: () => agentInstance,
     packageJson: () => packageJson,

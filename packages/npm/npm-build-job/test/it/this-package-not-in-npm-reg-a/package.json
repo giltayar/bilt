@@ -4,7 +4,8 @@
   "description": "",
   "main": "some-code.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "touch tested",
+    "build": "touch built"
   },
   "keywords": [],
   "author": "",
