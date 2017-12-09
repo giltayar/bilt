@@ -13,8 +13,8 @@ module.exports = async ({
 }) => {
   return {
     async setupBuildSteps({job, agentInstance}) {
-      const agent = await pimport(agentInstance.kind)
       const {dependencies, artifacts, artifactPath, filesChangedSinceLastBuild} = job
+      const agent = await pimport(agentInstance.kind)
 
       const {directory} = await repositoryFetcher.fetchRepository({
         agentInstance,
