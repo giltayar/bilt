@@ -17,7 +17,7 @@ module.exports = async ({appConfig: {repository}, pimport, plugins: [gitCommande
 
       try {
         debug('Checking if repository %s was fetched', repository)
-        const status = await agent.executeCommand(
+        const {stdout: status} = await agent.executeCommand(
           transform({
             agentInstance,
             command: ['git', 'status', '--porcelain'],

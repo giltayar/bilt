@@ -14,8 +14,8 @@ module.exports = ({plugins: [binaryRunner, repositoryFetcher]}) => {
 
       const {directory} = await repositoryFetcher.fetchRepository({agentInstance})
 
-      const text = awakenedFrom
-        ? undefined
+      const {stdout: text} = awakenedFrom
+        ? {stdout: undefined}
         : await binaryRunner.run({
             binary: '@bildit/artifact-finder',
             executeCommandArg: {

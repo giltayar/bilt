@@ -133,7 +133,7 @@ async function ensureNoDirtyGitFiles(
   const transform = command =>
     gitCommander.transformAgentCommand(command, {setup: gitCommanderSetup})
 
-  const status = await agent.executeCommand(
+  const {stdout: status} = await agent.executeCommand(
     transform({
       agentInstance,
       command: ['git', 'status', '--porcelain'],

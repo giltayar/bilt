@@ -35,7 +35,7 @@ async function getRegistryPackageInfo(
   const packageName = packageJson.name
 
   try {
-    const output = await agent.executeCommand(
+    const {stdout} = await agent.executeCommand(
       npmCommander.transformAgentCommand(
         {
           agentInstance,
@@ -46,11 +46,11 @@ async function getRegistryPackageInfo(
         {setup: npmCommanderSetup},
       ),
     )
-    if (!output) return undefined
+    if (!stdout) return undefined
 
-    return JSON.parse(output)
+    return JSON.parse(stdout)
   } catch (err) {
-    if (JSON.parse(err.output).error.code === 'E404') {
+    if (JSON.parse(err.stdout).error.code === 'E404') {
       return undefined
     }
 
