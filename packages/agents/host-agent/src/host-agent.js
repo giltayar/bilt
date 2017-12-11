@@ -28,22 +28,24 @@ module.exports = async ({kind, appConfig: {directory}}) => {
           env: {...orgEnv, ...env},
         })
 
-        let output = ''
+        let stdout = ''
+        let stderr = ''
         if (returnOutput) {
-          process.stdout.on('data', data => (output += data.toString()))
+          process.stdout.on('data', data => (stdout += data.toString()))
+          process.stderr.on('data', data => (stderr += data.toString()))
         }
 
         process.on('close', code => {
           if (code !== 0) {
             const err = new Error(`Command ${command.join(' ')} failed with errorcode ${code}`)
-            err.output = output
+            Object.assign(err, {stdout, stderr})
             reject(err)
           } else {
-            resolve(output)
+            resolve({stdout, stderr})
           }
         })
         process.on('error', err => {
-          err.output = output
+          Object.assign(err, {stdout, stderr})
           reject(err)
         })
       })

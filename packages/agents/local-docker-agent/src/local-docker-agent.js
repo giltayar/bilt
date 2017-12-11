@@ -1,6 +1,7 @@
 const path = require('path')
 const debug = require('debug')('bildit:local-docker-agent')
 const Docker = require('dockerode')
+const through = require('through2')
 const tar = require('tar-stream')
 
 const {createSymlink: createSymlinkInHost} = require('@bildit/symlink')
@@ -146,15 +147,22 @@ module.exports = async ({
       Tty: !returnOutput,
     })
     const execStream = await execution.start({Tty: !returnOutput})
-    let output = ''
-    const passThrough = require('through2')(function(chunk, enc, cb) {
-      output += chunk.toString()
+    let stdout = ''
+    let stderr = ''
+    const passThroughStdout = through(function(chunk, enc, cb) {
+      stdout += chunk.toString()
       process.stdout.write(chunk.toString())
       this.push(chunk)
       cb()
     })
+    const passThroughStderr = through(function(chunk, enc, cb) {
+      stderr += chunk.toString()
+      process.stderr.write(chunk.toString())
+      this.push(chunk)
+      cb()
+    })
     if (returnOutput) {
-      container.modem.demuxStream(execStream.output, passThrough, passThrough)
+      container.modem.demuxStream(execStream.output, passThroughStdout, passThroughStderr)
     }
     await new Promise((resolve, reject) => {
       if (!returnOutput) {
@@ -169,7 +177,7 @@ module.exports = async ({
     if (code !== 0) throw new Error(`Command failed with errorcode ${code}`)
 
     if (returnOutput) {
-      return output
+      return {stdout, stderr}
     }
   }
 
