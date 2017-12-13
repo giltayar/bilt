@@ -4,10 +4,9 @@ const assert = require('assert')
 const debug = require('debug')('plugin-import')
 const merge = require('lodash.merge')
 
-module.exports = (pluginLists, {baseDirectory = '', appConfigs = []} = {}) => {
+module.exports = (pluginLists, {baseDirectory = ''} = {}) => {
   const plugins = pluginLists.reduce((acc, curr) => merge({}, acc, curr), {})
-  const appConfig = appConfigs.reduce((acc, curr) => merge({}, acc, curr), {})
-  debug('plugins: %o\nappConfig: %o', plugins, appConfig)
+  debug('plugins: %o\nbaseDirectory: %s', plugins, baseDirectory)
 
   const pluginsFound = new Map()
 
@@ -59,7 +58,6 @@ module.exports = (pluginLists, {baseDirectory = '', appConfigs = []} = {}) => {
     return await pluginModule({
       pimport,
       config: pluginConfig,
-      appConfig,
       kind,
       directory: baseDirectory,
       plugins,
