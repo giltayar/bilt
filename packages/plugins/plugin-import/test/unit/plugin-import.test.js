@@ -113,12 +113,18 @@ describe('plugin-import', function() {
         {
           bar: './my-config-returner',
         },
+        {
+          bar: {
+            cConfig: 'c',
+          },
+        },
       ],
       {baseDirectory: __dirname},
     )
     expect((await pimport('bar')).returnConfig()).to.eql({
       aConfig: 'a',
       bConfig: 'b',
+      cConfig: 'c',
     })
   })
   it('should merge the plugin lists correctly', async () => {

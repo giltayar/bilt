@@ -22,7 +22,7 @@ module.exports = (pluginLists, {baseDirectory = ''} = {}) => {
 
     if (!pluginInfo) throw new Error(`No plugins support plugin ${kind}`)
 
-    const normalizedPluginInfo = normalizePluginModule(pluginInfo)
+    const normalizedPluginInfo = normalizePluginModule(pluginInfo, false)
 
     const pluginKey = JSON.stringify(normalizedPluginInfo)
 
@@ -72,11 +72,11 @@ function normalizePluginModules(moduleEntries) {
   if (!moduleEntries) return moduleEntries
 
   return Object.entries(moduleEntries)
-    .map(([name, module]) => [name, normalizePluginModule(module)])
+    .map(([name, module]) => [name, normalizePluginModule(module, true)])
     .reduce((obj, [name, value]) => ({...obj, [name]: value}), {})
 }
 
-function normalizePluginModule(modulesEntry) {
+function normalizePluginModule(modulesEntry, acceptModulesWithoutPackage) {
   if (typeof modulesEntry === 'string') {
     return {package: modulesEntry}
   } else if (typeof modulesEntry === 'function') {
@@ -85,7 +85,10 @@ function normalizePluginModule(modulesEntry) {
       somethingToMakeItUnique: modulesEntry.name || Math.random(),
     }
   } else {
-    assert(modulesEntry.package, 'plugin configuration must have a "package" field')
+    assert(
+      acceptModulesWithoutPackage || modulesEntry.package,
+      'plugin configuration must have a "package" field',
+    )
 
     return modulesEntry
   }
