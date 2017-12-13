@@ -9,6 +9,41 @@ const setup = require('./setup')
 const npmBuildJobService = require('../..')
 const findNextVersion = require('../../src/find-next-version')
 
+const testSteps = [
+  {
+    id: 'install',
+    name: 'Install',
+    command: ['npm', 'install'],
+  },
+  {
+    id: 'increment-version',
+    name: 'Increment Package Version',
+    command: ({nextVersion}) => [
+      'npm',
+      'version',
+      '--no-git-tag-version',
+      '--allow-same-version',
+      nextVersion,
+    ],
+  },
+  {
+    id: 'build',
+    name: 'Build',
+    command: ['npm', 'run', 'build'],
+    condition: ({packageJson}) => packageJson.scripts && packageJson.scripts.build,
+  },
+  {
+    id: 'test',
+    name: 'Test',
+    command: ['npm', 'test'],
+  },
+  {
+    id: 'publish',
+    name: 'Publish',
+    command: ({access}) => ['npm', 'publish', '--access', access],
+  },
+]
+
 describe('npm-build-job', function() {
   const {agentInstance, npmCommander, pimport, agent, npmCommanderSetup, setupPackage} = setup(
     before,
@@ -21,7 +56,7 @@ describe('npm-build-job', function() {
     })
     const {setupBuildSteps, getBuildSteps} = await npmBuildJobService({
       pimport: pimport(),
-      config: {publish: true},
+      config: {publish: true, steps: testSteps},
       plugins: [
         {
           fetchRepository: async () => ({
@@ -65,7 +100,7 @@ describe('npm-build-job', function() {
 
     const {setupBuildSteps, getBuildSteps} = await npmBuildJobService({
       pimport: pimport(),
-      config: {publish: true},
+      config: {publish: true, steps: testSteps},
       plugins: [
         {
           fetchRepository: async () => ({

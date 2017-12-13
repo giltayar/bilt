@@ -5,7 +5,6 @@
 ## CLI and productization
 
 1. Changes due to CLI definition:
-   * Support definition of steps in plugin info
    * Support reading bilditrc per-package.
    * Support definition of steps in per-package
    * Support enabling/disabling steps globally. (low priority)

@@ -7,7 +7,7 @@ const findNextVersion = require('./find-next-version')
 
 module.exports = async ({
   pimport,
-  config: {publish, linkLocalPackages, access='public'},
+  config: {publish, linkLocalPackages, access = 'public', steps},
   plugins: [repositoryFetcher, npmCommander],
 }) => {
   return {
@@ -67,7 +67,7 @@ module.exports = async ({
       const transform = command =>
         npmCommander.transformAgentCommand(command, {setup: npmCommanderSetup})
 
-      const buildSteps = builtinSteps
+      const buildSteps = steps
         .filter(s => evaluateStepCondition(s, howToBuild))
         .map(s => (typeof s.command === 'function' ? {...s, command: s.command(howToBuild)} : s))
         .map(s => transform({agentInstance, cwd: directory, ...s}))
@@ -85,43 +85,5 @@ function evaluateStepCondition({condition}, context) {
     return condition(context)
   }
 }
-
-const builtinSteps = [
-  {
-    id: 'install',
-    name: 'Install',
-    command: ['npm', 'install'],
-  },
-  {
-    id: 'increment-version',
-    name: 'Increment Package Version',
-    command: ({nextVersion}) => [
-      'npm',
-      'version',
-      '--no-git-tag-version',
-      '--allow-same-version',
-      nextVersion,
-    ],
-    condition: ({packageJson, shouldPublish}) => !packageJson.private && shouldPublish,
-  },
-  {
-    id: 'build',
-    name: 'Build',
-    command: ['npm', 'run', 'build'],
-    condition: ({packageJson}) => packageJson.scripts && packageJson.scripts.build,
-  },
-  {
-    id: 'test',
-    name: 'Test',
-    command: ['npm', 'test'],
-    condition: ({packageJson}) => packageJson.scripts && packageJson.scripts.test,
-  },
-  {
-    id: 'publish',
-    name: 'Publish',
-    command: ({access}) => ['npm', 'publish', '--access', access],
-    condition: ({packageJson, shouldPublish}) => !packageJson.private && shouldPublish,
-  },
-]
 
 module.exports.plugins = ['repositoryFetcher', 'commander:npm']

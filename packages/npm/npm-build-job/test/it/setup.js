@@ -23,7 +23,7 @@ function setup(before, after) {
   let npmCommander
   let npmCommanderSetup
   before(async () => {
-    pimport = await createPimport(envName, pathToCompose, process.cwd)
+    pimport = await createPimport(envName, pathToCompose)
 
     hostAgent = await pimport('host-agent')
     agentInstance = await hostAgent.acquireInstanceForJob()
@@ -62,7 +62,7 @@ async function createPackage(packageDir) {
   return tmpDir
 }
 
-async function createPimport(envName, pathToCompose, dir) {
+async function createPimport(envName, pathToCompose) {
   const npmRegistryAddress = await getAddressForService(
     envName,
     pathToCompose,

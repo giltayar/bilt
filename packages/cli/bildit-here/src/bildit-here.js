@@ -6,6 +6,7 @@ const {promisify: p} = require('util')
 const debug = require('debug')('bildit:bildit-here')
 const pluginImport = require('plugin-import')
 const cosmiConfig = require('cosmiconfig')
+const defaultBilditConfig = require('./default-bilditrc')
 
 const {
   readLastBuildInfo,
@@ -54,10 +55,6 @@ async function createPimport(isRemoteRepo, directoryToBuild, repository, configF
     configPath: isRemoteRepo ? configFile : undefined,
     rcExtensions: true,
   }).load(isRemoteRepo ? undefined : directoryToBuild)
-
-  const defaultBilditConfig = await JSON.parse(
-    await p(fs.readFile)(path.join(__dirname, 'default-bilditrc.json')),
-  )
 
   return pluginImport(
     [
