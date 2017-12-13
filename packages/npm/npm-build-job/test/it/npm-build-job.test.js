@@ -22,7 +22,6 @@ describe('npm-build-job', function() {
     const {setupBuildSteps, getBuildSteps} = await npmBuildJobService({
       pimport: pimport(),
       config: {publish: true},
-      appConfig: {publish: true},
       plugins: [
         {
           fetchRepository: async () => ({
@@ -67,7 +66,6 @@ describe('npm-build-job', function() {
     const {setupBuildSteps, getBuildSteps} = await npmBuildJobService({
       pimport: pimport(),
       config: {publish: true},
-      appConfig: {publish: true},
       plugins: [
         {
           fetchRepository: async () => ({

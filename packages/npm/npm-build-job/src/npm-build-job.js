@@ -7,8 +7,7 @@ const findNextVersion = require('./find-next-version')
 
 module.exports = async ({
   pimport,
-  config: {publish, linkLocalPackages},
-  appConfig: {publish: appPublish},
+  config: {publish, linkLocalPackages, access='public'},
   plugins: [repositoryFetcher, npmCommander],
 }) => {
   return {
@@ -36,7 +35,7 @@ module.exports = async ({
       )
 
       const npmCommanderSetup = await npmCommander.setup({agentInstance})
-      const shouldPublish = (publish || appPublish) && !packageJson.private
+      const shouldPublish = publish && !packageJson.private
       let nextVersion
 
       if (shouldPublish) {
@@ -58,6 +57,7 @@ module.exports = async ({
           npmCommanderSetup,
           nextVersion,
           shouldPublish,
+          access,
         },
       }
     },
@@ -119,7 +119,7 @@ const builtinSteps = [
   {
     id: 'publish',
     name: 'Publish',
-    command: ['npm', 'publish'],
+    command: ({access}) => ['npm', 'publish', '--access', access],
     condition: ({packageJson, shouldPublish}) => !packageJson.private && shouldPublish,
   },
 ]
