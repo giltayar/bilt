@@ -1,7 +1,7 @@
 'use strict'
 const path = require('path')
 
-module.exports = ({pimport, appConfig: {directory}}) => {
+module.exports = ({pimport, config: {directory}}) => {
   return {
     async fetchRepository({agentInstance, subdirectory}) {
       const fullPath = subdirectory ? path.join(directory, subdirectory) : directory

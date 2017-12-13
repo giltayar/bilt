@@ -3,7 +3,7 @@ const path = require('path')
 const debug = require('debug')('bildit:git-repository-fetcher')
 const computeDirectoryNameFromRepository = require('./compute-directory-name')
 
-module.exports = async ({appConfig: {repository}, pimport, plugins: [gitCommander]}) => {
+module.exports = async ({config: {repository}, pimport, plugins: [gitCommander]}) => {
   return {
     async fetchRepository({agentInstance, subdirectory}) {
       const agent = await pimport(agentInstance.kind)

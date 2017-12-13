@@ -17,6 +17,9 @@ module.exports = {
       access: 'public',
       npmAuthenticationLine: '//localhost:4873/:_authToken="NPM_TOKEN"',
     },
+    'builder:npm': {
+      publish: true,
+    },
     'commander:git': {
       package: '@bildit/git-commander',
       gitAuthenticationKey: fs.readFileSync(path.resolve(process.env.KEYS_DIR, 'id_rsa')),

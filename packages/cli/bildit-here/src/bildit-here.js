@@ -59,17 +59,30 @@ async function createPimport(isRemoteRepo, directoryToBuild, repository, configF
     await p(fs.readFile)(path.join(__dirname, 'default-bilditrc.json')),
   )
 
-  return pluginImport([defaultBilditConfig.plugins, buildConfig.plugins], {
-    baseDirectory: path.dirname(filepath),
-    appConfigs: [
-      removePlugins(defaultBilditConfig),
-      removePlugins(buildConfig),
+  return pluginImport(
+    [
+      defaultBilditConfig.plugins,
+      buildConfig.plugins,
       {
-        directory: isRemoteRepo ? undefined : directoryToBuild,
-        repository: isRemoteRepo ? repository : undefined,
+        'agent:docker': {
+          directory: isRemoteRepo ? undefined : directoryToBuild,
+        },
+        'agent:repository': {
+          directory: isRemoteRepo ? undefined : directoryToBuild,
+        },
+        'agent:npm': {
+          directory: isRemoteRepo ? undefined : directoryToBuild,
+        },
+        repositoryFetcher: {
+          repository: isRemoteRepo ? repository : undefined,
+          directory: isRemoteRepo ? undefined : directoryToBuild,
+        },
       },
     ],
-  })
+    {
+      baseDirectory: path.dirname(filepath),
+    },
+  )
 
   function removePlugins(obj) {
     const copy = {...obj}

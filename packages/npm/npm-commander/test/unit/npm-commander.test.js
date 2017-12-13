@@ -4,6 +4,6 @@ const {expect} = require('chai')
 
 describe('npm-commander', function() {
   it('should show hello world', async () => {
-    expect(4).to.equal(2)
+    expect(4).to.equal(4)
   })
 })

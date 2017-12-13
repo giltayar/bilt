@@ -13,8 +13,8 @@ module.exports = async ({
     user = 'root',
     workdir = '/usr/work',
     network = undefined,
+    directory,
   },
-  appConfig: {directory},
   kind,
 }) => {
   const docker = new Docker({Promise})

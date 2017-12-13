@@ -2,16 +2,15 @@
 
 ## Continuation
 
-* local-docker-agent buildit test fails, because npm view returns note info in stderr, which is not filtered
-*    we need to separate stdout and stderr in agent.executeCommand
-* When it is, then npm-build-job uses steps (default) for its run!
-
 ## CLI and productization
 
 1. Changes due to CLI definition:
-   * Change npm build to use array of build step definitions
    * Support definition of steps in plugin info
-   * Kill all appConfig usage in builders.
+   * Kill all appConfig usage in builders:
+     * local-docker-agent - directory
+     * noop/git-repository-fetcher - repository
+     * npm-build-job - publish
+
    * Support reading bilditrc per-package.
    * Support definition of steps in per-package
    * Support enabling/disabling steps globally. (low priority)

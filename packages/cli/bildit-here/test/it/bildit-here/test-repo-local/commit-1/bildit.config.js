@@ -16,6 +16,9 @@ module.exports = {
         },
       }
     },
+    'builder:npm': {
+      publish: true,
+    },
     'commander:git': {
       package: '@bildit/git-commander',
       gitAuthenticationKey: fs.readFileSync(path.resolve(process.env.KEYS_DIR, 'id_rsa')),
