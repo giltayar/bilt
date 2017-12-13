@@ -1,8 +1,6 @@
 'use strict'
 
 const path = require('path')
-const fs = require('fs')
-const {promisify: p} = require('util')
 const debug = require('debug')('bildit:bildit-here')
 const pluginImport = require('plugin-import')
 const cosmiConfig = require('cosmiconfig')

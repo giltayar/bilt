@@ -42,11 +42,13 @@ module.exports = ({plugins: [binaryRunner, repositoryFetcher]}) => {
       }
       const alreadyBuiltArtifacts =
         awakenedFrom && awakenedFrom.result.success
-          ? state.alreadyBuiltArtifacts.concat(awakenedFrom.job.artifact)
+          ? state.alreadyBuiltArtifacts.concat(awakenedFrom.job.artifactName)
           : awakenedFrom && !awakenedFrom.result.success
             ? state.alreadyBuiltArtifacts.concat(
                 Object.keys(
-                  artifactsToBuildFromChange(state.dependencyGraph, [awakenedFrom.job.artifact]),
+                  artifactsToBuildFromChange(state.dependencyGraph, [
+                    awakenedFrom.job.artifactName,
+                  ]),
                 ),
               )
             : []
@@ -61,7 +63,7 @@ module.exports = ({plugins: [binaryRunner, repositoryFetcher]}) => {
       debug('building artifact %s', artifactToBuild)
 
       const artifactJob = createJobFromArtifact(
-        state.allArtifacts.find(a => a.artifact === artifactToBuild),
+        state.allArtifacts.find(a => a.name === artifactToBuild),
         linkDependencies ? state.allArtifacts : undefined,
         filesChangedSinceLastBuild,
       )
@@ -86,14 +88,14 @@ function artifactsFromChanges(artifacts, filesChangedSinceLastBuild) {
         !filesChangedSinceLastBuild ||
         filesChangedSinceLastBuild.find(file => file.startsWith(artifact.path + '/')),
     )
-    .map(artifact => artifact.artifact)
+    .map(artifact => artifact.name)
 }
 
 module.exports.plugins = ['binaryRunner:npm', 'repositoryFetcher']
 
 const createJobFromArtifact = (artifact, artifacts, filesChangedSinceLastBuild) => ({
   kind: artifact.type,
-  artifact: artifact.artifact,
+  artifactName: artifact.name,
   artifactPath: artifact.path,
   dependencies: artifacts ? artifact.dependencies : [],
   artifacts,

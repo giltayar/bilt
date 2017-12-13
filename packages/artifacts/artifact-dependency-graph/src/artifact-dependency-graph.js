@@ -1,7 +1,7 @@
 'use strict'
 
 const createDependencyGraph = artifacts =>
-  objectFromEntries(artifacts.map(({artifact, dependencies}) => [artifact, dependencies || []]))
+  objectFromEntries(artifacts.map(({name, dependencies}) => [name, dependencies || []]))
 
 function artifactsToBuildFromChange(dependencyGraph, changedArtifacts) {
   const closure = new Set(changedArtifacts)

@@ -11,28 +11,28 @@ describe('e2e test on a real folder', function() {
 
     expect(newYml).to.deep.equal([
       {
-        artifact: 'docker-artifactrc-alt',
+        name: 'docker-artifactrc-alt',
         path: 'docker-artifactrc-artifact',
         type: 'docker-npm',
         dependencies: ['docker-artifact'],
         owners: [],
       },
       {
-        artifact: 'docker-npm-artifact-name',
+        name: 'docker-npm-artifact-name',
         path: 'docker-npm-artifact',
         type: 'docker-npm',
         dependencies: ['npm-artifact-name'],
         owners: [],
       },
       {
-        artifact: 'docker-artifact',
+        name: 'docker-artifact',
         path: 'main/docker-artifact',
         type: 'docker-npm',
         dependencies: [],
         owners: [],
       },
       {
-        artifact: 'npm-artifact-name',
+        name: 'npm-artifact-name',
         path: 'main/npm-artifact',
         type: 'npm',
         dependencies: ['docker-artifact'],

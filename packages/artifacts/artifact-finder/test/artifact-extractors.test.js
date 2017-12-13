@@ -21,7 +21,7 @@ describe('extractors', function() {
       const extractor = extractorsCreator(fileFetcher).npmExtractor
 
       expect(await extractor(filename, basedir)).to.deep.equal({
-        artifact: 'foozilla',
+        name: 'foozilla',
         type: 'npm',
         dependencies: [],
         path: 'gar',
@@ -44,7 +44,7 @@ describe('extractors', function() {
       const extractor = extractorsCreator(fileFetcher).npmExtractor
 
       expect(await extractor(filename, basedir)).to.deep.equal({
-        artifact: 'foozilla',
+        name: 'foozilla',
         type: 'npm',
         dependencies: [],
         path: 'gar',
@@ -71,7 +71,7 @@ describe('extractors', function() {
       const extractor = extractorsCreator(fileFetcher).npmExtractor
 
       expect(await extractor(filename, basedir)).to.deep.equal({
-        artifact: 'foozilla',
+        name: 'foozilla',
         type: 'npm',
         dependencies: ['a', 'b', 'c'],
         path: 'gar',
@@ -96,7 +96,7 @@ describe('extractors', function() {
       const extractor = extractorsCreator(fileFetcher).dockerExtractor
 
       expect(await extractor(filename, basedir)).to.deep.equal({
-        artifact: 'gar',
+        name: 'gar',
         type: 'docker',
         path: 'mar/gar',
       })
@@ -118,7 +118,7 @@ describe('extractors', function() {
       const fileFetcher = sinon.stub().withArgs(filename).returns(
         Promise.resolve(
           JSON.stringify({
-            artifact: 'foozilla',
+            name: 'foozilla',
             type: 'npm',
             dependencies: [],
             owners: ['a@b'],
@@ -128,7 +128,7 @@ describe('extractors', function() {
       const extractor = extractorsCreator(fileFetcher).artifactsRcExtractor
 
       expect(await extractor(filename, basedir)).to.deep.equal({
-        artifact: 'foozilla',
+        name: 'foozilla',
         type: 'npm',
         dependencies: [],
         path: 'gar',
@@ -140,7 +140,7 @@ describe('extractors', function() {
       const fileFetcher = sinon.stub().withArgs(filename).returns(
         Promise.resolve(
           JSON.stringify({
-            artifact: 'foozilla',
+            name: 'foozilla',
             type: 'npm',
             dependencies: [],
             path: 'wrong-path',
@@ -151,7 +151,7 @@ describe('extractors', function() {
       const extractor = extractorsCreator(fileFetcher).artifactsRcExtractor
 
       expect(await extractor(filename, basedir)).to.deep.equal({
-        artifact: 'foozilla',
+        name: 'foozilla',
         type: 'npm',
         dependencies: [],
         path: 'gar',
@@ -163,7 +163,7 @@ describe('extractors', function() {
       const fileFetcher = sinon.stub().withArgs(filename).returns(
         Promise.resolve(
           JSON.stringify({
-            artifact: 'foozilla',
+            name: 'foozilla',
             dependencies: [],
             path: 'wrong-path',
             owners: [],
@@ -173,7 +173,7 @@ describe('extractors', function() {
       const extractor = extractorsCreator(fileFetcher).artifactsRcExtractor
 
       expect(await extractor(filename, basedir)).to.deep.equal({
-        artifact: 'foozilla',
+        name: 'foozilla',
         dependencies: [],
         path: 'gar',
         owners: [],
@@ -189,39 +189,39 @@ describe('extractors', function() {
 
     it('should return a docker-npm project on a list containing both docker and npm', function() {
       const merged = extractorMerger([
-        {type: 'npm', artifact: 'n', dependencies: ['a']},
-        {type: 'docker', artifact: 'd'},
+        {type: 'npm', name: 'n', dependencies: ['a']},
+        {type: 'docker', name: 'd'},
       ])
 
-      expect(merged).to.deep.equal({type: 'docker-npm', artifact: 'n', dependencies: ['a']})
+      expect(merged).to.deep.equal({type: 'docker-npm', name: 'n', dependencies: ['a']})
     })
 
     it('should use the name in artifactrc.yml for a docker-npm project', function() {
       const merged = extractorMerger([
-        {type: 'npm', artifact: 'n', dependencies: ['a']},
-        {artifact: 'c', dependencies: ['a']},
-        {type: 'docker', artifact: 'd'},
+        {type: 'npm', name: 'n', dependencies: ['a']},
+        {name: 'c', dependencies: ['a']},
+        {type: 'docker', name: 'd'},
       ])
 
-      expect(merged).to.deep.equal({type: 'docker-npm', artifact: 'c', dependencies: ['a']})
+      expect(merged).to.deep.equal({type: 'docker-npm', name: 'c', dependencies: ['a']})
     })
 
     it('should use the name in artifactrc.yml for a docker project', function() {
       const merged = extractorMerger([
-        {artifact: 'c', dependencies: ['a']},
-        {type: 'docker', artifact: 'd'},
+        {name: 'c', dependencies: ['a']},
+        {type: 'docker', name: 'd'},
       ])
 
-      expect(merged).to.deep.equal({type: 'docker', artifact: 'c', dependencies: ['a']})
+      expect(merged).to.deep.equal({type: 'docker', name: 'c', dependencies: ['a']})
     })
 
     it('merge dependencies from npm and artifactrc', function() {
       const merged = extractorMerger([
-        {type: 'npm', artifact: 'n', dependencies: ['a']},
-        {artifact: 'c', dependencies: ['b', 'a']},
+        {type: 'npm', name: 'n', dependencies: ['a']},
+        {name: 'c', dependencies: ['b', 'a']},
       ])
 
-      expect(merged).to.deep.equal({type: 'npm', artifact: 'c', dependencies: ['a', 'b']})
+      expect(merged).to.deep.equal({type: 'npm', name: 'c', dependencies: ['a', 'b']})
     })
   })
 })

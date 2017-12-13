@@ -27,7 +27,7 @@ module.exports = fileFetcher => {
       try {
         const packageJson = JSON.parse(packageJsonContents)
         const ret = {
-          artifact: packageJson.name,
+          name: packageJson.name,
           path: pathOf(filename, basedir),
           type: 'npm',
           dependencies: Object.keys(packageJson.dependencies || {}).concat(
@@ -51,7 +51,7 @@ module.exports = fileFetcher => {
     async dockerExtractor(filename, basedir) {
       if (path.basename(filename) === 'Dockerfile') {
         const ret = {
-          artifact: path.basename(path.dirname(filename)),
+          name: path.basename(path.dirname(filename)),
           path: pathOf(filename, basedir),
           type: 'docker',
         }

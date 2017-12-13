@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = artifacts => {
-  const availableArtifacts = new Set(artifacts.map(artifact => artifact.artifact))
+  const availableArtifacts = new Set(artifacts.map(artifact => artifact.name))
 
   return artifacts.map(artifact =>
     Object.assign({}, artifact, {

@@ -20,6 +20,12 @@
 		},
 		{
 			"path": "packages/artifacts/artifact-finder"
+		},
+		{
+			"path": "packages/artifacts/artifact-dependency-graph"
+		},
+		{
+			"path": "packages/repository/repo-build-job"
 		}
 	],
 	"settings": {
