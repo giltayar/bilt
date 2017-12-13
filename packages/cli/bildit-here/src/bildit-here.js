@@ -83,14 +83,6 @@ async function createPimport(isRemoteRepo, directoryToBuild, repository, configF
       baseDirectory: path.dirname(filepath),
     },
   )
-
-  function removePlugins(obj) {
-    const copy = {...obj}
-
-    delete copy.plugins
-
-    return copy
-  }
 }
 
 async function configureEventsToOutputEventToStdout(pimport) {

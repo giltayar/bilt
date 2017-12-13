@@ -6,17 +6,11 @@
 
 1. Changes due to CLI definition:
    * Support definition of steps in plugin info
-   * Kill all appConfig usage in builders:
-     * local-docker-agent - directory
-     * noop/git-repository-fetcher - repository
-     * npm-build-job - publish
-
    * Support reading bilditrc per-package.
    * Support definition of steps in per-package
    * Support enabling/disabling steps globally. (low priority)
    * Support additional dependencies defined in bilditrc per-package.
    * Support per-package last build info, and kill the whole leveldb plugin.
-   * Kill all cases of git push. Determine package version the bibuild way.
 1. Build the CLI
 1. Deal nicely with output
 1. Support partial building, e.g. `--root`.
