@@ -20,7 +20,7 @@ module.exports = async () => {
         extractors.combinedExtractorCreator([
           extractors.npmExtractor,
           extractors.dockerExtractor,
-          extractors.artifactsRcYmlExtractor,
+          extractors.artifactsRcExtractor,
         ]),
         extractors.extractorMerger,
       )

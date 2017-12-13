@@ -1,10 +1,20 @@
 'use strict'
 const path = require('path')
+const Module = require('module')
 const yaml = require('js-yaml')
 const find = require('lodash.find')
 const pathOf = require('./path-of')
 const parseAuthor = require('parse-author')
 const debug = require('debug')('bildit:artifact-finder')
+
+const ARTIFACTRC_POSSIBLE_NAMES = [
+  '.artifactrc',
+  '.artifactrc.yaml',
+  '.artifactrc.yml',
+  '.artifactrc.json',
+  '.artifactrc.js',
+  'artifact.config.js',
+]
 
 module.exports = fileFetcher => {
   return {
@@ -52,19 +62,20 @@ module.exports = fileFetcher => {
         return undefined
       }
     },
-    async artifactsRcYmlExtractor(filename, basedir) {
-      if (
-        path.basename(filename) !== 'artifactrc.yml' ||
-        path.relative(basedir, filename) === 'artifactrc.yml'
-      ) {
+    async artifactsRcExtractor(filename, basedir) {
+      if (!ARTIFACTRC_POSSIBLE_NAMES.includes(path.basename(filename))) {
         return undefined
       }
 
-      const artifactsRcYmlContents = await fileFetcher(filename)
+      const artifactsRcContents = await fileFetcher(filename)
       try {
-        return Object.assign(yaml.safeLoad(artifactsRcYmlContents), {
-          path: pathOf(filename, basedir),
-        })
+        if (path.extname(filename) === '.js') {
+          return loadModule(artifactsRcContents.toString(), filename)
+        } else {
+          return Object.assign(yaml.safeLoad(artifactsRcContents), {
+            path: pathOf(filename, basedir),
+          })
+        }
       } catch (e) {
         if (e instanceof yaml.YAMLExtension) {
           console.error(`artifactrc.yml ${filename} did not parse`, e)
@@ -116,4 +127,12 @@ module.exports = fileFetcher => {
       }
     },
   }
+}
+
+function loadModule(code, filepath) {
+  const module = new Module(filepath, null)
+
+  module._compile(code, filepath)
+
+  return module.exports
 }

@@ -11,7 +11,7 @@
     "scripts"
   ],
   "scripts": {
-    "test": "mocha",
+    "test": "mocha 'test/**/*.test.js'",
     "debug": "mocha --inspect-brk",
     "prepublishOnly": "npm version patch"
   },

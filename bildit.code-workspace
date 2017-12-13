@@ -17,6 +17,9 @@
 		},
 		{
 			"path": "packages/plugins/plugin-import"
+		},
+		{
+			"path": "packages/artifacts/artifact-finder"
 		}
 	],
 	"settings": {

@@ -110,20 +110,9 @@ describe('extractors', function() {
     })
   })
 
-  describe('artifactrc.yml extractor', function() {
+  describe('artifactrc extractor', function() {
     const basedir = '/foo/bar'
-    const filename = `${basedir}/gar/artifactrc.yml`
-
-    it('should ignore artifactsrc.yml in base dir', async function() {
-      const rootCircYml = `${basedir}/artifactsrc.yml`
-      const fileFetcher = sinon
-        .stub()
-        .withArgs(rootCircYml)
-        .returns(Promise.resolve(JSON.stringify([])))
-      const extractor = extractorsCreator(fileFetcher).artifactsRcYmlExtractor
-
-      expect(await extractor(rootCircYml, basedir)).to.be.undefined
-    })
+    const filename = `${basedir}/gar/.artifactrc.yml`
 
     it('should put relative path correctly in artifact and get artifact as-is in yml', async function() {
       const fileFetcher = sinon.stub().withArgs(filename).returns(
@@ -136,7 +125,7 @@ describe('extractors', function() {
           }),
         ),
       )
-      const extractor = extractorsCreator(fileFetcher).artifactsRcYmlExtractor
+      const extractor = extractorsCreator(fileFetcher).artifactsRcExtractor
 
       expect(await extractor(filename, basedir)).to.deep.equal({
         artifact: 'foozilla',
@@ -159,7 +148,7 @@ describe('extractors', function() {
           }),
         ),
       )
-      const extractor = extractorsCreator(fileFetcher).artifactsRcYmlExtractor
+      const extractor = extractorsCreator(fileFetcher).artifactsRcExtractor
 
       expect(await extractor(filename, basedir)).to.deep.equal({
         artifact: 'foozilla',
@@ -181,7 +170,7 @@ describe('extractors', function() {
           }),
         ),
       )
-      const extractor = extractorsCreator(fileFetcher).artifactsRcYmlExtractor
+      const extractor = extractorsCreator(fileFetcher).artifactsRcExtractor
 
       expect(await extractor(filename, basedir)).to.deep.equal({
         artifact: 'foozilla',
