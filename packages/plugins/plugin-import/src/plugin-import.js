@@ -5,7 +5,10 @@ const debug = require('debug')('plugin-import')
 const merge = require('lodash.merge')
 
 module.exports = (pluginLists, {baseDirectory = ''} = {}) => {
-  const plugins = pluginLists.reduce((acc, curr) => merge({}, acc, curr), {})
+  const plugins = pluginLists.reduce(
+    (acc, curr) => merge({}, acc, normalizePluginModules(curr)),
+    {},
+  )
   debug('plugins: %o\nbaseDirectory: %s', plugins, baseDirectory)
 
   const pluginsFound = new Map()
@@ -63,6 +66,14 @@ module.exports = (pluginLists, {baseDirectory = ''} = {}) => {
       plugins,
     })
   }
+}
+
+function normalizePluginModules(moduleEntries) {
+  if (!moduleEntries) return moduleEntries
+
+  return Object.entries(moduleEntries)
+    .map(([name, module]) => [name, normalizePluginModule(module)])
+    .reduce((obj, [name, value]) => ({...obj, [name]: value}), {})
 }
 
 function normalizePluginModule(modulesEntry) {
