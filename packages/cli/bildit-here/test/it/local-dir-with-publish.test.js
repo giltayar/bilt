@@ -63,6 +63,9 @@ describe('local directory with publish use-case', () => {
     expect(await fileContents(buildDir, 'b/postinstalled.txt')).to.equal('')
     expect(await fileContents(buildDir, 'b/built.txt')).to.equal('')
     expect(await fileContents(buildDir, 'b/tested.txt')).to.equal('')
+    expect(await fileContents(buildDir, 'c/postinstalled.txt')).to.equal('')
+    expect(await fileContents(buildDir, 'c/voodooed.txt')).to.equal('')
+    expect(await fileContents(buildDir, 'a/c-voodooed.txt')).to.equal('')
 
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.0', npmRegistryAddress)
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.0', npmRegistryAddress)

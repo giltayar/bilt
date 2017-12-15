@@ -5,10 +5,8 @@
 ## CLI and productization
 
 1. Changes due to CLI definition:
-   * Support definition of steps in per-package
-   * Support additional dependencies defined in bilditrc per-package.
    * Support per-package last build info, and kill the whole leveldb plugin.
-   * Support enabling/disabling steps globally. (low priority)
+   * Support enabling/disabling steps globally.
 1. Build the CLI
 1. Deal nicely with output
 1. Support partial building, e.g. `--root`.

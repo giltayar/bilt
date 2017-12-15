@@ -1,0 +1,13 @@
+{
+  "name": "c-senior",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "touch postinstalled.txt",
+    "voodoo": "touch voodooed.txt"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

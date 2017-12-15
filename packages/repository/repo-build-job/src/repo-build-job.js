@@ -70,6 +70,9 @@ module.exports = ({plugins: [binaryRunner, repositoryFetcher]}) => {
 }
 
 async function findArtifactsInRepository(binaryRunner, agentInstance, directory) {
+  if (process.env.USE_LOCAL_ARTIFACT_FINDER) {
+    return await (await require('@bildit/artifact-finder')()).findArtifacts(directory)
+  }
   return JSON.parse(
     (await binaryRunner.run({
       binary: '@bildit/artifact-finder',

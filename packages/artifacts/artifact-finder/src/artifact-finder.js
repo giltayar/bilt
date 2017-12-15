@@ -46,7 +46,9 @@ const fetchEntriesOfDir = async (ignoreFile, baseDir, dir, ignoreStack = []) => 
         .filter(l => l.trim() && !l.trim().startsWith('#')),
     )
   }
-  const igFilter = ignore().add(retGitIgnored).createFilter()
+  const igFilter = ignore()
+    .add(retGitIgnored)
+    .createFilter()
 
   return {
     entries: await Promise.all(
