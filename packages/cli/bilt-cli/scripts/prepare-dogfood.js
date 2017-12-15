@@ -13,12 +13,12 @@ async function main() {
   const artifacts = (await artifactFinder.findArtifacts(repoDirectory)).filter(a =>
     a.path.startsWith('packages/'),
   )
-  console.log(artifacts.map(artifact => artifact.artifact).join('\n'))
+  console.log(artifacts.map(artifact => artifact.name).join('\n'))
 
   await Promise.all(
     artifacts.map(async artifact => {
       await createSymlink(
-        path.join(repoDirectory, 'node_modules', artifact.artifact),
+        path.join(repoDirectory, 'node_modules', artifact.name),
         path.resolve(repoDirectory, artifact.path),
       )
     }),

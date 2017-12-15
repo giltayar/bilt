@@ -8,7 +8,7 @@ const {promisify: p} = require('util')
 const {fileContents, writeFile} = require('../utils/file-utils')
 const {setupBuildDir} = require('../utils/setup')
 
-const cli = path.resolve(__dirname, '../../scripts/bilt-cli-cli.js')
+const cli = path.resolve(__dirname, '../../scripts/run-bilt-cli.js')
 const testRepoSrc = path.resolve(__dirname, 'test-repo-no-publish')
 
 describe('local directory use-case', () => {

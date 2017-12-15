@@ -14,12 +14,12 @@ async function main() {
   const artifacts = (await artifactFinder.findArtifacts(repoDirectory)).filter(a =>
     a.path.startsWith('packages/'),
   )
-  console.log(artifacts.map(artifact => artifact.artifact).join('\n'))
+  console.log(artifacts.map(artifact => artifact.name).join('\n'))
 
   await Promise.all(
     artifacts.map(async artifact => {
       try {
-        await p(fs.unlink)(path.join(repoDirectory, 'node_modules', artifact.artifact))
+        await p(fs.unlink)(path.join(repoDirectory, 'node_modules', artifact.name))
       } catch (err) {
         if (err.code !== 'ENOENT') throw err
       }
