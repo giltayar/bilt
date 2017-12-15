@@ -1,5 +1,5 @@
 'use strict'
-const debug = require('debug')('bildit:npm-build-job')
+const debug = require('debug')('bilt:npm-build-job')
 const path = require('path')
 
 async function symlinkDependencies(dependencies, directory, artifacts, {agent, agentInstance}) {

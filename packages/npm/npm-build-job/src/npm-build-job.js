@@ -1,7 +1,7 @@
 'use strict'
 const vm = require('vm')
 const path = require('path')
-const debug = require('debug')('bildit:npm-build-job')
+const debug = require('debug')('bilt:npm-build-job')
 const symlinkDependencies = require('./symlink-dependencies')
 const findNextVersion = require('./find-next-version')
 

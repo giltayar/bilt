@@ -1,5 +1,5 @@
 {
-  "name": "@bildit/templatetemplate",
+  "name": "@bilt/templatetemplate",
   "version": "1.0.0",
   "description": "",
   "main": "src/templatetemplate.js",
@@ -14,12 +14,12 @@
   },
   "keywords": [
     "ci",
-    "bildit"
+    "bilt"
   ],
   "author": "Gil Tayar <gil@tayar.org>",
   "license": "Unlicense",
   "repository": {
-    "url": "https://github.com/giltayar/bildit",
+    "url": "https://github.com/giltayar/bilt",
     "type": "git"
   },
   "dependencies": {

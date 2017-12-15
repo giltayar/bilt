@@ -16,7 +16,7 @@
 
 1. Support npm-docker artifacts
 1. Start using it in applitools projects.
-1. Make it work in CircleCI with caching the .bildit directory.
+1. Make it work in CircleCI with caching the .bilt directory.
 1. Enable it to build itself
 
 ## Do more testing of packages

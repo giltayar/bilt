@@ -1,5 +1,5 @@
 const uuid = require('uuid/v4')
-const debug = require('debug')('bildit:jobs')
+const debug = require('debug')('bilt:jobs')
 const {executeBuild} = require('./build')
 
 async function runJob(job, {awakenedFrom, pimport, events, kvStore, dispatchJob}) {

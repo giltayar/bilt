@@ -1,6 +1,6 @@
 'use strict'
 
-const debug = require('debug')('bildit:in-memory-kv-store')
+const debug = require('debug')('bilt:in-memory-kv-store')
 
 module.exports = async () => {
   const kvStore = new Map()

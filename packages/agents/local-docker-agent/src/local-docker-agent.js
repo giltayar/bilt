@@ -1,10 +1,10 @@
 const path = require('path')
-const debug = require('debug')('bildit:local-docker-agent')
+const debug = require('debug')('bilt:local-docker-agent')
 const Docker = require('dockerode')
 const through = require('through2')
 const tar = require('tar-stream')
 
-const {createSymlink: createSymlinkInHost} = require('@bildit/symlink')
+const {createSymlink: createSymlinkInHost} = require('@bilt/symlink')
 
 module.exports = async ({
   config: {

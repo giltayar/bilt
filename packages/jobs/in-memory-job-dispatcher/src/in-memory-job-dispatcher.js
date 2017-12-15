@@ -1,5 +1,5 @@
 'use strict'
-const {runJob, prepareJobForRunning} = require('@bildit/jobs')
+const {runJob, prepareJobForRunning} = require('@bilt/jobs')
 
 module.exports = async ({pimport}) => {
   const events = await pimport('events')

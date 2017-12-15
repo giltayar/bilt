@@ -2,8 +2,8 @@ const childProcess = require('child_process')
 const fs = require('fs')
 const path = require('path')
 const {promisify} = require('util')
-const debug = require('debug')('bildit:host-agent')
-const {createSymlink: createSymlinkInHost} = require('@bildit/symlink')
+const debug = require('debug')('bilt:host-agent')
+const {createSymlink: createSymlinkInHost} = require('@bilt/symlink')
 const makeDir = require('make-dir')
 
 module.exports = async ({kind}) => {

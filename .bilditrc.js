@@ -3,7 +3,7 @@ const path = require('path')
 
 module.exports = {
   plugins: {
-    "builder:npm": "@bildit/npm-build-job",
+    "builder:npm": "@bilt/npm-build-job",
   },
   publish: true
 }

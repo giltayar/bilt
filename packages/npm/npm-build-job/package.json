@@ -1,5 +1,5 @@
 {
-  "name": "@bildit/npm-build-job",
+  "name": "@bilt/npm-build-job",
   "version": "1.0.2",
   "description": "Job Runner for NPM Jobs",
   "main": "src/npm-build-job.js",
@@ -15,7 +15,7 @@
   "author": "Gil Tayar <gil@tayar.org>",
   "license": "Unlicense",
   "repository": {
-    "url": "https://github.com/giltayar/bildit",
+    "url": "https://github.com/giltayar/bilt",
     "type": "git"
   },
   "dependencies": {
@@ -23,9 +23,9 @@
     "semver": "^5.4.1"
   },
   "devDependencies": {
-    "@bildit/host-agent": "^1.0.4",
-    "@bildit/npm-commander": "^1.0.0",
-    "@bildit/jobs": "^1.0.0",
+    "@bilt/host-agent": "^1.0.4",
+    "@bilt/npm-commander": "^1.0.0",
+    "@bilt/jobs": "^1.0.0",
     "chai": "^4.1.2",
     "docker-compose-mocha": "^1.2.0",
     "docker-compose-tool": "0.0.1",

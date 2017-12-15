@@ -1,6 +1,6 @@
 'use strict'
 const path = require('path')
-const debug = require('debug')('bildit:git-repository-fetcher')
+const debug = require('debug')('bilt:git-repository-fetcher')
 const computeDirectoryNameFromRepository = require('./compute-directory-name')
 
 module.exports = async ({config: {repository}, pimport, plugins: [gitCommander]}) => {

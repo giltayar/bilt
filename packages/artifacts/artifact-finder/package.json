@@ -1,5 +1,5 @@
 {
-  "name": "@bildit/artifact-finder",
+  "name": "@bilt/artifact-finder",
   "version": "1.0.8",
   "description": "",
   "main": "src/artifact-finder.js",
@@ -18,7 +18,7 @@
   "author": "Gil Tayar <gil@tayar.org>",
   "license": "Unlicense",
   "repository": {
-    "url": "https://github.com/giltayar/bildit",
+    "url": "https://github.com/giltayar/bilt",
     "type": "git"
   },
   "dependencies": {

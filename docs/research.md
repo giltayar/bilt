@@ -1,4 +1,4 @@
-# Research on how to build bildit
+# Research on how to build bilt
 
 ## Plugin Repositories
 
@@ -15,7 +15,7 @@
   whether there are no more jobs.
 * [queue-light](https://github.com/rackfx/queue-light): based on sqlite. Simple and nice.
 
-## Saas version of bildit
+## Saas version of bilt
 
 * [external load balancer](https://traefik.io/): looks interesting. alternative to builtin kubernetes one
 * [deployment](https://www.npmjs.com/package/exoframe): simple deployment of projects
@@ -23,13 +23,13 @@
 
 ## Possible names
 
-* bildit (the current name. I feel like it's too obvious and boring.)
+* bilt (the current name. I feel like it's too obvious and boring.)
 * artifex (Latin for craftsman. works well with artifact)
 * craft
 * castor (scientific name of beaver, an animal that builds)
 * hardhat (synonym of construction worker)
 * bee (because she works hard. Will be difficult to google?)
-* bild (shorter bildit, which is the current name)
+* bild (shorter bilt, which is the current name)
 * beeld (compose bee and bild)
 * bilt (as in the past of bild. sounds nicer,
   maybe pronounce it "bild" to make it coller?)

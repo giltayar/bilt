@@ -1,5 +1,5 @@
 {
-  "name": "@bildit/host-agent",
+  "name": "@bilt/host-agent",
   "version": "1.0.4",
   "description": "An agent for regular local running a process on the local host",
   "main": "src/host-agent.js",
@@ -11,7 +11,7 @@
   "author": "Gil Tayar <gil@tayar.org>",
   "license": "Unlicense",
   "repository": {
-    "url": "https://github.com/giltayar/bildit",
+    "url": "https://github.com/giltayar/bilt",
     "type": "git"
   },
   "dependencies": {

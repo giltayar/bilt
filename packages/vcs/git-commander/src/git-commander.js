@@ -3,8 +3,8 @@ const {promisify: p} = require('util')
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
-const {initializer} = require('@bildit/agent-commons')
-const debug = require('debug')('bildit:npm-commander')
+const {initializer} = require('@bilt/agent-commons')
+const debug = require('debug')('bilt:npm-commander')
 
 module.exports = initializer(
   async (

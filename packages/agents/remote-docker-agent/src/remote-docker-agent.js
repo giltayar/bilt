@@ -1,7 +1,7 @@
 'use strict'
 
 const path = require('path')
-const debug = require('debug')('bildit:remote-docker-agent')
+const debug = require('debug')('bilt:remote-docker-agent')
 const Docker = require('dockerode')
 const tar = require('tar-stream')
 const through = require('through2')

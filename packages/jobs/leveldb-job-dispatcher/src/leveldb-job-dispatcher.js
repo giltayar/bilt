@@ -1,12 +1,12 @@
 'use strict'
-const debug = require('debug')('bildit:leveldb-job-dispatcher')
+const debug = require('debug')('bilt:leveldb-job-dispatcher')
 const path = require('path')
 const {promisify: p} = require('util')
 const makeDir = require('make-dir')
 const levelQueue = require('level-q')
 const level = require('level')
 const bytewise = require('bytewise')
-const {runJob, prepareJobForRunning, deleteJobState, isSubJob} = require('@bildit/jobs')
+const {runJob, prepareJobForRunning, deleteJobState, isSubJob} = require('@bilt/jobs')
 
 module.exports = async ({pimport, directory}) => {
   const events = await pimport('events')
@@ -89,13 +89,13 @@ module.exports = async ({pimport, directory}) => {
   }
 
   async function initializeDb() {
-    await makeDir(path.join(directory, '.bildit'))
+    await makeDir(path.join(directory, '.bilt'))
 
-    const jobQueueDb = await p(level)(path.join(directory, '.bildit', 'job-queue'), {
+    const jobQueueDb = await p(level)(path.join(directory, '.bilt', 'job-queue'), {
       keyEncoding: bytewise,
       valueEncoding: 'json',
     })
-    const kvStoreDb = await p(level)(path.join(directory, '.bildit', 'kv-store'), {
+    const kvStoreDb = await p(level)(path.join(directory, '.bilt', 'kv-store'), {
       keyEncoding: bytewise,
       valueEncoding: 'json',
     })

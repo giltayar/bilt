@@ -1,5 +1,5 @@
 'use strict'
-const debug = require('debug')('bildit:in-memory-events')
+const debug = require('debug')('bilt:in-memory-events')
 
 module.exports = async () => {
   const subscribers = {}

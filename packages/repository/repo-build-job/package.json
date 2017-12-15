@@ -1,5 +1,5 @@
 {
-  "name": "@bildit/repo-build-job",
+  "name": "@bilt/repo-build-job",
   "version": "1.0.2",
   "description": "",
   "main": "src/repo-build-job.js",
@@ -17,11 +17,11 @@
   "author": "Gil Tayar <gil@tayar.org>",
   "license": "Unlicense",
   "repository": {
-    "url": "https://github.com/giltayar/bildit",
+    "url": "https://github.com/giltayar/bilt",
     "type": "git"
   },
   "dependencies": {
-    "@bildit/artifact-dependency-graph": "^1.0.0",
+    "@bilt/artifact-dependency-graph": "^1.0.0",
     "debug": "^2.6.8"
   },
   "devDependencies": {

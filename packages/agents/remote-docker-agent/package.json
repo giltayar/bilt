@@ -1,5 +1,5 @@
 {
-  "name": "@bildit/remote-docker-agent",
+  "name": "@bilt/remote-docker-agent",
   "version": "1.0.0",
   "description": "",
   "main": "src/remote-docker-agent.js",
@@ -10,12 +10,12 @@
   "scripts": {},
   "keywords": [
     "ci",
-    "bildit"
+    "bilt"
   ],
   "author": "Gil Tayar <gil@tayar.org>",
   "license": "Unlicense",
   "repository": {
-    "url": "https://github.com/giltayar/bildit",
+    "url": "https://github.com/giltayar/bilt",
     "type": "git"
   },
   "dependencies": {

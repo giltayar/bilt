@@ -1,7 +1,7 @@
 'use strict'
 
-const debug = require('debug')('bildit:npm-binary-runner')
-const {initializer} = require('@bildit/agent-commons')
+const debug = require('debug')('bilt:npm-binary-runner')
+const {initializer} = require('@bilt/agent-commons')
 
 module.exports = initializer(async ({ensureAgentInstanceInitialized}, {pimport}) => {
   return {

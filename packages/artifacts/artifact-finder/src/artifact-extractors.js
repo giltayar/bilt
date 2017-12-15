@@ -5,7 +5,7 @@ const yaml = require('js-yaml')
 const find = require('lodash.find')
 const pathOf = require('./path-of')
 const parseAuthor = require('parse-author')
-const debug = require('debug')('bildit:artifact-finder')
+const debug = require('debug')('bilt:artifact-finder')
 
 const ARTIFACTRC_POSSIBLE_NAMES = [
   '.artifactrc',

@@ -1,5 +1,5 @@
 {
-  "name": "@bildit/jobs",
+  "name": "@bilt/jobs",
   "version": "1.0.2",
   "description": "",
   "main": "src/jobs.js",
@@ -10,12 +10,12 @@
   "scripts": {},
   "keywords": [
     "ci",
-    "bildit"
+    "bilt"
   ],
   "author": "Gil Tayar <gil@tayar.org>",
   "license": "Unlicense",
   "repository": {
-    "url": "https://github.com/giltayar/bildit",
+    "url": "https://github.com/giltayar/bilt",
     "type": "git"
   },
   "dependencies": {

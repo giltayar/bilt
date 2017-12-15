@@ -6,7 +6,7 @@ const ignore = require('ignore')
 const path = require('path')
 const fs = require('fs')
 const {promisify} = require('util')
-const debug = require('debug')('bildit:artifact-finder')
+const debug = require('debug')('bilt:artifact-finder')
 
 module.exports = async () => {
   return {

@@ -5,9 +5,9 @@ const fs = require('fs')
 const path = require('path')
 const {dockerComposeTool, getAddressForService} = require('docker-compose-mocha')
 const getNpmToken = require('get-npm-token')
-const hostAgentService = require('@bildit/host-agent')
+const hostAgentService = require('@bilt/host-agent')
 const pluginImport = require('plugin-import')
-const npmCommanderService = require('@bildit/npm-commander')
+const npmCommanderService = require('@bilt/npm-commander')
 
 function setup(before, after) {
   const pathToCompose = path.join(__dirname, 'docker-compose.yml')

@@ -1,0 +1,34 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "packages/npm/npm-binary-runner"
+		},
+		{
+			"path": "packages/npm/npm-build-job"
+		},
+		{
+			"path": "packages/npm/npm-commander"
+		},
+		{
+			"path": "packages/cli/bilt-cli"
+		},
+		{
+			"path": "packages/plugins/plugin-import"
+		},
+		{
+			"path": "packages/artifacts/artifact-finder"
+		},
+		{
+			"path": "packages/artifacts/artifact-dependency-graph"
+		},
+		{
+			"path": "packages/repository/repo-build-job"
+		}
+	],
+	"settings": {
+		"javascript.validate.enable": false
+	}
+}
