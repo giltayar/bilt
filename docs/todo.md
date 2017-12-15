@@ -6,6 +6,10 @@
 
 1. Changes due to CLI definition:
    * Support per-package last build info, and kill the whole leveldb plugin.
+     * fix bug in last-build-info for this test:
+       * change some files. build. now commit. now build again. theoretically, no changes.
+         but there will probably be according to module
+     * the computation of changed files is ok. but the save/load should be per-project and not per-build.
    * Support enabling/disabling steps globally.
 1. Build the CLI
 1. Deal nicely with output
