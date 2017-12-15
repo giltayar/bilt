@@ -1,5 +1,6 @@
 const uuid = require('uuid/v4')
 const debug = require('debug')('bildit:jobs')
+const {executeBuild} = require('./build')
 
 async function runJob(job, {awakenedFrom, pimport, events, kvStore, dispatchJob}) {
   const result = await executeJob(job, {awakenedFrom, pimport, events, kvStore})
@@ -20,13 +21,13 @@ async function executeJob(job, {awakenedFrom, pimport, events, kvStore}) {
   const state = await kvStore.get(`jobstate:${job.id}`)
   debug('state for job %s found: %o', jobWithId.id, state)
 
-  const {state: newState, jobs = [], success, err} = await runTheBuild(
+  const {state: newState, jobs = [], success, err} = await executeBuild({
     builder,
     agent,
-    jobWithId,
+    job: jobWithId,
     state,
     awakenedFrom,
-  )
+  })
   debug('ran job %s', jobWithId.id)
 
   await events.publish(jobs.length === 0 ? 'END_JOB' : 'HIBERNATE_JOB', {
@@ -40,38 +41,6 @@ async function executeJob(job, {awakenedFrom, pimport, events, kvStore}) {
   debug('dispatched job %o', jobWithId)
 
   return {state: newState, jobs, job: jobWithId, success, err}
-}
-
-async function build(buildSteps, agent) {
-  for (const executeCommandArg of buildSteps) {
-    await agent.executeCommand(executeCommandArg)
-  }
-}
-
-async function runTheBuild(builder, agent, job, state, awakenedFrom) {
-  const agentInstance = await agent.acquireInstanceForJob()
-  try {
-    const {howToBuild} = await builder.setupBuildSteps({
-      job,
-      agentInstance,
-      state,
-      awakenedFrom,
-    })
-    try {
-      const {buildSteps = [], state, jobs} = builder.getBuildSteps({howToBuild, job})
-      await build(buildSteps, agent, job)
-
-      return {state, jobs, success: true}
-    } catch (err) {
-      return {state, success: false, err}
-    } finally {
-      if (builder.cleanupBuild) {
-        await builder.cleanupBuild({howToBuild})
-      }
-    }
-  } finally {
-    agent.releaseInstanceForJob(agentInstance)
-  }
 }
 
 async function dealWithJobResult(
@@ -154,4 +123,5 @@ module.exports = {
   prepareJobForRunning,
   deleteJobState,
   isSubJob,
+  executeBuild,
 }

@@ -14,7 +14,7 @@
         "test/**/*.test.js"
       ],
       "env": {
-        "DEBUG": "${workspaceFolderBasename}*"
+        "DEBUG": "bildit:${workspaceFolderBasename}*,bildit:repo-build-job*,bildit:jobs"
       },
       "cwd": "${workspaceRoot}",
       "protocol": "inspector",

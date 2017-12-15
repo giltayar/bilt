@@ -18,7 +18,7 @@ module.exports = {
       npmAuthenticationLine: '//localhost:4873/:_authToken="NPM_TOKEN"',
     },
     'builder:npm': {
-      publish: true,
+      artifactDefaults: {publish: true},
     },
     'commander:git': {
       package: '@bildit/git-commander',

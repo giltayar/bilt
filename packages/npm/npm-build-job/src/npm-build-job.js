@@ -5,14 +5,61 @@ const debug = require('debug')('bildit:npm-build-job')
 const symlinkDependencies = require('./symlink-dependencies')
 const findNextVersion = require('./find-next-version')
 
+const defaults = {
+  steps: [
+    {
+      id: 'install',
+      name: 'Install',
+      command: ['npm', 'install'],
+    },
+    {
+      id: 'increment-version',
+      name: 'Increment Package Version',
+      command: ({nextVersion}) => [
+        'npm',
+        'version',
+        '--no-git-tag-version',
+        '--allow-same-version',
+        nextVersion,
+      ],
+      condition: ({packageJson, artifact: {publish}}) => !packageJson.private && publish,
+    },
+    {
+      id: 'build',
+      name: 'Build',
+      command: ['npm', 'run', 'build'],
+      condition: ({packageJson}) => packageJson.scripts && packageJson.scripts.build,
+    },
+    {
+      id: 'test',
+      name: 'Test',
+      command: ['npm', 'test'],
+      condition: ({packageJson}) => packageJson.scripts && packageJson.scripts.test,
+    },
+    {
+      id: 'publish',
+      name: 'Publish',
+      command: ({access}) => ['npm', 'publish', '--access', access],
+      condition: ({packageJson, artifact: {publish}}) => !packageJson.private && publish,
+    },
+  ],
+  access: 'public',
+}
+
 module.exports = async ({
   pimport,
-  config: {publish, linkLocalPackages, access = 'public', steps},
-  plugins: [repositoryFetcher, npmCommander],
+  config: {artifactDefaults, linkLocalPackages},
+  plugins: [repositoryFetcher, commander],
 }) => {
   return {
+    artifactDefaults: {...defaults, ...artifactDefaults},
     async setupBuildSteps({job, agentInstance}) {
-      const {dependencies, artifacts, artifactPath, filesChangedSinceLastBuild} = job
+      const {
+        dependencies,
+        artifacts,
+        artifact: {path: artifactPath},
+        filesChangedSinceLastBuild,
+      } = job
       const agent = await pimport(agentInstance.kind)
 
       const {directory} = await repositoryFetcher.fetchRepository({
@@ -34,42 +81,40 @@ module.exports = async ({
         await agent.readFileAsBuffer(agentInstance, path.join(directory, 'package.json')),
       )
 
-      const npmCommanderSetup = await npmCommander.setup({agentInstance})
-      const shouldPublish = publish && !packageJson.private
+      const commanderSetup = await commander.setup({agentInstance})
       let nextVersion
 
-      if (shouldPublish) {
+      const artifact = job.artifact
+
+      if (artifact.publish && !packageJson.private) {
         nextVersion = await findNextVersion(
           agent,
           agentInstance,
           directory,
           packageJson,
-          npmCommander,
-          npmCommanderSetup,
+          commander,
+          commanderSetup,
         )
       }
 
       return {
-        howToBuild: {
+        buildContext: {
           packageJson,
           agentInstance,
           directory,
-          npmCommanderSetup,
+          commanderSetup,
           nextVersion,
-          shouldPublish,
-          access,
         },
       }
     },
 
-    getBuildSteps({howToBuild}) {
-      const {agentInstance, directory, npmCommanderSetup} = howToBuild
-      const transform = command =>
-        npmCommander.transformAgentCommand(command, {setup: npmCommanderSetup})
+    getBuildSteps({buildContext}) {
+      const {agentInstance, directory, commanderSetup, artifact} = buildContext
+      const transform = command => commander.transformAgentCommand(command, {setup: commanderSetup})
 
-      const buildSteps = steps
-        .filter(s => evaluateStepCondition(s, howToBuild))
-        .map(s => (typeof s.command === 'function' ? {...s, command: s.command(howToBuild)} : s))
+      const buildSteps = artifact.steps
+        .filter(s => evaluateStepCondition(s, buildContext))
+        .map(s => (typeof s.command === 'function' ? {...s, command: s.command(buildContext)} : s))
         .map(s => transform({agentInstance, cwd: directory, ...s}))
 
       return {buildSteps}

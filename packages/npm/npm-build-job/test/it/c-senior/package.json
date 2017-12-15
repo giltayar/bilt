@@ -1,12 +1,10 @@
 {
-  "name": "this-package-not-in-npm-reg-a",
-  "version": "3.10.1967",
+  "name": "c-senior",
+  "version": "29.12.2000",
   "description": "",
   "main": "some-code.js",
   "scripts": {
     "postinstall": "touch installed",
-    "test": "touch tested",
-    "build": "touch built",
     "groan": "touch groaned"
   },
   "keywords": [],

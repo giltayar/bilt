@@ -19,7 +19,9 @@ describe('local directory use-case', () => {
 
         await p(exec)(`${process.argv0} ${cli} ${testRepo}`)
 
-        const {stdout, stderr} = await p(exec)(`${process.argv0} ${cli} ${testRepo}`)
+        const {stdout, stderr} = await p(exec)(`${process.argv0} ${cli} ${testRepo}`, {
+          env: {...process.env, DEBUG: ''},
+        })
         console.log(stdout, stderr)
 
         expect(stdout).to.equal('')
@@ -40,9 +42,11 @@ describe('local directory use-case', () => {
 
         expect(await fileContents(testRepo, 'b/built.txt')).to.equal('touched!')
 
-        const {stdout: stdout2, stderr: stderr2} = await p(exec)(
-          `${process.argv0} ${cli} ${testRepo}`,
-        )
+        const {stdout: stdout2, stderr: stderr2} = await p(
+          exec,
+        )(`${process.argv0} ${cli} ${testRepo}`, {
+          env: {...process.env, DEBUG: ''},
+        })
         expect(stdout2).to.equal('')
         expect(stderr2.trim()).to.equal('Nothing to build')
       })

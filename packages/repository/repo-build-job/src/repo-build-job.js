@@ -9,28 +9,33 @@ const debug = require('debug')('bildit:repo-build-job')
 
 module.exports = ({plugins: [binaryRunner, repositoryFetcher]}) => {
   return {
-    async setupBuildSteps({agentInstance, state, awakenedFrom}) {
+    async setupBuildSteps({agentInstance, state, awakenedFrom, job}) {
       debug('running job repo-build-job')
 
       const {directory} = await repositoryFetcher.fetchRepository({agentInstance})
 
-      const {stdout: text} = awakenedFrom
-        ? {stdout: undefined}
-        : await binaryRunner.run({
-            binary: '@bildit/artifact-finder',
-            executeCommandArg: {
-              agentInstance,
-              command: ['artifact-finder', directory],
-              returnOutput: true,
-            },
-          })
-      const initialAllArtifacts = awakenedFrom ? undefined : JSON.parse(text)
+      const initialAllArtifacts = awakenedFrom
+        ? undefined
+        : await findArtifactsInRepository(binaryRunner, agentInstance, directory)
 
-      return {howToBuild: {state, awakenedFrom, initialAllArtifacts}}
+      return {
+        buildContext: {
+          state,
+          awakenedFrom,
+          initialAllArtifacts,
+          linkDependencies: job.linkDependencies,
+          filesChangedSinceLastBuild: job.filesChangedSinceLastBuild,
+        },
+      }
     },
     getBuildSteps({
-      howToBuild: {state, awakenedFrom, initialAllArtifacts},
-      job: {linkDependencies, filesChangedSinceLastBuild},
+      buildContext: {
+        state,
+        awakenedFrom,
+        initialAllArtifacts,
+        linkDependencies,
+        filesChangedSinceLastBuild,
+      },
     }) {
       state = state || {
         allArtifacts: initialAllArtifacts,
@@ -40,19 +45,7 @@ module.exports = ({plugins: [binaryRunner, repositoryFetcher]}) => {
         ),
         alreadyBuiltArtifacts: [],
       }
-      const alreadyBuiltArtifacts =
-        awakenedFrom && awakenedFrom.result.success
-          ? state.alreadyBuiltArtifacts.concat(awakenedFrom.job.artifactName)
-          : awakenedFrom && !awakenedFrom.result.success
-            ? state.alreadyBuiltArtifacts.concat(
-                Object.keys(
-                  artifactsToBuildFromChange(state.dependencyGraph, [
-                    awakenedFrom.job.artifactName,
-                  ]),
-                ),
-              )
-            : []
-
+      const alreadyBuiltArtifacts = determineArtifactsThatAreAlreadyBuilt(awakenedFrom, state)
       const artifactsToBuild = buildsThatCanBeBuilt(state.dependencyGraph, alreadyBuiltArtifacts)
 
       if (!artifactsToBuild || artifactsToBuild.length === 0) {
@@ -61,7 +54,6 @@ module.exports = ({plugins: [binaryRunner, repositoryFetcher]}) => {
       const artifactToBuild = artifactsToBuild[0]
 
       debug('building artifact %s', artifactToBuild)
-
       const artifactJob = createJobFromArtifact(
         state.allArtifacts.find(a => a.name === artifactToBuild),
         linkDependencies ? state.allArtifacts : undefined,
@@ -69,16 +61,37 @@ module.exports = ({plugins: [binaryRunner, repositoryFetcher]}) => {
       )
 
       debug('decided to run sub-job %o', artifactJob)
-
       return {
-        state: {
-          ...state,
-          ...{alreadyBuiltArtifacts},
-        },
+        state: {...state, ...{alreadyBuiltArtifacts}},
         jobs: [artifactJob].map(job => ({job, awaken: true})),
       }
     },
   }
+}
+
+async function findArtifactsInRepository(binaryRunner, agentInstance, directory) {
+  return JSON.parse(
+    (await binaryRunner.run({
+      binary: '@bildit/artifact-finder',
+      executeCommandArg: {
+        agentInstance,
+        command: ['artifact-finder', directory],
+        returnOutput: true,
+      },
+    })).stdout,
+  )
+}
+
+function determineArtifactsThatAreAlreadyBuilt(awakenedFrom, state) {
+  return awakenedFrom && awakenedFrom.result.success
+    ? state.alreadyBuiltArtifacts.concat(awakenedFrom.job.artifact.name)
+    : awakenedFrom && !awakenedFrom.result.success
+      ? state.alreadyBuiltArtifacts.concat(
+          Object.keys(
+            artifactsToBuildFromChange(state.dependencyGraph, [awakenedFrom.job.artifact.name]),
+          ),
+        )
+      : []
 }
 
 function artifactsFromChanges(artifacts, filesChangedSinceLastBuild) {
@@ -95,8 +108,7 @@ module.exports.plugins = ['binaryRunner:npm', 'repositoryFetcher']
 
 const createJobFromArtifact = (artifact, artifacts, filesChangedSinceLastBuild) => ({
   kind: artifact.type,
-  artifactName: artifact.name,
-  artifactPath: artifact.path,
+  artifact,
   dependencies: artifacts ? artifact.dependencies : [],
   artifacts,
   filesChangedSinceLastBuild:

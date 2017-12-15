@@ -14,7 +14,7 @@ describe('repo-build-job', function() {
 
       const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
 
-      expect(jobsThatRan.map(j => j.artifactName)).to.eql(['a', 'b', 'c'])
+      expect(jobsThatRan.map(j => j.artifact.name)).to.eql(['a', 'b', 'c'])
     })
 
     it('should execute only builds that have changed files', () => {
@@ -25,7 +25,7 @@ describe('repo-build-job', function() {
 
       const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
 
-      expect(jobsThatRan.map(j => j.artifactName)).to.eql(['a', 'c'])
+      expect(jobsThatRan.map(j => j.artifact.name)).to.eql(['a', 'c'])
     })
 
     it('should execute builds based on dependency order', () => {
@@ -40,7 +40,7 @@ describe('repo-build-job', function() {
 
       const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
 
-      expect(jobsThatRan.map(j => j.artifactName)).to.eql(['d2', 'a', 'd', 'c', 'b'])
+      expect(jobsThatRan.map(j => j.artifact.name)).to.eql(['d2', 'a', 'd', 'c', 'b'])
     })
 
     it('should not execute jobs that are dependent on a failed job', () => {
@@ -55,15 +55,14 @@ describe('repo-build-job', function() {
 
       const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
 
-      expect(jobsThatRan.map(j => j.artifactName)).to.eql(['d2', 'a', 'd'])
+      expect(jobsThatRan.map(j => j.artifact.name)).to.eql(['d2', 'a', 'd'])
     })
   })
 })
 
 function runRepoJob(artifacts, repoJob, repoBuildJobRunner) {
   let jobResult = repoBuildJobRunner.getBuildSteps({
-    howToBuild: {initialAllArtifacts: artifacts},
-    job: repoJob,
+    buildContext: {initialAllArtifacts: artifacts, ...repoJob},
   })
   const jobsList = [...((jobResult.jobs || []).map(j => j.job) || [])]
   const jobsToDo = (jobResult.jobs || []).map(j => j.job) || []
@@ -73,20 +72,20 @@ function runRepoJob(artifacts, repoJob, repoBuildJobRunner) {
     const doneJob = jobsToDo.pop()
 
     jobResult = repoBuildJobRunner.getBuildSteps({
-      howToBuild: {
+      buildContext: {
         state: jobResult.state,
         initialAllArtifacts: undefined,
         awakenedFrom: {
           job: doneJob,
-          result: {success: !artifacts.find(a => a.name === doneJob.artifactName).failBuild},
+          result: {success: !artifacts.find(a => a.name === doneJob.artifact.name).failBuild},
         },
       },
       job: repoJob,
     })
     jobsList.push(...(jobResult.jobs || []).map(j => j.job))
     if (jobResult.jobs)
-      expect(jobsToDo.map(j => j.artifactName)).to.not.have.members(
-        (jobResult.jobs || []).map(j => j.artifactName),
+      expect(jobsToDo.map(j => j.job.artifact.name)).to.not.have.members(
+        (jobResult.jobs || []).map(j => j.job.artifact.name),
       )
     jobsToDo.push(...(jobResult.jobs || []).map(j => j.job))
   }

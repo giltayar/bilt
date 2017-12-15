@@ -25,6 +25,7 @@
   "devDependencies": {
     "@bildit/host-agent": "^1.0.4",
     "@bildit/npm-commander": "^1.0.0",
+    "@bildit/jobs": "^1.0.0",
     "chai": "^4.1.2",
     "docker-compose-mocha": "^1.2.0",
     "docker-compose-tool": "0.0.1",

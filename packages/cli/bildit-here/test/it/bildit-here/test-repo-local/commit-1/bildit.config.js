@@ -17,7 +17,7 @@ module.exports = {
       }
     },
     'builder:npm': {
-      publish: true,
+      artifactDefaults: {publish: true},
     },
     'commander:git': {
       package: '@bildit/git-commander',

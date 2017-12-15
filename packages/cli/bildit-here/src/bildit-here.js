@@ -86,7 +86,7 @@ async function configureEventsToOutputEventToStdout(pimport) {
   await events.subscribe('START_JOB', ({job}) => {
     if (job.kind === 'repository') return
 
-    console.log('####### Building', job.artifactPath || job.directory)
+    console.log('####### Building', job.artifact.path || job.directory)
   })
 }
 

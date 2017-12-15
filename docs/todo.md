@@ -24,6 +24,8 @@
 ## Do more testing of packages
 
 1. What she said
+1. Test build failures
+1. Test linking local packages
 1. Also write Readmes for everything
 
 ## Parallel Execution

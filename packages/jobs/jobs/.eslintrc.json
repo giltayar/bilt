@@ -1,16 +1,19 @@
 {
     "env": {
-        "browser": true,
         "commonjs": true,
         "es6": true,
         "node": true
     },
     "parserOptions": {
         "ecmaVersion": 2017,
-        "sourceType": "module"
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "experimentalObjectRestSpread": true
+        }
     },
     "plugins": [
-        "prettier"
+        "prettier",
+        "mocha-no-only"
     ],
     "rules": {
         "prettier/prettier": [
@@ -31,6 +34,7 @@
         "no-unreachable": "warn",
         "no-unused-vars": "warn",
         "constructor-super": "warn",
-        "valid-typeof": "warn"
+        "valid-typeof": "warn",
+        "mocha-no-only/mocha-no-only": "error"
     }
 }

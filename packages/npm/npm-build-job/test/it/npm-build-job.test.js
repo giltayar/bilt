@@ -4,45 +4,10 @@ const fs = require('fs')
 const path = require('path')
 const {describe, it, before, after} = require('mocha')
 const {expect} = require('chai')
+const {executeBuild} = require('@bildit/jobs')
 const setup = require('./setup')
-
 const npmBuildJobService = require('../..')
 const findNextVersion = require('../../src/find-next-version')
-
-const testSteps = [
-  {
-    id: 'install',
-    name: 'Install',
-    command: ['npm', 'install'],
-  },
-  {
-    id: 'increment-version',
-    name: 'Increment Package Version',
-    command: ({nextVersion}) => [
-      'npm',
-      'version',
-      '--no-git-tag-version',
-      '--allow-same-version',
-      nextVersion,
-    ],
-  },
-  {
-    id: 'build',
-    name: 'Build',
-    command: ['npm', 'run', 'build'],
-    condition: ({packageJson}) => packageJson.scripts && packageJson.scripts.build,
-  },
-  {
-    id: 'test',
-    name: 'Test',
-    command: ['npm', 'test'],
-  },
-  {
-    id: 'publish',
-    name: 'Publish',
-    command: ({access}) => ['npm', 'publish', '--access', access],
-  },
-]
 
 describe('npm-build-job', function() {
   const {agentInstance, npmCommander, pimport, agent, npmCommanderSetup, setupPackage} = setup(
@@ -54,9 +19,9 @@ describe('npm-build-job', function() {
     const {dir, packageJson} = await setupPackage('this-package-not-in-npm-reg-a', {
       shouldPublish: true,
     })
-    const {setupBuildSteps, getBuildSteps} = await npmBuildJobService({
+    const builder = await npmBuildJobService({
       pimport: pimport(),
-      config: {publish: true, steps: testSteps},
+      config: {artifactDefaults: {publish: true}},
       plugins: [
         {
           fetchRepository: async () => ({
@@ -67,16 +32,14 @@ describe('npm-build-job', function() {
       ],
     })
 
-    const context = await setupBuildSteps({
-      agentInstance: agentInstance(),
-      job: {dependencies: [], artifacts: [], artifactPath: '', filesChangedSinceLastBuild: []},
-    })
-
-    const {buildSteps} = getBuildSteps(context)
-
-    for (const step of buildSteps) {
-      await agent().executeCommand(step)
+    const job = {
+      dependencies: [],
+      artifacts: [],
+      artifact: {path: ''},
+      filesChangedSinceLastBuild: [],
     }
+
+    await executeBuild({builder, agent: agent(), job})
 
     expect(await p(fs.exists)(path.join(dir, 'tested'))).to.be.true
     expect(await p(fs.exists)(path.join(dir, 'built'))).to.be.true
@@ -98,9 +61,9 @@ describe('npm-build-job', function() {
       shouldPublish: false,
     })
 
-    const {setupBuildSteps, getBuildSteps} = await npmBuildJobService({
+    const builder = await npmBuildJobService({
       pimport: pimport(),
-      config: {publish: true, steps: testSteps},
+      config: {artifactDefaults: {publish: true}},
       plugins: [
         {
           fetchRepository: async () => ({
@@ -111,16 +74,11 @@ describe('npm-build-job', function() {
       ],
     })
 
-    const context = await setupBuildSteps({
-      agentInstance: agentInstance(),
-      job: {dependencies: [], artifacts: [], artifactPath: '', filesChangedSinceLastBuild: []},
+    await executeBuild({
+      builder,
+      agent: agent(),
+      job: {dependencies: [], artifacts: [], artifact: {path: ''}, filesChangedSinceLastBuild: []},
     })
-
-    const {buildSteps} = getBuildSteps(context)
-
-    for (const step of buildSteps) {
-      await agent().executeCommand(step)
-    }
 
     expect(await p(fs.exists)(path.join(dir, 'tested'))).to.be.true
 
@@ -134,5 +92,67 @@ describe('npm-build-job', function() {
         npmCommanderSetup(),
       ),
     ).to.equal('29.12.2001')
+  })
+
+  it('should enable overriding steps and artifact configs from artifactrc.yml', async () => {
+    const {dir, packageJson} = await setupPackage('c-senior', {
+      shouldPublish: false,
+    })
+
+    const builder = await npmBuildJobService({
+      pimport: pimport(),
+      config: {artifactDefaults: {publish: true}},
+      plugins: [
+        {
+          fetchRepository: async () => ({
+            directory: dir,
+          }),
+        },
+        npmCommander(),
+      ],
+    })
+
+    const artifact = {
+      steps: [
+        {id: 'install'},
+        {id: 'build'},
+        {id: 'groan', command: ['npm', 'run', 'groan'], condition: 'artifact.doGroan'},
+        {
+          id: 'sloan',
+          command: ['npm', 'run', 'sloan-does-not-exist'],
+          condition: 'packageJson.scripts.sloan',
+        },
+        {id: 'publish'},
+      ],
+      publish: false,
+      doGroan: true,
+    }
+
+    await executeBuild({
+      builder,
+      agent: agent(),
+      job: {
+        dependencies: [],
+        artifacts: [],
+        artifact: {path: ''},
+        filesChangedSinceLastBuild: [],
+        artifact,
+      },
+    })
+
+    expect(await p(fs.exists)(path.join(dir, 'installed'))).to.be.true
+    expect(await p(fs.exists)(path.join(dir, 'tested'))).to.be.false
+    expect(await p(fs.exists)(path.join(dir, 'groaned'))).to.be.true
+
+    expect(
+      await findNextVersion(
+        agent(),
+        agentInstance(),
+        dir,
+        packageJson,
+        npmCommander(),
+        npmCommanderSetup(),
+      ),
+    ).to.equal('29.12.2000')
   })
 })
