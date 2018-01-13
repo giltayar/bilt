@@ -1,5 +1,5 @@
 async function executeBuild({builder, agent, job, state, awakenedFrom}) {
-  const agentInstance = await agent.acquireInstanceForJob()
+  const agentInstance = agent ? await agent.acquireInstanceForJob() : undefined
   try {
     const builderArtifact = builder.artifactDefaults || {}
     const jobArtifact = job.artifact || {}
@@ -34,7 +34,7 @@ async function executeBuild({builder, agent, job, state, awakenedFrom}) {
       }
     }
   } finally {
-    agent.releaseInstanceForJob(agentInstance)
+    agent && agent.releaseInstanceForJob(agentInstance)
   }
 }
 

@@ -11,7 +11,6 @@ const localDockerAgent = {
 module.exports = {
   plugins: {
     'agent:npm': localDockerAgent,
-    'agent:repository': localDockerAgent,
     'commander:npm': {
       package: '@bilt/npm-commander',
       access: 'public',

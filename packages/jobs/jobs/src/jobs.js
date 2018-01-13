@@ -10,7 +10,9 @@ async function runJob(job, {awakenedFrom, pimport, events, kvStore, dispatchJob}
 
 async function executeJob(job, {awakenedFrom, pimport, events, kvStore}) {
   const builder = await pimport(`builder:${job.kind}`)
-  const agent = await pimport(`agent:${job.kind}`)
+  const agent = await pimport(`agent:${job.kind}`).catch(
+    err => (err.toString().includes('No plugins support') ? undefined : Promise.reject(err)),
+  )
 
   const jobWithId = prepareJobForRunning(job)
 

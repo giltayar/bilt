@@ -55,10 +55,7 @@ describe('remote docker with publisgh use-case', () => {
         await adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress, 'npm-registry:4873'),
     )
 
-    await biltHere(
-      remoteRepo.replace(gitServerAddress, 'git-server:22'),
-      path.join(buildDir, 'bilt.config.js'),
-    )
+    await biltHere(buildDir, remoteRepo.replace(gitServerAddress, 'git-server:22'))
 
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.0', npmRegistryAddress)
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.0', npmRegistryAddress)

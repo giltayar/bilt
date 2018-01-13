@@ -7,22 +7,16 @@ const {
 } = require('@bilt/artifact-dependency-graph')
 const debug = require('debug')('bilt:repo-build-job')
 
-module.exports = ({plugins: [binaryRunner, repositoryFetcher]}) => {
+module.exports = () => {
   return {
-    async setupBuildSteps({agentInstance, state, awakenedFrom, job}) {
+    async setupBuildSteps({state, awakenedFrom, job}) {
       debug('running job repo-build-job')
-
-      const {directory} = await repositoryFetcher.fetchRepository({agentInstance})
-
-      const initialAllArtifacts = awakenedFrom
-        ? undefined
-        : await findArtifactsInRepository(binaryRunner, agentInstance, directory)
 
       return {
         buildContext: {
           state,
           awakenedFrom,
-          initialAllArtifacts,
+          initialAllArtifacts: job.artifacts,
           linkDependencies: job.linkDependencies,
           filesChangedSinceLastBuild: job.filesChangedSinceLastBuild,
         },
@@ -69,22 +63,6 @@ module.exports = ({plugins: [binaryRunner, repositoryFetcher]}) => {
   }
 }
 
-async function findArtifactsInRepository(binaryRunner, agentInstance, directory) {
-  if (process.env.USE_LOCAL_ARTIFACT_FINDER) {
-    return await (await require('@bilt/artifact-finder')()).findArtifacts(directory)
-  }
-  return JSON.parse(
-    (await binaryRunner.run({
-      binary: '@bilt/artifact-finder',
-      executeCommandArg: {
-        agentInstance,
-        command: ['artifact-finder', directory],
-        returnOutput: true,
-      },
-    })).stdout,
-  )
-}
-
 function determineArtifactsThatAreAlreadyBuilt(awakenedFrom, state) {
   return awakenedFrom && awakenedFrom.result.success
     ? state.alreadyBuiltArtifacts.concat(awakenedFrom.job.artifact.name)
@@ -106,8 +84,6 @@ function artifactsFromChanges(artifacts, filesChangedSinceLastBuild) {
     )
     .map(artifact => artifact.name)
 }
-
-module.exports.plugins = ['binaryRunner:npm', 'repositoryFetcher']
 
 const createJobFromArtifact = (artifact, artifacts, filesChangedSinceLastBuild) => ({
   kind: artifact.type,

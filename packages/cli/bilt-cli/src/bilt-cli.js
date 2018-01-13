@@ -1,9 +1,9 @@
 'use strict'
-
 const path = require('path')
 const debug = require('debug')('bilt:bilt-cli')
 const pluginImport = require('plugin-import')
 const cosmiConfig = require('cosmiconfig')
+const artifactFinder = require('@bilt/artifact-finder')
 const defaultbiltConfig = require('./default-biltrc')
 
 const {
@@ -13,23 +13,18 @@ const {
   saveLastBuildInfo,
 } = require('./last-build-info')
 
-module.exports = async function(repository, configFile) {
-  const isRemoteRepo =
-    repository.startsWith('http:') || repository.startsWith('ssh:') || repository.startsWith('git@')
-
-  const directoryToBuild = isRemoteRepo ? undefined : path.resolve(repository)
-
-  const pimport = await createPimport(isRemoteRepo, directoryToBuild, repository, configFile)
+module.exports = async function(directoryToBuild, repository) {
+  const isRemoteRepo = repository
+  const pimport = await createPimport(isRemoteRepo, directoryToBuild, repository)
   try {
     await configureEventsToOutputEventToStdout(pimport)
 
     const jobDispatcher = await pimport('jobDispatcher')
 
-    const {filesChangedSinceLastBuild} = !isRemoteRepo
-      ? await figureOutFilesChangedSinceLastBuild(directoryToBuild)
-      : {}
-
-    const jobsToWaitFor = await runJobs(
+    const {filesChangedSinceLastBuild} = await figureOutFilesChangedSinceLastBuild(directoryToBuild)
+    const jobsToWaitFor = await runRepoBuildJob(
+      pimport,
+      directoryToBuild,
       repository,
       isRemoteRepo,
       jobDispatcher,
@@ -47,12 +42,11 @@ module.exports = async function(repository, configFile) {
   }
 }
 
-async function createPimport(isRemoteRepo, directoryToBuild, repository, configFile) {
+async function createPimport(isRemoteRepo, directoryToBuild, repository) {
   debug('loading configuration')
   const {config: buildConfig, filepath} = await cosmiConfig('bilt', {
-    configPath: isRemoteRepo ? configFile : undefined,
     rcExtensions: true,
-  }).load(isRemoteRepo ? undefined : directoryToBuild)
+  }).load(directoryToBuild)
 
   return pluginImport(
     [
@@ -60,9 +54,6 @@ async function createPimport(isRemoteRepo, directoryToBuild, repository, configF
       buildConfig.plugins,
       {
         'agent:docker': {
-          directory: isRemoteRepo ? undefined : directoryToBuild,
-        },
-        'agent:repository': {
           directory: isRemoteRepo ? undefined : directoryToBuild,
         },
         'agent:npm': {
@@ -102,26 +93,31 @@ async function figureOutFilesChangedSinceLastBuild(directory) {
   return {filesChangedSinceLastBuild, fileChangesInCurrentRepo}
 }
 
-async function runJobs(repository, isRemoteRepo, jobDispatcher, filesChangedSinceLastBuild) {
-  if (isRemoteRepo || !await jobDispatcher.hasAbortedJobs()) {
-    if (filesChangedSinceLastBuild && filesChangedSinceLastBuild.length === 0) {
-      console.error('Nothing to build')
-      return
-    }
-
-    debug('building with file changes %o', filesChangedSinceLastBuild)
-    return [
-      await jobDispatcher.dispatchJob({
-        kind: 'repository',
-        repository,
-        linkDependencies: true,
-        filesChangedSinceLastBuild,
-      }),
-    ]
-  } else {
-    debug('continuing previous build')
-    return await jobDispatcher.rerunAbortedJobs()
+async function runRepoBuildJob(
+  pimport,
+  directoryToBuild,
+  repository,
+  isRemoteRepo,
+  jobDispatcher,
+  filesChangedSinceLastBuild,
+) {
+  if (filesChangedSinceLastBuild && filesChangedSinceLastBuild.length === 0) {
+    console.error('Nothing to build')
+    return
   }
+  debug('fetching artifacts')
+  const artifacts = await (await artifactFinder()).findArtifacts(directoryToBuild)
+
+  debug('building with file changes %o', filesChangedSinceLastBuild)
+  return [
+    await jobDispatcher.dispatchJob({
+      kind: 'repository',
+      repository,
+      artifacts,
+      linkDependencies: true,
+      filesChangedSinceLastBuild,
+    }),
+  ]
 }
 
 async function waitForJobs(pimport, jobs) {

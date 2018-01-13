@@ -4,7 +4,6 @@ module.exports = {
     events: '@bilt/in-memory-events',
     'agent:npm': '@bilt/host-agent',
     'agent:docker': '@bilt/host-agent',
-    'agent:repository': '@bilt/host-agent',
     jobState: '@bilt/in-memory-job-state',
     'builder:repository': {package: '@bilt/repo-build-job'},
     'builder:npm': {

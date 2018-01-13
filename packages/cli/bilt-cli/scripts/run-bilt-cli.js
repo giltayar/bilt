@@ -5,4 +5,6 @@ process.on('unhandledRejection', err => {
   process.exit(2)
 })
 
-biltHere(process.argv[2], process.argv[3]).catch(err => console.log(err.stack || err))
+const args = process.argv.slice(2)
+
+biltHere(args[0], args[1]).catch(err => console.log(err.stack || err))

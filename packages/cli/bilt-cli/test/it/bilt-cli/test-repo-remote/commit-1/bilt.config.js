@@ -17,7 +17,6 @@ const gitConfig = {
 module.exports = {
   plugins: {
     'agent:npm': remoteDockerAgent,
-    'agent:repository': remoteDockerAgent,
     'commander:npm': {
       package: '@bilt/npm-commander',
       access: 'public',

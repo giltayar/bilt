@@ -5,12 +5,16 @@
 ## CLI and productization
 
 1. Changes due to CLI definition:
-   * Support per-package last build info, and kill the whole leveldb plugin.
-     * fix bug in last-build-info for this test:
-       * change some files. build. now commit. now build again. theoretically, no changes.
-         but there will probably be according to module
-     * the computation of changed files is ok. but the save/load should be per-project and not per-build.
-   * Support enabling/disabling steps globally.
+   * Support per-package last build info
+     * kill the whole leveldb plugin, including the aborted job shit
+     * The .bilt folder will have folders for all packages (in same structure as in the repo)
+       * Each such folder will have a last-succesful-build.json, with:
+         * commithash
+         * list of files changed from commithash, along with their sha1.
+       * cli will read the information from the .bilt folder and construct the information.
+       * It will correlate it with the information that it reads from git and repo to figure out which files and packages
+         changed, and send that information, along with the package dependencies, to the repo-build-job
+   * Support enabling/disabling steps globally. (to support publishing, cli, or not publishing, dev)
 1. Build the CLI
 1. Deal nicely with output
 1. Support partial building, e.g. `--root`.

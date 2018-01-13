@@ -25,6 +25,7 @@
     "type": "git"
   },
   "dependencies": {
+    "@bilt/artifact-finder": "^1.0.9",
     "cosmiconfig": "^3.1.0",
     "cpr": "^2.2.0",
     "debug": "^2.6.9",
