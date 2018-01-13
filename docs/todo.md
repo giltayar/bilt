@@ -6,7 +6,6 @@
 
 1. Changes due to CLI definition:
    * Support per-package last build info
-     * kill the whole leveldb plugin, including the aborted job shit
      * The .bilt folder will have folders for all packages (in same structure as in the repo)
        * Each such folder will have a last-succesful-build.json, with:
          * commithash

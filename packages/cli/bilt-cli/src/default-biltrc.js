@@ -1,6 +1,6 @@
 module.exports = {
   plugins: {
-    jobDispatcher: '@bilt/leveldb-job-dispatcher',
+    jobDispatcher: '@bilt/in-memory-job-dispatcher',
     events: '@bilt/in-memory-events',
     'agent:npm': '@bilt/host-agent',
     'agent:docker': '@bilt/host-agent',
