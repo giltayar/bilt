@@ -21,7 +21,7 @@ module.exports = async function(directoryToBuild, repository) {
 
     const jobDispatcher = await pimport('jobDispatcher')
 
-    const {filesChangedSinceLastBuild} = await figureOutFilesChangedSinceLastBuild(directoryToBuild)
+    const filesChangedSinceLastBuild = await figureOutFilesChangedSinceLastBuild(directoryToBuild)
     const jobsToWaitFor = await runRepoBuildJob(
       pimport,
       directoryToBuild,
@@ -84,13 +84,18 @@ async function configureEventsToOutputEventToStdout(pimport) {
 async function figureOutFilesChangedSinceLastBuild(directory) {
   const lastBuildInfo = await readLastBuildInfo(directory)
 
+  if (!lastBuildInfo) {
+    return undefined
+  }
   const fileChangesInCurrentRepo = await findChangesInCurrentRepo(directory)
 
-  const filesChangedSinceLastBuild = lastBuildInfo
-    ? await calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, fileChangesInCurrentRepo)
-    : undefined
+  const filesChangedSinceLastBuild = await calculateFilesChangedSinceLastBuild(
+    directory,
+    lastBuildInfo,
+    fileChangesInCurrentRepo,
+  )
 
-  return {filesChangedSinceLastBuild, fileChangesInCurrentRepo}
+  return filesChangedSinceLastBuild
 }
 
 async function runRepoBuildJob(

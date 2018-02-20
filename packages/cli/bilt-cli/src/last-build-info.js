@@ -14,29 +14,31 @@ const ignore = require('ignore')
 const {git: {findChangedFiles: gitFindChangedFiles}} = require('jest-changed-files')
 
 async function readLastBuildInfo(directory) {
-  try {
-    return JSON.parse(await p(fs.readFile)(path.join(directory, '.bilt/last-build.json')))
-  } catch (err) {
-    if (err.code === 'ENOEXIST') {
-      return undefined
-    } else if (err.code === 'ENOENT') {
-      return undefined
-    } else if (err instanceof SyntaxError) {
-      console.error('Could not parse .bilt/last-build.json. Building all.')
-      return undefined
-    }
-    throw err
+  const packages = await scanDirectoriesWithBiltJson(directory)
+  const ret = []
+  for (const packageDirectory of packages) {
+    ret.push({packageDirectory, ...readBiltJson(packageDirectory)})
   }
-}
 
-async function saveLastBuildInfo(directory, currentRepoInfo) {
-  debug('saving last build info %o', currentRepoInfo)
-  await makeDir(path.join(directory, '.bilt'))
+  return ret
 
-  await p(fs.writeFile)(
-    path.join(directory, '.bilt/last-build.json'),
-    JSON.stringify(currentRepoInfo, undefined, 2),
-  )
+  async function readBiltJson(packageDirectory) {
+    // {commit, changedFilesInWorkspace}
+    try {
+      return JSON.parse(await p(fs.readFile)(path.join(packageDirectory, 'bilt.json')))
+        .lastSuccessfulBuild
+    } catch (err) {
+      if (err.code === 'ENOEXIST') {
+        return undefined
+      } else if (err.code === 'ENOENT') {
+        return undefined
+      } else if (err instanceof SyntaxError) {
+        console.error('Could not parse .bilt/last-build.json. Building all.')
+        return undefined
+      }
+      throw err
+    }
+  }
 }
 
 async function findChangesInCurrentRepo(directory) {
@@ -58,26 +60,32 @@ async function calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, cur
       currentRepoInfo.changedFilesInWorkspace,
       lastBuildInfo.changedFilesInWorkspace,
     )
-  } else {
-    const filesStillChangedFromLastBuild = await determineWhichFilesChangedSinceLastBuild(
+  }
+  const filesChanged = []
+
+  for (const packageInfo of lastBuildInfo) {
+    const {commit, changedFilesInWorkspace} = packageInfo
+
+    const filesChangedSinceLastSuccesfulBuild = filesChangedFromCommitToCommit(
       directory,
-      lastBuildInfo.changedFilesInWorkspace,
+      commit,
+      currentRepoInfo.commit,
     )
 
-    return Array.from(
-      union(
-        union(
-          new Set(filesStillChangedFromLastBuild),
-          new Set(Object.keys(currentRepoInfo.changedFilesInWorkspace)),
-        ),
-        await filesChangedFromCommitToCommit(
-          directory,
-          lastBuildInfo.commit,
-          currentRepoInfo.commit,
-        ),
-      ),
-    )
+    filesChangedSinceLastSuccesfulBuild.forEach(f => filesChanged.push(f))
+
+    for (const {file, hash} of changedFilesInWorkspace) {
+      if (await changedInCurrentDirecory(file, hash, currentRepoInfo.changedFilesInWorkspace)) {
+        filesChanged.push(file)
+      }
+    }
   }
+
+  for (const {file, hash} of currentRepoInfo.changedFilesInWorkspace) {
+    filesChanged.push(file)
+  }
+
+  return filesChanged
 }
 
 async function readHashesOfFiles(directory, files) {
