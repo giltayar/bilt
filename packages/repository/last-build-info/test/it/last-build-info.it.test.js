@@ -12,30 +12,36 @@ describe('last-build-info', () => {
   describe.only('filesChangedSinceLastBuild and savePackageLastBuildInfo', () => {
     it('should return undefined when no .bilt folder', async () => {
       const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
-      const buildInfo = buildInfoMaker({config: {directory: gitDir}})
-      const artifacts = {a: {path: 'a'}, b: {path: 'b'}}
+      const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
+      const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}]
 
-      expect(await buildInfo.filesChangedSinceLastBuild({artifacts})).to.eql({a: [], b: []})
+      expect(await buildInfo.filesChangedSinceLastBuild({artifacts})).to.eql({
+        a: undefined,
+        b: undefined,
+      })
     })
 
     it('should enable saving and re-reading', async () => {
       const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
-      const buildInfo = buildInfoMaker({config: {directory: gitDir}})
-      const artifacts = {a: {path: 'a'}, b: {path: 'b'}}
+      const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
+      const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}]
 
       await buildInfo.savePackageLastBuildInfo({
         artifactPath: 'a',
         packageFilesChangedSinceLastBuild: [],
       })
 
-      expect(await buildInfo.filesChangedSinceLastBuild({artifacts})).to.deep.equal({a: [], b: []})
+      expect(await buildInfo.filesChangedSinceLastBuild({artifacts})).to.eql({
+        a: undefined,
+        b: undefined,
+      })
     })
   })
 
   describe('findChangesInCurrentRepo', () => {
     it('should show no changes in files on an untouched workspace', async () => {
       const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
-      const buildInfo = buildInfoMaker({config: {directory: gitDir}})
+      const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
 
       const changes = await buildInfo.findChangesInCurrentRepo(gitDir)
 
@@ -45,7 +51,7 @@ describe('last-build-info', () => {
 
     it('should show file changes in one file that we touch', async () => {
       const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
-      const buildInfo = buildInfoMaker({config: {directory: gitDir}})
+      const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
 
       const lastBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
@@ -60,7 +66,7 @@ describe('last-build-info', () => {
 
     it('should show file changes in an added file', async () => {
       const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
-      const buildInfo = buildInfoMaker({config: {directory: gitDir}})
+      const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
 
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
       await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'lalala')
@@ -78,7 +84,7 @@ describe('last-build-info', () => {
   describe('calculateChangesToBuildSinceLastBuild', () => {
     it('should show only changed files if on same commit', async () => {
       const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
-      const buildInfo = buildInfoMaker({config: {directory: gitDir}})
+      const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
 
       const lastBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
 
@@ -106,7 +112,7 @@ describe('last-build-info', () => {
 
     it('should work even if has more than one commit', async () => {
       const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
-      const buildInfo = buildInfoMaker({config: {directory: gitDir}})
+      const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
 
       const firstBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
 
@@ -132,7 +138,7 @@ describe('last-build-info', () => {
 
     it('should rebuild a reverted file', async () => {
       const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
-      const buildInfo = buildInfoMaker({config: {directory: gitDir}})
+      const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
 
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
       await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'lalala2')
@@ -152,7 +158,7 @@ describe('last-build-info', () => {
 
     it('should ignore a deleted file', async () => {
       const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
-      const buildInfo = buildInfoMaker({config: {directory: gitDir}})
+      const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
 
       await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
       await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'lalala2')
@@ -173,7 +179,7 @@ describe('last-build-info', () => {
     describe('.biltignore', () => {
       it('should work in root', async () => {
         const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
-        const buildInfo = buildInfoMaker({config: {directory: gitDir}})
+        const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
 
         const firstBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
 
@@ -191,7 +197,7 @@ describe('last-build-info', () => {
 
       it('should override in subfolder', async () => {
         const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
-        const buildInfo = buildInfoMaker({config: {directory: gitDir}})
+        const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
 
         const firstBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
 

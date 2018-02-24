@@ -3,7 +3,6 @@ const fs = require('fs')
 const path = require('path')
 const crypto = require('crypto')
 const assert = require('assert')
-const readdir = require('recursive-readdir')
 const childProcess = require('child_process')
 const {promisify: p} = require('util')
 const makeDir = require('make-dir')
@@ -12,18 +11,19 @@ const ignore = require('ignore')
 const {git: {findChangedFiles: gitFindChangedFiles}} = require('jest-changed-files')
 
 module.exports = async ({config: {directory}}) => {
+  const commit = gitRepoInfo(directory).sha
   return {
     // returns {[artifactPath]: [filesChangedSinceLastBuild]}
     async filesChangedSinceLastBuild({artifacts}) {
       const lastBuildInfo = await Promise.all(
         artifacts.map(async artifact => {
-          const biltJson = await readBiltJson(path.join(directory, artifact.packagePath))
+          const biltJson = await readBiltJson(path.join(directory, artifact.path))
 
           return {path: artifact.path, ...biltJson}
         }),
       )
 
-      const currentRepoInfo = await findChangesInCurrentRepo(directory)
+      const currentRepoInfo = await findChangesInCurrentRepo(directory, commit)
 
       return await calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, currentRepoInfo)
     },
@@ -63,9 +63,9 @@ async function readBiltJson(packageDirectory) {
   }
 }
 
-async function findChangesInCurrentRepo(directory) {
+async function findChangesInCurrentRepo(directory, commit) {
   return {
-    commit: gitRepoInfo(directory).sha,
+    commit,
     changedFilesInWorkspace: await readHashesOfFiles(
       directory,
       await filterBybiltIgnore(
@@ -83,13 +83,14 @@ async function calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, cur
     const filesChanged = []
     const {commit, changedFilesInWorkspace, path} = artifactInfo
 
-    if (commit === currentRepoInfo.commit) {
+    if (commit === undefined) {
+      filesChangedByArtifactPath[path] = undefined
+    } else if (commit === currentRepoInfo.commit) {
       const filesChangedSinceLastSuccesfulBuild = determineChangedFiles(
         currentRepoInfo.changedFilesInWorkspace,
         lastBuildInfo.changedFilesInWorkspace,
       )
-      filesChangedSinceLastSuccesfulBuild.forEach(f => filesChanged.push(f))
-      continue
+      filesChangedByArtifactPath[path] = filesChangedSinceLastSuccesfulBuild
     } else {
       const filesChangedSinceLastSuccesfulBuild = filesChangedFromCommitToCommit(
         directory,

@@ -4,9 +4,7 @@ const {exec, execFile} = require('child_process')
 const {promisify: p} = require('util')
 const {expect} = require('chai')
 const cpr = require('cpr')
-const getNpmToken = require('get-npm-token')
 const pluginImport = require('plugin-import')
-const {fileContents, writeFile} = require('../utils/file-utils')
 
 async function setupBuildDir(
   sourceDirectoryOfCommits,
@@ -118,40 +116,7 @@ async function setupFolder(sourceDirectory) {
   return tmpDir
 }
 
-async function adjustNpmRegistryInfoInRepo(
-  buildDir,
-  hostNpmRegistryAddress,
-  networkNpmRegistryAddress = hostNpmRegistryAddress,
-) {
-  const npmToken = await p(getNpmToken)(
-    `http://${hostNpmRegistryAddress}/`,
-    'npm-user',
-    'gil@tayar.org',
-    'npm-user-password',
-  )
-  const biltRc = await fileContents(buildDir, 'bilt.config.js')
-
-  const modifiedbiltRc = biltRc
-    .replace(/localhost\:4873/g, networkNpmRegistryAddress)
-    .replace('NPM_TOKEN', npmToken)
-
-  await writeFile(modifiedbiltRc, buildDir, 'bilt.config.js')
-}
-
-async function checkVersionExists(pkg, version, npmRegistryAddress) {
-  const {stdout} = await p(execFile)('npm', [
-    'view',
-    `${pkg}@${version}`,
-    '--registry',
-    `http://${npmRegistryAddress}/`,
-  ])
-
-  expect(stdout).to.include(version)
-}
-
 module.exports = {
   setupFolder,
   setupBuildDir,
-  adjustNpmRegistryInfoInRepo,
-  checkVersionExists,
 }

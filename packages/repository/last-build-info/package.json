@@ -29,17 +29,18 @@
     "debug": "^3.0.0",
     "git-repo-info": "^1.4.1",
     "ignore": "^3.3.7",
-    "jest-changed-files": "^22.2.0",
-    "make-dir": "^1.2.0",
-    "recursive-readdir": "^2.2.2"
+    "jest-changed-files": "^20.0.3",
+    "make-dir": "^1.2.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
+    "cpr": "^3.0.1",
     "eslint": "^4.2.0",
     "eslint-plugin-mocha-no-only": "0.0.5",
     "eslint-plugin-node": "^5.2.1",
     "eslint-plugin-prettier": "^2.1.2",
     "mocha": "^3.5.0",
+    "plugin-import": "^1.0.8",
     "prettier": "^1.5.2"
   }
 }
