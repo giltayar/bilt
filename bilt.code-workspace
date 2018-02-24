@@ -4,9 +4,6 @@
 			"path": "."
 		},
 		{
-			"path": "packages/npm/npm-binary-runner"
-		},
-		{
 			"path": "packages/npm/npm-build-job"
 		},
 		{
@@ -26,9 +23,16 @@
 		},
 		{
 			"path": "packages/repository/repo-build-job"
+		},
+		{
+			"path": "packages/repository/last-build-info"
+		},
+		{
+			"path": "packages/agents/local-docker-agent"
 		}
 	],
 	"settings": {
-		"javascript.validate.enable": false
+		"javascript.validate.enable": false,
+		"mocha.enabled": true
 	}
 }

@@ -1,8 +1,8 @@
 {
-  "name": "@bilt/templatetemplate",
+  "name": "@bilt/last-build-info",
   "version": "1.0.0",
   "description": "",
-  "main": "src/templatetemplate.js",
+  "main": "src/last-build-info.js",
   "engines": {
     "node": ">=8.0.0"
   },
@@ -26,7 +26,12 @@
     "type": "git"
   },
   "dependencies": {
-    "debug": "^3.0.0"
+    "debug": "^3.0.0",
+    "git-repo-info": "^1.4.1",
+    "ignore": "^3.3.7",
+    "jest-changed-files": "^22.2.0",
+    "make-dir": "^1.2.0",
+    "recursive-readdir": "^2.2.2"
   },
   "devDependencies": {
     "chai": "^4.1.2",

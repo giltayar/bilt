@@ -1,5 +1,4 @@
 'use strict'
-const path = require('path')
 const {
   artifactsToBuildFromChange,
   buildsThatCanBeBuilt,
@@ -7,10 +6,23 @@ const {
 } = require('@bilt/artifact-dependency-graph')
 const debug = require('debug')('bilt:repo-build-job')
 
-module.exports = () => {
+module.exports = ({plugins: [lastBuildInfo]}) => {
   return {
     async setupBuildSteps({state, awakenedFrom, job}) {
       debug('running job repo-build-job')
+
+      const filesChangedSinceLastBuild =
+        state.filesChangedSinceLastBuild ||
+        (await lastBuildInfo.filesChangedSinceLastBuild({artifacts: job.artifacts}))
+      state.filesChangedSinceLastBuild = filesChangedSinceLastBuild
+
+      if (awakenedFrom && awakenedFrom.result.success) {
+        const artifact = awakenedFrom.job.artifact
+        await lastBuildInfo.savePackageLastBuildInfo({
+          packagePage: artifact.path,
+          packageFilesChangedSinceLastBuild: filesChangedSinceLastBuild[artifact.path],
+        })
+      }
 
       return {
         buildContext: {
@@ -18,7 +30,7 @@ module.exports = () => {
           awakenedFrom,
           initialAllArtifacts: job.artifacts,
           linkDependencies: job.linkDependencies,
-          filesChangedSinceLastBuild: job.filesChangedSinceLastBuild,
+          filesChangedSinceLastBuild,
         },
       }
     },
@@ -48,10 +60,11 @@ module.exports = () => {
       const artifactToBuild = artifactsToBuild[0]
 
       debug('building artifact %s', artifactToBuild)
+      const artifact = state.allArtifacts.find(a => a.name === artifactToBuild)
       const artifactJob = createJobFromArtifact(
-        state.allArtifacts.find(a => a.name === artifactToBuild),
+        artifact,
         linkDependencies ? state.allArtifacts : undefined,
-        filesChangedSinceLastBuild,
+        filesChangedSinceLastBuild[artifact.path].filesChangedInWorkspace,
       )
 
       debug('decided to run sub-job %o', artifactJob)
@@ -62,6 +75,7 @@ module.exports = () => {
     },
   }
 }
+module.exports.plugins = ['lastBuildInfo']
 
 function determineArtifactsThatAreAlreadyBuilt(awakenedFrom, state) {
   return awakenedFrom && awakenedFrom.result.success
@@ -77,20 +91,14 @@ function determineArtifactsThatAreAlreadyBuilt(awakenedFrom, state) {
 
 function artifactsFromChanges(artifacts, filesChangedSinceLastBuild) {
   return artifacts
-    .filter(
-      artifact =>
-        !filesChangedSinceLastBuild ||
-        filesChangedSinceLastBuild.find(file => file.startsWith(artifact.path + '/')),
-    )
+    .filter(artifact => !!filesChangedSinceLastBuild[artifact.path])
     .map(artifact => artifact.name)
 }
 
-const createJobFromArtifact = (artifact, artifacts, filesChangedSinceLastBuild) => ({
+const createJobFromArtifact = (artifact, artifacts, artifactFilesChanged) => ({
   kind: artifact.type,
   artifact,
   dependencies: artifacts ? artifact.dependencies : [],
   artifacts,
-  filesChangedSinceLastBuild:
-    filesChangedSinceLastBuild &&
-    filesChangedSinceLastBuild.map(f => path.relative(artifact.path, f)),
+  filesChangedSinceLastBuild: artifactFilesChanged,
 })

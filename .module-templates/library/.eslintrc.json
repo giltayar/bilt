@@ -11,9 +11,11 @@
             "experimentalObjectRestSpread": true
         }
     },
+    "extends": ["plugin:node/recommended"],
     "plugins": [
         "prettier",
-        "mocha-no-only"
+        "mocha-no-only",
+        "node"
     ],
     "rules": {
         "prettier/prettier": [
@@ -28,13 +30,15 @@
                 "jsxBracketSameLine": true
             }
         ],
+        "no-process-exit": "off",
         "no-const-assign": "warn",
         "no-this-before-super": "warn",
         "no-undef": "warn",
         "no-unreachable": "warn",
-        "no-unused-vars": ["warn", {"argsIgnorePattern": "^_"}],
+        "no-unused-vars": ["warn", {"varsIgnorePattern": "^_", "args": "all", "argsIgnorePattern": "^_"}],
         "constructor-super": "warn",
         "valid-typeof": "warn",
-        "mocha-no-only/mocha-no-only": "error"
+        "mocha-no-only/mocha-no-only": "error",
+        "node/exports-style": ["error", "module.exports"]
     }
 }
