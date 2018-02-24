@@ -20,7 +20,7 @@ module.exports = ({plugins: [lastBuildInfo]}) => {
         const artifact = awakenedFrom.job.artifact
         await lastBuildInfo.savePackageLastBuildInfo({
           packagePage: artifact.path,
-          packageFilesChangedSinceLastBuild: filesChangedSinceLastBuild[artifact.path],
+          artifactFilesChangedSinceLastBuild: filesChangedSinceLastBuild[artifact.path],
         })
       }
 

@@ -17,7 +17,7 @@ module.exports = async ({config: {directory}}) => {
     async filesChangedSinceLastBuild({artifacts}) {
       const lastBuildInfo = await Promise.all(
         artifacts.map(async artifact => {
-          const biltJson = await readBiltJson(path.join(directory, artifact.path))
+          const biltJson = await readBiltJson(path.join(directory, '.bilt', artifact.path))
 
           return {path: artifact.path, ...biltJson}
         }),
@@ -45,18 +45,19 @@ module.exports = async ({config: {directory}}) => {
   }
 }
 
-async function readBiltJson(packageDirectory) {
+async function readBiltJson(artifactDirectory) {
   // {commit, changedFilesInWorkspace}
   try {
-    return JSON.parse(await p(fs.readFile)(path.join(packageDirectory, 'bilt.json')))
-      .lastSuccessfulBuild
+    const biltJson = JSON.parse(await p(fs.readFile)(path.join(artifactDirectory, 'bilt.json')))
+
+    return biltJson.lastSuccessfulBuild
   } catch (err) {
     if (err.code === 'ENOEXIST') {
       return undefined
     } else if (err.code === 'ENOENT') {
       return undefined
     } else if (err instanceof SyntaxError) {
-      console.error('Could not parse .bilt/last-build.json. Building all.')
+      console.error('Could not parse .bilt/bilt.json. Building all.')
       return undefined
     }
     throw err
@@ -88,7 +89,7 @@ async function calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, cur
     } else if (commit === currentRepoInfo.commit) {
       const filesChangedSinceLastSuccesfulBuild = determineChangedFiles(
         currentRepoInfo.changedFilesInWorkspace,
-        lastBuildInfo.changedFilesInWorkspace,
+        artifactInfo.changedFilesInWorkspace,
       )
       filesChangedByArtifactPath[path] = filesChangedSinceLastSuccesfulBuild
     } else {
@@ -158,6 +159,9 @@ async function readHashOfFile(file) {
 }
 
 function determineChangedFiles(currentFiles, lastBuildFiles) {
+  if (lastBuildFiles === undefined) {
+    return Object.keys(currentFiles)
+  }
   const filesChangedFromLastBuild = Object.entries(currentFiles)
     .filter(([file, hash]) => !lastBuildFiles[file] || lastBuildFiles[file] !== hash)
     .map(([file]) => file)
@@ -195,6 +199,7 @@ async function filterFileBybiltIgnore(directory, file) {
 
 async function findbiltIgnorePattern(directory, file) {
   const ignoreMask = ignore()
+  ignoreMask.add('.bilt')
   for (const dir of directoriesBetween(directory, file)) {
     try {
       ignoreMask.add(await p(fs.readFile)(path.join(dir, '.biltignore'), {encoding: 'utf-8'}))
