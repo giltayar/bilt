@@ -64,7 +64,7 @@ module.exports = ({plugins: [lastBuildInfo]}) => {
       const artifactJob = createJobFromArtifact(
         artifact,
         linkDependencies ? state.allArtifacts : undefined,
-        filesChangedSinceLastBuild[artifact.path].filesChangedInWorkspace,
+        Object.keys(filesChangedSinceLastBuild[artifact.path]),
       )
 
       debug('decided to run sub-job %o', artifactJob)

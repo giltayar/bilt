@@ -28,7 +28,7 @@ module.exports = async ({config: {directory}}) => {
       return await calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, currentRepoInfo)
     },
 
-    async savePackageLastBuildInfo({artifactPath, packageFilesChangedSinceLastBuild}) {
+    async savePackageLastBuildInfo({artifactPath, artifactFilesChangedSinceLastBuild}) {
       const biltJsonDir = path.join(directory, '.bilt', artifactPath)
       await makeDir(biltJsonDir)
 
@@ -37,7 +37,7 @@ module.exports = async ({config: {directory}}) => {
         JSON.stringify({
           lastSuccessfulBuild: {
             commit,
-            changedFilesInWorkspace: packageFilesChangedSinceLastBuild,
+            changedFilesInWorkspace: artifactFilesChangedSinceLastBuild,
           },
         }),
       )
@@ -81,7 +81,6 @@ async function calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, cur
   const filesChangedByArtifactPath = {}
 
   for (const artifactInfo of lastBuildInfo) {
-    const filesChanged = []
     const {commit, changedFilesInWorkspace, path} = artifactInfo
 
     if (commit === undefined) {
@@ -98,18 +97,17 @@ async function calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, cur
         commit,
         currentRepoInfo.commit,
       )
-
-      filesChangedSinceLastSuccesfulBuild.forEach(f => filesChanged.push(f))
+      const filesChanged = await readHashesOfFiles(directory, filesChangedSinceLastSuccesfulBuild)
 
       for (const {file, hash} of changedFilesInWorkspace) {
         if (await changedInCurrentDirecory(file, hash, currentRepoInfo.changedFilesInWorkspace)) {
-          filesChanged.push(file)
+          filesChanged[file] = hash
         }
       }
 
-      for (const {file} of currentRepoInfo.changedFilesInWorkspace) {
+      for (const [file, hash] of Object.entries(currentRepoInfo.changedFilesInWorkspace)) {
         if (file.startsWith(path.join(directory, artifactInfo.path))) {
-          filesChanged.push(file)
+          filesChanged[file] = hash
         }
       }
 
@@ -160,15 +158,23 @@ async function readHashOfFile(file) {
 
 function determineChangedFiles(currentFiles, lastBuildFiles) {
   if (lastBuildFiles === undefined) {
-    return Object.keys(currentFiles)
+    return currentFiles
   }
-  const filesChangedFromLastBuild = Object.entries(currentFiles)
-    .filter(([file, hash]) => !lastBuildFiles[file] || lastBuildFiles[file] !== hash)
-    .map(([file]) => file)
+  const filesChangedFromLastBuild = fromEntries(
+    Object.entries(currentFiles).filter(
+      ([file, hash]) => !lastBuildFiles[file] || lastBuildFiles[file] !== hash,
+    ),
+  )
 
-  const filesDeletedFromLastBuild = Object.keys(lastBuildFiles).filter(file => !currentFiles[file])
+  const filesDeletedFromLastBuild = fromEntries(
+    Object.entries(lastBuildFiles).filter(([file]) => !currentFiles[file]),
+  )
 
-  return filesChangedFromLastBuild.concat(filesDeletedFromLastBuild)
+  return {...filesChangedFromLastBuild, ...filesDeletedFromLastBuild}
+}
+
+function fromEntries(entries) {
+  return entries.reduce((acc, [key, value]) => ({...acc, [key]: value}), {})
 }
 
 async function filesChangedFromCommitToCommit(directory, fromCommit, toCommit) {
