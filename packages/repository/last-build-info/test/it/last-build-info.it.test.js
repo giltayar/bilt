@@ -90,7 +90,7 @@ describe('last-build-info', () => {
       expect(Object.keys(changes.a)).to.have.members(['a/c.txt', 'a/a.txt'])
     })
 
-    it.only('should show only changed files if on same commit', async () => {
+    it('should show only changed files if on same commit', async () => {
       const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
       const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
       const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}]
@@ -114,30 +114,36 @@ describe('last-build-info', () => {
       expect(Object.keys(changes2['a'])).to.eql([])
     })
 
-    it('should work even if has more than one commit', async () => {
+    it.only('should work even if has more than one commit', async () => {
       const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
       const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
+      const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}]
 
-      const firstBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
+      const fcslb = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      await buildInfo.savePackageLastBuildInfo({
+        artifactPath: 'a',
+        artifactFilesChangedSinceLastBuild: fcslb['a'],
+      })
 
-      await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
-      await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'lalala')
+      await p(fs.writeFile)(path.join(gitDir, 'a/a.txt'), 'lalala')
+      await p(fs.writeFile)(path.join(gitDir, 'a/c.txt'), 'lalala')
 
       await p(execFile)('git', ['add', '.'], {cwd: gitDir})
-      await p(execFile)('git', ['commit', '-am', 'sadfsaf'], {cwd: gitDir})
+      await p(execFile)('git', ['commit', '-m', 'sadfsaf'], {cwd: gitDir})
 
-      await p(fs.writeFile)(path.join(gitDir, 'd.txt'), 'zzz')
-      await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'abc')
+      await p(fs.writeFile)(path.join(gitDir, 'a/d.txt'), 'zzz')
+      await p(fs.writeFile)(path.join(gitDir, 'a/c.txt'), 'abc')
 
-      const currentRepoInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
+      const changes = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      expect(Object.keys(changes['a'])).to.have.members(['a/a.txt', 'a/c.txt', 'a/d.txt'])
 
-      const changes = await buildInfo.calculateFilesChangedSinceLastBuild(
-        gitDir,
-        firstBuildInfo,
-        currentRepoInfo,
-      )
+      await buildInfo.savePackageLastBuildInfo({
+        artifactPath: 'a',
+        artifactFilesChangedSinceLastBuild: changes['a'],
+      })
 
-      expect(changes).to.have.members(['a.txt', 'c.txt', 'd.txt'])
+      const changes2 = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      expect(Object.keys(changes2['a'])).to.eql([])
     })
 
     it('should rebuild a reverted file', async () => {

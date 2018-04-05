@@ -11,7 +11,6 @@ const ignore = require('ignore')
 const {git: {findChangedFiles: gitFindChangedFiles}} = require('jest-changed-files')
 
 module.exports = async ({config: {directory}}) => {
-  const commit = gitRepoInfo(directory).sha
   return {
     // returns {[artifactPath]: [filesChangedSinceLastBuild]}
     async filesChangedSinceLastBuild({artifacts}) {
@@ -22,13 +21,14 @@ module.exports = async ({config: {directory}}) => {
           return {path: artifact.path, ...biltJson}
         }),
       )
-
+      const commit = gitRepoInfo(directory).sha
       const currentRepoInfo = await findChangesInCurrentRepo(directory, commit)
 
       return await calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, currentRepoInfo)
     },
 
     async savePackageLastBuildInfo({artifactPath, artifactFilesChangedSinceLastBuild}) {
+      const commit = gitRepoInfo(directory).sha
       const biltJsonDir = path.join(directory, '.bilt', artifactPath)
       await makeDir(biltJsonDir)
 
@@ -69,9 +69,8 @@ async function findChangesInCurrentRepo(directory, commit) {
     commit,
     changedFilesInWorkspace: await readHashesOfFiles(
       directory,
-      await filterBybiltIgnore(
-        directory,
-        gitRepoInfo(directory).sha ? await gitFindChangedFiles(directory) : [],
+      (await filterBybiltIgnore(directory, commit ? await gitFindChangedFiles(directory) : [])).map(
+        f => path.relative(directory, f),
       ),
     ),
   }
@@ -81,47 +80,47 @@ async function calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, cur
   const filesChangedByArtifactPath = {}
 
   for (const artifactInfo of lastBuildInfo) {
-    const {commit, changedFilesInWorkspace, path} = artifactInfo
+    const {commit, changedFilesInWorkspace, path: artifactPath} = artifactInfo
 
     if (commit === undefined) {
-      filesChangedByArtifactPath[path] = undefined
+      filesChangedByArtifactPath[artifactPath] = undefined
     } else if (commit === currentRepoInfo.commit) {
       const filesChangedSinceLastSuccesfulBuild = determineChangedFiles(
         currentRepoInfo.changedFilesInWorkspace,
-        artifactInfo.changedFilesInWorkspace,
+        changedFilesInWorkspace,
       )
-      filesChangedByArtifactPath[path] = filesChangedSinceLastSuccesfulBuild
+      filesChangedByArtifactPath[artifactPath] = filesChangedSinceLastSuccesfulBuild
     } else {
-      const filesChangedSinceLastSuccesfulBuild = filesChangedFromCommitToCommit(
+      const filesChangedSinceLastSuccesfulBuild = await filesChangedFromCommitToCommit(
         directory,
         commit,
         currentRepoInfo.commit,
       )
       const filesChanged = await readHashesOfFiles(directory, filesChangedSinceLastSuccesfulBuild)
 
-      for (const {file, hash} of changedFilesInWorkspace) {
-        if (await changedInCurrentDirecory(file, hash, currentRepoInfo.changedFilesInWorkspace)) {
+      for (const {file, hash} of changedFilesInWorkspace || []) {
+        if (await changedInCurrentDirectory(file, hash, currentRepoInfo.changedFilesInWorkspace)) {
           filesChanged[file] = hash
         }
       }
 
       for (const [file, hash] of Object.entries(currentRepoInfo.changedFilesInWorkspace)) {
-        if (file.startsWith(path.join(directory, artifactInfo.path))) {
+        if (await changedInCurrentDirectory(file, hash, changedFilesInWorkspace || {})) {
           filesChanged[file] = hash
         }
       }
 
-      filesChangedByArtifactPath[path] = filesChanged
+      filesChangedByArtifactPath[artifactPath] = filesChanged
     }
   }
 
   return filesChangedByArtifactPath
 
-  async function changedInCurrentDirecory(file, hash, currentChangedFilesInWorkspace) {
+  async function changedInCurrentDirectory(file, hash, currentChangedFilesInWorkspace) {
     if (currentChangedFilesInWorkspace[file] !== undefined) {
       return currentChangedFilesInWorkspace[file] === hash
     } else {
-      const fileHash = await readHashOfFile(file)
+      const fileHash = await readHashOfFile(path.resolve(directory, file))
 
       return fileHash === hash
     }
@@ -130,10 +129,7 @@ async function calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, cur
 
 async function readHashesOfFiles(directory, files) {
   const hashAndFiles = await Promise.all(
-    files.map(async file => [
-      path.relative(directory, file),
-      await readHashOfFile(path.resolve(directory, file)),
-    ]),
+    files.map(async file => [file, await readHashOfFile(path.resolve(directory, file))]),
   )
 
   return hashAndFiles.reduce(
@@ -178,17 +174,19 @@ function fromEntries(entries) {
 }
 
 async function filesChangedFromCommitToCommit(directory, fromCommit, toCommit) {
-  return new Set(
-    (await p(childProcess.execFile)(
-      'git',
-      ['diff-tree', '--no-commit-id', '--name-only', '-r', fromCommit, toCommit],
-      {
-        cwd: directory,
-      },
-    )).stdout
-      .split('\n')
-      .filter(l => !!l),
-  )
+  return [
+    ...new Set(
+      (await p(childProcess.execFile)(
+        'git',
+        ['diff-tree', '--no-commit-id', '--name-only', '-r', fromCommit, toCommit],
+        {
+          cwd: directory,
+        },
+      )).stdout
+        .split('\n')
+        .filter(l => !!l),
+    ),
+  ]
 }
 
 async function filterBybiltIgnore(directory, files) {
