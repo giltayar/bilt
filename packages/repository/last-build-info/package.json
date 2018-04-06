@@ -30,6 +30,7 @@
     "git-repo-info": "^1.4.1",
     "ignore": "^3.3.7",
     "jest-changed-files": "^20.0.3",
+    "lodash.pickby": "^4.6.0",
     "make-dir": "^1.2.0"
   },
   "devDependencies": {

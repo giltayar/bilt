@@ -33,6 +33,7 @@
     "git-repo-info": "^1.4.1",
     "ignore": "^3.3.3",
     "jest-changed-files": "^20.0.3",
+    "lodash.pickby": "^4.6.0",
     "make-dir": "^1.0.0",
     "plugin-import": "^1.0.7",
     "recursive-readdir": "^2.2.2",

@@ -6,6 +6,7 @@ const assert = require('assert')
 const childProcess = require('child_process')
 const {promisify: p} = require('util')
 const makeDir = require('make-dir')
+const pickBy_ = require('lodash.pickby')
 const gitRepoInfo = require('git-repo-info')
 const ignore = require('ignore')
 const {git: {findChangedFiles: gitFindChangedFiles}} = require('jest-changed-files')
@@ -32,12 +33,17 @@ module.exports = async ({config: {directory}}) => {
       const biltJsonDir = path.join(directory, '.bilt', artifactPath)
       await makeDir(biltJsonDir)
 
+      const filesChangedInWorkspace = new Set(await listFilesChangedInWorkspace(directory, commit))
+      const workspaceFilesThatWereBuilt =
+        artifactFilesChangedSinceLastBuild &&
+        pickBy_(artifactFilesChangedSinceLastBuild, (_hash, f) => filesChangedInWorkspace.has(f))
+
       await p(fs.writeFile)(
         path.join(biltJsonDir, 'bilt.json'),
         JSON.stringify({
           lastSuccessfulBuild: {
             commit,
-            changedFilesInWorkspace: artifactFilesChangedSinceLastBuild,
+            changedFilesInWorkspace: workspaceFilesThatWereBuilt,
           },
         }),
       )
@@ -69,11 +75,16 @@ async function findChangesInCurrentRepo(directory, commit) {
     commit,
     changedFilesInWorkspace: await readHashesOfFiles(
       directory,
-      (await filterBybiltIgnore(directory, commit ? await gitFindChangedFiles(directory) : [])).map(
-        f => path.relative(directory, f),
-      ),
+      await listFilesChangedInWorkspace(directory, commit),
     ),
   }
+}
+
+async function listFilesChangedInWorkspace(directory, commit) {
+  return (await filterBybiltIgnore(
+    directory,
+    commit ? await gitFindChangedFiles(directory) : [],
+  )).map(f => path.relative(directory, f))
 }
 
 async function calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, currentRepoInfo) {
