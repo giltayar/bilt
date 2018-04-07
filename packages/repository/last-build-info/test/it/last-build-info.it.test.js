@@ -114,7 +114,7 @@ describe('last-build-info', () => {
       expect(Object.keys(changes2['a'])).to.eql([])
     })
 
-    it.only('should work even if has more than one commit', async () => {
+    it('should work even if has more than one commit', async () => {
       const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
       const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
       const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}]
@@ -149,41 +149,60 @@ describe('last-build-info', () => {
     it('should rebuild a reverted file', async () => {
       const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
       const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
+      const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}]
 
-      await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
-      await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'lalala2')
+      await p(fs.writeFile)(path.join(gitDir, 'a/a.txt'), 'lalala')
+      await p(fs.writeFile)(path.join(gitDir, 'a/c.txt'), 'lalala')
 
-      const secondBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
+      const changes = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      expect(changes['a']).to.be.undefined
+      await buildInfo.savePackageLastBuildInfo({
+        artifactPath: 'a',
+        artifactFilesChangedSinceLastBuild: changes['a'],
+      })
 
-      await p(execFile)('git', ['checkout', '--', 'a.txt'], {cwd: gitDir})
+      await p(execFile)('git', ['checkout', '--', 'a/a.txt'], {cwd: gitDir})
 
-      const repoInfoAfterRevert = await buildInfo.findChangesInCurrentRepo(gitDir)
-      const changesAfterRevert = await buildInfo.calculateFilesChangedSinceLastBuild(
-        gitDir,
-        secondBuildInfo,
-        repoInfoAfterRevert,
-      )
-      expect(changesAfterRevert).to.have.members(['a.txt'])
+      const changesAfterRevert = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      expect(Object.keys(changesAfterRevert['a'])).to.eql(['a/a.txt'])
+    })
+
+    it('should deal with no changes after a first build', async () => {
+      const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
+      const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
+      const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}]
+
+      await p(fs.writeFile)(path.join(gitDir, 'a/a.txt'), 'lalala')
+      await p(fs.writeFile)(path.join(gitDir, 'a/c.txt'), 'lalala2')
+
+      const changes = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      await buildInfo.savePackageLastBuildInfo({
+        artifactPath: 'a',
+        artifactFilesChangedSinceLastBuild: changes['a'],
+      })
+
+      const changesAfterBuild = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      expect(Object.keys(changesAfterBuild['a'])).to.eql([])
     })
 
     it('should ignore a deleted file', async () => {
       const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
       const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
+      const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}]
 
-      await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
-      await p(fs.writeFile)(path.join(gitDir, 'c.txt'), 'lalala2')
+      await p(fs.writeFile)(path.join(gitDir, 'a/a.txt'), 'lalala')
+      await p(fs.writeFile)(path.join(gitDir, 'a/c.txt'), 'lalala2')
 
-      const secondBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
+      const changes = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      await buildInfo.savePackageLastBuildInfo({
+        artifactPath: 'a',
+        artifactFilesChangedSinceLastBuild: changes['a'],
+      })
 
-      await p(fs.unlink)(path.join(gitDir, 'a.txt'))
+      await p(fs.unlink)(path.join(gitDir, 'a/a.txt'))
 
-      const repoInfoAfterRevert = await buildInfo.findChangesInCurrentRepo(gitDir)
-      const changesAfterRevert = await buildInfo.calculateFilesChangedSinceLastBuild(
-        gitDir,
-        secondBuildInfo,
-        repoInfoAfterRevert,
-      )
-      expect(changesAfterRevert).to.have.members(['a.txt'])
+      const changesAfterDelete = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      expect(Object.keys(changesAfterDelete['a'])).to.have.members(['a/a.txt'])
     })
 
     describe('.biltignore', () => {

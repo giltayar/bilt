@@ -2,7 +2,6 @@ const fs = require('fs')
 const path = require('path')
 const {exec, execFile} = require('child_process')
 const {promisify: p} = require('util')
-const {expect} = require('chai')
 const cpr = require('cpr')
 const pluginImport = require('plugin-import')
 

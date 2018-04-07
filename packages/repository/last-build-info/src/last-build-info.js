@@ -34,9 +34,9 @@ module.exports = async ({config: {directory}}) => {
       await makeDir(biltJsonDir)
 
       const filesChangedInWorkspace = new Set(await listFilesChangedInWorkspace(directory, commit))
-      const workspaceFilesThatWereBuilt =
-        artifactFilesChangedSinceLastBuild &&
-        pickBy_(artifactFilesChangedSinceLastBuild, (_hash, f) => filesChangedInWorkspace.has(f))
+      const workspaceFilesThatWereBuilt = artifactFilesChangedSinceLastBuild
+        ? pickBy_(artifactFilesChangedSinceLastBuild, (_hash, f) => filesChangedInWorkspace.has(f))
+        : await readHashesOfFiles(directory, [...filesChangedInWorkspace])
 
       await p(fs.writeFile)(
         path.join(biltJsonDir, 'bilt.json'),
@@ -109,7 +109,7 @@ async function calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, cur
       )
       const filesChanged = await readHashesOfFiles(directory, filesChangedSinceLastSuccesfulBuild)
 
-      for (const {file, hash} of changedFilesInWorkspace || []) {
+      for (const [file, hash] of Object.entries(changedFilesInWorkspace || {})) {
         if (await changedInCurrentDirectory(file, hash, currentRepoInfo.changedFilesInWorkspace)) {
           filesChanged[file] = hash
         }
