@@ -31,6 +31,7 @@ describe('local directory with publish use-case', () => {
       },
     },
     shouldPullImages: false,
+    brutallyKill: true,
   })
 
   it('should build the directory with all its packages', async () => {

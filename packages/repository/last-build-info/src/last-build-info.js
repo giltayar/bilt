@@ -11,7 +11,7 @@ const gitRepoInfo = require('git-repo-info')
 const ignore = require('ignore')
 const {git: {findChangedFiles: gitFindChangedFiles}} = require('jest-changed-files')
 
-module.exports = async ({config: {directory}}) => {
+module.exports = async ({directory}) => {
   return {
     // returns {[artifactPath]: [filesChangedSinceLastBuild]}
     async filesChangedSinceLastBuild({artifacts}) {

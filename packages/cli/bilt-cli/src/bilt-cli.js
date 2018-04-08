@@ -6,13 +6,6 @@ const cosmiConfig = require('cosmiconfig')
 const artifactFinder = require('@bilt/artifact-finder')
 const defaultbiltConfig = require('./default-biltrc')
 
-const {
-  readLastBuildInfo,
-  findChangesInCurrentRepo,
-  calculateFilesChangedSinceLastBuild,
-  saveLastBuildInfo,
-} = require('./last-build-info')
-
 module.exports = async function(directoryToBuild, repository) {
   const isRemoteRepo = repository
   const pimport = await createPimport(isRemoteRepo, directoryToBuild, repository)
@@ -21,21 +14,15 @@ module.exports = async function(directoryToBuild, repository) {
 
     const jobDispatcher = await pimport('jobDispatcher')
 
-    const filesChangedSinceLastBuild = await figureOutFilesChangedSinceLastBuild(directoryToBuild)
     const jobsToWaitFor = await runRepoBuildJob(
       pimport,
       directoryToBuild,
       repository,
       isRemoteRepo,
       jobDispatcher,
-      filesChangedSinceLastBuild,
     )
 
     await waitForJobs(pimport, jobsToWaitFor)
-
-    if (!isRemoteRepo) {
-      await saveLastBuildInfo(directoryToBuild, await findChangesInCurrentRepo(directoryToBuild))
-    }
   } finally {
     debug('finalizing plugins')
     await pimport.finalize()
@@ -81,46 +68,16 @@ async function configureEventsToOutputEventToStdout(pimport) {
   })
 }
 
-async function figureOutFilesChangedSinceLastBuild(directory) {
-  const lastBuildInfo = await readLastBuildInfo(directory)
-
-  if (!lastBuildInfo) {
-    return undefined
-  }
-  const fileChangesInCurrentRepo = await findChangesInCurrentRepo(directory)
-
-  const filesChangedSinceLastBuild = await calculateFilesChangedSinceLastBuild(
-    directory,
-    lastBuildInfo,
-    fileChangesInCurrentRepo,
-  )
-
-  return filesChangedSinceLastBuild
-}
-
-async function runRepoBuildJob(
-  pimport,
-  directoryToBuild,
-  repository,
-  isRemoteRepo,
-  jobDispatcher,
-  filesChangedSinceLastBuild,
-) {
-  if (filesChangedSinceLastBuild && filesChangedSinceLastBuild.length === 0) {
-    console.error('Nothing to build')
-    return
-  }
+async function runRepoBuildJob(pimport, directoryToBuild, repository, isRemoteRepo, jobDispatcher) {
   debug('fetching artifacts')
   const artifacts = await (await artifactFinder()).findArtifacts(directoryToBuild)
 
-  debug('building with file changes %o', filesChangedSinceLastBuild)
   return [
     await jobDispatcher.dispatchJob({
       kind: 'repository',
       repository,
       artifacts,
       linkDependencies: true,
-      filesChangedSinceLastBuild,
     }),
   ]
 }

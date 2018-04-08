@@ -12,14 +12,13 @@ module.exports = ({plugins: [lastBuildInfo]}) => {
       debug('running job repo-build-job')
 
       const filesChangedSinceLastBuild =
-        state.filesChangedSinceLastBuild ||
+        (state && state.filesChangedSinceLastBuild) ||
         (await lastBuildInfo.filesChangedSinceLastBuild({artifacts: job.artifacts}))
-      state.filesChangedSinceLastBuild = filesChangedSinceLastBuild
 
       if (awakenedFrom && awakenedFrom.result.success) {
         const artifact = awakenedFrom.job.artifact
         await lastBuildInfo.savePackageLastBuildInfo({
-          packagePage: artifact.path,
+          artifactPath: artifact.path,
           artifactFilesChangedSinceLastBuild: filesChangedSinceLastBuild[artifact.path],
         })
       }

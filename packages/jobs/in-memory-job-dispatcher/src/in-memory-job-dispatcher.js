@@ -14,11 +14,15 @@ module.exports = async ({pimport}) => {
 
     if (jobQueue.length > 1) return preparedJob
 
-    function nextJob() {
+    function nextJob(_, err) {
+      if (err) {
+        console.error(err)
+        return
+      }
       if (jobQueue.length === 0) return
       const job = jobQueue.shift()
 
-      runJob(job, {awakenedFrom, pimport, events, kvStore, dispatchJob}).then(nextJob, nextJob)
+      runJob(job, {awakenedFrom, pimport, events, kvStore, dispatchJob}).then(nextJob, err => nextJob(null, err))
     }
 
     nextJob()

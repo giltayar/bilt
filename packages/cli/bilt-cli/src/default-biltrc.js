@@ -6,6 +6,7 @@ module.exports = {
     'agent:docker': '@bilt/host-agent',
     jobState: '@bilt/in-memory-job-state',
     'builder:repository': {package: '@bilt/repo-build-job'},
+    lastBuildInfo: '@bilt/last-build-info',
     'builder:npm': {
       package: '@bilt/npm-build-job',
     },
