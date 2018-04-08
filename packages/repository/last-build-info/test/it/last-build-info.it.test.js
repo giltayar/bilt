@@ -9,7 +9,7 @@ const {setupBuildDir} = require('../utils/setup')
 const buildInfoMaker = require('../../src/last-build-info')
 
 describe('last-build-info', () => {
-  describe.only('repo changes', () => {
+  describe('repo changes', () => {
     it('should enable saving and re-reading on an initial folder', async () => {
       const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
       const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
@@ -209,44 +209,50 @@ describe('last-build-info', () => {
       it('should work in root', async () => {
         const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
         const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
+        const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}]
 
-        const firstBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
+        const changes = await buildInfo.filesChangedSinceLastBuild({artifacts})
+        await buildInfo.savePackageLastBuildInfo({
+          artifactPath: 'a',
+          artifactFilesChangedSinceLastBuild: changes['a'],
+        })
 
-        await p(fs.writeFile)(path.join(gitDir, 'ignore.txt'), 'lalala')
+        await p(fs.writeFile)(path.join(gitDir, 'a/ignore.txt'), 'lalala')
+        await p(fs.writeFile)(path.join(gitDir, 'a/not-ignore.txt'), 'lalala')
 
-        const secondBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
-
-        const changesAfterSecond = await buildInfo.calculateFilesChangedSinceLastBuild(
-          gitDir,
-          firstBuildInfo,
-          secondBuildInfo,
-        )
-        expect(changesAfterSecond).to.be.empty
+        const changes2 = await buildInfo.filesChangedSinceLastBuild({artifacts})
+        expect(Object.keys(changes2['a'])).to.eql(['a/not-ignore.txt'])
       })
 
-      it('should override in subfolder', async () => {
+      it('should override in subfolder (also multiple packages saved...)', async () => {
         const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
         const buildInfo = await buildInfoMaker({config: {directory: gitDir}})
+        const artifacts = [{name: 'a', path: 'a'}, {name: 'ignoramus', path: 'ignoramus'}]
 
-        const firstBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
+        const firstBuildInfo = await buildInfo.filesChangedSinceLastBuild({artifacts})
+        await buildInfo.savePackageLastBuildInfo({
+          artifactPath: 'a',
+          artifactFilesChangedSinceLastBuild: firstBuildInfo['a'],
+        })
+        await buildInfo.savePackageLastBuildInfo({
+          artifactPath: 'ignoramus',
+          artifactFilesChangedSinceLastBuild: firstBuildInfo['ignoramus'],
+        })
 
         await p(fs.writeFile)(path.join(gitDir, 'ignoramus/ignore.txt'), 'lalala')
+        await p(fs.writeFile)(path.join(gitDir, 'ignoramus/more/ignore.txt'), 'lalala')
         await p(fs.writeFile)(path.join(gitDir, 'ignoramus/a.txt'), 'lalala')
-        await p(fs.writeFile)(path.join(gitDir, 'a.txt'), 'lalala')
+        await p(fs.writeFile)(path.join(gitDir, 'a/a.txt'), 'lalala')
         await p(fs.writeFile)(path.join(gitDir, 'ignoramus/dontignore.txt'), 'lalala')
 
-        const secondBuildInfo = await buildInfo.findChangesInCurrentRepo(gitDir)
+        const changesAfterSecond = await buildInfo.filesChangedSinceLastBuild({artifacts})
 
-        const changesAfterSecond = await buildInfo.calculateFilesChangedSinceLastBuild(
-          gitDir,
-          firstBuildInfo,
-          secondBuildInfo,
-        )
-        expect(changesAfterSecond).to.have.members([
-          'a.txt',
+        expect(Object.keys(changesAfterSecond['ignoramus'])).to.have.members([
           'ignoramus/dontignore.txt',
-          'ignoramus/ignore.txt',
+          'ignoramus/a.txt',
+          'ignoramus/more/ignore.txt',
         ])
+        expect(Object.keys(changesAfterSecond['a'])).to.eql(['a/a.txt'])
       })
     })
   })

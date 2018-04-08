@@ -92,12 +92,16 @@ async function calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, cur
 
   for (const artifactInfo of lastBuildInfo) {
     const {commit, changedFilesInWorkspace, path: artifactPath} = artifactInfo
+    const artifactCurrentRepoChangedFilesInWorkspace = pickBy_(
+      currentRepoInfo.changedFilesInWorkspace,
+      (_hash, file) => file.startsWith(artifactPath + '/'),
+    )
 
     if (commit === undefined) {
       filesChangedByArtifactPath[artifactPath] = undefined
     } else if (commit === currentRepoInfo.commit) {
       const filesChangedSinceLastSuccesfulBuild = determineChangedFiles(
-        currentRepoInfo.changedFilesInWorkspace,
+        artifactCurrentRepoChangedFilesInWorkspace,
         changedFilesInWorkspace,
       )
       filesChangedByArtifactPath[artifactPath] = filesChangedSinceLastSuccesfulBuild
@@ -110,12 +114,14 @@ async function calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, cur
       const filesChanged = await readHashesOfFiles(directory, filesChangedSinceLastSuccesfulBuild)
 
       for (const [file, hash] of Object.entries(changedFilesInWorkspace || {})) {
-        if (await changedInCurrentDirectory(file, hash, currentRepoInfo.changedFilesInWorkspace)) {
+        if (
+          await changedInCurrentDirectory(file, hash, artifactCurrentRepoChangedFilesInWorkspace)
+        ) {
           filesChanged[file] = hash
         }
       }
 
-      for (const [file, hash] of Object.entries(currentRepoInfo.changedFilesInWorkspace)) {
+      for (const [file, hash] of Object.entries(artifactCurrentRepoChangedFilesInWorkspace)) {
         if (await changedInCurrentDirectory(file, hash, changedFilesInWorkspace || {})) {
           filesChanged[file] = hash
         }
