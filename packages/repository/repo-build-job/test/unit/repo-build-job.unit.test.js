@@ -10,7 +10,7 @@ describe('repo-build-job', function() {
 
     it('should execute a simple job', () => {
       const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}, {name: 'c', path: 'ccc'}]
-      const repoJob = {}
+      const repoJob = {filesChangedSinceLastBuild: {}}
 
       const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
 
@@ -20,7 +20,11 @@ describe('repo-build-job', function() {
     it('should execute only builds that have changed files', () => {
       const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}, {name: 'c', path: 'ccc'}]
       const repoJob = {
-        filesChangedSinceLastBuild: ['a/foo.js', 'ccc/x.js', 'ccc/z.z'],
+        filesChangedSinceLastBuild: {
+          a: {'a/foo.js': 'sha1afoo'},
+          b: {},
+          ccc: {'ccc/x.js': 'sha1cccx', 'ccc/z.z': 'sha1cccz'},
+        },
       }
 
       const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
@@ -36,7 +40,7 @@ describe('repo-build-job', function() {
         {name: 'd2', path: 'd', dependencies: []},
         {name: 'a', path: 'a'},
       ]
-      const repoJob = {}
+      const repoJob = {filesChangedSinceLastBuild: {}}
 
       const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
 
@@ -51,7 +55,7 @@ describe('repo-build-job', function() {
         {name: 'd2', path: 'd', dependencies: []},
         {name: 'a', path: 'a'},
       ]
-      const repoJob = {}
+      const repoJob = {filesChangedSinceLastBuild: {}}
 
       const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
 

@@ -45,6 +45,7 @@ module.exports = ({plugins: [lastBuildInfo]}) => {
     }) {
       state = state || {
         allArtifacts: initialAllArtifacts,
+        filesChangedSinceLastBuild,
         dependencyGraph: artifactsToBuildFromChange(
           createDependencyGraph(initialAllArtifacts),
           artifactsFromChanges(initialAllArtifacts, filesChangedSinceLastBuild),
@@ -64,7 +65,7 @@ module.exports = ({plugins: [lastBuildInfo]}) => {
       const artifactJob = createJobFromArtifact(
         artifact,
         linkDependencies ? state.allArtifacts : undefined,
-        Object.keys(filesChangedSinceLastBuild[artifact.path]),
+        Object.keys(state.filesChangedSinceLastBuild[artifact.path] || {}),
       )
 
       debug('decided to run sub-job %o', artifactJob)
@@ -91,7 +92,11 @@ function determineArtifactsThatAreAlreadyBuilt(awakenedFrom, state) {
 
 function artifactsFromChanges(artifacts, filesChangedSinceLastBuild) {
   return artifacts
-    .filter(artifact => !!filesChangedSinceLastBuild[artifact.path])
+    .filter(
+      artifact =>
+        filesChangedSinceLastBuild[artifact.path] === undefined ||
+        Object.keys(filesChangedSinceLastBuild[artifact.path]).length > 0,
+    )
     .map(artifact => artifact.name)
 }
 
