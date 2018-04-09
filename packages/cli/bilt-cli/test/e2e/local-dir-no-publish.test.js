@@ -25,7 +25,7 @@ describe('local directory use-case', () => {
         console.log(stdout, stderr)
 
         expect(stdout).to.equal('')
-        expect(stderr.trim()).to.equal('Nothing to build')
+        expect(stderr.trim()).to.equal('')
       })
 
       it('should rebuild only changed packages and then rebuild nothing', async () => {
@@ -47,8 +47,9 @@ describe('local directory use-case', () => {
         )(`${process.argv0} ${cli} ${testRepo}`, {
           env: {...process.env, DEBUG: ''},
         })
+
+        expect(stderr2.trim()).to.equal('')
         expect(stdout2).to.equal('')
-        expect(stderr2.trim()).to.equal('Nothing to build')
       })
     })
   })

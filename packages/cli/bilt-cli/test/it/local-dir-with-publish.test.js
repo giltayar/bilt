@@ -36,7 +36,7 @@ describe('local directory with publish use-case', () => {
     brutallyKill: true,
   })
 
-  it('should build the directory with all its packages', async () => {
+  it('should build the directory with all its packages, and on rebuild do nothing', async () => {
     const npmRegistryAddress = await getAddressForService(
       envName,
       pathToCompose,
@@ -75,10 +75,12 @@ describe('local directory with publish use-case', () => {
 
     await p(fs.unlink)(path.join(buildDir, 'a/postinstalled.txt'))
     await p(fs.unlink)(path.join(buildDir, 'b/postinstalled.txt'))
+    await p(fs.unlink)(path.join(buildDir, 'c/voodooed.txt'))
 
     await biltHere(buildDir)
 
     expect(await p(fs.exists)(path.join(buildDir, 'a/postinstalled.txt'))).to.be.false
     expect(await p(fs.exists)(path.join(buildDir, 'b/postinstalled.txt'))).to.be.false
+    expect(await p(fs.exists)(path.join(buildDir, 'c/voodooed.txt'))).to.be.false
   })
 })
