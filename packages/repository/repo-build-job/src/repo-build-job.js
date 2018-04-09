@@ -42,6 +42,9 @@ module.exports = ({plugins: [lastBuildInfo]}) => {
         filesChangedSinceLastBuild,
       },
     }) {
+      if (!state) {
+        debug('files changed: %o', filesChangedSinceLastBuild)
+      }
       state = state || {
         allArtifacts: initialAllArtifacts,
         filesChangedSinceLastBuild,

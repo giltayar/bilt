@@ -1,5 +1,7 @@
 'use strict'
+const {promisify: p} = require('util')
 const path = require('path')
+const fs = require('fs')
 const {expect} = require('chai')
 const {describe, it, before, after} = require('mocha')
 const {dockerComposeTool, getAddressForService} = require('docker-compose-mocha')
@@ -70,5 +72,13 @@ describe('local directory with publish use-case', () => {
 
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.0', npmRegistryAddress)
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.0', npmRegistryAddress)
+
+    await p(fs.unlink)(path.join(buildDir, 'a/postinstalled.txt'))
+    await p(fs.unlink)(path.join(buildDir, 'b/postinstalled.txt'))
+
+    await biltHere(buildDir)
+
+    expect(await p(fs.exists)(path.join(buildDir, 'a/postinstalled.txt'))).to.be.false
+    expect(await p(fs.exists)(path.join(buildDir, 'b/postinstalled.txt'))).to.be.false
   })
 })

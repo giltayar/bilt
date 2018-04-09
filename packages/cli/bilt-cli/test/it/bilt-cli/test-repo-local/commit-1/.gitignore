@@ -2,3 +2,5 @@
 postinstalled.txt
 tested.txt
 built.txt
+package-lock.json
+node_modules

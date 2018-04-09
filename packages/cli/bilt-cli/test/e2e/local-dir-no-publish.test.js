@@ -14,13 +14,10 @@ const testRepoSrc = path.resolve(__dirname, 'test-repo-no-publish')
 describe('local directory use-case', () => {
   describe('no publish use case', () => {
     describe('with git', () => {
-      it.only('should build the directory with all its packages and then say there is nothing to rebuild', async () => {
+      it('should build the directory with all its packages and then say there is nothing to rebuild', async () => {
         const testRepo = await setupBuildDir(testRepoSrc)
 
-        const {stdout: stdout0, stderr: stderr0} = await p(exec)(
-          `${process.argv0} ${cli} ${testRepo}`,
-        )
-        console.log(stdout0, stderr0)
+        await p(exec)(`${process.argv0} ${cli} ${testRepo}`)
 
         const {stdout, stderr} = await p(exec)(`${process.argv0} ${cli} ${testRepo}`, {
           env: {...process.env, DEBUG: ''},
