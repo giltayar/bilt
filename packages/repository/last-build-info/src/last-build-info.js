@@ -33,7 +33,11 @@ module.exports = async ({directory}) => {
       const biltJsonDir = path.join(directory, '.bilt', artifactPath)
       await makeDir(biltJsonDir)
 
-      const filesChangedInWorkspace = new Set(await listFilesChangedInWorkspace(directory, commit))
+      const filesChangedInWorkspace = new Set(
+        (await listFilesChangedInWorkspace(directory, commit)).filter(f =>
+          f.startsWith(artifactPath + '/'),
+        ),
+      )
       const workspaceFilesThatWereBuilt = artifactFilesChangedSinceLastBuild
         ? pickBy_(artifactFilesChangedSinceLastBuild, (_hash, f) => filesChangedInWorkspace.has(f))
         : await readHashesOfFiles(directory, [...filesChangedInWorkspace])
