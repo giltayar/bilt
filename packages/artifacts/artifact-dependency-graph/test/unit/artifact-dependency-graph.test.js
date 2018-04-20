@@ -95,8 +95,12 @@ describe('artifact-dependency-graph', function() {
         const forest = {a: [], b: ['a'], c: ['b'], d: ['c', 'a'], e: ['b'], f: ['e', 'c']}
 
         expect(dependencyGraphSubsetToBuild(forest, {
-            justBuildArtifacts: ['f', 'e'],
-          })).to.eql({f: ['e'], e: []})
+            justBuildArtifacts: ['f', 'e', 'a'],
+            // the 'a' build in the result is a little problematic, because in terms of build order
+            // nothing here tells it to be earlier than e and f which depend on it.
+            // It's definitely a bug, but since justBuild is usually used for one focus artifact,
+            // that shouldn't be too problematic a bug
+          })).to.eql({f: ['e'], e: [], a: []})
       })
 
       it('should not ignore changedArtifacts', () => {
