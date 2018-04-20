@@ -48,11 +48,11 @@ module.exports = ({plugins: [lastBuildInfo]}) => {
       state = state || {
         allArtifacts: initialAllArtifacts,
         filesChangedSinceLastBuild,
-        dependencyGraph: dependencyGraphSubsetToBuild(
-          createDependencyGraph(initialAllArtifacts),
-          artifactsFromChanges(initialAllArtifacts, filesChangedSinceLastBuild),
-          artifactsFromChanges(initialAllArtifacts, filesChangedSinceLastBuild),
-        ),
+        dependencyGraph: dependencyGraphSubsetToBuild({
+          dependencyGraph: createDependencyGraph(initialAllArtifacts),
+          changedArtifacts: artifactsFromChanges(initialAllArtifacts, filesChangedSinceLastBuild),
+          fromArtifacts: artifactsFromChanges(initialAllArtifacts, filesChangedSinceLastBuild),
+        }),
         alreadyBuiltArtifacts: [],
       }
       const alreadyBuiltArtifacts = determineArtifactsThatAreAlreadyBuilt(awakenedFrom, state)
@@ -87,11 +87,11 @@ function determineArtifactsThatAreAlreadyBuilt(awakenedFrom, state) {
     : awakenedFrom && !awakenedFrom.result.success
       ? state.alreadyBuiltArtifacts.concat(
           Object.keys(
-            dependencyGraphSubsetToBuild(
-              state.dependencyGraph,
-              [awakenedFrom.job.artifact.name],
-              [awakenedFrom.job.artifact.name],
-            ),
+            dependencyGraphSubsetToBuild({
+              dependencyGraph: state.dependencyGraph,
+              changedArtifacts: [awakenedFrom.job.artifact.name],
+              fromArtifacts: [awakenedFrom.job.artifact.name],
+            }),
           ),
         )
       : []
