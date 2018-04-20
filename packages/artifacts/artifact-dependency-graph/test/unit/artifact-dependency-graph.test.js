@@ -140,7 +140,54 @@ describe('artifact-dependency-graph', function() {
       })
     })
 
-    describe('all together now!', () => {})
+    describe('all together now!', () => {
+      it('should support upto and from for "root" support', () => {
+        const forest = {a: [], b: ['a'], c: ['b'], d: ['c', 'a'], e: ['b'], f: ['e', 'c']}
+        const forestX = {...forest, x: []}
+
+        expect(dependencyGraphSubsetToBuild(forestX, {
+            uptoArtifacts: ['c'],
+            fromArtifacts: ['c'],
+          })).to.eql(forest)
+        expect(dependencyGraphSubsetToBuild(forestX, {
+            uptoArtifacts: ['e'],
+            fromArtifacts: ['e'],
+          })).to.eql(forest)
+        expect(dependencyGraphSubsetToBuild(forestX, {
+            uptoArtifacts: ['b'],
+            fromArtifacts: ['d'],
+          })).to.eql(forest)
+      })
+
+      it('should support upto and from and justBuild for "root" support', () => {
+        const forest = {a: [], b: ['a'], c: ['b'], d: ['c', 'a'], e: ['b'], f: ['e', 'c']}
+        const forestX = {...forest, x: []}
+
+        expect(dependencyGraphSubsetToBuild(forestX, {
+            uptoArtifacts: ['b'],
+            fromArtifacts: ['d'],
+            justBuildArtifacts: ['x'],
+          })).to.eql(forestX)
+      })
+
+      it('should support everything with changedArtifacts', () => {
+        const forest = {a: [], b: ['a'], c: ['b'], d: ['c', 'a'], e: ['b'], f: ['e', 'c']}
+        const forestX = {...forest, x: []}
+
+        expect(dependencyGraphSubsetToBuild(forestX, {
+            uptoArtifacts: ['b'],
+            fromArtifacts: ['d'],
+            justBuildArtifacts: ['x'],
+            changedArtifacts: ['x'],
+          })).to.eql({x: []})
+        expect(dependencyGraphSubsetToBuild(forestX, {
+            uptoArtifacts: ['e'],
+            fromArtifacts: ['e'],
+            justBuildArtifacts: ['x'],
+            changedArtifacts: ['e'],
+          })).to.eql({e: [], f: ['e']})
+      })
+    })
   })
 
   describe('artifactsThaCanBeBuilt', () => {
