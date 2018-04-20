@@ -16,6 +16,13 @@ const argv = yargs
     array: true,
     default: '.',
   })
+  .option('all', {
+    alias: 'a',
+    description: 'look in parent folders for a .bilt folder, and build all artifacts there',
+    boolean: true,
+    default: false,
+    conflicts: 'build',
+  })
   .option('root', {
     alias: 'r',
     description: 'directory or artifact name to build, including its dependencies and dependees',

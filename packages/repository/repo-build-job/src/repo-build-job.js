@@ -1,6 +1,6 @@
 'use strict'
 const {
-  artifactsToBuildFromChange,
+  dependencyGraphSubsetToBuild,
   buildsThatCanBeBuilt,
   createDependencyGraph,
 } = require('@bilt/artifact-dependency-graph')
@@ -48,8 +48,9 @@ module.exports = ({plugins: [lastBuildInfo]}) => {
       state = state || {
         allArtifacts: initialAllArtifacts,
         filesChangedSinceLastBuild,
-        dependencyGraph: artifactsToBuildFromChange(
+        dependencyGraph: dependencyGraphSubsetToBuild(
           createDependencyGraph(initialAllArtifacts),
+          artifactsFromChanges(initialAllArtifacts, filesChangedSinceLastBuild),
           artifactsFromChanges(initialAllArtifacts, filesChangedSinceLastBuild),
         ),
         alreadyBuiltArtifacts: [],
@@ -86,7 +87,11 @@ function determineArtifactsThatAreAlreadyBuilt(awakenedFrom, state) {
     : awakenedFrom && !awakenedFrom.result.success
       ? state.alreadyBuiltArtifacts.concat(
           Object.keys(
-            artifactsToBuildFromChange(state.dependencyGraph, [awakenedFrom.job.artifact.name]),
+            dependencyGraphSubsetToBuild(
+              state.dependencyGraph,
+              [awakenedFrom.job.artifact.name],
+              [awakenedFrom.job.artifact.name],
+            ),
           ),
         )
       : []
