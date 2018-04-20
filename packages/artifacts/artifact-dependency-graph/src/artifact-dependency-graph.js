@@ -3,13 +3,13 @@
 const createDependencyGraph = artifacts =>
   objectFromEntries(artifacts.map(({name, dependencies}) => [name, dependencies || []]))
 
-function dependencyGraphSubsetToBuild(
+function dependencyGraphSubsetToBuild({
   dependencyGraph,
   changedArtifacts,
   fromArtifacts,
   uptoArtifacts,
   justBuildArtifacts,
-) {
+}) {
   const dependencyGraphSubset = {}
 
   // from
