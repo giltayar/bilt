@@ -81,6 +81,33 @@ describe('artifact-dependency-graph', function() {
           })).to.eql({c: [], d: ['c'], f: ['c']})
       })
     })
+
+    describe('justBuild', () => {
+      it('should only return the nodes that are justBuild', () => {
+        const forest = {a: [], b: ['a'], c: ['b'], d: ['c', 'a'], e: ['b'], f: ['e', 'c']}
+
+        expect(dependencyGraphSubsetToBuild(forest, {
+            justBuildArtifacts: ['c', 'e'],
+          })).to.eql({c: [], e: []})
+      })
+
+      it('should only return the nodes that are justBuild, but the dependencies should be there', () => {
+        const forest = {a: [], b: ['a'], c: ['b'], d: ['c', 'a'], e: ['b'], f: ['e', 'c']}
+
+        expect(dependencyGraphSubsetToBuild(forest, {
+            justBuildArtifacts: ['f', 'e'],
+          })).to.eql({f: ['e'], e: []})
+      })
+
+      it('should not ignore changedArtifacts', () => {
+        const forest = {a: [], b: ['a'], c: ['b'], d: ['c', 'a'], e: ['b'], f: ['e', 'c']}
+
+        expect(dependencyGraphSubsetToBuild(forest, {
+            justBuildArtifacts: ['f', 'e'],
+            changedArtifacts: ['f'],
+          })).to.eql({f: []})
+      })
+    })
   })
 
   describe('artifactsThaCanBeBuilt', () => {
