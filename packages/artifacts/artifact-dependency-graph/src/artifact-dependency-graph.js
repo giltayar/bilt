@@ -15,8 +15,8 @@ function dependencyGraphSubsetToBuild({
   // from
   if (fromArtifacts) {
     const changedArtifactsFrom = changedArtifacts
-      ? intersection(fromArtifacts || changedArtifacts, changedArtifacts)
-      : fromArtifacts || changedArtifacts
+      ? intersection(fromArtifacts, changedArtifacts)
+      : fromArtifacts
 
     const fromClosure = new Set(changedArtifactsFrom)
 
@@ -27,13 +27,21 @@ function dependencyGraphSubsetToBuild({
 
   // upto
   if (uptoArtifacts) {
-    const changedArtifactsUpto = changedArtifacts
-      ? intersection(uptoArtifacts || changedArtifacts, changedArtifacts)
-      : uptoArtifacts || changedArtifacts
-
-    const uptoClosure = new Set(changedArtifactsUpto)
+    const uptoClosure = new Set(uptoArtifacts)
 
     addArtifactsNeededToBeBuiltForArtifactsInClosure(uptoClosure, dependencyGraph)
+
+    if (changedArtifacts) {
+      const fromClosure = new Set(changedArtifacts)
+
+      addArtifactsAffectedByBuildingArtifactsInClosure(fromClosure, dependencyGraph)
+
+      uptoClosure.forEach(artifact => {
+        if (!fromClosure.has(artifact)) {
+          uptoClosure.delete(artifact)
+        }
+      })
+    }
 
     uptoClosure.forEach(build => (dependencyGraphSubset[build] = dependencyGraph[build]))
   }

@@ -49,6 +49,7 @@ describe('artifact-dependency-graph', function() {
           })).to.eql({e: [], f: ['e']})
         expect(dependencyGraphSubsetToBuild(forest, {fromArtifacts: ['e', 'a']})).to.eql(forest)
       })
+
       it('should work with connected forests', () => {
         const forest = {a: [], b: ['a'], c: ['a'], d: ['b', 'c'], e: [], f: ['e', 'd']}
 
@@ -112,6 +113,34 @@ describe('artifact-dependency-graph', function() {
           })).to.eql({f: []})
       })
     })
+
+    describe('uptoArtifacts', () => {
+      it('should work with multi-level graphs', () => {
+        const forest = {a: [], b: ['a'], c: ['b'], d: ['c', 'a'], e: ['b'], f: ['e', 'c']}
+
+        expect(dependencyGraphSubsetToBuild(forest, {
+            uptoArtifacts: ['c'],
+          })).to.eql({c: ['b'], b: ['a'], a: []})
+        expect(dependencyGraphSubsetToBuild(forest, {
+            uptoArtifacts: ['c', 'd'],
+          })).to.eql({c: ['b'], b: ['a'], a: [], d: ['c', 'a']})
+      })
+
+      it('should deal correctly with changed files', () => {
+        const forest = {a: [], b: ['a'], c: ['b'], d: ['c', 'a'], e: ['b'], f: ['e', 'c']}
+
+        expect(dependencyGraphSubsetToBuild(forest, {
+            uptoArtifacts: ['c', 'd'],
+            changedArtifacts: ['b'],
+          })).to.eql({c: ['b'], b: [], d: ['c']})
+        expect(dependencyGraphSubsetToBuild(forest, {
+            uptoArtifacts: ['c'],
+            changedArtifacts: ['b'],
+          })).to.eql({c: ['b'], b: []})
+      })
+    })
+
+    describe('all together now!', () => {})
   })
 
   describe('artifactsThaCanBeBuilt', () => {
