@@ -8,7 +8,6 @@ process.on('unhandledRejection', err => {
 })
 
 const argv = yargs
-  .env('BILT_OPTIONS')
   .version()
   .option('build', {
     alias: 'b',
@@ -21,7 +20,6 @@ const argv = yargs
     description: 'look in parent folders for a .bilt folder, and build all artifacts there',
     boolean: true,
     default: false,
-    conflicts: 'build',
   })
   .option('root', {
     alias: 'r',
@@ -44,5 +42,18 @@ const argv = yargs
     description: 'executes the following command on the artifacts instead of building them',
     array: true,
   })
+  .command('* [repo-directory]', 'repo directory')
+  .exitProcess(false)
 
-biltHere(args[0], args[1]).catch(err => console.log(err.stack || err))
+console.log(argv.argv)
+async function main() {
+  const repoDir = argv.argv._[0] || (await findRepoDir())
+
+  await biltHere(repoDir)
+}
+
+async function findRepoDir() {
+  return '.'
+}
+
+main().catch(err => console.log(err.stack || err))

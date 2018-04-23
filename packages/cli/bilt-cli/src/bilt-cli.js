@@ -30,7 +30,7 @@ module.exports = async function(directoryToBuild, repository) {
 }
 
 async function createPimport(isRemoteRepo, directoryToBuild, repository) {
-  debug('loading configuration')
+  debug('loading configuration', directoryToBuild)
   const {config: buildConfig, filepath} = await cosmiConfig('bilt', {
     rcExtensions: true,
   }).load(directoryToBuild)
