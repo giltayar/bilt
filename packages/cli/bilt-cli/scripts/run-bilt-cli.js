@@ -45,7 +45,6 @@ const argv = yargs
   .command('* [repo-directory]', 'repo directory')
   .exitProcess(false)
 
-console.log(argv.argv)
 async function main() {
   const repoDir = argv.argv._[0] || (await findRepoDir())
 
