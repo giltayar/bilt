@@ -9,11 +9,13 @@ const debug = require('debug')('bilt:repo-build-job')
 module.exports = ({plugins: [lastBuildInfo]}) => {
   return {
     async setupBuildSteps({state, awakenedFrom, job}) {
+      const {force, uptoArtifacts, fromArtifacts, justBuildArtifacts} = job
       debug('running job repo-build-job')
 
-      const filesChangedSinceLastBuild =
-        (state && state.filesChangedSinceLastBuild) ||
-        (await lastBuildInfo.filesChangedSinceLastBuild({artifacts: job.artifacts}))
+      const filesChangedSinceLastBuild = force
+        ? undefined
+        : (state && state.filesChangedSinceLastBuild) ||
+          (await lastBuildInfo.filesChangedSinceLastBuild({artifacts: job.artifacts}))
 
       if (awakenedFrom && awakenedFrom.result.success) {
         const artifact = awakenedFrom.job.artifact
@@ -30,6 +32,10 @@ module.exports = ({plugins: [lastBuildInfo]}) => {
           initialAllArtifacts: job.artifacts,
           linkDependencies: job.linkDependencies,
           filesChangedSinceLastBuild,
+          uptoArtifacts,
+          fromArtifacts,
+          justBuildArtifacts,
+          force,
         },
       }
     },
@@ -40,6 +46,10 @@ module.exports = ({plugins: [lastBuildInfo]}) => {
         initialAllArtifacts,
         linkDependencies,
         filesChangedSinceLastBuild,
+        uptoArtifacts,
+        fromArtifacts,
+        justBuildArtifacts,
+        force,
       },
     }) {
       if (!state) {
@@ -51,7 +61,9 @@ module.exports = ({plugins: [lastBuildInfo]}) => {
         dependencyGraph: dependencyGraphSubsetToBuild({
           dependencyGraph: createDependencyGraph(initialAllArtifacts),
           changedArtifacts: artifactsFromChanges(initialAllArtifacts, filesChangedSinceLastBuild),
-          fromArtifacts: artifactsFromChanges(initialAllArtifacts, filesChangedSinceLastBuild),
+          fromArtifacts: force ? initialAllArtifacts : fromArtifacts,
+          uptoArtifacts,
+          justBuildArtifacts,
         }),
         alreadyBuiltArtifacts: [],
       }
