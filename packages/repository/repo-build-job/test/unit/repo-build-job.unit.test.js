@@ -34,6 +34,23 @@ describe('repo-build-job', function() {
     expect(jobNames(jobsThatRan)).to.eql(['a', 'c'])
   })
 
+  it('should ignore changed files if "force" is on', () => {
+    const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}, {name: 'c', path: 'ccc'}]
+    const repoJob = {
+      justBuildArtifacts: names(artifacts),
+      force: true,
+      filesChangedSinceLastBuild: {
+        a: {'a/foo.js': 'sha1afoo'},
+        b: {},
+        ccc: {'ccc/x.js': 'sha1cccx', 'ccc/z.z': 'sha1cccz'},
+      },
+    }
+
+    const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
+
+    expect(jobNames(jobsThatRan)).to.eql(['a', 'c'])
+  })
+
   it('should execute builds based on dependency order', () => {
     const artifacts = [
       {name: 'b', path: 'b', dependencies: ['c']},

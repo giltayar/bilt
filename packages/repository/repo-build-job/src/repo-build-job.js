@@ -13,7 +13,7 @@ module.exports = ({plugins: [lastBuildInfo]}) => {
       debug('running job repo-build-job')
 
       const filesChangedSinceLastBuild = force
-        ? undefined
+        ? {}
         : (state && state.filesChangedSinceLastBuild) ||
           (await lastBuildInfo.filesChangedSinceLastBuild({artifacts: job.artifacts}))
 
@@ -35,7 +35,6 @@ module.exports = ({plugins: [lastBuildInfo]}) => {
           uptoArtifacts,
           fromArtifacts,
           justBuildArtifacts,
-          force,
         },
       }
     },
@@ -49,7 +48,6 @@ module.exports = ({plugins: [lastBuildInfo]}) => {
         uptoArtifacts,
         fromArtifacts,
         justBuildArtifacts,
-        force,
       },
     }) {
       if (!state) {
@@ -61,7 +59,7 @@ module.exports = ({plugins: [lastBuildInfo]}) => {
         dependencyGraph: dependencyGraphSubsetToBuild({
           dependencyGraph: createDependencyGraph(initialAllArtifacts),
           changedArtifacts: artifactsFromChanges(initialAllArtifacts, filesChangedSinceLastBuild),
-          fromArtifacts: force ? initialAllArtifacts : fromArtifacts,
+          fromArtifacts,
           uptoArtifacts,
           justBuildArtifacts,
         }),

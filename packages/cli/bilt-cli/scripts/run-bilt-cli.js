@@ -37,18 +37,24 @@ const argv = yargs
     boolean: true,
     default: false,
   })
-  .options('execute', {
-    alias: '-',
-    description: 'executes the following command on the artifacts instead of building them',
-    array: true,
+  .options('checkout', {
+    alias: 'c',
+    description: 'checkout git repo',
   })
   .command('* [repo-directory]', 'repo directory')
   .exitProcess(false)
 
 async function main() {
   const repoDir = argv.argv._[0] || (await findRepoDir())
+  const buildAll = argv.argv.all
 
-  await biltHere(repoDir)
+  await biltHere(repoDir, {
+    upto: buildAll ? undefined : (argv.argv.upto || []).concat(argv.argv.root || []),
+    from: buildAll ? undefined : argv.argv.root,
+    justBuild: buildAll ? undefined : argv.argv.build,
+    force: argv.argv.force,
+    repository: argv.argv.checkout,
+  })
 }
 
 async function findRepoDir() {

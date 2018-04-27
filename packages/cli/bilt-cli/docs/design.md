@@ -73,6 +73,7 @@ artifact:
 * It will store this commithash in the `.bilt/succesful-builds/<branch>/<artifact-name>`
 * If there are uncommitted files that were succesfully built from, their checksum will be stored in:
   `.bilt/succesful-builds/<branch>/<artifact-name>.uncommitted.json` as
+
   ```json
   {"filepath-relative-to-build-dir": "hash-of-file-content", "...": "..."}
   ```
@@ -98,7 +99,7 @@ module.exports = {
     'commands:npm': {
       npmAuthenticationLine: '//localhost:4873/:_authToken="NPM_TOKEN"',
     },
-    'commands:git': {
+        'commands:git': {
       gitAuthenticationKey: fs.readFileSync(path.resolve(process.env.KEYS_DIR, 'id_rsa')),
       gitUserEmail: 'gil@tayar.org',
       gitUserName: 'Gil Tayar',

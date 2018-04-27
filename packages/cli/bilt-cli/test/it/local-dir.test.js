@@ -16,7 +16,7 @@ const biltHere = require('../../src/bilt-cli')
 
 const testRepoSrc = path.resolve(__dirname, 'bilt-cli/test-repo-local')
 
-describe('local directory with publish use-case', () => {
+describe('local directory use-case', () => {
   const pathToCompose = path.join(__dirname, 'docker-compose.yml')
 
   let gitServerRepoDir
@@ -81,6 +81,21 @@ describe('local directory with publish use-case', () => {
 
     expect(await p(fs.exists)(path.join(buildDir, 'a/postinstalled.txt'))).to.be.false
     expect(await p(fs.exists)(path.join(buildDir, 'b/postinstalled.txt'))).to.be.false
+    expect(await p(fs.exists)(path.join(buildDir, 'c/voodooed.txt'))).to.be.false
+
+    await biltHere(buildDir, {force: true, from: [path.join(buildDir, 'b')]})
+
+    expect(await p(fs.exists)(path.join(buildDir, 'a/postinstalled.txt'))).to.be.true
+    expect(await p(fs.exists)(path.join(buildDir, 'b/postinstalled.txt'))).to.be.true
+    expect(await p(fs.exists)(path.join(buildDir, 'c/voodooed.txt'))).to.be.false
+
+    await p(fs.unlink)(path.join(buildDir, 'a/postinstalled.txt'))
+    await p(fs.unlink)(path.join(buildDir, 'b/postinstalled.txt'))
+
+    await biltHere(buildDir, {force: true, upto: ['this-pkg-does-not-exist-in-npmjs.b']})
+
+    expect(await p(fs.exists)(path.join(buildDir, 'a/postinstalled.txt'))).to.be.false
+    expect(await p(fs.exists)(path.join(buildDir, 'b/postinstalled.txt'))).to.be.true
     expect(await p(fs.exists)(path.join(buildDir, 'c/voodooed.txt'))).to.be.false
   })
 })

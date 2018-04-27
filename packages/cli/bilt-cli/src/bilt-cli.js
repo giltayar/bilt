@@ -3,10 +3,11 @@ const path = require('path')
 const debug = require('debug')('bilt:bilt-cli')
 const pluginImport = require('plugin-import')
 const cosmiConfig = require('cosmiconfig')
+const flatten = require('lodash.flatten')
 const artifactFinder = require('@bilt/artifact-finder')
 const defaultbiltConfig = require('./default-biltrc')
 
-module.exports = async function(directoryToBuild, repository) {
+async function buildHere(directoryToBuild, {upto, from, justBuild, force, repository} = {}) {
   const isRemoteRepo = repository
   const pimport = await createPimport(isRemoteRepo, directoryToBuild, repository)
   try {
@@ -14,13 +15,15 @@ module.exports = async function(directoryToBuild, repository) {
 
     const jobDispatcher = await pimport('jobDispatcher')
 
-    const jobsToWaitFor = await runRepoBuildJob(
-      pimport,
+    const jobsToWaitFor = await runRepoBuildJob({
       directoryToBuild,
       repository,
-      isRemoteRepo,
       jobDispatcher,
-    )
+      upto,
+      from,
+      justBuild,
+      force,
+    })
 
     await waitForJobs(pimport, jobsToWaitFor)
   } finally {
@@ -68,18 +71,58 @@ async function configureEventsToOutputEventToStdout(pimport) {
   })
 }
 
-async function runRepoBuildJob(pimport, directoryToBuild, repository, isRemoteRepo, jobDispatcher) {
+async function runRepoBuildJob({
+  directoryToBuild,
+  repository,
+  jobDispatcher,
+  upto,
+  from,
+  justBuild,
+  force,
+}) {
   debug('fetching artifacts')
   const artifacts = await (await artifactFinder()).findArtifacts(directoryToBuild)
+
+  if (!upto && !from && !justBuild) {
+    from = artifacts.map(a => a.name)
+  }
 
   return [
     await jobDispatcher.dispatchJob({
       kind: 'repository',
       repository,
       artifacts,
+      uptoArtifacts: normalizeArtifacts(upto, artifacts, directoryToBuild),
+      fromArtifacts: normalizeArtifacts(from, artifacts, directoryToBuild),
+      justBuildArtifacts: normalizeArtifacts(justBuild, artifacts, directoryToBuild),
       linkDependencies: true,
+      force,
     }),
   ]
+}
+
+function normalizeArtifacts(artifactsOrDirs, artifacts, directoryToBuild) {
+  if (!artifactsOrDirs) return artifactsOrDirs
+
+  return flatten(
+    artifactsOrDirs.map(artifactNameOrDir => {
+      if (artifactNameOrDir.startsWith('.') || artifactNameOrDir.startsWith('/')) {
+        const pathOfArtifact = path.resolve(process.cwd(), artifactNameOrDir)
+        const foundArtifacts = artifacts.filter(artifact =>
+          pathOfArtifact.startsWith(path.resolve(directoryToBuild, artifact.path)),
+        )
+        if (foundArtifacts.length === 0)
+          throw new Error(`could not find artifact "${artifactNameOrDir}"`)
+
+        return foundArtifacts.map(a => a.name)
+      } else {
+        const foundArtifact = artifacts.find(artifact => artifact.name === artifactNameOrDir)
+        if (!foundArtifact) throw new Error(`could not find artifact "${artifactNameOrDir}"`)
+
+        return foundArtifact.name
+      }
+    }),
+  )
 }
 
 async function waitForJobs(pimport, jobs) {
@@ -98,3 +141,5 @@ async function waitForJobs(pimport, jobs) {
     })
   })
 }
+
+module.exports = buildHere
