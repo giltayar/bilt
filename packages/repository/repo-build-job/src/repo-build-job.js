@@ -6,7 +6,7 @@ const {
 } = require('@bilt/artifact-dependency-graph')
 const debug = require('debug')('bilt:repo-build-job')
 
-module.exports = ({plugins: [lastBuildInfo]}) => {
+module.exports = ({plugins: [lastBuildInfo, events]}) => {
   return {
     async setupBuildSteps({state, awakenedFrom, job}) {
       const {force, uptoArtifacts, fromArtifacts, justBuildArtifacts} = job
@@ -65,10 +65,25 @@ module.exports = ({plugins: [lastBuildInfo]}) => {
         }),
         alreadyBuiltArtifacts: [],
       }
+      if (!awakenedFrom) {
+        events.publish('STARTING_REPO_JOB', {
+          artifactsToBeBuilt: Object.keys(state.dependencyGraph),
+        })
+      }
+
       const alreadyBuiltArtifacts = determineArtifactsThatAreAlreadyBuilt(awakenedFrom, state)
       const artifactsToBuild = buildsThatCanBeBuilt(state.dependencyGraph, alreadyBuiltArtifacts)
+      debug(
+        'artifactsToBuild: %o, determined from graph: %o and alreadybuilt: %o',
+        artifactsToBuild,
+        state.dependencyGraph,
+        alreadyBuiltArtifacts,
+      )
 
       if (!artifactsToBuild || artifactsToBuild.length === 0) {
+        events.publish('FINISHING_REPO_JOB', {
+          alreadyBuiltArtifacts,
+        })
         return {}
       }
       const artifactToBuild = artifactsToBuild[0]
@@ -89,7 +104,7 @@ module.exports = ({plugins: [lastBuildInfo]}) => {
     },
   }
 }
-module.exports.plugins = ['lastBuildInfo']
+module.exports.plugins = ['lastBuildInfo', 'events']
 
 function determineArtifactsThatAreAlreadyBuilt(awakenedFrom, state) {
   return awakenedFrom && awakenedFrom.result.success

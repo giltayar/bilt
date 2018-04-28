@@ -69,6 +69,23 @@ async function configureEventsToOutputEventToStdout(pimport) {
 
     console.log('####### Building', job.artifact.path || job.directory)
   })
+
+  let nothingToBuild = false
+  await events.subscribe('STARTING_REPO_JOB', ({artifactsToBeBuilt}) => {
+    if (artifactsToBeBuilt.length === 0) {
+      console.log('#### Nothing to build')
+      nothingToBuild = true
+    } else {
+      console.log('####### Building artifacts: %s', artifactsToBeBuilt.join(','))
+    }
+  })
+
+  await events.subscribe('FINISHING_REPO_JOB', ({alreadyBuiltArtifacts}) => {
+    if (!nothingToBuild) {
+      console.log('####### Built artifacts: %s', alreadyBuiltArtifacts.join(','))
+    }
+    nothingToBuild
+  })
 }
 
 async function runRepoBuildJob({
@@ -101,23 +118,24 @@ async function runRepoBuildJob({
   ]
 }
 
-function normalizeArtifacts(artifactsOrDirs, artifacts, directoryToBuild) {
-  if (!artifactsOrDirs) return artifactsOrDirs
+function normalizeArtifacts(artifactsOrDirsToBuild, artifacts, directoryToBuild) {
+  if (!artifactsOrDirsToBuild) return artifactsOrDirsToBuild
 
   return flatten(
-    artifactsOrDirs.map(artifactNameOrDir => {
-      if (artifactNameOrDir.startsWith('.') || artifactNameOrDir.startsWith('/')) {
-        const pathOfArtifact = path.resolve(process.cwd(), artifactNameOrDir)
+    artifactsOrDirsToBuild.map(artifactNameOrDirToBuild => {
+      if (artifactNameOrDirToBuild.startsWith('.') || artifactNameOrDirToBuild.startsWith('/')) {
+        const pathOfArtifact = path.resolve(directoryToBuild, artifactNameOrDirToBuild)
+        debug('looking for artifacts under %s', pathOfArtifact)
         const foundArtifacts = artifacts.filter(artifact =>
-          pathOfArtifact.startsWith(path.resolve(directoryToBuild, artifact.path)),
+          path.resolve(directoryToBuild, artifact.path).startsWith(pathOfArtifact),
         )
         if (foundArtifacts.length === 0)
-          throw new Error(`could not find artifact "${artifactNameOrDir}"`)
+          throw new Error(`could not find artifact "${artifactNameOrDirToBuild}"`)
 
         return foundArtifacts.map(a => a.name)
       } else {
-        const foundArtifact = artifacts.find(artifact => artifact.name === artifactNameOrDir)
-        if (!foundArtifact) throw new Error(`could not find artifact "${artifactNameOrDir}"`)
+        const foundArtifact = artifacts.find(artifact => artifact.name === artifactNameOrDirToBuild)
+        if (!foundArtifact) throw new Error(`could not find artifact "${artifactNameOrDirToBuild}"`)
 
         return foundArtifact.name
       }

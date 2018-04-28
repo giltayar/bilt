@@ -66,6 +66,7 @@ module.exports = async ({
         agentInstance,
         subdirectory: artifactPath,
       })
+      debug('building npm package under directory %s', directory)
 
       const packageJsonChanged =
         !filesChangedSinceLastBuild || filesChangedSinceLastBuild.includes('package.json')
@@ -77,6 +78,11 @@ module.exports = async ({
         }
       }
 
+      debug(
+        'Reading package.json %s using agent %o',
+        path.join(directory, 'package.json'),
+        agentInstance,
+      )
       const packageJson = JSON.parse(
         await agent.readFileAsBuffer(agentInstance, path.join(directory, 'package.json')),
       )

@@ -54,9 +54,7 @@ module.exports = async ({kind}) => {
     },
 
     async readFileAsBuffer(agentInstance, fileName) {
-      const {directory} = info(agentInstance)
-
-      return await promisify(fs.readFile)(path.resolve(directory, fileName))
+      return await promisify(fs.readFile)(fileName)
     },
 
     async writeBufferToFile(agentInstance, fileName, buffer) {

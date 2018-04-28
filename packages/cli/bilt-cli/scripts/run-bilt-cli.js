@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 'use strict'
 const yargs = require('yargs')
 const biltHere = require('../src/bilt-cli')
@@ -29,7 +30,7 @@ const argv = yargs
   .option('upto', {
     alias: 'u',
     description: 'directory or artifact name to build, including its dependees',
-    array: true,
+    array: true ,
   })
   .options('force', {
     alias: 'f',
@@ -42,7 +43,6 @@ const argv = yargs
     description: 'checkout git repo',
   })
   .command('* [repo-directory]', 'repo directory')
-  .exitProcess(false)
 
 async function main() {
   const repoDir = argv.argv._[0] || (await findRepoDir())

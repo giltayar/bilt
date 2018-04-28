@@ -6,6 +6,15 @@
   "configurations": [
     {
       "type": "node",
+      "request": "attach",
+      "name": "Attach to Remote",
+      "address": "localhost",
+      "port": 9229,
+      "localRoot": "${workspaceFolder}",
+      "remoteRoot": "Absolute path to the remote directory containing the program"
+    },
+    {
+      "type": "node",
       "request": "launch",
       "name": "Mocha Tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
