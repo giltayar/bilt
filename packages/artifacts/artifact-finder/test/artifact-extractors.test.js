@@ -11,13 +11,16 @@ describe('extractors', function() {
     const filename = `${basedir}/gar/package.json`
 
     it('should put relative path correctly in artifact', async function() {
-      const fileFetcher = sinon.stub().withArgs(filename).returns(
-        Promise.resolve(
-          JSON.stringify({
-            name: 'foozilla',
-          }),
-        ),
-      )
+      const fileFetcher = sinon
+        .stub()
+        .withArgs(filename)
+        .returns(
+          Promise.resolve(
+            JSON.stringify({
+              name: 'foozilla',
+            }),
+          ),
+        )
       const extractor = extractorsCreator(fileFetcher).npmExtractor
 
       expect(await extractor(filename, basedir)).to.deep.equal({
@@ -30,17 +33,20 @@ describe('extractors', function() {
     })
 
     it('should put correct owners', async function() {
-      const fileFetcher = sinon.stub().withArgs(filename).returns(
-        Promise.resolve(
-          JSON.stringify({
-            name: 'foozilla',
-            contributors: [
-              'Foo <foo@bar.com> (http://foo)',
-              {name: 'Bar', email: 'bar@foo.com', url: 'http://bar'},
-            ],
-          }),
-        ),
-      )
+      const fileFetcher = sinon
+        .stub()
+        .withArgs(filename)
+        .returns(
+          Promise.resolve(
+            JSON.stringify({
+              name: 'foozilla',
+              contributors: [
+                'Foo <foo@bar.com> (http://foo)',
+                {name: 'Bar', email: 'bar@foo.com', url: 'http://bar'},
+              ],
+            }),
+          ),
+        )
       const extractor = extractorsCreator(fileFetcher).npmExtractor
 
       expect(await extractor(filename, basedir)).to.deep.equal({
@@ -53,21 +59,24 @@ describe('extractors', function() {
     })
 
     it('should add dependencies and dev dependencies', async function() {
-      const fileFetcher = sinon.stub().withArgs(filename).returns(
-        Promise.resolve(
-          JSON.stringify({
-            name: 'foozilla',
-            dependencies: {
-              a: '4',
-              b: '5',
-            },
-            devDependencies: {
-              c: '6',
-            },
-            owners: [],
-          }),
-        ),
-      )
+      const fileFetcher = sinon
+        .stub()
+        .withArgs(filename)
+        .returns(
+          Promise.resolve(
+            JSON.stringify({
+              name: 'foozilla',
+              dependencies: {
+                a: '4',
+                b: '5',
+              },
+              devDependencies: {
+                c: '6',
+              },
+              owners: [],
+            }),
+          ),
+        )
       const extractor = extractorsCreator(fileFetcher).npmExtractor
 
       expect(await extractor(filename, basedir)).to.deep.equal({
@@ -80,31 +89,11 @@ describe('extractors', function() {
     })
 
     it('should ignore non-npm packages', async function() {
-      const fileFetcher = sinon.stub().withArgs(filename).returns('')
+      const fileFetcher = sinon
+        .stub()
+        .withArgs(filename)
+        .returns('')
       const extractor = extractorsCreator(fileFetcher).npmExtractor
-
-      expect(await extractor(filename + '/zoo.bar', basedir)).to.be.undefined
-    })
-  })
-
-  describe('docker extractor', function() {
-    const basedir = '/foo/bar'
-    const filename = `${basedir}/mar/gar/Dockerfile`
-
-    it('should put relative path correctly in artifact and package name should be according to dir', async function() {
-      const fileFetcher = sinon.stub().withArgs(filename).returns('')
-      const extractor = extractorsCreator(fileFetcher).dockerExtractor
-
-      expect(await extractor(filename, basedir)).to.deep.equal({
-        name: 'gar',
-        type: 'docker',
-        path: 'mar/gar',
-      })
-    })
-
-    it('should ignore non-docker packages', async function() {
-      const fileFetcher = sinon.stub().withArgs(filename).returns('')
-      const extractor = extractorsCreator(fileFetcher).dockerExtractor
 
       expect(await extractor(filename + '/zoo.bar', basedir)).to.be.undefined
     })
@@ -115,16 +104,19 @@ describe('extractors', function() {
     const filename = `${basedir}/gar/.artifactrc.yml`
 
     it('should put relative path correctly in artifact and get artifact as-is in yml', async function() {
-      const fileFetcher = sinon.stub().withArgs(filename).returns(
-        Promise.resolve(
-          JSON.stringify({
-            name: 'foozilla',
-            type: 'npm',
-            dependencies: [],
-            owners: ['a@b'],
-          }),
-        ),
-      )
+      const fileFetcher = sinon
+        .stub()
+        .withArgs(filename)
+        .returns(
+          Promise.resolve(
+            JSON.stringify({
+              name: 'foozilla',
+              type: 'npm',
+              dependencies: [],
+              owners: ['a@b'],
+            }),
+          ),
+        )
       const extractor = extractorsCreator(fileFetcher).artifactsRcExtractor
 
       expect(await extractor(filename, basedir)).to.deep.equal({
@@ -137,17 +129,20 @@ describe('extractors', function() {
     })
 
     it('should put relative path correctly in artifact even if there is one in yml', async function() {
-      const fileFetcher = sinon.stub().withArgs(filename).returns(
-        Promise.resolve(
-          JSON.stringify({
-            name: 'foozilla',
-            type: 'npm',
-            dependencies: [],
-            path: 'wrong-path',
-            owners: [],
-          }),
-        ),
-      )
+      const fileFetcher = sinon
+        .stub()
+        .withArgs(filename)
+        .returns(
+          Promise.resolve(
+            JSON.stringify({
+              name: 'foozilla',
+              type: 'npm',
+              dependencies: [],
+              path: 'wrong-path',
+              owners: [],
+            }),
+          ),
+        )
       const extractor = extractorsCreator(fileFetcher).artifactsRcExtractor
 
       expect(await extractor(filename, basedir)).to.deep.equal({
@@ -160,16 +155,19 @@ describe('extractors', function() {
     })
 
     it('should not have a type if its not in the artifactrc.yml', async function() {
-      const fileFetcher = sinon.stub().withArgs(filename).returns(
-        Promise.resolve(
-          JSON.stringify({
-            name: 'foozilla',
-            dependencies: [],
-            path: 'wrong-path',
-            owners: [],
-          }),
-        ),
-      )
+      const fileFetcher = sinon
+        .stub()
+        .withArgs(filename)
+        .returns(
+          Promise.resolve(
+            JSON.stringify({
+              name: 'foozilla',
+              dependencies: [],
+              path: 'wrong-path',
+              owners: [],
+            }),
+          ),
+        )
       const extractor = extractorsCreator(fileFetcher).artifactsRcExtractor
 
       expect(await extractor(filename, basedir)).to.deep.equal({
@@ -185,34 +183,6 @@ describe('extractors', function() {
 
     it('should returned undefined on an empty list', function() {
       expect(extractorMerger([])).to.be.undefined
-    })
-
-    it('should return a docker-npm project on a list containing both docker and npm', function() {
-      const merged = extractorMerger([
-        {type: 'npm', name: 'n', dependencies: ['a']},
-        {type: 'docker', name: 'd'},
-      ])
-
-      expect(merged).to.deep.equal({type: 'docker-npm', name: 'n', dependencies: ['a']})
-    })
-
-    it('should use the name in artifactrc.yml for a docker-npm project', function() {
-      const merged = extractorMerger([
-        {type: 'npm', name: 'n', dependencies: ['a']},
-        {name: 'c', dependencies: ['a']},
-        {type: 'docker', name: 'd'},
-      ])
-
-      expect(merged).to.deep.equal({type: 'docker-npm', name: 'c', dependencies: ['a']})
-    })
-
-    it('should use the name in artifactrc.yml for a docker project', function() {
-      const merged = extractorMerger([
-        {name: 'c', dependencies: ['a']},
-        {type: 'docker', name: 'd'},
-      ])
-
-      expect(merged).to.deep.equal({type: 'docker', name: 'c', dependencies: ['a']})
     })
 
     it('merge dependencies from npm and artifactrc', function() {

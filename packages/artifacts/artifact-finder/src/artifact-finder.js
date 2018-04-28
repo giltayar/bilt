@@ -19,7 +19,6 @@ module.exports = async () => {
         dir,
         extractors.combinedExtractorCreator([
           extractors.npmExtractor,
-          extractors.dockerExtractor,
           extractors.artifactsRcExtractor,
         ]),
         extractors.extractorMerger,

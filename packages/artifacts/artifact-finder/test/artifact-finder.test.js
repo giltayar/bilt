@@ -9,25 +9,18 @@ describe('e2e test on a real folder', function() {
     const {findArtifacts} = await thisModule()
     const newYml = await findArtifacts(path.resolve(__dirname, 'e2e-test-dir'), '.zitignore')
 
-    expect(newYml).to.deep.equal([
+    expect(newYml).to.have.deep.members([
       {
-        name: 'docker-artifactrc-alt',
-        path: 'docker-artifactrc-artifact',
-        type: 'docker-npm',
-        dependencies: ['docker-artifact'],
+        name: 'npm-artifact-name-2',
+        path: 'npm-artifact-2',
+        type: 'npm',
+        dependencies: [],
         owners: [],
       },
       {
-        name: 'docker-npm-artifact-name',
-        path: 'docker-npm-artifact',
-        type: 'docker-npm',
-        dependencies: ['npm-artifact-name'],
-        owners: [],
-      },
-      {
-        name: 'docker-artifact',
-        path: 'main/docker-artifact',
-        type: 'docker-npm',
+        name: 'npm-artifact-3',
+        path: 'npm-artifact-3',
+        type: 'npm',
         dependencies: [],
         owners: [],
       },
@@ -35,7 +28,7 @@ describe('e2e test on a real folder', function() {
         name: 'npm-artifact-name',
         path: 'main/npm-artifact',
         type: 'npm',
-        dependencies: ['docker-artifact'],
+        dependencies: ['npm-artifact-name-2'],
         owners: [],
       },
     ])

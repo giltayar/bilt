@@ -48,20 +48,6 @@ module.exports = fileFetcher => {
         throw e
       }
     },
-    async dockerExtractor(filename, basedir) {
-      if (path.basename(filename) === 'Dockerfile') {
-        const ret = {
-          name: path.basename(path.dirname(filename)),
-          path: pathOf(filename, basedir),
-          type: 'docker',
-        }
-        debug('found docker artifact %o', ret)
-
-        return ret
-      } else {
-        return undefined
-      }
-    },
     async artifactsRcExtractor(filename, basedir) {
       if (!ARTIFACTRC_POSSIBLE_NAMES.includes(path.basename(filename))) {
         return undefined
@@ -92,36 +78,17 @@ module.exports = fileFetcher => {
     },
     extractorMerger(artifacts) {
       const npmArtifact = find(artifacts, e => e.type === 'npm')
-      const dockerArtifact = find(artifacts, e => e.type === 'docker')
       const artifactsRcYmlArtifact = find(artifacts, e => !e.type)
 
       const npmDependencies = (npmArtifact || {}).dependencies || []
-      const dockerDependencies = (dockerArtifact || {}).dependencies || []
       const artifactsRcYmlDependencies = (artifactsRcYmlArtifact || {}).dependencies || []
 
       const mergedDependencies = {
-        dependencies: Array.from(
-          new Set([].concat(npmDependencies, dockerDependencies, artifactsRcYmlDependencies)),
-        ),
+        dependencies: Array.from(new Set([].concat(npmDependencies, artifactsRcYmlDependencies))),
       }
 
-      if (npmArtifact && dockerArtifact) {
-        return Object.assign(
-          {},
-          dockerArtifact,
-          npmArtifact,
-          {type: 'docker-npm'},
-          artifactsRcYmlArtifact,
-          mergedDependencies,
-        )
-      } else if (npmArtifact || dockerArtifact || artifactsRcYmlArtifact) {
-        return Object.assign(
-          {},
-          npmArtifact,
-          dockerArtifact,
-          artifactsRcYmlArtifact,
-          mergedDependencies,
-        )
+      if (npmArtifact || artifactsRcYmlArtifact) {
+        return Object.assign({}, npmArtifact, artifactsRcYmlArtifact, mergedDependencies)
       } else {
         return undefined
       }

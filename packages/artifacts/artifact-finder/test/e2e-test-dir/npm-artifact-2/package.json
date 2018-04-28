@@ -1,11 +1,10 @@
 {
-  "name": "npm-artifact-name",
+  "name": "npm-artifact-name-2",
   "dependencies": {
     "a": "0.1",
     "c": "0.2"
   },
   "devDependencies": {
-    "npm-artifact-name-2": "0.3",
     "jocha": "1.0"
   }
 }
