@@ -1,4 +1,14 @@
-async function executeBuild({builder, agent, job, state, awakenedFrom}) {
+'use strict'
+const debug = require('debug')('bilt:jobs:build')
+async function executeBuild({
+  builder,
+  agent,
+  job,
+  state,
+  awakenedFrom,
+  disabledSteps,
+  enabledSteps,
+}) {
   const agentInstance = agent ? await agent.acquireInstanceForJob() : undefined
   try {
     const builderArtifact = builder.artifactDefaults || {}
@@ -9,9 +19,14 @@ async function executeBuild({builder, agent, job, state, awakenedFrom}) {
       artifact: {
         ...builderArtifact,
         ...jobArtifact,
-        steps: mergeSteps(jobArtifact.steps, builderArtifact.steps),
+        steps: mergeSteps(
+          jobArtifact.steps,
+          builderArtifact.steps,
+          mergeDisabledSteps(builderArtifact.disabledSteps, disabledSteps, enabledSteps),
+        ),
       },
     }
+    debug('final steps: %o', jobWithArtifact.artifact.steps)
     const {buildContext} = await builder.setupBuildSteps({
       job: jobWithArtifact,
       agentInstance,
@@ -38,13 +53,25 @@ async function executeBuild({builder, agent, job, state, awakenedFrom}) {
   }
 }
 
-function mergeSteps(jobSteps, builderSteps) {
-  if (!jobSteps) return builderSteps
+function mergeDisabledSteps(builderDisabledSteps, disabledStepsOverride, enabledStepsOverride) {
+  return (builderDisabledSteps || [])
+    .concat(disabledStepsOverride)
+    .filter(disabledStep => !(enabledStepsOverride || []).includes(disabledStep))
+}
 
-  return jobSteps.map(jobStep => ({
-    ...(builderSteps.find(cs => cs.id === jobStep.id) || {}),
-    ...jobStep,
-  }))
+function mergeSteps(jobSteps, builderSteps, disabledSteps) {
+  if (!jobSteps) return (builderSteps || []).filter(isStepEnabled)
+
+  return jobSteps
+    .map(jobStep => ({
+      ...(builderSteps.find(cs => cs.id === jobStep.id) || {}),
+      ...jobStep,
+    }))
+    .filter(isStepEnabled)
+
+  function isStepEnabled(step) {
+    return !disabledSteps.includes(step.id)
+  }
 }
 
 async function executeSteps(buildSteps, agent) {

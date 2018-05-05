@@ -99,24 +99,27 @@ module.exports = {
     'commands:npm': {
       npmAuthenticationLine: '//localhost:4873/:_authToken="NPM_TOKEN"',
     },
-        'commands:git': {
+    'commands:git': {
       gitAuthenticationKey: fs.readFileSync(path.resolve(process.env.KEYS_DIR, 'id_rsa')),
       gitUserEmail: 'gil@tayar.org',
       gitUserName: 'Gil Tayar',
     },
     'builder:npm': {
-      steps: {
-        [
-          'npm install',
-          ['npm', 'run', 'build'],
-          {
-            id: 'test'
-            name:'Test',
-            command: ['npm', 'test']
-          }
-        ]
-      },
-      access: 'restricted'
+      access: 'restricted',
+      artifactDefaults: {
+        steps: {
+          [
+            'npm install',
+            ['npm', 'run', 'build'],
+            {
+              id: 'test'
+              name:'Test',
+              command: ['npm', 'test']
+            }
+          ]
+        },
+        disabledSteps: ['publish', 'increment-version'],
+      }
     },
   },
 }

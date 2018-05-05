@@ -2,13 +2,26 @@ const uuid = require('uuid/v4')
 const debug = require('debug')('bilt:jobs')
 const {executeBuild} = require('./build')
 
-async function runJob(job, {awakenedFrom, pimport, events, kvStore, dispatchJob}) {
-  const result = await executeJob(job, {awakenedFrom, pimport, events, kvStore})
+async function runJob(
+  job,
+  {awakenedFrom, pimport, events, kvStore, dispatchJob, disabledSteps, enabledSteps},
+) {
+  const result = await executeJob(job, {
+    awakenedFrom,
+    pimport,
+    events,
+    kvStore,
+    disabledSteps,
+    enabledSteps,
+  })
 
   return await dealWithJobResult(result, {kvStore, dispatchJob})
 }
 
-async function executeJob(job, {awakenedFrom, pimport, events, kvStore}) {
+async function executeJob(
+  job,
+  {awakenedFrom, pimport, events, kvStore, disabledSteps, enabledSteps},
+) {
   const builder = await pimport(`builder:${job.kind}`)
   const agent = await pimport(`agent:${job.kind}`).catch(
     err => (err.toString().includes('No plugins support') ? undefined : Promise.reject(err)),
@@ -29,6 +42,8 @@ async function executeJob(job, {awakenedFrom, pimport, events, kvStore}) {
     job: jobWithId,
     state,
     awakenedFrom,
+    disabledSteps,
+    enabledSteps,
   })
   debug('ran job %s', jobWithId.id)
 

@@ -30,7 +30,7 @@ const argv = yargs
   .option('upto', {
     alias: 'u',
     description: 'directory or artifact name to build, including its dependees',
-    array: true ,
+    array: true,
   })
   .options('force', {
     alias: 'f',
@@ -41,6 +41,16 @@ const argv = yargs
   .options('checkout', {
     alias: 'c',
     description: 'checkout git repo',
+  })
+  .options('disable', {
+    alias: 'd',
+    description: 'disable step',
+    array: true,
+  })
+  .options('enable', {
+    alias: 'e',
+    description: 'enable step',
+    array: true,
   })
   .command('* [repo-directory]', 'repo directory')
 
@@ -54,6 +64,10 @@ async function main() {
     justBuild: buildAll ? undefined : argv.argv.build,
     force: argv.argv.force,
     repository: argv.argv.checkout,
+    enabledSteps: argv.argv.enable,
+    disabledSteps: (argv.argv.disable || []).filter(
+      step => !(argv.argv.enable || []).include(step),
+    ),
   })
 }
 

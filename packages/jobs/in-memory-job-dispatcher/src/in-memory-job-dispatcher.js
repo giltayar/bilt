@@ -1,7 +1,7 @@
 'use strict'
 const {runJob, prepareJobForRunning} = require('@bilt/jobs')
 
-module.exports = async ({pimport}) => {
+module.exports = async ({pimport, config: {disabledSteps, enabledSteps}}) => {
   const events = await pimport('events')
   const kvStore = new Map()
 
@@ -22,7 +22,7 @@ module.exports = async ({pimport}) => {
       if (jobQueue.length === 0) return
       const job = jobQueue.shift()
 
-      runJob(job, {awakenedFrom, pimport, events, kvStore, dispatchJob}).then(nextJob, err => nextJob(null, err))
+      runJob(job, {awakenedFrom, pimport, events, kvStore, dispatchJob, disabledSteps, enabledSteps}).then(nextJob, err => nextJob(null, err))
     }
 
     nextJob()

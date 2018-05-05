@@ -22,7 +22,7 @@ const defaults = {
         '--allow-same-version',
         nextVersion,
       ],
-      condition: ({packageJson, artifact: {publish}}) => !packageJson.private && publish,
+      condition: ({packageJson}) => !packageJson.private,
     },
     {
       id: 'build',
@@ -40,7 +40,7 @@ const defaults = {
       id: 'publish',
       name: 'Publish',
       command: ({access}) => ['npm', 'publish', '--access', access],
-      condition: ({packageJson, artifact: {publish}}) => !packageJson.private && publish,
+      condition: ({packageJson}) => !packageJson.private,
     },
   ],
   access: 'public',

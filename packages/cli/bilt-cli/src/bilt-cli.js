@@ -7,9 +7,18 @@ const flatten = require('lodash.flatten')
 const artifactFinder = require('@bilt/artifact-finder')
 const defaultbiltConfig = require('./default-biltrc')
 
-async function buildHere(directoryToBuild, {upto, from, justBuild, force, repository} = {}) {
+async function buildHere(
+  directoryToBuild,
+  {upto, from, justBuild, force, repository, disabledSteps, enabledSteps} = {},
+) {
   const isRemoteRepo = repository
-  const pimport = await createPimport(isRemoteRepo, directoryToBuild, repository)
+  const pimport = await createPimport(
+    isRemoteRepo,
+    directoryToBuild,
+    repository,
+    disabledSteps,
+    enabledSteps,
+  )
   try {
     await configureEventsToOutputEventToStdout(pimport)
 
@@ -32,7 +41,13 @@ async function buildHere(directoryToBuild, {upto, from, justBuild, force, reposi
   }
 }
 
-async function createPimport(isRemoteRepo, directoryToBuild, repository) {
+async function createPimport(
+  isRemoteRepo,
+  directoryToBuild,
+  repository,
+  disabledSteps,
+  enabledSteps,
+) {
   debug('loading configuration', directoryToBuild)
   const {config: buildConfig, filepath} = await cosmiConfig('bilt', {
     rcExtensions: true,
@@ -43,9 +58,6 @@ async function createPimport(isRemoteRepo, directoryToBuild, repository) {
       defaultbiltConfig.plugins,
       buildConfig.plugins,
       {
-        'agent:docker': {
-          directory: isRemoteRepo ? undefined : directoryToBuild,
-        },
         'agent:npm': {
           directory: isRemoteRepo ? undefined : directoryToBuild,
         },
@@ -53,6 +65,7 @@ async function createPimport(isRemoteRepo, directoryToBuild, repository) {
           repository: isRemoteRepo ? repository : undefined,
           directory: isRemoteRepo ? undefined : directoryToBuild,
         },
+        jobDispatcher: {disabledSteps, enabledSteps},
       },
     ],
     {
@@ -73,7 +86,7 @@ async function configureEventsToOutputEventToStdout(pimport) {
   let nothingToBuild = false
   await events.subscribe('STARTING_REPO_JOB', ({artifactsToBeBuilt}) => {
     if (artifactsToBeBuilt.length === 0) {
-      console.log('#### Nothing to build')
+      console.log('####### Nothing to build')
       nothingToBuild = true
     } else {
       console.log('####### Building artifacts: %s', artifactsToBeBuilt.join(','))
