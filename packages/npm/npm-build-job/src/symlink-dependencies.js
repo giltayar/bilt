@@ -2,8 +2,16 @@
 const debug = require('debug')('bilt:npm-build-job')
 const path = require('path')
 
-async function symlinkDependencies(dependencies, directory, artifacts, {agent, agentInstance}) {
-  const artifactToPathMap = new Map(artifacts.map(artifact => [artifact.artifact, artifact.path]))
+async function symlinkDependencies(
+  {agent, agentInstance},
+  dependencies,
+  directory,
+  directoryToBuild,
+  artifacts,
+) {
+  const artifactToPathMap = new Map(
+    artifacts.map(artifact => [artifact.artifact, path.join(directoryToBuild, artifact.path)]),
+  )
 
   await Promise.all(
     dependencies.map(async dependency => {

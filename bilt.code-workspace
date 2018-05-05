@@ -29,6 +29,12 @@
 		},
 		{
 			"path": "packages/agents/local-docker-agent"
+		},
+		{
+			"path": "packages/fs/symlink"
+		},
+		{
+			"path": "packages/agents/remote-docker-agent"
 		}
 	],
 	"settings": {

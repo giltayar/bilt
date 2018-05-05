@@ -1,10 +1,15 @@
 # TODO
 
+## Small Issues
+
+* Write a test for `symlink` package
+
 ## Continuation
 
 ## CLI and productization
 
 1. Add npm linking
+   * All that's needed is to support funcCommand in build steps
 1. Deal nicely with output
 1. Make it a simple global install, available to any who wants it
 

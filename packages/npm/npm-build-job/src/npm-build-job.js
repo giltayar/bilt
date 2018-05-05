@@ -11,6 +11,28 @@ const defaults = {
       id: 'install',
       name: 'Install',
       command: ['npm', 'install'],
+      condition: ({packageJsonChanged}) => packageJsonChanged,
+    },
+    {
+      id: 'link',
+      name: 'Link local packages',
+      funcCommand: async ({
+        agent,
+        agentInstance,
+        dependencies,
+        directory,
+        directoryToBuild,
+        artifacts,
+      }) =>
+        await symlinkDependencies(
+          {agent, agentInstance},
+          dependencies,
+          directory,
+          directoryToBuild,
+          artifacts,
+        ),
+      condition: ({linkLocalPackages, packageJsonChanged}) =>
+        packageJsonChanged && linkLocalPackages,
     },
     {
       id: 'increment-version',
@@ -48,18 +70,13 @@ const defaults = {
 
 module.exports = async ({
   pimport,
-  config: {artifactDefaults, linkLocalPackages},
+  config: {artifactDefaults, directory: directoryToBuild},
   plugins: [repositoryFetcher, commander],
 }) => {
   return {
     artifactDefaults: {...defaults, ...artifactDefaults},
     async setupBuildSteps({job, agentInstance}) {
-      const {
-        dependencies,
-        artifacts,
-        artifact: {path: artifactPath},
-        filesChangedSinceLastBuild,
-      } = job
+      const {artifacts, artifact: {path: artifactPath}, filesChangedSinceLastBuild} = job
       const agent = await pimport(agentInstance.kind)
 
       const {directory} = await repositoryFetcher.fetchRepository({
@@ -70,13 +87,6 @@ module.exports = async ({
 
       const packageJsonChanged =
         !filesChangedSinceLastBuild || filesChangedSinceLastBuild.includes('package.json')
-
-      if (packageJsonChanged) {
-        if (dependencies && linkLocalPackages) {
-          debug('linking to dependent packages %o', dependencies)
-          await symlinkDependencies({agent, agentInstance}, dependencies, artifactPath, artifacts)
-        }
-      }
 
       debug(
         'Reading package.json %s using agent %o',
@@ -98,6 +108,7 @@ module.exports = async ({
           agentInstance,
           directory,
           packageJson,
+          packageJsonChanged,
           commander,
           commanderSetup,
         )
@@ -106,10 +117,13 @@ module.exports = async ({
       return {
         buildContext: {
           packageJson,
+          agent,
           agentInstance,
           directory,
           commanderSetup,
           nextVersion,
+          artifacts,
+          directoryToBuild,
         },
       }
     },
