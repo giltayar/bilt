@@ -12,7 +12,7 @@ const biltHere = require('../../src/bilt-cli')
 
 const testRepoSrc = path.resolve(__dirname, 'bilt-cli/test-repo-remote')
 
-describe.skip('remote docker with publisgh use-case', () => {
+describe.skip('remote docker with publish use-case', () => {
   const pathToCompose = path.join(__dirname, 'docker-compose.yml')
 
   let gitServerRepoDir
@@ -44,7 +44,7 @@ describe.skip('remote docker with publisgh use-case', () => {
       ...process.env,
       npm_config_registry: 'http://npm-registry:4873',
       KEYS_DIR: path.resolve(__dirname, 'bilt-cli/git-server/keys'),
-      TEST_NETWORK: `${envName.replace('_', '')}_default`,
+      TEST_NETWORK: `${envName}_default`,
     }
     const remoteRepo = `ssh://git@${gitServerAddress}/git-server/repos/test-repo`
     const buildDir = await setupBuildDir(

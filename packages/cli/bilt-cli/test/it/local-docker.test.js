@@ -12,7 +12,7 @@ const biltHere = require('../../src/bilt-cli')
 
 const testRepoSrc = path.resolve(__dirname, 'bilt-cli/test-repo-local-docker')
 
-describe.skip('local directory (with docker) with publish use-case', () => {
+describe('local directory (with docker) with publish use-case', () => {
   const pathToCompose = path.join(__dirname, 'docker-compose.yml')
 
   let gitServerRepoDir
@@ -29,6 +29,7 @@ describe.skip('local directory (with docker) with publish use-case', () => {
       },
     },
     shouldPullImages: false,
+    containerCleanUp: false, // @@@GIL
   })
 
   it('should build the directory with all its packages', async () => {
@@ -44,7 +45,7 @@ describe.skip('local directory (with docker) with publish use-case', () => {
       ...process.env,
       npm_config_registry: 'http://npm-registry:4873',
       KEYS_DIR: path.resolve(__dirname, 'bilt-cli/git-server/keys'),
-      TEST_NETWORK: `${envName.replace('_', '')}_default`,
+      TEST_NETWORK: `${envName}_default`,
     }
     const remoteRepo = `ssh://git@${gitServerAddress}/git-server/repos/test-repo`
     const buildDir = await setupBuildDir(

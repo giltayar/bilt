@@ -4,8 +4,6 @@
 
 ## CLI and productization
 
-1. Changes due to CLI definition:
-   * Support enabling/disabling steps globally. (to support publishing, cli, or not publishing, dev)
 1. Add npm linking
 1. Deal nicely with output
 1. Make it a simple global install, available to any who wants it
