@@ -12,7 +12,7 @@ const biltHere = require('../../src/bilt-cli')
 
 const testRepoSrc = path.resolve(__dirname, 'bilt-cli/test-repo-remote')
 
-describe('remote docker with publisgh use-case', () => {
+describe.skip('remote docker with publisgh use-case', () => {
   const pathToCompose = path.join(__dirname, 'docker-compose.yml')
 
   let gitServerRepoDir

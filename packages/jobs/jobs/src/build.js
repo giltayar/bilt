@@ -55,7 +55,7 @@ async function executeBuild({
 
 function mergeDisabledSteps(builderDisabledSteps, disabledStepsOverride, enabledStepsOverride) {
   return (builderDisabledSteps || [])
-    .concat(disabledStepsOverride)
+    .concat(disabledStepsOverride || [])
     .filter(disabledStep => !(enabledStepsOverride || []).includes(disabledStep))
 }
 

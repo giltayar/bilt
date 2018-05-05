@@ -66,7 +66,7 @@ async function main() {
     repository: argv.argv.checkout,
     enabledSteps: argv.argv.enable,
     disabledSteps: (argv.argv.disable || []).filter(
-      step => !(argv.argv.enable || []).include(step),
+      step => !(argv.argv.enable || []).includes(step),
     ),
   })
 }

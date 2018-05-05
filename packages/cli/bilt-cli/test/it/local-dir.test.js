@@ -1,7 +1,5 @@
 'use strict'
-const {promisify: p} = require('util')
 const path = require('path')
-const fs = require('fs')
 const {expect} = require('chai')
 const {describe, it, before, after} = require('mocha')
 const {dockerComposeTool, getAddressForService} = require('docker-compose-mocha')
@@ -16,7 +14,7 @@ const biltHere = require('../../src/bilt-cli')
 
 const testRepoSrc = path.resolve(__dirname, 'bilt-cli/test-repo-local')
 
-describe.only('local directory use-case', () => {
+describe('local directory use-case', () => {
   const pathToCompose = path.join(__dirname, 'docker-compose.yml')
 
   let gitServerRepoDir
@@ -36,7 +34,7 @@ describe.only('local directory use-case', () => {
     brutallyKill: true,
   })
 
-  it('should build the directory with all its packages, and on rebuild do nothing', async () => {
+  it('should build the directory with all its packages, including publishing', async () => {
     const npmRegistryAddress = await getAddressForService(
       envName,
       pathToCompose,
@@ -72,30 +70,5 @@ describe.only('local directory use-case', () => {
 
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.0', npmRegistryAddress)
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.0', npmRegistryAddress)
-
-    await p(fs.unlink)(path.join(buildDir, 'a/postinstalled.txt'))
-    await p(fs.unlink)(path.join(buildDir, 'b/postinstalled.txt'))
-    await p(fs.unlink)(path.join(buildDir, 'c/voodooed.txt'))
-
-    await biltHere(buildDir)
-
-    expect(await p(fs.exists)(path.join(buildDir, 'a/postinstalled.txt'))).to.be.false
-    expect(await p(fs.exists)(path.join(buildDir, 'b/postinstalled.txt'))).to.be.false
-    expect(await p(fs.exists)(path.join(buildDir, 'c/voodooed.txt'))).to.be.false
-
-    await biltHere(buildDir, {force: true, from: [path.join(buildDir, 'b')]})
-
-    expect(await p(fs.exists)(path.join(buildDir, 'a/postinstalled.txt'))).to.be.true
-    expect(await p(fs.exists)(path.join(buildDir, 'b/postinstalled.txt'))).to.be.true
-    expect(await p(fs.exists)(path.join(buildDir, 'c/voodooed.txt'))).to.be.false
-
-    await p(fs.unlink)(path.join(buildDir, 'a/postinstalled.txt'))
-    await p(fs.unlink)(path.join(buildDir, 'b/postinstalled.txt'))
-
-    await biltHere(buildDir, {force: true, upto: ['this-pkg-does-not-exist-in-npmjs.b']})
-
-    expect(await p(fs.exists)(path.join(buildDir, 'a/postinstalled.txt'))).to.be.false
-    expect(await p(fs.exists)(path.join(buildDir, 'b/postinstalled.txt'))).to.be.true
-    expect(await p(fs.exists)(path.join(buildDir, 'c/voodooed.txt'))).to.be.false
   })
 })

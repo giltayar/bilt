@@ -21,7 +21,8 @@ module.exports = {
     },
     'commander:git': {
       package: '@bilt/git-commander',
-      gitAuthenticationKey: fs.readFileSync(path.resolve(process.env.KEYS_DIR, 'id_rsa')),
+      gitAuthenticationKey:
+        process.env.KEYS_DIR && fs.readFileSync(path.resolve(process.env.KEYS_DIR, 'id_rsa')),
       gitUserEmail: 'gil@tayar.org',
       gitUserName: 'Gil Tayar',
     },

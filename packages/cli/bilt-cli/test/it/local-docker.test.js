@@ -12,7 +12,7 @@ const biltHere = require('../../src/bilt-cli')
 
 const testRepoSrc = path.resolve(__dirname, 'bilt-cli/test-repo-local-docker')
 
-describe('local directory (with docker) with publish use-case', () => {
+describe.skip('local directory (with docker) with publish use-case', () => {
   const pathToCompose = path.join(__dirname, 'docker-compose.yml')
 
   let gitServerRepoDir
