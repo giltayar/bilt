@@ -17,7 +17,7 @@ module.exports = {
       }
     },
     'builder:npm': {
-      artifactDefaults: {publish: true},
+      // artifactDefaults: {publish: true},
     },
     'commander:git': {
       package: '@bilt/git-commander',

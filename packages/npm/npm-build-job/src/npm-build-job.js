@@ -31,8 +31,7 @@ const defaults = {
           directoryToBuild,
           artifacts,
         ),
-      condition: ({linkLocalPackages, packageJsonChanged}) =>
-        packageJsonChanged && linkLocalPackages,
+      condition: ({packageJsonChanged}) => packageJsonChanged,
     },
     {
       id: 'increment-version',
@@ -70,7 +69,7 @@ const defaults = {
 
 module.exports = async ({
   pimport,
-  config: {artifactDefaults, directory: directoryToBuild},
+  config: {artifactDefaults},
   plugins: [repositoryFetcher, commander],
 }) => {
   return {
@@ -79,14 +78,15 @@ module.exports = async ({
       const {artifacts, artifact: {path: artifactPath}, filesChangedSinceLastBuild} = job
       const agent = await pimport(agentInstance.kind)
 
-      const {directory} = await repositoryFetcher.fetchRepository({
+      const {directory: directoryToBuild} = await repositoryFetcher.fetchRepository({
         agentInstance,
-        subdirectory: artifactPath,
       })
+      const directory = path.join(directoryToBuild, artifactPath)
       debug('building npm package under directory %s', directory)
 
       const packageJsonChanged =
-        !filesChangedSinceLastBuild || filesChangedSinceLastBuild.includes('package.json')
+        !filesChangedSinceLastBuild ||
+        filesChangedSinceLastBuild.includes(`${artifactPath}/package.json`)
 
       debug(
         'Reading package.json %s using agent %o',
@@ -102,13 +102,12 @@ module.exports = async ({
 
       const artifact = job.artifact
 
-      if (artifact.publish && !packageJson.private) {
+      if (artifact.steps.find(s => s.id === 'increment-version') && !packageJson.private) {
         nextVersion = await findNextVersion(
           agent,
           agentInstance,
           directory,
           packageJson,
-          packageJsonChanged,
           commander,
           commanderSetup,
         )
@@ -120,10 +119,11 @@ module.exports = async ({
           agent,
           agentInstance,
           directory,
+          directoryToBuild,
           commanderSetup,
           nextVersion,
           artifacts,
-          directoryToBuild,
+          packageJsonChanged,
         },
       }
     },
@@ -134,8 +134,18 @@ module.exports = async ({
 
       const buildSteps = artifact.steps
         .filter(s => evaluateStepCondition(s, buildContext))
-        .map(s => (typeof s.command === 'function' ? {...s, command: s.command(buildContext)} : s))
-        .map(s => transform({agentInstance, cwd: directory, ...s}))
+        .map(
+          s =>
+            s.funcCommand != null
+              ? s
+              : typeof s.command === 'function' ? {...s, command: s.command(buildContext)} : s,
+        )
+        .map(
+          s =>
+            s.funcCommand != null
+              ? () => s.funcCommand(buildContext)
+              : transform({agentInstance, cwd: directory, ...s}),
+        )
 
       return {buildSteps}
     },

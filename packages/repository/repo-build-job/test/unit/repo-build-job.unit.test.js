@@ -69,26 +69,23 @@ describe('repo-build-job', function() {
     expect(jobNames(jobsThatRan)).to.eql(['d2', 'a', 'd', 'c', 'b'])
   })
 
-  it.only(
-    'should execute builds based on dependency order, even if they all have dependencies (even to non-existant stuff)',
-    () => {
-      const artifacts = [
-        {name: 'b', path: 'b', dependencies: ['c']},
-        {name: 'c', path: 'ccc', dependencies: ['d', 'd2']},
-        {name: 'd', path: 'd', dependencies: ['a']},
-        {name: 'd2', path: 'd2', dependencies: ['x']},
-        {name: 'a', path: 'a', dependencies: ['x']},
-      ]
-      const repoJob = {
-        justBuildArtifacts: names(artifacts),
-        filesChangedSinceLastBuild: {},
-      }
+  it('should execute builds based on dependency order, even if they all have dependencies (even to non-existant stuff)', () => {
+    const artifacts = [
+      {name: 'b', path: 'b', dependencies: ['c']},
+      {name: 'c', path: 'ccc', dependencies: ['d', 'd2']},
+      {name: 'd', path: 'd', dependencies: ['a']},
+      {name: 'd2', path: 'd2', dependencies: ['x']},
+      {name: 'a', path: 'a', dependencies: ['x']},
+    ]
+    const repoJob = {
+      justBuildArtifacts: names(artifacts),
+      filesChangedSinceLastBuild: {},
+    }
 
-      const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
+    const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
 
-      expect(jobNames(jobsThatRan)).to.eql(['d2', 'a', 'd', 'c', 'b'])
-    },
-  )
+    expect(jobNames(jobsThatRan)).to.eql(['d2', 'a', 'd', 'c', 'b'])
+  })
 
   it('should execute only builds in justBuildArtifacts', () => {
     const artifacts = [

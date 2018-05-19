@@ -75,8 +75,12 @@ function mergeSteps(jobSteps, builderSteps, disabledSteps) {
 }
 
 async function executeSteps(buildSteps, agent) {
-  for (const executeCommandArg of buildSteps) {
-    await agent.executeCommand(executeCommandArg)
+  for (const command of buildSteps) {
+    if (typeof command === 'function') {
+      await command()
+    } else {
+      await agent.executeCommand(command)
+    }
   }
 }
 

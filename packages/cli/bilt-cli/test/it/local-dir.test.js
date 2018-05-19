@@ -1,9 +1,11 @@
 'use strict'
+const {promisify: p} = require('util')
 const path = require('path')
+const fs = require('fs')
 const {expect} = require('chai')
-const {describe, it, before, after} = require('mocha')
+const {describe, it, before, after, beforeEach} = require('mocha')
 const {dockerComposeTool, getAddressForService} = require('docker-compose-mocha')
-const {fileContents} = require('../utils/file-utils')
+const {fileContents, writeFile} = require('../utils/file-utils')
 const {
   setupBuildDir,
   setupFolder,
@@ -34,13 +36,10 @@ describe('local directory use-case', () => {
     brutallyKill: true,
   })
 
-  it('should build the directory with all its packages, including publishing', async () => {
-    const npmRegistryAddress = await getAddressForService(
-      envName,
-      pathToCompose,
-      'npm-registry',
-      4873,
-    )
+  let buildDir
+  let npmRegistryAddress
+  beforeEach(async () => {
+    npmRegistryAddress = await getAddressForService(envName, pathToCompose, 'npm-registry', 4873)
     const gitServerAddress = await getAddressForService(envName, pathToCompose, 'git-server', 22)
 
     const remoteRepo = `ssh://git@${gitServerAddress}/git-server/repos/test-repo`
@@ -51,13 +50,15 @@ describe('local directory use-case', () => {
       KEYS_DIR: path.resolve(__dirname, 'bilt-cli/git-server/keys'),
     }
 
-    const buildDir = await setupBuildDir(
+    buildDir = await setupBuildDir(
       testRepoSrc,
       remoteRepo,
       undefined,
       async buildDir => await adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress),
     )
+  })
 
+  it('should build the directory with all its packages, including publishing', async () => {
     await biltHere(buildDir)
 
     expect(await fileContents(buildDir, 'a/postinstalled.txt')).to.equal('')
@@ -71,4 +72,36 @@ describe('local directory use-case', () => {
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.0', npmRegistryAddress)
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.0', npmRegistryAddress)
   })
+
+  it('should support link', async () => {
+    await biltHere(buildDir, {disabledSteps: ['link']})
+
+    await changeScript(
+      buildDir,
+      'a',
+      'build',
+      'cp node_modules/this-pkg-does-not-exist-in-npmjs.b/b.txt .',
+    )
+    await writeFile('something new', buildDir, 'b/b.txt')
+
+    await biltHere(buildDir, {
+      disabledSteps: ['increment-version', 'publish'],
+      enabledSteps: ['link'],
+    })
+
+    expect(await fileContents(buildDir, 'a/b.txt')).to.equal('something new')
+  })
 })
+
+async function changeScript(buildDir, packageFolder, scriptName, script) {
+  const packageJson = JSON.parse(
+    await p(fs.readFile)(path.join(buildDir, packageFolder, 'package.json'), 'utf-8'),
+  )
+
+  packageJson.scripts[scriptName] = script
+
+  await p(fs.writeFile)(
+    path.join(buildDir, packageFolder, 'package.json'),
+    JSON.stringify(packageJson),
+  )
+}

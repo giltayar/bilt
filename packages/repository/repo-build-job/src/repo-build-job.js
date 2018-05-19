@@ -90,10 +90,11 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
 
       debug('building artifact %s', artifactToBuild)
       const artifact = state.allArtifacts.find(a => a.name === artifactToBuild)
+      const filesChangedSinceLastBuildInArtifact = state.filesChangedSinceLastBuild[artifact.path]
       const artifactJob = createJobFromArtifact(
         artifact,
         linkDependencies ? state.allArtifacts : undefined,
-        Object.keys(state.filesChangedSinceLastBuild[artifact.path] || {}),
+        filesChangedSinceLastBuildInArtifact && Object.keys(filesChangedSinceLastBuildInArtifact),
       )
 
       debug('decided to run sub-job %o', artifactJob)

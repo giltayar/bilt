@@ -82,6 +82,16 @@ async function configureEventsToOutputEventToStdout(pimport) {
 
     console.log('####### Building', job.artifact.path || job.directory)
   })
+  await events.subscribe('END_JOB', ({job, success, err}) => {
+    if (job.kind === 'repository') return
+
+    if (!success)
+      console.log(
+        '####### Build %s failed with error: %s',
+        job.artifact.path || job.directory,
+        err.stack || err,
+      )
+  })
 
   let nothingToBuild = false
   await events.subscribe('STARTING_REPO_JOB', ({artifactsToBeBuilt}) => {

@@ -11,7 +11,7 @@ async function createSymlink(link, whichWillPointTo) {
   } catch (err) {
     if (err.code === 'EEXIST') {
       // dir exists (probably as symlink), needs to be deleted
-      await p(fs.unlink)(link)
+      await p(rimraf)(link)
 
       await createSymlink(link, whichWillPointTo)
     } else if (err.code === 'ENOENT') {

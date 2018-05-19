@@ -83,7 +83,7 @@ module.exports = async ({kind}) => {
       return path
     },
     async createSymlink(agentInstance, link, target) {
-      return await createSymlinkInHost(path.join(directory, link), path.join(directory, target))
+      return await createSymlinkInHost(link, target)
     },
 
     async finalize() {

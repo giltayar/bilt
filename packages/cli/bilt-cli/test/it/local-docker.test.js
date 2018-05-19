@@ -29,7 +29,6 @@ describe('local directory (with docker) with publish use-case', () => {
       },
     },
     shouldPullImages: false,
-    containerCleanUp: false, // @@@GIL
   })
 
   it('should build the directory with all its packages', async () => {
