@@ -54,7 +54,7 @@ describe('local directory (with docker) with publish use-case', () => {
       async buildDir =>
         await adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress, 'npm-registry:4873'),
     )
-    await biltHere(buildDir)
+    await biltHere(buildDir, {disabledSteps: ['link']})
 
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.0', npmRegistryAddress)
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.0', npmRegistryAddress)

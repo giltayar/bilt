@@ -3,7 +3,7 @@ const {promisify: p} = require('util')
 const path = require('path')
 const fs = require('fs')
 const {expect} = require('chai')
-const {describe, it, before, after, beforeEach} = require('mocha')
+const {describe, it, afterEach, beforeEach} = require('mocha')
 const {dockerComposeTool, getAddressForService} = require('docker-compose-mocha')
 const {fileContents, writeFile} = require('../utils/file-utils')
 const {
@@ -20,11 +20,11 @@ describe('local directory use-case', () => {
   const pathToCompose = path.join(__dirname, 'docker-compose.yml')
 
   let gitServerRepoDir
-  before(async () => {
+  beforeEach(async () => {
     gitServerRepoDir = await setupFolder(path.join(__dirname, 'bilt-cli/git-server/repos/'))
   })
 
-  const envName = dockerComposeTool(before, after, pathToCompose, {
+  const envName = dockerComposeTool(beforeEach, afterEach, pathToCompose, {
     envVars: {
       NPM_USER: 'npm-user',
       NPM_PASSWORD: 'npm-user-password',
@@ -59,12 +59,12 @@ describe('local directory use-case', () => {
   })
 
   it('should build the directory with all its packages, including publishing', async () => {
-    await biltHere(buildDir)
+    await biltHere(buildDir, {disabledSteps: ['link']})
 
     expect(await fileContents(buildDir, 'a/postinstalled.txt')).to.equal('')
-    expect(await fileContents(buildDir, 'b/postinstalled.txt')).to.equal('')
-    expect(await fileContents(buildDir, 'b/built.txt')).to.equal('')
-    expect(await fileContents(buildDir, 'b/tested.txt')).to.equal('')
+    expect(await fileContents(buildDir, 'b/postinstalled.txt')).to.equal('lalala')
+    expect(await fileContents(buildDir, 'b/built.txt')).to.equal('lalala')
+    expect(await fileContents(buildDir, 'b/tested.txt')).to.equal('lalala')
     expect(await fileContents(buildDir, 'c/postinstalled.txt')).to.equal('')
     expect(await fileContents(buildDir, 'c/voodooed.txt')).to.equal('')
     expect(await fileContents(buildDir, 'a/c-voodooed.txt')).to.equal('')
