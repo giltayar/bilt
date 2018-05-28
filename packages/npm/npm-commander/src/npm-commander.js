@@ -17,12 +17,18 @@ module.exports = initializer(
         return await ensureAgentInstanceInitialized({agentInstance})
       },
 
-      transformAgentCommand(commandArgs, {setup: {homeDir}}) {
+      transformAgentCommand(
+        commandArgs,
+        {
+          setup: {homeDir},
+        },
+      ) {
+        const registry = npmRegistry || process.env.npm_config_registry
         return {
           ...commandArgs,
           env: {
             npm_config_userconfig: path.join(homeDir, '.npmrc'),
-            npm_config_registry: npmRegistry || process.env.npm_config_registry,
+            ...(registry ? {npm_config_registry: registry} : undefined),
           },
         }
       },

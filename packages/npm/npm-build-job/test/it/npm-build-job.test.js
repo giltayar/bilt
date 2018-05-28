@@ -126,6 +126,7 @@ describe('npm-build-job', function() {
       ],
       publish: false,
       doGroan: true,
+      path: '',
     }
 
     await executeBuild({
@@ -134,9 +135,8 @@ describe('npm-build-job', function() {
       job: {
         dependencies: [],
         artifacts: [],
-        artifact: {path: ''},
-        filesChangedSinceLastBuild: [],
         artifact,
+        filesChangedSinceLastBuild: undefined,
       },
     })
 

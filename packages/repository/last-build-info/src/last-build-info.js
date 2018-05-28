@@ -9,7 +9,9 @@ const makeDir = require('make-dir')
 const pickBy_ = require('lodash.pickby')
 const gitRepoInfo = require('git-repo-info')
 const ignore = require('ignore')
-const {git: {findChangedFiles: gitFindChangedFiles}} = require('jest-changed-files')
+const {
+  git: {findChangedFiles: gitFindChangedFiles},
+} = require('jest-changed-files')
 
 module.exports = async ({directory}) => {
   return {

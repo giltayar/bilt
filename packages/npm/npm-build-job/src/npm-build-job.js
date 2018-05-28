@@ -60,8 +60,9 @@ const defaults = {
     {
       id: 'publish',
       name: 'Publish',
-      command: ({access}) => ['npm', 'publish', '--access', access],
-      condition: ({packageJson}) => !packageJson.private,
+      command: ({access}) => ['npm', 'publish', '--access', access || 'public'],
+      condition: ({packageJson, artifact: {publish}}) =>
+        !packageJson.private && (publish === undefined || publish),
     },
   ],
   access: 'public',
@@ -75,12 +76,17 @@ module.exports = async ({
   return {
     artifactDefaults: {...defaults, ...artifactDefaults},
     async setupBuildSteps({job, agentInstance}) {
-      const {artifacts, artifact: {path: artifactPath}, filesChangedSinceLastBuild} = job
+      const {
+        artifacts,
+        artifact: {path: artifactPath},
+        filesChangedSinceLastBuild,
+      } = job
       const agent = await pimport(agentInstance.kind)
 
       const {directory: directoryToBuild} = await repositoryFetcher.fetchRepository({
         agentInstance,
       })
+
       const directory = path.join(directoryToBuild, artifactPath)
       debug('building npm package under directory %s', directory)
 
@@ -138,7 +144,9 @@ module.exports = async ({
           s =>
             s.funcCommand != null
               ? s
-              : typeof s.command === 'function' ? {...s, command: s.command(buildContext)} : s,
+              : typeof s.command === 'function'
+                ? {...s, command: s.command(buildContext)}
+                : s,
         )
         .map(
           s =>

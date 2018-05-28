@@ -19,11 +19,12 @@ describe('local directory use-case', () => {
 
         await p(exec)(`${process.argv0} ${cli} ${buildDir}`)
 
-        const {stdout, stderr} = await p(
-          exec,
-        )(`${process.argv0} ${cli} ${buildDir} -d publish -d increment-version`, {
-          env: {...process.env, DEBUG: ''},
-        })
+        const {stdout, stderr} = await p(exec)(
+          `${process.argv0} ${cli} ${buildDir} -d publish -d increment-version`,
+          {
+            env: {...process.env, DEBUG: ''},
+          },
+        )
         console.log(stdout, stderr)
 
         expect(await fileContents(buildDir, 'a/postinstalled.txt')).to.equal('')

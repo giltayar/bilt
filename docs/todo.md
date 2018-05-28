@@ -16,6 +16,7 @@
 ## Fine Tuning
 
 1. Start using it in applitools projects.
+1. Add "tags" so that we can enable/disable based on tags (e.g. "local", "ci"...)
 1. agent instances should have a buildDir, and everything should be relative to that (at least by default).
 1. Enable it to build itself
 1. Show error if there are circular dependencies. Or maybe build the one with the less dependencies

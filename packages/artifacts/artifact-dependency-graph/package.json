@@ -1,6 +1,6 @@
 {
   "name": "@bilt/artifact-dependency-graph",
-  "version": "1.0.0",
+  "version": "1.0.13",
   "description": "",
   "main": "src/artifact-dependency-graph.js",
   "files": [

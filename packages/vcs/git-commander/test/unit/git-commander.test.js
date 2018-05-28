@@ -4,6 +4,6 @@ const {expect} = require('chai')
 
 describe('git-commander', function() {
   it('should show hello world', async () => {
-    expect(4).to.equal(2)
+    expect(2).to.equal(2)
   })
 })

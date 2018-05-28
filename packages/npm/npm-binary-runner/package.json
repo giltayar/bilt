@@ -1,6 +1,6 @@
 {
   "name": "@bilt/npm-binary-runner",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "src/npm-binary-runner.js",
   "files": [
