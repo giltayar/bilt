@@ -1,6 +1,6 @@
 {
   "name": "@bilt/local-docker-agent",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "",
   "main": "src/local-docker-agent.js",
   "files": [

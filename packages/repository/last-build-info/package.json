@@ -1,6 +1,6 @@
 {
   "name": "@bilt/last-build-info",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "description": "",
   "main": "src/last-build-info.js",
   "engines": {
@@ -41,7 +41,7 @@
     "eslint-plugin-node": "^5.2.1",
     "eslint-plugin-prettier": "^2.1.2",
     "mocha": "^3.5.0",
-    "plugin-import": "^1.0.8",
+    "plugin-import": "^1.0.11",
     "prettier": "^1.5.2"
   }
 }

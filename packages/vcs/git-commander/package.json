@@ -1,6 +1,6 @@
 {
   "name": "@bilt/git-commander",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "description": "",
   "main": "src/git-commander.js",
   "files": [

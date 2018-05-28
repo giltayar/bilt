@@ -1,12 +1,15 @@
 {
   "name": "@bilt/bilt-cli",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "The CLI that builds a local folder",
   "main": "src/bilt-cli.js",
   "files": [
     "src",
     "scripts"
   ],
+  "bin": {
+    "bilt": "scripts/run-bilt-cli.js"
+  },
   "scripts": {
     "test": "mocha --no-timeouts 'test/**/*.test.js' && npm run eslint",
     "eslint": "eslint '**/*.js'",

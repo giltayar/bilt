@@ -1,6 +1,6 @@
 {
   "name": "@bilt/docker-build-job",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "",
   "main": "src/docker-build-job.js",
   "files": [

@@ -1,6 +1,6 @@
 {
   "name": "@bilt/in-memory-job-dispatcher",
-  "version": "1.0.2",
+  "version": "1.0.5",
   "description": "Dispatches jobs but stores everything in memory. Not restartable",
   "main": "src/in-memory-job-dispatcher.js",
   "scripts": {},

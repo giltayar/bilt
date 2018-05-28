@@ -1,6 +1,6 @@
 {
   "name": "@bilt/git-repository-fetcher",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "description": "",
   "main": "src/git-repository-fetcher.js",
   "files": [
