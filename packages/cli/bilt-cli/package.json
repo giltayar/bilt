@@ -13,7 +13,7 @@
   "scripts": {
     "test": "mocha --no-timeouts 'test/**/*.test.js' && npm run eslint",
     "eslint": "eslint '**/*.js'",
-    "build": "npm run build:e2e-keys && build:e2e-git-repo",
+    "build": "npm run build:e2e-keys && npm run build:e2e-git-repo",
     "build:e2e-keys": "echo y | ssh-keygen -t rsa -P '' -f test/it/bilt-cli/git-server/keys/id_rsa",
     "build:e2e-git-repo": "git init --bare test/it/bilt-cli/git-server/repos/test-repo"
   },
