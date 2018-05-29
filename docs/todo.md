@@ -6,12 +6,10 @@
 
 ## Continuation
 
-* Fix bug: 'A commit will rebuild everything'
-  * Already reproduced in last-build-info. Just need to fix.
-
 ## Bugs
 
 1. I changed symlink, and yet nothing but symlink was built!
+1. Some problem with link step
 
 ## CLI and productization
 
