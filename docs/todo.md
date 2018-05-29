@@ -6,6 +6,13 @@
 
 ## Continuation
 
+* Fix bug: 'A commit will rebuild everything'
+  * Already reproduced in last-build-info. Just need to fix.
+
+## Bugs
+
+1. I changed symlink, and yet nothing but symlink was built!
+
 ## CLI and productization
 
 1. How to make link, publish, increment-version not so low-level steps

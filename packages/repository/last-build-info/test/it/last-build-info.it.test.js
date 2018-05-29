@@ -38,6 +38,34 @@ describe('last-build-info', () => {
       })
     })
 
+    it('should show no changes in files after a commit ', async () => {
+      const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
+      const buildInfo = await buildInfoMaker({directory: gitDir})
+      const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}]
+
+      await buildInfo.savePackageLastBuildInfo({
+        artifactPath: 'a',
+        packageFilesChangedSinceLastBuild: undefined,
+      })
+
+      await p(fs.writeFile)(path.join(gitDir, 'a/a.txt'), 'lalala')
+
+      const fcslb = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      expect(Object.keys(fcslb['a'])).to.eql(['a/a.txt'])
+      await buildInfo.savePackageLastBuildInfo({
+        artifactPath: 'a',
+        artifactFilesChangedSinceLastBuild: fcslb['a'],
+      })
+      const fcslb2 = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      expect(Object.keys(fcslb2['a'])).to.eql([])
+
+      await p(execFile)('git', ['add', '.'], {cwd: gitDir})
+      await p(execFile)('git', ['commit', '-m', 'sadfsaf'], {cwd: gitDir})
+
+      const fcslb3 = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      expect(Object.keys(fcslb3['a'])).to.eql([])
+    })
+
     it('should not show file changes even if we change, if there was no previous save', async () => {
       const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
       const buildInfo = await buildInfoMaker({directory: gitDir})
