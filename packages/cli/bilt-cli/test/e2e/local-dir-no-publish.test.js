@@ -22,7 +22,7 @@ describe('local directory use-case', () => {
         const {stdout, stderr} = await p(exec)(
           `${process.argv0} ${cli} ${buildDir} -d publish -d increment-version`,
           {
-            env: {...process.env, DEBUG: ''},
+            env: {...process.env, DEBUG: '*'},
           },
         )
         console.log(stdout, stderr)

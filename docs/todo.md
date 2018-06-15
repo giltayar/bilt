@@ -8,7 +8,7 @@
 
 ## Bugs
 
-1. I changed symlink, and yet nothing but symlink was built!
+1. I changed symlink, and symlink wasn't built because accordint to debug, no file was changed!
 1. Some problem with link step
 
 ## CLI and productization

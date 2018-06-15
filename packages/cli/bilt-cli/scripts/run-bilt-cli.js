@@ -10,6 +10,7 @@ process.on('unhandledRejection', err => {
 
 const argv = yargs
   .version()
+  .command('* [repo-directory]', 'repo directory')
   .option('build', {
     alias: 'b',
     description: 'directory or artifact name to build. It will build just this artifact',
@@ -51,23 +52,21 @@ const argv = yargs
     alias: 'e',
     description: 'enable step',
     array: true,
-  })
-  .command('* [repo-directory]', 'repo directory')
+  }).argv
 
 async function main() {
-  const repoDir = argv.argv._[0] || (await findRepoDir())
-  const buildAll = argv.argv.all
+  const buildDirectory = argv.repoDirectory || (await findRepoDir())
 
-  await biltHere(repoDir, {
-    upto: buildAll ? undefined : (argv.argv.upto || []).concat(argv.argv.root || []),
-    from: buildAll ? undefined : argv.argv.root,
-    justBuild: buildAll ? undefined : argv.argv.build,
-    force: argv.argv.force,
-    repository: argv.argv.checkout,
-    enabledSteps: argv.argv.enable,
-    disabledSteps: (argv.argv.disable || []).filter(
-      step => !(argv.argv.enable || []).includes(step),
-    ),
+  const buildAll = argv.all
+
+  await biltHere(buildDirectory, {
+    upto: buildAll ? undefined : (argv.upto || []).concat(argv.root || []),
+    from: buildAll ? undefined : argv.root,
+    justBuild: buildAll ? undefined : argv.build,
+    force: argv.force,
+    repository: argv.checkout,
+    enabledSteps: argv.enable,
+    disabledSteps: (argv.disable || []).filter(step => !(argv.enable || []).includes(step)),
   })
 }
 

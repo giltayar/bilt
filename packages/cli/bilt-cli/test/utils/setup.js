@@ -4,7 +4,7 @@ const {exec, execFile} = require('child_process')
 const {promisify: p} = require('util')
 const {expect} = require('chai')
 const cpr = require('cpr')
-const getNpmToken = require('get-npm-token')
+const RegistryClient = require('npm-registry-client')
 const pluginImport = require('plugin-import')
 const {fileContents, writeFile} = require('../utils/file-utils')
 
@@ -123,12 +123,17 @@ async function adjustNpmRegistryInfoInRepo(
   hostNpmRegistryAddress,
   networkNpmRegistryAddress = hostNpmRegistryAddress,
 ) {
-  const npmToken = await p(getNpmToken)(
+  const registryClient = new RegistryClient()
+  const npmToken = (await p(registryClient.adduser.bind(registryClient))(
     `http://${hostNpmRegistryAddress}/`,
-    'npm-user',
-    'gil@tayar.org',
-    'npm-user-password',
-  )
+    {
+      auth: {
+        username: 'npm-user',
+        email: 'gil@tayar.org',
+        password: 'npm-user-password',
+      },
+    },
+  )).token
   const biltRc = await fileContents(buildDir, 'bilt.config.js')
 
   const modifiedbiltRc = biltRc
@@ -142,6 +147,7 @@ async function checkVersionExists(pkg, version, npmRegistryAddress) {
   const {stdout} = await p(execFile)('npm', [
     'view',
     `${pkg}@${version}`,
+    '--json',
     '--registry',
     `http://${npmRegistryAddress}/`,
   ])

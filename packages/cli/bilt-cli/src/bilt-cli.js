@@ -51,7 +51,7 @@ async function createPimport(
   debug('loading configuration', directoryToBuild)
   const {config: buildConfig, filepath} = await cosmiConfig('bilt', {
     rcExtensions: true,
-  }).load(directoryToBuild)
+  }).search(directoryToBuild)
 
   return pluginImport(
     [
