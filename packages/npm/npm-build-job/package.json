@@ -21,6 +21,7 @@
   "dependencies": {
     "@bilt/symlink": "^1.0.2",
     "debug": "^2.6.8",
+    "npm-registry-client": "^8.5.1",
     "semver": "^5.4.1"
   },
   "devDependencies": {
@@ -33,7 +34,6 @@
     "eslint": "^4.2.0",
     "eslint-plugin-mocha-no-only": "0.0.5",
     "eslint-plugin-prettier": "^2.1.2",
-    "get-npm-token": "^1.0.1",
     "mocha": "^3.5.0",
     "plugin-import": "^1.0.8",
     "prettier": "^1.5.2"

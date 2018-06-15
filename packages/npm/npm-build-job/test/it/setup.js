@@ -4,7 +4,7 @@ const os = require('os')
 const fs = require('fs')
 const path = require('path')
 const {dockerComposeTool, getAddressForService} = require('docker-compose-mocha')
-const getNpmToken = require('get-npm-token')
+const RegistryClient = require('npm-registry-client')
 const hostAgentService = require('@bilt/host-agent')
 const pluginImport = require('plugin-import')
 const npmCommanderService = require('@bilt/npm-commander')
@@ -69,12 +69,17 @@ async function createPimport(envName, pathToCompose) {
     'npm-registry',
     4873,
   )
-  const npmToken = await p(getNpmToken)(
+  const registryClient = new RegistryClient()
+  const npmToken = (await p(registryClient.adduser.bind(registryClient))(
     `http://${npmRegistryAddress}/`,
-    'npm-user',
-    'gil@tayar.org',
-    'npm-user-password',
-  )
+    {
+      auth: {
+        username: 'npm-user',
+        email: 'gil@tayar.org',
+        password: 'npm-user-password',
+      },
+    },
+  )).token
   const pimport = await pluginImport([
     {
       'host-agent': hostAgentService,
