@@ -56,6 +56,10 @@ describe('last-build-info', () => {
         artifactPath: 'a',
         artifactFilesChangedSinceLastBuild: fcslb['a'],
       })
+      await buildInfo.savePackageLastBuildInfo({
+        artifactPath: 'b',
+        artifactFilesChangedSinceLastBuild: {},
+      })
       const fcslb2 = await buildInfo.filesChangedSinceLastBuild({artifacts})
       expect(Object.keys(fcslb2['a'])).to.eql([])
 
@@ -64,6 +68,7 @@ describe('last-build-info', () => {
 
       const fcslb3 = await buildInfo.filesChangedSinceLastBuild({artifacts})
       expect(Object.keys(fcslb3['a'])).to.eql([])
+      expect(Object.keys(fcslb3['b'])).to.eql([])
     })
 
     it('should not show file changes even if we change, if there was no previous save', async () => {

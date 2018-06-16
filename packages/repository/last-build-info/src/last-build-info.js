@@ -116,11 +116,11 @@ async function calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, cur
       )
       filesChangedByArtifactPath[artifactPath] = filesChangedSinceLastSuccesfulBuild
     } else {
-      const filesChangedBetweenCommits = await filesChangedFromCommitToCommit(
+      const filesChangedBetweenCommits = (await filesChangedFromCommitToCommit(
         directory,
         commit,
         currentRepoInfo.commit,
-      )
+      )).filter(file => file.startsWith(artifactPath + '/'))
       const filesChangedSinceLastSuccesfulBuild = {
         ...artifactCurrentRepoChangedFilesInWorkspace,
         ...(await readHashesOfFiles(directory, filesChangedBetweenCommits)),
