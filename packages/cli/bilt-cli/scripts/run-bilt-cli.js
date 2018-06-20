@@ -60,7 +60,11 @@ async function main() {
   const buildAll = argv.all
 
   await biltHere(buildDirectory, {
-    upto: buildAll ? undefined : (argv.upto || []).concat(argv.root || []),
+    upto: buildAll
+      ? undefined
+      : !argv.upto && !argv.root
+        ? undefined
+        : (argv.upto || []).concat(argv.root || []),
     from: buildAll ? undefined : argv.root,
     justBuild: buildAll ? undefined : argv.build,
     force: argv.force,
