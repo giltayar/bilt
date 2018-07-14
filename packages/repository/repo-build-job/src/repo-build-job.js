@@ -12,16 +12,16 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
       const {force, uptoArtifacts, fromArtifacts, justBuildArtifacts} = job
       debug('running job repo-build-job')
 
-      const filesChangedSinceLastBuild = force
-        ? {}
-        : (state && state.filesChangedSinceLastBuild) ||
-          (await lastBuildInfo.filesChangedSinceLastBuild({artifacts: job.artifacts}))
+      const {
+        filesChangedSinceLastBuild,
+        artifactBuildTimestamps,
+      } = await determineInitialStateInformation(force, state, lastBuildInfo, job)
 
       if (awakenedFrom && awakenedFrom.result.success) {
         const artifact = awakenedFrom.job.artifact
         await lastBuildInfo.savePackageLastBuildInfo({
           artifactPath: artifact.path,
-          artifactFilesChangedSinceLastBuild: filesChangedSinceLastBuild[artifact.path],
+          rartifactFilesChangedSinceLastBuild: filesChangedSinceLastBuild[artifact.path],
         })
       }
 
@@ -32,6 +32,7 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
           initialAllArtifacts: job.artifacts,
           linkDependencies: job.linkDependencies,
           filesChangedSinceLastBuild,
+          artifactBuildTimestamps,
           uptoArtifacts,
           fromArtifacts,
           justBuildArtifacts,
@@ -45,6 +46,7 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
         initialAllArtifacts,
         linkDependencies,
         filesChangedSinceLastBuild,
+        artifactBuildTimestamps,
         uptoArtifacts,
         fromArtifacts,
         justBuildArtifacts,
@@ -59,6 +61,7 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
         dependencyGraph: dependencyGraphSubsetToBuild({
           dependencyGraph: createDependencyGraph(initialAllArtifacts),
           changedArtifacts: artifactsFromChanges(initialAllArtifacts, filesChangedSinceLastBuild),
+          artifactBuildTimestamps,
           fromArtifacts,
           uptoArtifacts,
           justBuildArtifacts,
@@ -106,6 +109,22 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
   }
 }
 module.exports.plugins = ['lastBuildInfo', 'events']
+
+async function determineInitialStateInformation(force, state, lastBuildInfo, job) {
+  if (force) return {filesChangedSinceLastBuild: {}, artifactBuildTimestamps: {}}
+  if (state) return state
+
+  const buildInfo = await lastBuildInfo.lastBuildInfo({artifacts: job.artifacts})
+
+  return {
+    filesChangedSinceLastBuild: await lastBuildInfo.filesChangedSinceLastBuild({
+      lastBuildInfo: buildInfo,
+    }),
+    artifactBuildTimestamps: await lastBuildInfo.artifactBuildTimestamps({
+      lastBuildInfo: buildInfo,
+    }),
+  }
+}
 
 function determineArtifactsThatAreAlreadyBuilt(awakenedFrom, state) {
   return awakenedFrom && awakenedFrom.result.success

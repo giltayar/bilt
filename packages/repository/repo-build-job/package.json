@@ -1,8 +1,11 @@
 {
   "name": "@bilt/repo-build-job",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "",
   "main": "src/repo-build-job.js",
+  "engines": {
+    "node": ">=8.3.0"
+  },
   "files": [
     "src"
   ],
@@ -21,16 +24,16 @@
     "type": "git"
   },
   "dependencies": {
-    "@bilt/artifact-dependency-graph": "^1.0.0",
-    "debug": "^2.6.8",
+    "@bilt/artifact-dependency-graph": "^1.1.0",
+    "debug": "^3.1.0",
     "lodash.flatten": "^4.4.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
-    "eslint": "^4.2.0",
-    "eslint-plugin-mocha-no-only": "0.0.5",
-    "eslint-plugin-prettier": "^2.1.2",
-    "mocha": "^3.5.3",
-    "prettier": "^1.5.2"
+    "eslint": "^5.1.0",
+    "eslint-plugin-mocha-no-only": "^1.0.0",
+    "eslint-plugin-prettier": "^2.6.2",
+    "mocha": "^5.2.0",
+    "prettier": "^1.13.7"
   }
 }
