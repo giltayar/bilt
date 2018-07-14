@@ -129,7 +129,7 @@ async function runRepoBuildJob({
   const artifacts = await (await artifactFinder()).findArtifacts(directoryToBuild)
 
   if (!upto && !from && !justBuild) {
-    from = artifacts.map(a => a.name)
+    justBuild = artifacts.map(a => a.name)
   }
 
   return [
@@ -152,7 +152,7 @@ function normalizeArtifacts(artifactsOrDirsToBuild, artifacts, directoryToBuild)
   return flatten(
     [].concat(artifactsOrDirsToBuild).map(artifactNameOrDirToBuild => {
       if (artifactNameOrDirToBuild.startsWith('.') || artifactNameOrDirToBuild.startsWith('/')) {
-        const pathOfArtifact = path.resolve(directoryToBuild, artifactNameOrDirToBuild)
+        const pathOfArtifact = path.resolve(process.cwd(), artifactNameOrDirToBuild)
         debug('looking for artifacts under %s', pathOfArtifact)
         const foundArtifacts = artifacts.filter(artifact =>
           path.resolve(directoryToBuild, artifact.path).startsWith(pathOfArtifact),

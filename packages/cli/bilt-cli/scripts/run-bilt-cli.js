@@ -53,7 +53,7 @@ async function main() {
   await biltHere(buildDirectory, {
     upto: argv.upto,
     from: argv.root,
-    justBuild: !argv.upto && !argv.root && !argv.build ? '.' : argv.build,
+    justBuild: argv.build,
     force: argv.force,
     repository: argv.checkout,
     enabledSteps: argv.enable,
