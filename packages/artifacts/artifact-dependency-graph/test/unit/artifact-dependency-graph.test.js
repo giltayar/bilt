@@ -4,7 +4,7 @@ const {expect} = require('chai')
 
 const {
   dependencyGraphSubsetToBuild: dependencyGraphSubsetToBuildOriginal,
-  buildsThatCanBeBuilt,
+  buildThatCanBeBuilt,
 } = require('../..')
 
 const dependencyGraphSubsetToBuild = (
@@ -62,7 +62,7 @@ describe('artifact-dependency-graph', function() {
             fromArtifacts: ['c'],
             artifactBuildTimestamps: {a: new Date(2018, 1, 1), c: new Date(2017, 1, 1)},
           }),
-        ).to.eql({c: [], d: ['c']})
+        ).to.eql({c: ['a'], d: ['c']})
       })
 
       it('should only build the subtree that changed', () => {
@@ -154,7 +154,7 @@ describe('artifact-dependency-graph', function() {
             justBuildArtifacts: ['b'],
             artifactBuildTimestamps: {a: new Date(2018, 1, 1), b: new Date(2017, 1, 1)},
           }),
-        ).to.eql({b: []})
+        ).to.eql({b: ['a']})
       })
 
       it('should only return the nodes that are justBuild, but the dependencies should be there', () => {
@@ -226,7 +226,7 @@ describe('artifact-dependency-graph', function() {
             changedArtifacts: ['f'],
             artifactBuildTimestamps: {a: new Date(2018, 1, 1), b: new Date(2017, 1, 1)},
           }),
-        ).to.eql({c: ['b'], b: [], d: ['c']})
+        ).to.eql({c: ['b'], b: ['a'], d: ['c', 'a']})
         expect(
           dependencyGraphSubsetToBuild(forest, {
             uptoArtifacts: ['c'],
@@ -298,13 +298,20 @@ describe('artifact-dependency-graph', function() {
     })
   })
 
-  describe('artifactsThaCanBeBuilt', () => {
+  describe('buildThaCanBeBuilt', () => {
     it('it works', () => {
-      const forest = {a: [], b: ['a'], c: ['b'], d: ['c', 'a'], e: [], f: ['e', 'c']}
+      const forest = {a: [], e: ['x'], b: ['a'], c: ['b'], d: ['c', 'a'], f: ['e', 'c']}
 
-      expect(buildsThatCanBeBuilt(forest, [])).to.eql(['a', 'e'])
-      expect(buildsThatCanBeBuilt(forest, ['a', 'e'])).to.eql(['b'])
-      expect(buildsThatCanBeBuilt(forest, ['a', 'e', 'c'])).to.eql(['b', 'd', 'f'])
+      expect(buildThatCanBeBuilt(forest, [])).to.eql({build: 'a', hasChangedDependencies: false})
+      expect(buildThatCanBeBuilt(forest, ['a'])).to.eql({build: 'e', hasChangedDependencies: true})
+      expect(buildThatCanBeBuilt(forest, ['a', 'b', 'e'])).to.eql({
+        build: 'c',
+        hasChangedDependencies: true,
+      })
+      expect(buildThatCanBeBuilt(forest, ['a', 'e', 'c'])).to.eql({
+        build: 'b',
+        hasChangedDependencies: true,
+      })
     })
   })
 })
