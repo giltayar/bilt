@@ -35,9 +35,6 @@
 		},
 		{
 			"path": "packages/agents/remote-docker-agent"
-		},
-		{
-			"path": "/Users/giltayar/code/bilt-test-repo"
 		}
 	],
 	"settings": {
