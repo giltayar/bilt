@@ -1,6 +1,6 @@
 {
   "name": "@bilt/npm-build-job",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Job Runner for NPM Jobs",
   "main": "src/npm-build-job.js",
   "scripts": {
@@ -19,23 +19,23 @@
     "type": "git"
   },
   "dependencies": {
-    "@bilt/symlink": "^1.0.2",
-    "debug": "^2.6.8",
-    "npm-registry-client": "^8.5.1",
+    "@bilt/symlink": "^1.0.5",
+    "debug": "^3.1.0",
+    "npm-registry-client": "^8.6.0",
     "semver": "^5.4.1"
   },
   "devDependencies": {
-    "@bilt/host-agent": "^1.0.4",
-    "@bilt/npm-commander": "^1.0.0",
-    "@bilt/jobs": "^1.0.0",
+    "@bilt/host-agent": "^1.0.9",
+    "@bilt/jobs": "^1.0.6",
+    "@bilt/npm-commander": "^1.0.3",
     "chai": "^4.1.2",
     "docker-compose-mocha": "^1.2.0",
     "docker-compose-tool": "0.0.1",
-    "eslint": "^4.2.0",
-    "eslint-plugin-mocha-no-only": "0.0.5",
-    "eslint-plugin-prettier": "^2.1.2",
-    "mocha": "^3.5.0",
-    "plugin-import": "^1.0.8",
-    "prettier": "^1.5.2"
+    "eslint": "^5.1.0",
+    "eslint-plugin-mocha-no-only": "^1.0.0",
+    "eslint-plugin-prettier": "^2.6.2",
+    "mocha": "^5.2.0",
+    "plugin-import": "^1.0.13",
+    "prettier": "^1.13.7"
   }
 }
