@@ -10,12 +10,15 @@ const defaults = {
       id: 'install',
       name: 'Install',
       command: ['npm', 'install'],
-      condition: ({packageJsonChanged}) => packageJsonChanged,
+      condition: ({packageJsonChanged, hasChangedDependencies}) =>
+        packageJsonChanged || hasChangedDependencies,
     },
     {
       id: 'update',
       name: 'Update',
       command: ['npm', 'update'],
+      condition: ({packageJsonChanged, hasChangedDependencies}) =>
+        packageJsonChanged || hasChangedDependencies,
     },
     {
       id: 'increment-version',
@@ -65,6 +68,7 @@ module.exports = async ({
         artifacts,
         artifact: {path: artifactPath},
         filesChangedSinceLastBuild,
+        hasChangedDependencies,
       } = job
       const agent = await pimport(agentInstance.kind)
 
@@ -115,6 +119,7 @@ module.exports = async ({
           nextVersion,
           artifacts,
           packageJsonChanged,
+          hasChangedDependencies,
         },
       }
     },
