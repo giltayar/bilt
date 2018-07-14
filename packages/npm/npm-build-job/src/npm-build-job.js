@@ -2,7 +2,6 @@
 const vm = require('vm')
 const path = require('path')
 const debug = require('debug')('bilt:npm-build-job')
-const symlinkDependencies = require('./symlink-dependencies')
 const findNextVersion = require('./find-next-version')
 
 const defaults = {
@@ -14,24 +13,9 @@ const defaults = {
       condition: ({packageJsonChanged}) => packageJsonChanged,
     },
     {
-      id: 'link',
-      name: 'Link local packages',
-      funcCommand: async ({
-        agent,
-        agentInstance,
-        dependencies,
-        directory,
-        directoryToBuild,
-        artifacts,
-      }) =>
-        await symlinkDependencies(
-          {agent, agentInstance},
-          dependencies,
-          directory,
-          directoryToBuild,
-          artifacts,
-        ),
-      condition: ({packageJsonChanged}) => packageJsonChanged,
+      id: 'update',
+      name: 'Update',
+      command: ['npm', 'update'],
     },
     {
       id: 'increment-version',
@@ -43,7 +27,8 @@ const defaults = {
         '--allow-same-version',
         nextVersion,
       ],
-      condition: ({packageJson}) => !packageJson.private,
+      condition: ({packageJson, artifact: {publish}}) =>
+        !packageJson.private && (publish === undefined || publish),
     },
     {
       id: 'build',
