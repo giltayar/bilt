@@ -74,12 +74,12 @@ describe('repo-build-job', function() {
   it('should ignore changed files if "force" is on', () => {
     const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}, {name: 'c', path: 'ccc'}]
     const repoJob = {
-      justBuildArtifacts: names(artifacts),
+      justBuildArtifacts: ['a', 'c'],
       force: true,
       filesChangedSinceLastBuild: {
         a: {'a/foo.js': 'sha1afoo'},
         b: {},
-        ccc: {'ccc/x.js': 'sha1cccx', 'ccc/z.z': 'sha1cccz'},
+        ccc: {},
       },
     }
 
@@ -217,7 +217,11 @@ describe('repo-build-job', function() {
 
 function runRepoJob(artifacts, repoJob, repoBuildJobRunner) {
   let jobResult = repoBuildJobRunner.getBuildSteps({
-    buildContext: {initialAllArtifacts: artifacts, ...repoJob},
+    buildContext: {
+      initialAllArtifacts: artifacts,
+      ...repoJob,
+      filesChangedSinceLastBuild: repoJob.force ? {} : repoJob.filesChangedSinceLastBuild,
+    },
   })
   const jobsList = [...((jobResult.jobs || []).map(j => j.job) || [])]
   const jobsToDo = (jobResult.jobs || []).map(j => j.job) || []

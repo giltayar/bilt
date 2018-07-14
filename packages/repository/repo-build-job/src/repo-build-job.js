@@ -21,7 +21,7 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
         const artifact = awakenedFrom.job.artifact
         await lastBuildInfo.savePackageLastBuildInfo({
           artifactPath: artifact.path,
-          rartifactFilesChangedSinceLastBuild: filesChangedSinceLastBuild[artifact.path],
+          artifactFilesChangedSinceLastBuild: filesChangedSinceLastBuild[artifact.path],
         })
       }
 
