@@ -41,8 +41,8 @@ describe('npm-build-job', function() {
 
     await executeBuild({builder, agent: agent(), job})
 
-    expect(await p(fs.exists)(path.join(dir, 'tested'))).to.be.true
-    expect(await p(fs.exists)(path.join(dir, 'built'))).to.be.true
+    expect(await exists(path.join(dir, 'tested'))).to.be.true
+    expect(await exists(path.join(dir, 'built'))).to.be.true
 
     expect(
       await findNextVersion(
@@ -80,7 +80,7 @@ describe('npm-build-job', function() {
       job: {dependencies: [], artifacts: [], artifact: {path: ''}, filesChangedSinceLastBuild: []},
     })
 
-    expect(await p(fs.exists)(path.join(dir, 'tested'))).to.be.true
+    expect(await exists(path.join(dir, 'tested'))).to.be.true
 
     expect(
       await findNextVersion(
@@ -140,9 +140,9 @@ describe('npm-build-job', function() {
       },
     })
 
-    expect(await p(fs.exists)(path.join(dir, 'installed'))).to.be.true
-    expect(await p(fs.exists)(path.join(dir, 'tested'))).to.be.false
-    expect(await p(fs.exists)(path.join(dir, 'groaned'))).to.be.true
+    expect(await exists(path.join(dir, 'installed'))).to.be.true
+    expect(await exists(path.join(dir, 'tested'))).to.be.false
+    expect(await exists(path.join(dir, 'groaned'))).to.be.true
 
     expect(
       await findNextVersion(
@@ -156,3 +156,7 @@ describe('npm-build-job', function() {
     ).to.equal('29.12.2000')
   })
 })
+
+async function exists(filename) {
+  return await p(fs.stat)(filename).then(() => true, () => false)
+}

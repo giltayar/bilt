@@ -1,6 +1,6 @@
 {
   "name": "@bilt/host-agent",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "An agent for regular local running a process on the local host",
   "main": "src/host-agent.js",
   "scripts": {},
@@ -15,6 +15,7 @@
     "type": "git"
   },
   "dependencies": {
+    "@bilt/symlink": "^1.0.5",
     "debug": "^2.6.8",
     "make-dir": "^1.0.0"
   },
