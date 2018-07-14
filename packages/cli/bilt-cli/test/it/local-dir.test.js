@@ -72,36 +72,4 @@ describe('local directory use-case', () => {
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.0', npmRegistryAddress)
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.0', npmRegistryAddress)
   })
-
-  it('should support link', async () => {
-    await biltHere(buildDir, {disabledSteps: ['link']})
-
-    await changeScript(
-      buildDir,
-      'a',
-      'build',
-      'cp node_modules/this-pkg-does-not-exist-in-npmjs.b/b.txt .',
-    )
-    await writeFile('something new', buildDir, 'b/b.txt')
-
-    await biltHere(buildDir, {
-      disabledSteps: ['increment-version', 'publish'],
-      enabledSteps: ['link'],
-    })
-
-    expect(await fileContents(buildDir, 'a/b.txt')).to.equal('something new')
-  })
 })
-
-async function changeScript(buildDir, packageFolder, scriptName, script) {
-  const packageJson = JSON.parse(
-    await p(fs.readFile)(path.join(buildDir, packageFolder, 'package.json'), 'utf-8'),
-  )
-
-  packageJson.scripts[scriptName] = script
-
-  await p(fs.writeFile)(
-    path.join(buildDir, packageFolder, 'package.json'),
-    JSON.stringify(packageJson),
-  )
-}
