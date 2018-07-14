@@ -6,16 +6,10 @@
 
 ## Continuation
 
-## Bugs
-
-1. I changed symlink, and symlink wasn't built because accordint to debug, no file was changed!
-1. Some problem with link step
-
 ## CLI and productization
 
-1. How to make link, publish, increment-version not so low-level steps
 1. Deal nicely with output
-1. Make it a simple global install, available to any who wants it
+1. A builder should know if dependencies changed, then it has changed.
 
 ## Fine Tuning
 
