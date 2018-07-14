@@ -34,7 +34,7 @@ describe('repo-build-job', function() {
     expect(jobNames(jobsThatRan)).to.eql(['a', 'c'])
   })
 
-  it('should execute only builds that have changed files or are dependent on changed arficats', () => {
+  it('should execute only builds that have changed files or are dependent on changed artifacts', () => {
     const artifacts = [
       {name: 'a', path: 'a'},
       {name: 'b', path: 'b'},

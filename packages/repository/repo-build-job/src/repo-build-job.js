@@ -1,7 +1,7 @@
 'use strict'
 const {
   dependencyGraphSubsetToBuild,
-  buildsThatCanBeBuilt,
+  buildThatCanBeBuilt,
   createDependencyGraph,
 } = require('@bilt/artifact-dependency-graph')
 const debug = require('debug')('bilt:repo-build-job')
@@ -75,21 +75,22 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
       }
 
       const alreadyBuiltArtifacts = determineArtifactsThatAreAlreadyBuilt(awakenedFrom, state)
-      const artifactsToBuild = buildsThatCanBeBuilt(state.dependencyGraph, alreadyBuiltArtifacts)
+      const {build: artifactToBuild, hasChangedDependencies} =
+        buildThatCanBeBuilt(state.dependencyGraph, alreadyBuiltArtifacts) || {}
+
       debug(
-        'artifactsToBuild: %o, determined from graph: %o and alreadybuilt: %o',
-        artifactsToBuild,
+        'artifactToBuild: %o, determined from graph: %o and alreadybuilt: %o',
+        artifactToBuild,
         state.dependencyGraph,
         alreadyBuiltArtifacts,
       )
 
-      if (!artifactsToBuild || artifactsToBuild.length === 0) {
+      if (!artifactToBuild) {
         events.publish('FINISHING_REPO_JOB', {
           alreadyBuiltArtifacts,
         })
         return {}
       }
-      const artifactToBuild = artifactsToBuild[0]
 
       debug('building artifact %s', artifactToBuild)
       const artifact = state.allArtifacts.find(a => a.name === artifactToBuild)
@@ -98,6 +99,7 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
         artifact,
         linkDependencies ? state.allArtifacts : undefined,
         filesChangedSinceLastBuildInArtifact && Object.keys(filesChangedSinceLastBuildInArtifact),
+        hasChangedDependencies,
       )
 
       debug('decided to run sub-job %o', artifactJob)
@@ -152,10 +154,16 @@ function artifactsFromChanges(artifacts, filesChangedSinceLastBuild) {
     .map(artifact => artifact.name)
 }
 
-const createJobFromArtifact = (artifact, artifacts, artifactFilesChanged) => ({
+const createJobFromArtifact = (
+  artifact,
+  artifacts,
+  artifactFilesChanged,
+  hasChangedDependencies,
+) => ({
   kind: artifact.type,
   artifact,
   dependencies: artifacts ? artifact.dependencies : [],
   artifacts,
   filesChangedSinceLastBuild: artifactFilesChanged,
+  hasChangedDependencies,
 })
