@@ -146,6 +146,17 @@ describe('artifact-dependency-graph', function() {
         ).to.eql({c: [], e: []})
       })
 
+      it('should return only justBuild, even if there are other changeArtifacts', () => {
+        const artifacts = {a: [], b: [], c: ['a']}
+
+        expect(
+          dependencyGraphSubsetToBuild(artifacts, {
+            changedArtifacts: ['a', 'b', 'c'],
+            justBuildArtifacts: ['a'],
+          }),
+        ).to.eql({a: []})
+      })
+
       it('should return the nodes that have dependencies changed, even if they are not in changedArtifacts', () => {
         const artifacts = {a: [], b: [], c: ['a']}
 
