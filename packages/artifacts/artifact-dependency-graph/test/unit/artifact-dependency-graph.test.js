@@ -9,7 +9,7 @@ const {
 
 const dependencyGraphSubsetToBuild = (
   dependencyGraph,
-  {changedArtifacts, fromArtifacts, uptoArtifacts, justBuildArtifacts},
+  {changedArtifacts, fromArtifacts, uptoArtifacts, justBuildArtifacts, artifactBuildTimestamps},
 ) =>
   dependencyGraphSubsetToBuildOriginal({
     dependencyGraph,
@@ -17,6 +17,7 @@ const dependencyGraphSubsetToBuild = (
     fromArtifacts,
     uptoArtifacts,
     justBuildArtifacts,
+    artifactBuildTimestamps,
   })
 
 describe('artifact-dependency-graph', function() {
@@ -26,6 +27,17 @@ describe('artifact-dependency-graph', function() {
         const diamond = {a: [], b: ['a'], c: ['a'], d: ['b', 'c']}
 
         expect(dependencyGraphSubsetToBuild(diamond, {changedArtifacts: ['a']})).to.eql({})
+      })
+
+      it('should still return nothing even if an artifacts dependency has changed', () => {
+        const diamond = {a: [], b: ['a'], c: ['a'], d: ['b', 'c']}
+
+        expect(
+          dependencyGraphSubsetToBuild(diamond, {
+            changedArtifacts: ['a'],
+            artifactBuildTimestamps: {a: new Date(2018, 1, 1), c: new Date(2017, 1, 1)},
+          }),
+        ).to.eql({})
       })
     })
 
@@ -40,6 +52,30 @@ describe('artifact-dependency-graph', function() {
           }),
         ).to.eql({c: [], d: ['c']})
       })
+
+      it('should put in the from artifact if only its dependents changed', () => {
+        const diamond = {a: [], b: ['a'], c: ['a'], d: ['b', 'c']}
+
+        expect(
+          dependencyGraphSubsetToBuild(diamond, {
+            changedArtifacts: ['d'],
+            fromArtifacts: ['c'],
+            artifactBuildTimestamps: {a: new Date(2018, 1, 1), c: new Date(2017, 1, 1)},
+          }),
+        ).to.eql({c: [], d: ['c']})
+      })
+
+      it('should only build the subtree that changed', () => {
+        const diamond = {a: [], b: ['a'], c: ['a'], d: ['b', 'c'], e: ['d']}
+
+        expect(
+          dependencyGraphSubsetToBuild(diamond, {
+            changedArtifacts: ['d'],
+            fromArtifacts: ['c'],
+          }),
+        ).to.eql({d: [], e: ['d']})
+      })
+
       it('should work with forests', () => {
         const forest = {a: [], b: ['a'], c: ['a'], d: ['b', 'c'], e: [], f: ['e']}
 
@@ -110,6 +146,17 @@ describe('artifact-dependency-graph', function() {
         ).to.eql({c: [], e: []})
       })
 
+      it('should return the nodes that have dependencies changed, even if they are not in changedArtifacts', () => {
+        const forest = {a: [], b: ['a'], c: ['b'], d: ['c', 'a'], e: ['b'], f: ['e', 'c']}
+
+        expect(
+          dependencyGraphSubsetToBuild(forest, {
+            justBuildArtifacts: ['b'],
+            artifactBuildTimestamps: {a: new Date(2018, 1, 1), b: new Date(2017, 1, 1)},
+          }),
+        ).to.eql({b: []})
+      })
+
       it('should only return the nodes that are justBuild, but the dependencies should be there', () => {
         const forest = {a: [], b: ['a'], c: ['b'], d: ['c', 'a'], e: ['b'], f: ['e', 'c']}
 
@@ -142,6 +189,7 @@ describe('artifact-dependency-graph', function() {
 
         expect(
           dependencyGraphSubsetToBuild(forest, {
+            changedArtifacts: ['a'],
             uptoArtifacts: ['c'],
           }),
         ).to.eql({c: ['b'], b: ['a'], a: []})
@@ -159,6 +207,24 @@ describe('artifact-dependency-graph', function() {
           dependencyGraphSubsetToBuild(forest, {
             uptoArtifacts: ['c', 'd'],
             changedArtifacts: ['b'],
+          }),
+        ).to.eql({c: ['b'], b: [], d: ['c']})
+        expect(
+          dependencyGraphSubsetToBuild(forest, {
+            uptoArtifacts: ['c'],
+            changedArtifacts: ['b'],
+          }),
+        ).to.eql({c: ['b'], b: []})
+      })
+
+      it('should deal correctly with timestamp', () => {
+        const forest = {a: [], b: ['a'], c: ['b'], d: ['c', 'a'], e: ['b'], f: ['e', 'c']}
+
+        expect(
+          dependencyGraphSubsetToBuild(forest, {
+            uptoArtifacts: ['c', 'd'],
+            changedArtifacts: ['f'],
+            artifactBuildTimestamps: {a: new Date(2018, 1, 1), b: new Date(2017, 1, 1)},
           }),
         ).to.eql({c: ['b'], b: [], d: ['c']})
         expect(

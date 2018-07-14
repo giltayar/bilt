@@ -6,11 +6,23 @@ const createDependencyGraph = artifacts =>
 function dependencyGraphSubsetToBuild({
   dependencyGraph,
   changedArtifacts,
+  artifactBuildTimestamps = {},
   fromArtifacts,
   uptoArtifacts,
   justBuildArtifacts,
 }) {
   const dependencyGraphSubset = {}
+
+  const changedArtifactsDueToDependencyChanges = artifactsChangedDuetoDependencies(
+    dependencyGraph,
+    changedArtifacts || [],
+    artifactBuildTimestamps,
+  )
+
+  const allChangedArtifacts =
+    !changedArtifactsDueToDependencyChanges && !changedArtifacts
+      ? undefined
+      : [...new Set((changedArtifacts || []).concat(changedArtifactsDueToDependencyChanges || []))]
 
   // upto
   if (uptoArtifacts) {
@@ -18,8 +30,8 @@ function dependencyGraphSubsetToBuild({
 
     addArtifactsNeededToBeBuiltForArtifactsInClosure(uptoClosure, dependencyGraph)
 
-    if (changedArtifacts) {
-      const fromClosure = new Set(changedArtifacts)
+    if (allChangedArtifacts) {
+      const fromClosure = new Set(allChangedArtifacts)
 
       addArtifactsAffectedByBuildingArtifactsInClosure(fromClosure, dependencyGraph)
 
@@ -35,21 +47,28 @@ function dependencyGraphSubsetToBuild({
 
   // from
   if (fromArtifacts) {
-    const changedArtifactsFrom = changedArtifacts
-      ? intersection(fromArtifacts, changedArtifacts)
-      : fromArtifacts
-
-    const fromClosure = new Set(changedArtifactsFrom.concat(Object.keys(dependencyGraphSubset)))
+    const fromClosure = new Set(fromArtifacts.concat(Object.keys(dependencyGraphSubset)))
 
     addArtifactsAffectedByBuildingArtifactsInClosure(fromClosure, dependencyGraph)
 
+    if (allChangedArtifacts) {
+      const moreFromClosure = new Set(allChangedArtifacts)
+
+      addArtifactsAffectedByBuildingArtifactsInClosure(moreFromClosure, dependencyGraph)
+
+      fromClosure.forEach(artifact => {
+        if (!moreFromClosure.has(artifact)) {
+          fromClosure.delete(artifact)
+        }
+      })
+    }
     fromClosure.forEach(build => (dependencyGraphSubset[build] = dependencyGraph[build]))
   }
 
   // justBuild
   if (justBuildArtifacts) {
-    const justBuildChangedArtifacts = changedArtifacts
-      ? intersection(justBuildArtifacts, changedArtifacts)
+    const justBuildChangedArtifacts = allChangedArtifacts
+      ? intersection(justBuildArtifacts, allChangedArtifacts)
       : justBuildArtifacts
 
     justBuildChangedArtifacts.forEach(
@@ -60,8 +79,8 @@ function dependencyGraphSubsetToBuild({
   // filter dependencies
   filterOutArtifactsFromDependencies(dependencyGraphSubset)
 
-  if (changedArtifacts) {
-    removeLeafArtifactsThatDoNotNeedToBeBuilt(dependencyGraphSubset, changedArtifacts)
+  if (allChangedArtifacts) {
+    removeLeafArtifactsThatDoNotNeedToBeBuilt(dependencyGraphSubset, allChangedArtifacts)
   }
 
   // filter dependencies again (because leaf nodes were removed from dependency graph)
@@ -151,6 +170,30 @@ function objectFromEntries(entries) {
   }
 
   return ret
+}
+
+function artifactsChangedDuetoDependencies(
+  dependencyGraph,
+  changedArtifacts,
+  artifactBuildTimestamps,
+) {
+  const changedArtifactsDueToDependencies = []
+  const now = new Date()
+
+  for (const [artifact, dependencies] of Object.entries(dependencyGraph)) {
+    const artifactChangeTime = (artifactBuildTimestamps[artifact] || now).getTime()
+    const artifactChangedDueToDepencies = dependencies.some(
+      dep => (artifactBuildTimestamps[dep] || now).getTime() > artifactChangeTime,
+    )
+
+    if (artifactChangedDueToDepencies) {
+      changedArtifactsDueToDependencies.push(artifact)
+    }
+  }
+
+  return changedArtifactsDueToDependencies.length === 0
+    ? undefined
+    : changedArtifactsDueToDependencies
 }
 
 module.exports = {
