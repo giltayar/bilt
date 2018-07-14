@@ -4,65 +4,63 @@ const path = require('path')
 const debug = require('debug')('bilt:npm-build-job')
 const findNextVersion = require('./find-next-version')
 
-const defaults = {
-  steps: [
-    {
-      id: 'install',
-      name: 'Install',
-      command: ['npm', 'install'],
-      condition: ({packageJsonChanged, hasChangedDependencies}) =>
-        packageJsonChanged || hasChangedDependencies,
-    },
-    {
-      id: 'update',
-      name: 'Update',
-      command: ['npm', 'update'],
-      condition: ({packageJsonChanged, hasChangedDependencies}) =>
-        packageJsonChanged || hasChangedDependencies,
-    },
-    {
-      id: 'increment-version',
-      name: 'Increment Package Version',
-      command: ({nextVersion}) => [
-        'npm',
-        'version',
-        '--no-git-tag-version',
-        '--allow-same-version',
-        nextVersion,
-      ],
-      condition: ({packageJson, artifact: {publish}}) =>
-        !packageJson.private && (publish === undefined || publish),
-    },
-    {
-      id: 'build',
-      name: 'Build',
-      command: ['npm', 'run', 'build'],
-      condition: ({packageJson}) => packageJson.scripts && packageJson.scripts.build,
-    },
-    {
-      id: 'test',
-      name: 'Test',
-      command: ['npm', 'test'],
-      condition: ({packageJson}) => packageJson.scripts && packageJson.scripts.test,
-    },
-    {
-      id: 'publish',
-      name: 'Publish',
-      command: ({access}) => ['npm', 'publish', '--access', access || 'public'],
-      condition: ({packageJson, artifact: {publish}}) =>
-        !packageJson.private && (publish === undefined || publish),
-    },
-  ],
-  access: 'public',
-}
+const defaultSteps = [
+  {
+    id: 'install',
+    name: 'Install',
+    command: ['npm', 'install'],
+    condition: ({packageJsonChanged, hasChangedDependencies}) =>
+      packageJsonChanged || hasChangedDependencies,
+  },
+  {
+    id: 'update',
+    name: 'Update',
+    command: ['npm', 'update'],
+    condition: ({packageJsonChanged, hasChangedDependencies}) =>
+      packageJsonChanged || hasChangedDependencies,
+  },
+  {
+    id: 'increment-version',
+    name: 'Increment Package Version',
+    command: ({nextVersion}) => [
+      'npm',
+      'version',
+      '--no-git-tag-version',
+      '--allow-same-version',
+      nextVersion,
+    ],
+    condition: ({packageJson, artifact: {publish}}) =>
+      !packageJson.private && (publish === undefined || publish),
+  },
+  {
+    id: 'build',
+    name: 'Build',
+    command: ['npm', 'run', 'build'],
+    condition: ({packageJson}) => packageJson.scripts && packageJson.scripts.build,
+  },
+  {
+    id: 'test',
+    name: 'Test',
+    command: ['npm', 'test'],
+    condition: ({packageJson}) => packageJson.scripts && packageJson.scripts.test,
+  },
+  {
+    id: 'publish',
+    name: 'Publish',
+    command: ({access}) => ['npm', 'publish', '--access', access || 'public'],
+    condition: ({packageJson, artifact: {publish}}) =>
+      !packageJson.private && (publish === undefined || publish),
+  },
+]
 
 module.exports = async ({
   pimport,
-  config: {artifactDefaults},
+  config: {artifactDefaults = {}},
   plugins: [repositoryFetcher, commander],
 }) => {
   return {
-    artifactDefaults: {...defaults, ...artifactDefaults},
+    defaultSteps,
+    artifactDefaults: {publish: true, ...artifactDefaults},
     async setupBuildSteps({job, agentInstance}) {
       const {
         artifacts,

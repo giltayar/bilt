@@ -1,6 +1,6 @@
 {
   "name": "@bilt/bilt-cli",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "The CLI that builds a local folder",
   "main": "src/bilt-cli.js",
   "engines": {
@@ -36,11 +36,11 @@
     "@bilt/host-agent": "^1.0.11",
     "@bilt/in-memory-events": "^1.0.5",
     "@bilt/in-memory-job-dispatcher": "^1.0.5",
-    "@bilt/jobs": "^1.0.6",
+    "@bilt/jobs": "^1.0.7",
     "@bilt/last-build-info": "^2.0.0",
     "@bilt/local-docker-agent": "^1.0.6",
     "@bilt/noop-repository-fetcher": "^1.0.5",
-    "@bilt/npm-build-job": "^1.0.8",
+    "@bilt/npm-build-job": "^1.0.9",
     "@bilt/npm-commander": "^1.0.3",
     "@bilt/repo-build-job": "^1.1.2",
     "@bilt/symlink": "^1.0.5",

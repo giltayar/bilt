@@ -13,6 +13,9 @@
 			"path": "packages/cli/bilt-cli"
 		},
 		{
+			"path": "packages/jobs/jobs"
+		},
+		{
 			"path": "packages/plugins/plugin-import"
 		},
 		{

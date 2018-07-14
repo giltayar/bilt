@@ -11,7 +11,10 @@ async function executeBuild({
 }) {
   const agentInstance = agent ? await agent.acquireInstanceForJob() : undefined
   try {
-    const builderArtifact = builder.artifactDefaults || {}
+    const builderArtifact = {
+      ...builder.artifactDefaults,
+      steps: mergeSteps((builder.artifactDefaults || {}).steps, builder.defaultSteps),
+    }
     const jobArtifact = job.artifact || {}
 
     const jobWithArtifact = {
@@ -59,7 +62,7 @@ function mergeDisabledSteps(builderDisabledSteps, disabledStepsOverride, enabled
     .filter(disabledStep => !(enabledStepsOverride || []).includes(disabledStep))
 }
 
-function mergeSteps(jobSteps, builderSteps, disabledSteps) {
+function mergeSteps(jobSteps, builderSteps, disabledSteps = []) {
   if (!jobSteps) return (builderSteps || []).filter(isStepEnabled)
 
   return jobSteps

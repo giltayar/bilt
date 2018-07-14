@@ -1,15 +1,10 @@
 # TODO
 
-## Small Issues
-
-* Write a test for `symlink` package
-
 ## Continuation
 
 ## CLI and productization
 
 1. Deal nicely with output
-1. A builder should know if dependencies changed, then it has changed.
 
 ## Fine Tuning
 
