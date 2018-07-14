@@ -1,11 +1,9 @@
 'use strict'
-const {promisify: p} = require('util')
 const path = require('path')
-const fs = require('fs')
 const {expect} = require('chai')
 const {describe, it, afterEach, beforeEach} = require('mocha')
 const {dockerComposeTool, getAddressForService} = require('docker-compose-mocha')
-const {fileContents, writeFile} = require('../utils/file-utils')
+const {fileContents} = require('../utils/file-utils')
 const {
   setupBuildDir,
   setupFolder,

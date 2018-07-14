@@ -12,9 +12,18 @@ async function buildHere(
   {upto, from, justBuild, force, repository, disabledSteps, enabledSteps} = {},
 ) {
   const isRemoteRepo = repository
+  debug('loading configuration from', directoryToBuild)
+  const {config: buildConfig, filepath} = await cosmiConfig('bilt', {
+    rcExtensions: true,
+  }).search(directoryToBuild)
+
+  const finalDirectoryToBuild = path.dirname(filepath)
+  debug('building directory', finalDirectoryToBuild)
+
   const pimport = await createPimport(
+    buildConfig,
     isRemoteRepo,
-    directoryToBuild,
+    finalDirectoryToBuild,
     repository,
     disabledSteps,
     enabledSteps,
@@ -25,7 +34,7 @@ async function buildHere(
     const jobDispatcher = await pimport('jobDispatcher')
 
     const jobsToWaitFor = await runRepoBuildJob({
-      directoryToBuild,
+      directoryToBuild: finalDirectoryToBuild,
       repository,
       jobDispatcher,
       upto,
@@ -42,17 +51,13 @@ async function buildHere(
 }
 
 async function createPimport(
+  buildConfig,
   isRemoteRepo,
   directoryToBuild,
   repository,
   disabledSteps,
   enabledSteps,
 ) {
-  debug('loading configuration', directoryToBuild)
-  const {config: buildConfig, filepath} = await cosmiConfig('bilt', {
-    rcExtensions: true,
-  }).search(directoryToBuild)
-
   return pluginImport(
     [
       defaultbiltConfig.plugins,
@@ -69,7 +74,7 @@ async function createPimport(
       },
     ],
     {
-      baseDirectory: path.dirname(filepath),
+      baseDirectory: directoryToBuild,
     },
   )
 }
@@ -145,7 +150,7 @@ function normalizeArtifacts(artifactsOrDirsToBuild, artifacts, directoryToBuild)
   if (!artifactsOrDirsToBuild) return artifactsOrDirsToBuild
 
   return flatten(
-    artifactsOrDirsToBuild.map(artifactNameOrDirToBuild => {
+    [].concat(artifactsOrDirsToBuild).map(artifactNameOrDirToBuild => {
       if (artifactNameOrDirToBuild.startsWith('.') || artifactNameOrDirToBuild.startsWith('/')) {
         const pathOfArtifact = path.resolve(directoryToBuild, artifactNameOrDirToBuild)
         debug('looking for artifacts under %s', pathOfArtifact)
