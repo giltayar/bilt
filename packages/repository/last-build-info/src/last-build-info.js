@@ -9,28 +9,49 @@ const makeDir = require('make-dir')
 const pickBy_ = require('lodash.pickby')
 const gitRepoInfo = require('git-repo-info')
 const ignore = require('ignore')
-const {
-  git: {findChangedFiles: gitFindChangedFiles},
-} = require('jest-changed-files')
+const {getChangedFilesForRoots} = require('jest-changed-files')
+
+const gitFindChangedFiles = root =>
+  getChangedFilesForRoots([root]).then(({changedFiles, repos}) => {
+    const repoRoot = [...repos.git][0]
+
+    return [...changedFiles].map(f => root + f.slice(repoRoot.length))
+  })
 
 module.exports = async ({directory}) => {
   return {
-    // returns {[artifactPath]: {artifactFile: hash, ...}
-    async filesChangedSinceLastBuild({artifacts}) {
-      const lastBuildInfo = await Promise.all(
+    async lastBuildInfo({artifacts}) {
+      return await Promise.all(
         artifacts.map(async artifact => {
           const biltJson = await readBiltJson(path.join(directory, '.bilt', artifact.path))
 
-          return {path: artifact.path, ...biltJson}
+          return {
+            name: artifact.name,
+            path: artifact.path,
+            ...biltJson,
+          }
         }),
       )
+    },
+    // returns {[artifactPath]: {artifactFile: hash, ...}
+    async filesChangedSinceLastBuild({lastBuildInfo}) {
       const commit = gitRepoInfo(directory).sha
       const currentRepoInfo = await findChangesInCurrentRepo(directory, commit)
 
       return await calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, currentRepoInfo)
     },
 
-    async savePackageLastBuildInfo({artifactPath, artifactFilesChangedSinceLastBuild}) {
+    artifactBuildTimestamps({lastBuildInfo}) {
+      return objectFromEntries(
+        lastBuildInfo.map(({name, timestamp}) => [name, timestamp && new Date(timestamp)]),
+      )
+    },
+
+    async savePackageLastBuildInfo({
+      artifactPath,
+      artifactFilesChangedSinceLastBuild,
+      now = new Date(),
+    }) {
       const commit = gitRepoInfo(directory).sha
       const biltJsonDir = path.join(directory, '.bilt', artifactPath)
       await makeDir(biltJsonDir)
@@ -48,6 +69,7 @@ module.exports = async ({directory}) => {
         path.join(biltJsonDir, 'bilt.json'),
         JSON.stringify({
           lastSuccessfulBuild: {
+            timestamp: now.toISOString(),
             commit,
             changedFilesInWorkspace: workspaceFilesThatWereBuilt,
           },
@@ -241,4 +263,14 @@ function directoriesBetween(directory, file) {
       directories.concat(path.join(directories[directories.length - 1], segment)),
     [directory],
   )
+}
+
+function objectFromEntries(entries) {
+  const ret = Object.create(null)
+
+  for (const [key, value] of entries) {
+    ret[key] = value
+  }
+
+  return ret
 }

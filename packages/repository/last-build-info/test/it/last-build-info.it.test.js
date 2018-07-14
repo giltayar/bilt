@@ -9,6 +9,11 @@ const {setupBuildDir} = require('../utils/setup')
 const buildInfoMaker = require('../../src/last-build-info')
 
 describe('last-build-info', () => {
+  const filesChanged = async (buildInfo, artifacts) =>
+    await buildInfo.filesChangedSinceLastBuild({
+      lastBuildInfo: await buildInfo.lastBuildInfo({artifacts}),
+    })
+
   describe('repo changes', () => {
     it('should enable saving and re-reading on an initial folder', async () => {
       const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
@@ -20,7 +25,7 @@ describe('last-build-info', () => {
         packageFilesChangedSinceLastBuild: undefined,
       })
 
-      const changes = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const changes = await filesChanged(buildInfo, artifacts)
       expect(Object.keys(changes)).to.have.members(['a', 'b'])
       expect(changes.b).to.be.undefined
       expect(Object.keys(changes.a)).to.have.members([])
@@ -31,7 +36,7 @@ describe('last-build-info', () => {
       const buildInfo = await buildInfoMaker({directory: gitDir})
       const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}]
 
-      const changes = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const changes = await filesChanged(buildInfo, artifacts)
       expect(changes).to.eql({
         a: undefined,
         b: undefined,
@@ -50,7 +55,7 @@ describe('last-build-info', () => {
 
       await p(fs.writeFile)(path.join(gitDir, 'a/a.txt'), 'lalala')
 
-      const fcslb = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const fcslb = await filesChanged(buildInfo, artifacts)
       expect(Object.keys(fcslb['a'])).to.eql(['a/a.txt'])
       await buildInfo.savePackageLastBuildInfo({
         artifactPath: 'a',
@@ -60,15 +65,34 @@ describe('last-build-info', () => {
         artifactPath: 'b',
         artifactFilesChangedSinceLastBuild: {},
       })
-      const fcslb2 = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const fcslb2 = await filesChanged(buildInfo, artifacts)
       expect(Object.keys(fcslb2['a'])).to.eql([])
 
       await p(execFile)('git', ['add', '.'], {cwd: gitDir})
       await p(execFile)('git', ['commit', '-m', 'sadfsaf'], {cwd: gitDir})
 
-      const fcslb3 = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const fcslb3 = await filesChanged(buildInfo, artifacts)
       expect(Object.keys(fcslb3['a'])).to.eql([])
       expect(Object.keys(fcslb3['b'])).to.eql([])
+    })
+
+    it('should return timestamp of packages', async () => {
+      const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
+      const buildInfo = await buildInfoMaker({directory: gitDir})
+      const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}]
+      const now = new Date()
+
+      await buildInfo.savePackageLastBuildInfo({
+        artifactPath: 'a',
+        packageFilesChangedSinceLastBuild: undefined,
+        now,
+      })
+
+      const res = await buildInfo.artifactBuildTimestamps({
+        lastBuildInfo: await buildInfo.lastBuildInfo({artifacts}),
+      })
+
+      expect(res).to.eql({a: now, b: undefined})
     })
 
     it('should not show file changes even if we change, if there was no previous save', async () => {
@@ -78,7 +102,7 @@ describe('last-build-info', () => {
 
       await p(fs.writeFile)(path.join(gitDir, 'a/a.txt'), 'lalala')
 
-      expect(await buildInfo.filesChangedSinceLastBuild({artifacts})).to.eql({
+      expect(await filesChanged(buildInfo, artifacts)).to.eql({
         a: undefined,
         b: undefined,
       })
@@ -89,7 +113,7 @@ describe('last-build-info', () => {
       const buildInfo = await buildInfoMaker({directory: gitDir})
       const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}]
 
-      const fcslb = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const fcslb = await filesChanged(buildInfo, artifacts)
       await buildInfo.savePackageLastBuildInfo({
         artifactPath: 'a',
         artifactFilesChangedSinceLastBuild: fcslb['a'],
@@ -97,7 +121,7 @@ describe('last-build-info', () => {
 
       await p(fs.writeFile)(path.join(gitDir, 'a/a.txt'), 'lalala')
 
-      const changes = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const changes = await filesChanged(buildInfo, artifacts)
       expect(Object.keys(changes)).to.have.members(['a', 'b'])
       expect(changes.b).to.be.undefined
       expect(Object.keys(changes.a)).to.have.members(['a/a.txt'])
@@ -108,7 +132,7 @@ describe('last-build-info', () => {
       const buildInfo = await buildInfoMaker({directory: gitDir})
       const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}]
 
-      const fcslb = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const fcslb = await filesChanged(buildInfo, artifacts)
       await buildInfo.savePackageLastBuildInfo({
         artifactPath: 'a',
         artifactFilesChangedSinceLastBuild: fcslb['a'],
@@ -117,7 +141,7 @@ describe('last-build-info', () => {
       await p(fs.writeFile)(path.join(gitDir, 'a/a.txt'), 'lalala')
       await p(fs.writeFile)(path.join(gitDir, 'a/c.txt'), 'lalala')
 
-      const changes = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const changes = await filesChanged(buildInfo, artifacts)
       expect(Object.keys(changes)).to.have.members(['a', 'b'])
       expect(changes.b).to.be.undefined
       expect(Object.keys(changes.a)).to.have.members(['a/c.txt', 'a/a.txt'])
@@ -128,7 +152,7 @@ describe('last-build-info', () => {
       const buildInfo = await buildInfoMaker({directory: gitDir})
       const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}]
 
-      const fcslb = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const fcslb = await filesChanged(buildInfo, artifacts)
       await buildInfo.savePackageLastBuildInfo({
         artifactPath: 'a',
         artifactFilesChangedSinceLastBuild: fcslb['a'],
@@ -137,12 +161,12 @@ describe('last-build-info', () => {
       await p(fs.writeFile)(path.join(gitDir, 'a/a.txt'), 'lalala')
       await p(fs.writeFile)(path.join(gitDir, 'a/c.txt'), 'lalala')
 
-      const changes = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const changes = await filesChanged(buildInfo, artifacts)
       await buildInfo.savePackageLastBuildInfo({
         artifactPath: 'a',
         artifactFilesChangedSinceLastBuild: changes['a'],
       })
-      const changes2 = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const changes2 = await filesChanged(buildInfo, artifacts)
 
       expect(Object.keys(changes2['a'])).to.eql([])
     })
@@ -152,7 +176,7 @@ describe('last-build-info', () => {
       const buildInfo = await buildInfoMaker({directory: gitDir})
       const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}]
 
-      const fcslb = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const fcslb = await filesChanged(buildInfo, artifacts)
       await buildInfo.savePackageLastBuildInfo({
         artifactPath: 'a',
         artifactFilesChangedSinceLastBuild: fcslb['a'],
@@ -167,7 +191,7 @@ describe('last-build-info', () => {
       await p(fs.writeFile)(path.join(gitDir, 'a/d.txt'), 'zzz')
       await p(fs.writeFile)(path.join(gitDir, 'a/c.txt'), 'abc')
 
-      const changes = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const changes = await filesChanged(buildInfo, artifacts)
       expect(Object.keys(changes['a'])).to.have.members(['a/a.txt', 'a/c.txt', 'a/d.txt'])
 
       await buildInfo.savePackageLastBuildInfo({
@@ -175,7 +199,7 @@ describe('last-build-info', () => {
         artifactFilesChangedSinceLastBuild: changes['a'],
       })
 
-      const changes2 = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const changes2 = await filesChanged(buildInfo, artifacts)
       expect(Object.keys(changes2['a'])).to.eql([])
     })
 
@@ -187,7 +211,7 @@ describe('last-build-info', () => {
       await p(fs.writeFile)(path.join(gitDir, 'a/a.txt'), 'lalala')
       await p(fs.writeFile)(path.join(gitDir, 'a/c.txt'), 'lalala')
 
-      const changes = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const changes = await filesChanged(buildInfo, artifacts)
       expect(changes['a']).to.be.undefined
       await buildInfo.savePackageLastBuildInfo({
         artifactPath: 'a',
@@ -196,7 +220,7 @@ describe('last-build-info', () => {
 
       await p(execFile)('git', ['checkout', '--', 'a/a.txt'], {cwd: gitDir})
 
-      const changesAfterRevert = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const changesAfterRevert = await filesChanged(buildInfo, artifacts)
       expect(Object.keys(changesAfterRevert['a'])).to.eql(['a/a.txt'])
     })
 
@@ -208,13 +232,13 @@ describe('last-build-info', () => {
       await p(fs.writeFile)(path.join(gitDir, 'a/a.txt'), 'lalala')
       await p(fs.writeFile)(path.join(gitDir, 'a/c.txt'), 'lalala2')
 
-      const changes = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const changes = await filesChanged(buildInfo, artifacts)
       await buildInfo.savePackageLastBuildInfo({
         artifactPath: 'a',
         artifactFilesChangedSinceLastBuild: changes['a'],
       })
 
-      const changesAfterBuild = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const changesAfterBuild = await filesChanged(buildInfo, artifacts)
       expect(Object.keys(changesAfterBuild['a'])).to.eql([])
     })
 
@@ -226,7 +250,7 @@ describe('last-build-info', () => {
       await p(fs.writeFile)(path.join(gitDir, 'a/a.txt'), 'lalala')
       await p(fs.writeFile)(path.join(gitDir, 'a/c.txt'), 'lalala2')
 
-      const changes = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const changes = await filesChanged(buildInfo, artifacts)
       await buildInfo.savePackageLastBuildInfo({
         artifactPath: 'a',
         artifactFilesChangedSinceLastBuild: changes['a'],
@@ -234,7 +258,7 @@ describe('last-build-info', () => {
 
       await p(fs.unlink)(path.join(gitDir, 'a/a.txt'))
 
-      const changesAfterDelete = await buildInfo.filesChangedSinceLastBuild({artifacts})
+      const changesAfterDelete = await filesChanged(buildInfo, artifacts)
       expect(Object.keys(changesAfterDelete['a'])).to.have.members(['a/a.txt'])
     })
 
@@ -246,7 +270,7 @@ describe('last-build-info', () => {
 
         await p(fs.writeFile)(path.join(gitDir, 'b/b.txt'), 'lalala1')
 
-        const changes = await buildInfo.filesChangedSinceLastBuild({artifacts})
+        const changes = await filesChanged(buildInfo, artifacts)
         for (const artifactPath of ['a', 'b'])
           await buildInfo.savePackageLastBuildInfo({
             artifactPath,
@@ -255,7 +279,7 @@ describe('last-build-info', () => {
 
         await p(fs.writeFile)(path.join(gitDir, 'b/b.txt'), 'lalala2')
 
-        const changes2 = await buildInfo.filesChangedSinceLastBuild({artifacts})
+        const changes2 = await filesChanged(buildInfo, artifacts)
         expect(changes2['a']).to.eql({})
         expect(changes2['b']).to.have.keys(['b/b.txt'])
       })
@@ -267,7 +291,7 @@ describe('last-build-info', () => {
         const buildInfo = await buildInfoMaker({directory: gitDir})
         const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}]
 
-        const changes = await buildInfo.filesChangedSinceLastBuild({artifacts})
+        const changes = await filesChanged(buildInfo, artifacts)
         await buildInfo.savePackageLastBuildInfo({
           artifactPath: 'a',
           artifactFilesChangedSinceLastBuild: changes['a'],
@@ -276,7 +300,7 @@ describe('last-build-info', () => {
         await p(fs.writeFile)(path.join(gitDir, 'a/ignore.txt'), 'lalala')
         await p(fs.writeFile)(path.join(gitDir, 'a/not-ignore.txt'), 'lalala')
 
-        const changes2 = await buildInfo.filesChangedSinceLastBuild({artifacts})
+        const changes2 = await filesChanged(buildInfo, artifacts)
         expect(Object.keys(changes2['a'])).to.eql(['a/not-ignore.txt'])
       })
 
@@ -285,7 +309,7 @@ describe('last-build-info', () => {
         const buildInfo = await buildInfoMaker({directory: gitDir})
         const artifacts = [{name: 'a', path: 'a'}, {name: 'ignoramus', path: 'ignoramus'}]
 
-        const firstBuildInfo = await buildInfo.filesChangedSinceLastBuild({artifacts})
+        const firstBuildInfo = await filesChanged(buildInfo, artifacts)
         await buildInfo.savePackageLastBuildInfo({
           artifactPath: 'a',
           artifactFilesChangedSinceLastBuild: firstBuildInfo['a'],
@@ -301,7 +325,7 @@ describe('last-build-info', () => {
         await p(fs.writeFile)(path.join(gitDir, 'a/a.txt'), 'lalala')
         await p(fs.writeFile)(path.join(gitDir, 'ignoramus/dontignore.txt'), 'lalala')
 
-        const changesAfterSecond = await buildInfo.filesChangedSinceLastBuild({artifacts})
+        const changesAfterSecond = await filesChanged(buildInfo, artifacts)
 
         expect(Object.keys(changesAfterSecond['ignoramus'])).to.have.members([
           'ignoramus/dontignore.txt',
