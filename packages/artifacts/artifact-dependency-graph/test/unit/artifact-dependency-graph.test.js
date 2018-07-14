@@ -147,6 +147,18 @@ describe('artifact-dependency-graph', function() {
       })
 
       it('should return the nodes that have dependencies changed, even if they are not in changedArtifacts', () => {
+        const artifacts = {a: [], b: [], c: ['a']}
+
+        expect(
+          dependencyGraphSubsetToBuild(artifacts, {
+            changedArtifacts: ['a'],
+            justBuildArtifacts: ['a', 'b', 'c'],
+            artifactBuildTimestamps: {a: new Date(2018, 1, 1), c: new Date(2017, 1, 1)},
+          }),
+        ).to.eql({a: [], c: ['a']})
+      })
+
+      it('should return the nodes that have dependencies changed, even if they are not in changedArtifacts', () => {
         const forest = {a: [], b: ['a'], c: ['b'], d: ['c', 'a'], e: ['b'], f: ['e', 'c']}
 
         expect(

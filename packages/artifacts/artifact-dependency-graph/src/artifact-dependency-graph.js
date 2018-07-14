@@ -194,9 +194,7 @@ function artifactsChangedDuetoDependencies(
   for (const [artifact, dependencies] of Object.entries(dependencyGraph)) {
     const artifactChangeTime = (artifactBuildTimestamps[artifact] || now).getTime()
     const artifactsChangedDueToDepencies = dependencies.filter(
-      dep =>
-        !changedArtifacts.includes(dep) &&
-        (artifactBuildTimestamps[dep] || now).getTime() > artifactChangeTime,
+      dep => (artifactBuildTimestamps[dep] || now).getTime() > artifactChangeTime,
     )
 
     if (artifactsChangedDueToDepencies.length > 0) {
