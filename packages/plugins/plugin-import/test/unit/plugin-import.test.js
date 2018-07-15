@@ -46,12 +46,10 @@ describe('plugin-import', function() {
   it('should load inline plugin without a name', async () => {
     const pimport = pluginImport([
       {
-        foo: (
-          0,
-          () => {
-            return 2
-          }
-        ),
+        foo: (0,
+        () => {
+          return 2
+        }),
       },
     ])
     const plugin = await pimport('foo')

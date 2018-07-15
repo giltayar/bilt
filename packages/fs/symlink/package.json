@@ -1,6 +1,6 @@
 {
   "name": "@bilt/symlink",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "description": "",
   "main": "src/symlink.js",
   "files": [
@@ -18,13 +18,13 @@
     "type": "git"
   },
   "dependencies": {
-    "debug": "^2.6.8",
-    "make-dir": "^1.0.0",
+    "debug": "^2.6.9",
+    "make-dir": "^1.3.0",
     "rimraf": "^2.6.2"
   },
   "devDependencies": {
-    "eslint": "^4.2.0",
-    "eslint-plugin-prettier": "^2.1.2",
-    "prettier": "^1.5.2"
+    "eslint": "^4.19.1",
+    "eslint-plugin-prettier": "^2.6.2",
+    "prettier": "^1.13.7"
   }
 }

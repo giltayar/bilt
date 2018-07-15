@@ -18,7 +18,12 @@ module.exports = initializer(
         return await ensureAgentInstanceInitialized({agentInstance})
       },
 
-      transformAgentCommand(commandArgs, {setup: {homeDir}}) {
+      transformAgentCommand(
+        commandArgs,
+        {
+          setup: {homeDir},
+        },
+      ) {
         return {
           ...commandArgs,
           env: gitOverrideLocalConfigEnvVariables(homeDir),

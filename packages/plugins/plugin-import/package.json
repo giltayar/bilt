@@ -1,6 +1,6 @@
 {
   "name": "plugin-import",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Simple plugin system",
   "main": "src/plugin-import.js",
   "scripts": {
@@ -19,14 +19,14 @@
     "type": "git"
   },
   "dependencies": {
-    "debug": "^2.6.8",
-    "lodash.merge": "^4.6.0"
+    "debug": "^2.6.9",
+    "lodash.merge": "^4.6.1"
   },
   "devDependencies": {
     "chai": "^4.1.2",
-    "eslint": "^4.2.0",
-    "eslint-plugin-prettier": "^2.1.2",
+    "eslint": "^4.19.1",
+    "eslint-plugin-prettier": "^2.6.2",
     "mocha": "^3.5.3",
-    "prettier": "^1.5.2"
+    "prettier": "^1.13.7"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@bilt/noop-repository-fetcher",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "description": "",
   "main": "src/noop-repository-fetcher.js",
   "files": [
@@ -23,14 +23,14 @@
     "type": "git"
   },
   "dependencies": {
-    "debug": "^3.0.0"
+    "debug": "^3.1.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
-    "eslint": "^4.2.0",
+    "eslint": "^4.19.1",
     "eslint-plugin-mocha-no-only": "0.0.5",
-    "eslint-plugin-prettier": "^2.1.2",
+    "eslint-plugin-prettier": "^2.6.2",
     "mocha": "^3.5.0",
-    "prettier": "^1.5.2"
+    "prettier": "^1.13.7"
   }
 }

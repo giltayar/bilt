@@ -1,6 +1,6 @@
 {
   "name": "@bilt/host-agent",
-  "version": "1.0.11",
+  "version": "1.0.13",
   "description": "An agent for regular local running a process on the local host",
   "main": "src/host-agent.js",
   "scripts": {},
@@ -15,13 +15,13 @@
     "type": "git"
   },
   "dependencies": {
-    "@bilt/symlink": "^1.0.5",
+    "@bilt/symlink": "^1.0.7",
     "debug": "^2.6.8",
     "make-dir": "^1.0.0"
   },
   "devDependencies": {
     "eslint": "^4.2.0",
-    "eslint-plugin-prettier": "^2.1.2",
-    "prettier": "^1.5.2"
+    "eslint-plugin-prettier": "^2.6.2",
+    "prettier": "^1.13.7"
   }
 }

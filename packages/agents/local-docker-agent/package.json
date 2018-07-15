@@ -1,6 +1,6 @@
 {
   "name": "@bilt/local-docker-agent",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "description": "",
   "main": "src/local-docker-agent.js",
   "files": [
@@ -19,15 +19,15 @@
     "type": "git"
   },
   "dependencies": {
-    "debug": "^2.6.8",
-    "dockerode": "^2.5.0",
-    "stream-buffers": "^3.0.1",
-    "tar-stream": "^1.5.4",
+    "debug": "^2.6.9",
+    "dockerode": "^2.5.5",
+    "stream-buffers": "^3.0.2",
+    "tar-stream": "^1.6.1",
     "through2": "^2.0.3"
   },
   "devDependencies": {
-    "eslint": "^4.2.0",
-    "eslint-plugin-prettier": "^2.1.2",
-    "prettier": "^1.5.2"
+    "eslint": "^4.19.1",
+    "eslint-plugin-prettier": "^2.6.2",
+    "prettier": "^1.13.7"
   }
 }
