@@ -2,6 +2,7 @@
 const vm = require('vm')
 const path = require('path')
 const debug = require('debug')('bilt:npm-build-job')
+const symlinkDependencies = require('./symlink-dependencies')
 const findNextVersion = require('./find-next-version')
 
 const defaultSteps = [
@@ -9,6 +10,27 @@ const defaultSteps = [
     id: 'install',
     name: 'Install',
     command: ['npm', 'install'],
+    condition: ({packageJsonChanged, hasChangedDependencies}) =>
+      packageJsonChanged || hasChangedDependencies,
+  },
+  {
+    id: 'link',
+    name: 'Link local packages',
+    funcCommand: async ({
+      agent,
+      agentInstance,
+      dependencies,
+      directory,
+      directoryToBuild,
+      artifacts,
+    }) =>
+      await symlinkDependencies(
+        {agent, agentInstance},
+        dependencies,
+        directory,
+        directoryToBuild,
+        artifacts,
+      ),
     condition: ({packageJsonChanged, hasChangedDependencies}) =>
       packageJsonChanged || hasChangedDependencies,
   },
