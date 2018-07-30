@@ -1,6 +1,6 @@
 {
   "name": "@bilt/npm-build-job",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Job Runner for NPM Jobs",
   "main": "src/npm-build-job.js",
   "engines": {
@@ -34,13 +34,13 @@
     "chai": "^4.1.2",
     "docker-compose-mocha": "^1.2.0",
     "docker-compose-tool": "0.0.1",
-    "eslint": "^5.1.0",
+    "eslint": "^5.2.0",
     "eslint-plugin-mocha-no-only": "^1.0.0",
     "eslint-plugin-node": "^6.0.1",
     "eslint-plugin-prettier": "^2.6.2",
     "mocha": "^5.2.0",
     "npm-registry-client": "^8.6.0",
     "plugin-import": "^1.0.14",
-    "prettier": "^1.13.7"
+    "prettier": "^1.14.0"
   }
 }
