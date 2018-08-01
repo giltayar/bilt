@@ -73,7 +73,7 @@ describe('local directory use-case', () => {
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.0', npmRegistryAddress)
   })
 
-  it.only('should support link', async () => {
+  it('should support link', async () => {
     await biltHere(buildDir)
 
     await changeScript(
