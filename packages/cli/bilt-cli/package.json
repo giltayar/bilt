@@ -14,7 +14,8 @@
     "bilt": "scripts/run-bilt-cli.js"
   },
   "scripts": {
-    "test": "mocha --no-timeouts 'test/**/*.test.js' && npm run eslint",
+    "test": "npm run test:mocha && npm run eslint",
+    "test:mocha": "mocha --no-timeouts 'test/**/*.test.js'",
     "eslint": "eslint '**/*.js'",
     "build": "npm run build:e2e-keys && npm run build:e2e-git-repo",
     "build:e2e-keys": "echo y | ssh-keygen -t rsa -P '' -f test/it/bilt-cli/git-server/keys/id_rsa",
@@ -40,7 +41,7 @@
     "@bilt/last-build-info": "^2.0.1",
     "@bilt/local-docker-agent": "^1.0.8",
     "@bilt/noop-repository-fetcher": "^1.0.7",
-    "@bilt/npm-build-job": "^1.0.10",
+    "@bilt/npm-build-job": "^1.0.11",
     "@bilt/npm-commander": "^1.0.5",
     "@bilt/repo-build-job": "^1.1.4",
     "@bilt/symlink": "^1.0.7",
@@ -48,7 +49,7 @@
     "debug": "^3.1.0",
     "git-repo-info": "^2.0.0",
     "ignore": "^4.0.2",
-    "jest-changed-files": "^23.4.0",
+    "jest-changed-files": "^23.4.2",
     "lodash.flatten": "^4.4.0",
     "lodash.pickby": "^4.6.0",
     "plugin-import": "^1.0.14",
@@ -58,13 +59,13 @@
     "chai": "^4.1.0",
     "cpr": "^3.0.1",
     "docker-compose-mocha": "^1.2.0",
-    "eslint": "^5.1.0",
+    "eslint": "^5.2.0",
     "eslint-plugin-mocha-no-only": "^1.0.0",
     "eslint-plugin-node": "^6.0.1",
     "eslint-plugin-prettier": "^2.6.2",
     "mocha": "^5.2.0",
     "npm-registry-client": "^8.6.0",
-    "prettier": "^1.13.7",
+    "prettier": "^1.14.0",
     "test-fixture": "^1.0.2"
   }
 }

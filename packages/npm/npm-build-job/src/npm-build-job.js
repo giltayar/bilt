@@ -35,13 +35,6 @@ const defaultSteps = [
       packageJsonChanged || hasChangedDependencies,
   },
   {
-    id: 'update',
-    name: 'Update',
-    command: ['npm', 'update'],
-    condition: ({packageJsonChanged, hasChangedDependencies}) =>
-      packageJsonChanged || hasChangedDependencies,
-  },
-  {
     id: 'increment-version',
     name: 'Increment Package Version',
     command: ({nextVersion}) => [

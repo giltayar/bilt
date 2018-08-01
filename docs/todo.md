@@ -16,6 +16,7 @@
 ## Do more testing of packages
 
 1. What she said
+1. npm build job (and any other builder) should be able to easily test itself fully, including the steps
 1. Test build failures
 1. Test linking local packages
 1. Also write Readmes for everything
