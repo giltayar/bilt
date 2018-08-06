@@ -10,8 +10,8 @@ const defaultSteps = [
     id: 'install',
     name: 'Install',
     command: ['npm', 'install'],
-    condition: ({packageJsonChanged, hasChangedDependencies}) =>
-      packageJsonChanged || hasChangedDependencies,
+    condition: ({packageJsonChanged, hasChangedDependencies, steps}) =>
+      packageJsonChanged || (hasChangedDependencies && !steps.find(step => step.id === 'link')),
   },
   {
     id: 'link',
@@ -79,7 +79,7 @@ module.exports = async ({
     async setupBuildSteps({job, agentInstance}) {
       const {
         artifacts,
-        artifact: {path: artifactPath},
+        artifact: {path: artifactPath, steps},
         filesChangedSinceLastBuild,
         hasChangedDependencies,
       } = job
@@ -108,9 +108,7 @@ module.exports = async ({
       const commanderSetup = await commander.setup({agentInstance})
       let nextVersion
 
-      const artifact = job.artifact
-
-      if (artifact.steps.find(s => s.id === 'increment-version') && !packageJson.private) {
+      if (steps.find(s => s.id === 'increment-version') && !packageJson.private) {
         nextVersion = await findNextVersion(
           agent,
           agentInstance,
@@ -133,6 +131,7 @@ module.exports = async ({
           artifacts,
           packageJsonChanged,
           hasChangedDependencies,
+          steps,
         },
       }
     },
