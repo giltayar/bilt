@@ -1,8 +1,0 @@
-{
-  "builder:npm": {
-    "artifactDefaults": {
-      "access": "publish",
-      "foo": "bar"
-    }
-  }
-}
