@@ -11,18 +11,17 @@ async function symlinkDependencies(
 ) {
   const artifactToPathMap = new Map(artifacts.map(artifact => [artifact.name, artifact.path]))
 
-  await Promise.all(
-    dependencies.map(async dependency => {
-      const dependentPath = artifactToPathMap.get(dependency)
-
-      debug('adding symlinks for dependency %s to %s', dependency, dependentPath)
-      await agent.createSymlink(
-        agentInstance,
-        path.join(artifactDirectory, 'node_modules', dependency),
-        path.join(directoryToBuild, dependentPath),
-      )
-    }),
+  const dependencyPaths = dependencies.map(dependency =>
+    path.join(directoryToBuild, artifactToPathMap.get(dependency)),
   )
+
+  debug('linking % to dependencies in %s', artifactDirectory, dependencyPaths)
+
+  await agent.executeCommand({
+    agentInstance,
+    command: ['npm', 'link', ...dependencyPaths],
+    cwd: artifactDirectory,
+  })
 }
 
 module.exports = symlinkDependencies
