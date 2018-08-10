@@ -15,13 +15,14 @@ async function symlinkDependencies(
     path.join(directoryToBuild, artifactToPathMap.get(dependency)),
   )
 
-  debug('linking % to dependencies in %s', artifactDirectory, dependencyPaths)
-
-  await agent.executeCommand({
-    agentInstance,
-    command: ['npm', 'link', ...dependencyPaths],
-    cwd: artifactDirectory,
-  })
+  for (const dependencyPath of dependencyPaths) {
+    debug('linking % to dependencies in %s', artifactDirectory, dependencyPaths)
+    await agent.executeCommand({
+      agentInstance,
+      command: ['npm', 'link', dependencyPath],
+      cwd: artifactDirectory,
+    })
+  }
 }
 
 module.exports = symlinkDependencies
