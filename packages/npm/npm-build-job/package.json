@@ -1,6 +1,6 @@
 {
   "name": "@bilt/npm-build-job",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "Job Runner for NPM Jobs",
   "main": "src/npm-build-job.js",
   "engines": {

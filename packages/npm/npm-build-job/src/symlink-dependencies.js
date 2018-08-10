@@ -1,25 +1,19 @@
 'use strict'
-const debug = require('debug')('bilt:npm-build-job')
-const path = require('path')
+const debug = require('debug')('bilt:npm-build-job:symlink-dependencies')
 
-async function symlinkDependencies(
-  {agent, agentInstance},
-  dependencies,
-  artifactDirectory,
-  directoryToBuild,
-  artifacts,
-) {
-  const artifactToPathMap = new Map(artifacts.map(artifact => [artifact.name, artifact.path]))
+async function symlinkDependencies({agent, agentInstance}, dependencies, artifactDirectory) {
+  debug('linking %s', artifactDirectory)
+  await agent.executeCommand({
+    agentInstance,
+    command: ['npm', 'link'],
+    cwd: artifactDirectory,
+  })
 
-  const dependencyPaths = dependencies.map(dependency =>
-    path.join(directoryToBuild, artifactToPathMap.get(dependency)),
-  )
-
-  for (const dependencyPath of dependencyPaths) {
-    debug('linking % to dependencies in %s', artifactDirectory, dependencyPaths)
+  for (const dependency of dependencies) {
+    debug('linking %s to dependencies in %s', artifactDirectory, dependency)
     await agent.executeCommand({
       agentInstance,
-      command: ['npm', 'link', dependencyPath],
+      command: ['npm', 'link', dependency],
       cwd: artifactDirectory,
     })
   }
