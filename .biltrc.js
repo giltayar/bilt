@@ -1,5 +1,17 @@
 module.exports = process.env.CI ? {
-
+  plugins: {
+    'builder:npm': {
+      artifactDefaults: {
+        steps: [
+          { id: 'install' },
+          { id: 'increment-version'},
+          { id: 'build' },
+          { id: 'test' },
+          { id: 'publish' }
+        ]
+      }
+    }
+  }
 } : {
     plugins: {
       'builder:npm': {

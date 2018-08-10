@@ -1,6 +1,6 @@
 {
   "name": "@bilt/artifact-finder",
-  "version": "1.0.23",
+  "version": "1.0.27",
   "description": "",
   "main": "src/artifact-finder.js",
   "bin": {

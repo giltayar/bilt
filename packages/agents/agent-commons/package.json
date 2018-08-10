@@ -1,6 +1,6 @@
 {
   "name": "@bilt/agent-commons",
-  "version": "1.0.9",
+  "version": "1.0.11",
   "description": "",
   "main": "src/agent-commons.js",
   "files": [

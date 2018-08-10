@@ -1,6 +1,6 @@
 {
   "name": "@bilt/repo-build-job",
-  "version": "1.1.4",
+  "version": "1.1.6",
   "description": "",
   "main": "src/repo-build-job.js",
   "engines": {

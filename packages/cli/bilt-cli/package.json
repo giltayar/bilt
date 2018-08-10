@@ -1,6 +1,6 @@
 {
   "name": "@bilt/bilt-cli",
-  "version": "1.1.14",
+  "version": "1.1.15",
   "description": "The CLI that builds a local folder",
   "main": "src/bilt-cli.js",
   "engines": {

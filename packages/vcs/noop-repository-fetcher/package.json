@@ -1,6 +1,6 @@
 {
   "name": "@bilt/noop-repository-fetcher",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "description": "",
   "main": "src/noop-repository-fetcher.js",
   "files": [

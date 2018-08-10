@@ -1,6 +1,6 @@
 {
   "name": "plugin-import",
-  "version": "1.0.14",
+  "version": "1.0.16",
   "description": "Simple plugin system",
   "main": "src/plugin-import.js",
   "scripts": {
