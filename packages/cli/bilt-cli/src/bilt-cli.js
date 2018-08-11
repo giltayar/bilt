@@ -75,6 +75,7 @@ async function createPimport(
     ],
     {
       baseDirectory: directoryToBuild,
+      useThisRequire: require,
     },
   )
 }

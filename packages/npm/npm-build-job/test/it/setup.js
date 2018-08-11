@@ -80,16 +80,19 @@ async function createPimport(envName, pathToCompose) {
       },
     },
   )).token
-  const pimport = await pluginImport([
-    {
-      'host-agent': hostAgentService,
-      'npm-commander': {
-        package: npmCommanderService,
-        npmRegistry: `http://${npmRegistryAddress}`,
-        npmAuthenticationLine: `//${npmRegistryAddress}/:_authToken="${npmToken}"`,
+  const pimport = await pluginImport(
+    [
+      {
+        'host-agent': hostAgentService,
+        'npm-commander': {
+          package: npmCommanderService,
+          npmRegistry: `http://${npmRegistryAddress}`,
+          npmAuthenticationLine: `//${npmRegistryAddress}/:_authToken="${npmToken}"`,
+        },
       },
-    },
-  ])
+    ],
+    {useThisRequire: require},
+  )
   return pimport
 }
 

@@ -4,7 +4,7 @@ const assert = require('assert')
 const debug = require('debug')('plugin-import')
 const merge = require('lodash.merge')
 
-module.exports = (pluginLists, {baseDirectory = ''} = {}) => {
+module.exports = (pluginLists, {baseDirectory = '', useThisRequire = require} = {}) => {
   const plugins = pluginLists.reduce(
     (acc, curr) => merge({}, acc, normalizePluginModules(curr)),
     {},
@@ -32,7 +32,11 @@ module.exports = (pluginLists, {baseDirectory = ''} = {}) => {
       return alreadyFoundPlugin
     }
 
-    const pluginModuleWithConfig = loadPluginModule(baseDirectory, normalizedPluginInfo)
+    const pluginModuleWithConfig = loadPluginModule(
+      baseDirectory,
+      useThisRequire,
+      normalizedPluginInfo,
+    )
     debug('creating plugin for kind %s, info %o', kind, pluginInfo)
     const plugin = await createPlugin(pimport, pluginInfo, kind, pluginModuleWithConfig)
 
@@ -94,7 +98,7 @@ function normalizePluginModule(modulesEntry, acceptModulesWithoutPackage) {
   }
 }
 
-function loadPluginModule(baseDirectory, pluginConfig) {
+function loadPluginModule(baseDirectory, useThisRequire, pluginConfig) {
   const pluginConfigWithoutPackage = {...pluginConfig}
   delete pluginConfigWithoutPackage.package
 
@@ -102,9 +106,11 @@ function loadPluginModule(baseDirectory, pluginConfig) {
     return {pluginModule: pluginConfig.package, pluginConfig: pluginConfigWithoutPackage}
   }
   return {
-    pluginModule: require(pluginConfig.package.startsWith('.')
-      ? path.resolve(baseDirectory, pluginConfig.package)
-      : pluginConfig.package),
+    pluginModule: useThisRequire(
+      pluginConfig.package.startsWith('.')
+        ? path.resolve(baseDirectory, pluginConfig.package)
+        : pluginConfig.package,
+    ),
     pluginConfig: pluginConfigWithoutPackage,
   }
 }

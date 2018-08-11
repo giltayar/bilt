@@ -55,6 +55,7 @@ async function pushOrigin(buildDir) {
     ],
     {
       baseDirectory: buildDir,
+      useThisRequire: require,
     },
   )
 
