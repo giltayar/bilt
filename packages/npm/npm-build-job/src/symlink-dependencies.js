@@ -16,14 +16,19 @@ async function symlinkDependencies(
     artifactDirectory,
   )
 
-  for (const dependency of artifact.dependencies) {
-    debug('linking %s to dependencies in %s', artifactDirectory, dependency)
-    await agent.executeCommand({
-      agentInstance,
-      command: ['rm', '-rf', path.join(artifactDirectory, 'node_modules', dependency)],
-      cwd: artifactDirectory,
-    })
-  }
+  debug('linking %s to dependencies %o', artifactDirectory, artifact.dependencies)
+
+  await agent.executeCommand({
+    agentInstance,
+    command: [
+      'rm',
+      '-rf',
+      ...artifact.dependencies.map(dependency =>
+        path.join(artifactDirectory, 'node_modules', dependency),
+      ),
+    ],
+    cwd: artifactDirectory,
+  })
 }
 
 module.exports = symlinkDependencies

@@ -4,6 +4,7 @@ module.exports = process.env.CI ? {
       artifactDefaults: {
         steps: [
           { id: 'install' },
+          { id: 'update' },
           { id: 'increment-version'},
           { id: 'build' },
           { id: 'test' },
