@@ -16,21 +16,8 @@ const defaultSteps = [
   {
     id: 'link',
     name: 'Link local packages',
-    funcCommand: async ({
-      agent,
-      agentInstance,
-      dependencies,
-      directory,
-      directoryToBuild,
-      artifacts,
-    }) =>
-      await symlinkDependencies(
-        {agent, agentInstance},
-        dependencies,
-        directory,
-        directoryToBuild,
-        artifacts,
-      ),
+    funcCommand: async ({agent, agentInstance, artifact, directoryToBuild, directory}) =>
+      await symlinkDependencies({agent, agentInstance}, artifact, directoryToBuild, directory),
     condition: ({packageJsonChanged, hasChangedDependencies}) =>
       packageJsonChanged || hasChangedDependencies,
   },
@@ -79,6 +66,7 @@ module.exports = async ({
     async setupBuildSteps({job, agentInstance}) {
       const {
         artifacts,
+        artifact,
         artifact: {path: artifactPath, steps},
         filesChangedSinceLastBuild,
         hasChangedDependencies,
@@ -129,6 +117,7 @@ module.exports = async ({
           commanderSetup,
           nextVersion,
           artifacts,
+          artifact,
           packageJsonChanged,
           hasChangedDependencies,
           steps,

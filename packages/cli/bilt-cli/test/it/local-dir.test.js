@@ -80,7 +80,7 @@ describe('local directory use-case', () => {
       buildDir,
       'a',
       'build',
-      'cp node_modules/this-pkg-does-not-exist-in-npmjs.b/b.txt .',
+      'cp ../node_modules/this-pkg-does-not-exist-in-npmjs.b/b.txt .',
     )
     await writeFile('something new', buildDir, 'b/b.txt')
 
