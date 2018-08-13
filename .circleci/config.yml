@@ -7,7 +7,7 @@ jobs:
       CI: 1
     steps:
       - checkout
-      - run: |
-          circleci-install nodejs 10.6.0
-          sudo -H -i -u ${CIRCLECI_USER} nvm alias default 10.6.0
+      # - run: |
+      #     circleci-install nodejs 10.6.0
+      #     sudo -H -i -u ${CIRCLECI_USER} nvm alias default 10.6.0
       - run: node --version
