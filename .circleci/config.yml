@@ -18,5 +18,5 @@ jobs:
             echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
             echo 'nvm install v${NODE_VERSION}' >> $BASH_ENV
       - run:
-        name: Node Version
-        command: node --version
+          name: Node Version
+          command: node --version
