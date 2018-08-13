@@ -10,5 +10,5 @@ jobs:
       # - run: |
       #     circleci-install nodejs 10.6.0
       #     sudo -H -i -u ${CIRCLECI_USER} nvm alias default 10.6.0
-      - run: nvm
+      - run: sudo -H -i -u ${CIRCLECI_USER} nvm
       - run: node --version
