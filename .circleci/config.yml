@@ -7,8 +7,14 @@ jobs:
       CI: 1
     steps:
       - checkout
-      # - run: |
-      #     circleci-install nodejs 10.6.0
-      #     sudo -H -i -u ${CIRCLECI_USER} nvm alias default 10.6.0
-      - run: sudo -H -i -u ${CIRCLE_PROJECT_USERNAME} nvm
+      - run:
+          name: Install node
+          command: |
+            set +e
+            export NODE_VERSION=10.6.0
+            touch $BASH_ENV
+            curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.6/install.sh | bash
+            echo 'export NVM_DIR="$HOME/.nvm"' >> $BASH_ENV
+            echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
+            echo 'nvm install v${NODE_VERSION}' >> $BASH_ENV
       - run: node --version
