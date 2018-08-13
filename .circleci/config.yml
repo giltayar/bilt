@@ -12,10 +12,10 @@ jobs:
           command: |
             set +e
             export NODE_VERSION=10.6.0
-            echo $BASH_ENV
             touch $BASH_ENV
             curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.6/install.sh | bash
             echo 'export NVM_DIR="$HOME/.nvm"' >> $BASH_ENV
             echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
             echo 'nvm install v${NODE_VERSION}' >> $BASH_ENV
-      - run: node --version
+      - run:
+        command: node --version
