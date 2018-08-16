@@ -15,7 +15,7 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
       const {
         filesChangedSinceLastBuild,
         artifactBuildTimestamps,
-      } = await determineInitialStateInformation(force, state, lastBuildInfo, job)
+      } = await determineInitialStateInformation(state, lastBuildInfo, job)
 
       if (awakenedFrom && awakenedFrom.result.success) {
         const artifact = awakenedFrom.job.artifact
@@ -31,7 +31,7 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
           awakenedFrom,
           initialAllArtifacts: job.artifacts,
           linkDependencies: job.linkDependencies,
-          filesChangedSinceLastBuild,
+          filesChangedSinceLastBuild: force ? {} : filesChangedSinceLastBuild,
           artifactBuildTimestamps,
           uptoArtifacts,
           fromArtifacts,
@@ -112,8 +112,7 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
 }
 module.exports.plugins = ['lastBuildInfo', 'events']
 
-async function determineInitialStateInformation(force, state, lastBuildInfo, job) {
-  if (force) return {filesChangedSinceLastBuild: {}, artifactBuildTimestamps: {}}
+async function determineInitialStateInformation(state, lastBuildInfo, job) {
   if (state) return state
 
   const buildInfo = await lastBuildInfo.lastBuildInfo({artifacts: job.artifacts})
