@@ -11,6 +11,7 @@ jobs:
           name: Install node
           command: |
             set +e
+            touch $BASH_ENV
             export NODE_VERSION=10.6.0
             echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
             echo 'nvm install' ${NODE_VERSION}' >> $BASH_ENV
