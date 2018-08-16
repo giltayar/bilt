@@ -11,7 +11,23 @@ describe('repo-build-job', function() {
 
   it('should execute a simple job', () => {
     const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}, {name: 'c', path: 'ccc'}]
-    const repoJob = {filesChangedSinceLastBuild: {}, justBuildArtifacts: names(artifacts)}
+    const repoJob = {
+      filesChangedSinceLastBuild: {},
+      force: true,
+      justBuildArtifacts: names(artifacts),
+    }
+
+    const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
+
+    expect(jobNames(jobsThatRan)).to.eql(['a', 'b', 'c'])
+  })
+
+  it('should execute a simple job if this is first build', () => {
+    const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}, {name: 'c', path: 'ccc'}]
+    const repoJob = {
+      filesChangedSinceLastBuild: {},
+      justBuildArtifacts: names(artifacts),
+    }
 
     const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
 
@@ -99,6 +115,7 @@ describe('repo-build-job', function() {
     const repoJob = {
       justBuildArtifacts: names(artifacts),
       filesChangedSinceLastBuild: {},
+      force: true,
     }
 
     const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
@@ -117,6 +134,7 @@ describe('repo-build-job', function() {
     const repoJob = {
       justBuildArtifacts: names(artifacts),
       filesChangedSinceLastBuild: {},
+      force: true,
     }
 
     const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
@@ -135,6 +153,7 @@ describe('repo-build-job', function() {
     const repoJob = {
       justBuildArtifacts: ['a', 'c', 'd2'],
       filesChangedSinceLastBuild: {},
+      force: true,
     }
 
     const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
@@ -153,6 +172,7 @@ describe('repo-build-job', function() {
     const repoJob = {
       uptoArtifacts: ['c'],
       filesChangedSinceLastBuild: {},
+      force: true,
     }
 
     const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
@@ -171,6 +191,7 @@ describe('repo-build-job', function() {
     const repoJob = {
       fromArtifacts: ['d2'],
       filesChangedSinceLastBuild: {},
+      force: true,
     }
 
     const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
@@ -189,6 +210,7 @@ describe('repo-build-job', function() {
     const repoJob = {
       justBuildArtifacts: names(artifacts),
       filesChangedSinceLastBuild: {},
+      force: true,
     }
 
     const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
@@ -207,6 +229,7 @@ describe('repo-build-job', function() {
     const repoJob = {
       justBuildArtifacts: names(artifacts),
       filesChangedSinceLastBuild: {},
+      force: true,
     }
 
     const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)

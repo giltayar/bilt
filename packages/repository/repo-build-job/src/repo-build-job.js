@@ -31,7 +31,8 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
           awakenedFrom,
           initialAllArtifacts: job.artifacts,
           linkDependencies: job.linkDependencies,
-          filesChangedSinceLastBuild: force ? {} : filesChangedSinceLastBuild,
+          filesChangedSinceLastBuild,
+          force,
           artifactBuildTimestamps,
           uptoArtifacts,
           fromArtifacts,
@@ -46,6 +47,7 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
         initialAllArtifacts,
         linkDependencies,
         filesChangedSinceLastBuild,
+        force,
         artifactBuildTimestamps,
         uptoArtifacts,
         fromArtifacts,
@@ -60,7 +62,11 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
         filesChangedSinceLastBuild,
         dependencyGraph: dependencyGraphSubsetToBuild({
           dependencyGraph: createDependencyGraph(initialAllArtifacts),
-          changedArtifacts: artifactsFromChanges(initialAllArtifacts, filesChangedSinceLastBuild),
+          changedArtifacts: artifactsFromChanges(
+            initialAllArtifacts,
+            filesChangedSinceLastBuild,
+            force,
+          ),
           artifactBuildTimestamps,
           fromArtifacts,
           uptoArtifacts,
@@ -94,7 +100,9 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
 
       debug('building artifact %s', artifactToBuild)
       const artifact = state.allArtifacts.find(a => a.name === artifactToBuild)
-      const filesChangedSinceLastBuildInArtifact = state.filesChangedSinceLastBuild[artifact.path]
+      const filesChangedSinceLastBuildInArtifact = force
+        ? undefined
+        : state.filesChangedSinceLastBuild[artifact.path]
       const artifactJob = createJobFromArtifact(
         artifact,
         linkDependencies ? state.allArtifacts : undefined,
@@ -143,10 +151,11 @@ function determineArtifactsThatAreAlreadyBuilt(awakenedFrom, state) {
       : []
 }
 
-function artifactsFromChanges(artifacts, filesChangedSinceLastBuild) {
+function artifactsFromChanges(artifacts, filesChangedSinceLastBuild, force) {
   return artifacts
     .filter(
       artifact =>
+        force ||
         filesChangedSinceLastBuild[artifact.path] === undefined ||
         Object.keys(filesChangedSinceLastBuild[artifact.path]).length > 0,
     )
