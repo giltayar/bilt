@@ -8,13 +8,13 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Setup nvm
+          name: Setup nvm and npm
           command: |
             set +e
             touch $BASH_ENV
             export NODE_VERSION=10.6.0
             echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
-            # echo 'nvm install' ${NODE_VERSION} >> $BASH_ENV
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
       - run:
           name: Install correct Node version
           command: |
