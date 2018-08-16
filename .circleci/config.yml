@@ -8,15 +8,19 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install node
-          command: |
-            set +e
-            touch $BASH_ENV
-            export NODE_VERSION=10.6.0
-            echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
-            echo 'nvm install' ${NODE_VERSION} >> $BASH_ENV
+        name: Install node
+        command: |
+          set +e
+          touch $BASH_ENV
+          export NODE_VERSION=10.6.0
+          echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
+          # echo 'nvm install' ${NODE_VERSION} >> $BASH_ENV
       - run:
-          name: Node Version
-          command: |
-            nvm use 10
+        name: Install Correct Node Version
+        command: |
+          nvm install 10.6.0
+          nvm alias default 10.6.0
+      - run:
+        name: Node Version
+        command: |
             node --version
