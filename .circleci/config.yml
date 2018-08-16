@@ -12,11 +12,10 @@ jobs:
           command: |
             set +e
             export NODE_VERSION=10.6.0
-            echo 'nvm install' ${NODE_VERSION} >> $BASH_ENV
+            echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
+            echo 'nvm install' ${NODE_VERSION}' >> $BASH_ENV
       - run:
-          name: Install bilt
-          command: npm install -g @bilt/bilt-cli
-      - run:
-          name: Run bilt
-          command: bilt -u @bilt/bilt-cli
-
+          name: Node Version
+          command: |
+            nvm use 10
+            node --version
