@@ -12,8 +12,9 @@ jobs:
           command: |
             set +e
             export NODE_VERSION=10.6.0
-            echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
-            echo 'nvm install' ${NODE_VERSION} >> $BASH_ENV
+            #echo 'nvm install' ${NODE_VERSION} >> $BASH_ENV
+            nvm install ${NODE_VERSION}
+            nvm alias default ${NODE_VERSION}
       - run:
           name: Node Version
           command: node --version
