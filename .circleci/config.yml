@@ -8,7 +8,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install node
+          name: Setup nvm
           command: |
             set +e
             touch $BASH_ENV
@@ -16,11 +16,14 @@ jobs:
             echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
             # echo 'nvm install' ${NODE_VERSION} >> $BASH_ENV
       - run:
-          name: Install Correct Node Version
+          name: Install correct Node version
           command: |
             nvm install 10.6.0
             nvm alias default 10.6.0
       - run:
-          name: Node Version
+          name: Install bilt
           command: |
-              node --version
+              npm install -g @bilt/bilt-cli
+      - run:
+          name: Bild
+          command: bilt -u @bilt/bilt-cli
