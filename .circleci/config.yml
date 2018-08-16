@@ -32,4 +32,5 @@ jobs:
 
       - save_cache:
           key: bilt-{{ .Branch }}
-          path: ".bilt"
+          paths:
+            - ".bilt"
