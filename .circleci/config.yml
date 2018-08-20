@@ -20,7 +20,6 @@ jobs:
             git config --global user.email "gil@tayar.org"
             git config --global user.name "${CIRCLE_PROJECT_USERNAME}"
             git status
-            ls .bilt
 
       - run:
           name: Install correct Node version
