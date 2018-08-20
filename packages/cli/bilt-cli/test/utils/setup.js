@@ -153,7 +153,8 @@ async function checkVersionExists(pkg, version, npmRegistryAddress) {
     `http://${npmRegistryAddress}/`,
   ])
 
-  expect(stdout).to.include(version)
+  const packageInfo = JSON.parse(stdout)
+  expect(packageInfo['dist-tags'].latest).to.equal(version)
 }
 
 module.exports = {
