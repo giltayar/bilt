@@ -2,6 +2,7 @@
 const {promisify: p} = require('util')
 const fs = require('fs')
 const path = require('path')
+const {exec} = require('child_process')
 const {expect} = require('chai')
 const {describe, it, afterEach, beforeEach} = require('mocha')
 const {dockerComposeTool, getAddressForService} = require('docker-compose-mocha')
@@ -58,7 +59,7 @@ describe('local directory use-case', () => {
     )
   })
 
-  it('should build the directory with all its packages, including publishing', async () => {
+  it('should build the directory with all its packages, including publishing, reset, and then rebuild nothing', async () => {
     await biltHere(buildDir, {disabledSteps: ['link']})
 
     expect(await fileContents(buildDir, 'a/postinstalled.txt')).to.equal('')
@@ -68,6 +69,14 @@ describe('local directory use-case', () => {
     expect(await fileContents(buildDir, 'c/postinstalled.txt')).to.equal('')
     expect(await fileContents(buildDir, 'c/voodooed.txt')).to.equal('')
     expect(await fileContents(buildDir, 'a/c-voodooed.txt')).to.equal('')
+
+    await checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.0', npmRegistryAddress)
+    await checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.0', npmRegistryAddress)
+
+    // This simulates rerunning the same build in the CI
+    await gitReset(buildDir)
+
+    await biltHere(buildDir, {disabledSteps: ['link']})
 
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.0', npmRegistryAddress)
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.0', npmRegistryAddress)
@@ -104,4 +113,8 @@ async function changeScript(buildDir, packageFolder, scriptName, script) {
     path.join(buildDir, packageFolder, 'package.json'),
     JSON.stringify(packageJson),
   )
+}
+
+async function gitReset(directory) {
+  await p(exec)('git reset --hard HEAD', {cwd: directory})
 }

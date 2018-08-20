@@ -124,11 +124,18 @@ async function determineInitialStateInformation(state, lastBuildInfo, job) {
   if (state) return state
 
   const buildInfo = await lastBuildInfo.lastBuildInfo({artifacts: job.artifacts})
+  const filesChangedSinceLastBuild = await lastBuildInfo.filesChangedSinceLastBuild({
+    lastBuildInfo: buildInfo,
+  })
+  for (const {path: artifactPath} of job.artifacts) {
+    await lastBuildInfo.savePrebuildBuildInfo({
+      artifactPath,
+      artifactFilesChangedSinceLastBuild: filesChangedSinceLastBuild[artifactPath],
+    })
+  }
 
   return {
-    filesChangedSinceLastBuild: await lastBuildInfo.filesChangedSinceLastBuild({
-      lastBuildInfo: buildInfo,
-    }),
+    filesChangedSinceLastBuild,
     artifactBuildTimestamps: await lastBuildInfo.artifactBuildTimestamps({
       lastBuildInfo: buildInfo,
     }),

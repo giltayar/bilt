@@ -33,7 +33,7 @@ module.exports = async ({directory}) => {
         }),
       )
     },
-    // returns {[artifactPath]: {artifactFile: hash, ...}
+    // returns {[artifactPath]: {artifactFile: hash, ...}}
     async filesChangedSinceLastBuild({lastBuildInfo}) {
       const commit = gitRepoInfo(directory).sha
       const currentRepoInfo = await findChangesInCurrentRepo(directory, commit)
@@ -47,14 +47,11 @@ module.exports = async ({directory}) => {
       )
     },
 
-    async savePackageLastBuildInfo({
-      artifactPath,
-      artifactFilesChangedSinceLastBuild,
-      now = new Date(),
-    }) {
-      const commit = gitRepoInfo(directory).sha
+    async savePrebuildBuildInfo({artifactPath, artifactFilesChangedSinceLastBuild}) {
       const biltJsonDir = path.join(directory, '.bilt', artifactPath)
       await makeDir(biltJsonDir)
+
+      const commit = gitRepoInfo(directory).sha
 
       const filesChangedInWorkspace = new Set(
         (await listFilesChangedInWorkspace(directory, commit)).filter(f =>
@@ -66,12 +63,29 @@ module.exports = async ({directory}) => {
         : await readHashesOfFiles(directory, [...filesChangedInWorkspace])
 
       await p(fs.writeFile)(
+        path.join(biltJsonDir, 'bilt.prebuild.json'),
+        JSON.stringify({
+          lastSuccessfulBuild: {
+            commit,
+            changedFilesInWorkspace: workspaceFilesThatWereBuilt,
+          },
+        }),
+      )
+    },
+
+    async savePackageLastBuildInfo({artifactPath, now = new Date()}) {
+      const biltJsonDir = path.join(directory, '.bilt', artifactPath)
+
+      const prebuild = JSON.parse(
+        await p(fs.readFile)(path.join(biltJsonDir, 'bilt.prebuild.json')),
+      )
+      await p(fs.writeFile)(
         path.join(biltJsonDir, 'bilt.json'),
         JSON.stringify({
           lastSuccessfulBuild: {
             timestamp: now.toISOString(),
-            commit,
-            changedFilesInWorkspace: workspaceFilesThatWereBuilt,
+            commit: prebuild.lastSuccessfulBuild.commit,
+            changedFilesInWorkspace: prebuild.lastSuccessfulBuild.changedFilesInWorkspace,
           },
         }),
       )

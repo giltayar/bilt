@@ -1,6 +1,6 @@
 {
   "name": "@bilt/last-build-info",
-  "version": "2.0.3",
+  "version": "2.0.11",
   "description": "",
   "main": "src/last-build-info.js",
   "engines": {
@@ -11,7 +11,8 @@
     "scripts"
   ],
   "scripts": {
-    "test": "mocha --no-timeouts 'test/**/*.test.js' && npm run eslint",
+    "test": "npm run test:mocha && npm run eslint",
+    "test:mocha": "mocha --no-timeouts 'test/**/*.test.js'",
     "eslint": "eslint '**/*.js'",
     "publish:all": "npm version patch && npm publish"
   },

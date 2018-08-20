@@ -1,6 +1,6 @@
 {
   "name": "@bilt/bilt-cli",
-  "version": "1.1.20",
+  "version": "1.1.24",
   "description": "The CLI that builds a local folder",
   "main": "src/bilt-cli.js",
   "engines": {
@@ -59,7 +59,7 @@
     "chai": "^4.1.0",
     "cpr": "^3.0.1",
     "docker-compose-mocha": "^1.2.0",
-    "eslint": "^5.3.0",
+    "eslint": "^5.4.0",
     "eslint-plugin-mocha-no-only": "^1.0.0",
     "eslint-plugin-node": "^6.0.1",
     "eslint-plugin-prettier": "^2.6.2",
