@@ -10,13 +10,16 @@ jobs:
       - restore_cache:
           key: bilt-{{ .Branch }}
       - run:
-          name: Setup nvm and npm
+          name: Setup nvm and npm and git
           command: |
             set +e
             touch $BASH_ENV
             export NODE_VERSION=10.6.0
             echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+            git config --global user.email "gil@tayar.org"
+            git config --global user.name "${CIRCLE_PROJECT_USERNAME}"
+
       - run:
           name: Install correct Node version
           command: |
