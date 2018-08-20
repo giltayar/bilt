@@ -1,4 +1,5 @@
 const fs = require('fs')
+const os = require('fs')
 const path = require('path')
 const {exec, execFile} = require('child_process')
 const {promisify: p} = require('util')
@@ -109,7 +110,7 @@ async function replayCommit(directory, commitDirectory) {
 }
 
 async function setupFolder(sourceDirectory) {
-  const tmpDir = await p(fs.mkdtemp)('/tmp/')
+  const tmpDir = await p(fs.mkdtemp)(os.tmpdir() + '/')
 
   await p(cpr)(sourceDirectory + '/', tmpDir, {overwrite: true})
 

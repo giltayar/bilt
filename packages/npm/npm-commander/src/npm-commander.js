@@ -37,7 +37,7 @@ module.exports = initializer(
         debug('initializing agent instance with npm', agentInstance.id)
         const agent = await pimport(agentInstance.kind)
         const homeDir = npmAuthenticationLine
-          ? await p(fs.mkdtemp)(os.tmpdir())
+          ? await p(fs.mkdtemp)(os.tmpdir() + '/')
           : await agent.homeDir(agentInstance)
 
         if (npmAuthenticationLine) {

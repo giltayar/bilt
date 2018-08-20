@@ -33,7 +33,7 @@ module.exports = initializer(
       async [initializer.initializationFunction]({agentInstance}) {
         const agent = await pimport(agentInstance.kind)
         const homeDir = gitAuthenticationKey
-          ? await p(fs.mkdtemp)(os.tmpdir())
+          ? await p(fs.mkdtemp)(os.tmpdir() + '/')
           : await agent.homeDir(agentInstance)
 
         if (gitAuthenticationKey) {

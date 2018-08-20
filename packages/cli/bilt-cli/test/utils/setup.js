@@ -1,4 +1,5 @@
 const fs = require('fs')
+const os = require('fs')
 const path = require('path')
 const {exec, execFile} = require('child_process')
 const {promisify: p} = require('util')
@@ -14,7 +15,7 @@ async function setupBuildDir(
   finalOrigin = undefined,
   modifyBuildDirFunc,
 ) {
-  const tmpDir = await p(fs.mkdtemp)('/tmp/')
+  const tmpDir = await p(fs.mkdtemp)(os.tmpdir() + '/')
 
   await gitInit(tmpDir)
 
