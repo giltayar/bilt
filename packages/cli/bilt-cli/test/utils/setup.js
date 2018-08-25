@@ -1,5 +1,5 @@
+'use strict'
 const fs = require('fs')
-const os = require('fs')
 const path = require('path')
 const {exec, execFile} = require('child_process')
 const {promisify: p} = require('util')
@@ -15,7 +15,8 @@ async function setupBuildDir(
   finalOrigin = undefined,
   modifyBuildDirFunc,
 ) {
-  const tmpDir = await p(fs.mkdtemp)(os.tmpdir() + '/')
+  // This folder needs to be mounted on docker, so we can't use `os.tmpdir`.
+  const tmpDir = await p(fs.mkdtemp)(path.join(__dirname, '/test-resources/'))
 
   await gitInit(tmpDir)
 

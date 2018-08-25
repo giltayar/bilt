@@ -11,7 +11,9 @@ const defaultSteps = [
     name: 'Install',
     command: ['npm', 'install'],
     condition: ({packageJsonChanged, hasChangedDependencies, steps}) =>
-      packageJsonChanged || (hasChangedDependencies && !steps.find(step => step.id === 'link')),
+      process.env.CI ||
+      packageJsonChanged ||
+      (hasChangedDependencies && !steps.find(step => step.id === 'link')),
   },
   {
     id: 'update',
@@ -23,7 +25,9 @@ const defaultSteps = [
         command: ['npm', 'update', ...dependencies],
       }),
     condition: ({packageJsonChanged, hasChangedDependencies, steps}) =>
-      packageJsonChanged || (hasChangedDependencies && !steps.find(step => step.id === 'link')),
+      process.env.CI ||
+      packageJsonChanged ||
+      (hasChangedDependencies && !steps.find(step => step.id === 'link')),
   },
   {
     id: 'link',
