@@ -8,6 +8,7 @@ async function executeBuild({
   awakenedFrom,
   disabledSteps,
   enabledSteps,
+  events,
 }) {
   const agentInstance = agent ? await agent.acquireInstanceForJob() : undefined
   try {
@@ -41,7 +42,7 @@ async function executeBuild({
         buildContext: {...jobWithArtifact, ...buildContext},
       })
 
-      await executeSteps(buildSteps, agent, job)
+      await executeSteps(buildSteps, agent, events)
 
       return {state, jobs, success: true}
     } catch (err) {
@@ -77,8 +78,12 @@ function mergeSteps(jobSteps, builderSteps, disabledSteps = []) {
   }
 }
 
-async function executeSteps(buildSteps, agent) {
+async function executeSteps(buildSteps, agent, events) {
   for (const command of buildSteps) {
+    events &&
+      events.publish('START_STEP', {
+        step: {command: typeof command === 'string' ? command : '<function>'},
+      })
     if (typeof command === 'function') {
       await command()
     } else {

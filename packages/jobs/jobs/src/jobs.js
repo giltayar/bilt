@@ -44,6 +44,7 @@ async function executeJob(
     awakenedFrom,
     disabledSteps,
     enabledSteps,
+    events,
   })
   debug('ran job %s', jobWithId.id)
 
