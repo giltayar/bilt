@@ -16,6 +16,11 @@ const argv = yargs
     description: 'directory or artifact name to build. It will build just this artifact',
     array: true,
   })
+  .option('rebuild', {
+    description: 'whether this is a rebuild (usually local) or not (usually CI)',
+    boolean: true,
+    default: true,
+  })
   .option('root', {
     alias: 'r',
     description: 'directory or artifact name to build, including its dependencies and dependees',
@@ -56,6 +61,7 @@ async function main() {
     justBuild: argv.build,
     force: argv.force,
     repository: argv.checkout,
+    rebuild: argv.rebuild,
     enabledSteps: argv.enable,
     disabledSteps: (argv.disable || []).filter(step => !(argv.enable || []).includes(step)),
   })

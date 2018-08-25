@@ -9,7 +9,7 @@ const defaultbiltConfig = require('./default-biltrc')
 
 async function buildHere(
   directoryToBuild,
-  {upto, from, justBuild, force, repository, disabledSteps, enabledSteps} = {},
+  {upto, from, justBuild, force, repository, disabledSteps, enabledSteps, rebuild} = {},
 ) {
   const isRemoteRepo = repository
   debug('loading configuration from', directoryToBuild)
@@ -41,6 +41,7 @@ async function buildHere(
       from,
       justBuild,
       force,
+      isRebuild: rebuild,
     })
 
     await waitForJobs(pimport, jobsToWaitFor)
@@ -128,6 +129,7 @@ async function runRepoBuildJob({
   from,
   justBuild,
   force,
+  isRebuild,
 }) {
   debug('fetching artifacts')
   const artifacts = await (await artifactFinder()).findArtifacts(directoryToBuild)
@@ -146,6 +148,7 @@ async function runRepoBuildJob({
       justBuildArtifacts: normalizeArtifacts(justBuild, artifacts, directoryToBuild),
       linkDependencies: true,
       force,
+      isRebuild,
     }),
   ]
 }

@@ -9,7 +9,7 @@ const debug = require('debug')('bilt:repo-build-job')
 module.exports = ({plugins: [lastBuildInfo, events]}) => {
   return {
     async setupBuildSteps({state, awakenedFrom, job}) {
-      const {force, uptoArtifacts, fromArtifacts, justBuildArtifacts} = job
+      const {force, uptoArtifacts, fromArtifacts, justBuildArtifacts, isRebuild} = job
       debug('running job repo-build-job')
 
       const {
@@ -37,6 +37,7 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
           uptoArtifacts,
           fromArtifacts,
           justBuildArtifacts,
+          isRebuild,
         },
       }
     },
@@ -52,6 +53,7 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
         uptoArtifacts,
         fromArtifacts,
         justBuildArtifacts,
+        isRebuild,
       },
     }) {
       if (!state) {
@@ -106,7 +108,10 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
       const artifactJob = createJobFromArtifact(
         artifact,
         linkDependencies ? state.allArtifacts : undefined,
-        filesChangedSinceLastBuildInArtifact && Object.keys(filesChangedSinceLastBuildInArtifact),
+        isRebuild
+          ? filesChangedSinceLastBuildInArtifact &&
+            Object.keys(filesChangedSinceLastBuildInArtifact)
+          : undefined,
         hasChangedDependencies,
       )
 
