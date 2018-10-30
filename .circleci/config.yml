@@ -35,6 +35,6 @@ jobs:
           command: bilt -u @bilt/bilt-cli --no-rebuild
 
       - save_cache:
-          key: bilt-{{ .Branch }}
+          key: bilt-{{ .Branch }}-.BuildNum
           paths:
             - ".bilt"
