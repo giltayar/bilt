@@ -42,10 +42,7 @@ module.exports = fileFetcher => {
         debug('found npm artifact %o', ret)
         return ret
       } catch (e) {
-        if (e instanceof SyntaxError) {
-          console.error(`package.json ${filename} did not parse`, e)
-        }
-        throw e
+        console.error(`package.json ${filename} did not parse correctly. Error:`, e.toString())
       }
     },
     async artifactsRcExtractor(filename, basedir) {
