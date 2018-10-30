@@ -106,7 +106,13 @@ module.exports = async ({
       const directory = path.join(directoryToBuild, artifactPath)
       debug('building npm package under directory %s', directory)
 
+      const isFirstBuild = await agent.pathExists(
+        agentInstance,
+        path.join(directory, 'node_modules'),
+      )
+
       const packageJsonChanged =
+        isFirstBuild ||
         !filesChangedSinceLastBuild ||
         filesChangedSinceLastBuild.includes(`${artifactPath}/package.json`)
 

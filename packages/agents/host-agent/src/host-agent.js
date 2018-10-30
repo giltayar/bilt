@@ -57,6 +57,10 @@ module.exports = async ({kind}) => {
       return await promisify(fs.readFile)(fileName)
     },
 
+    async pathExists(agentInstance, fileOrDirName) {
+      return await promisify(fs.exists)(fileOrDirName)
+    },
+
     async writeBufferToFile(agentInstance, fileName, buffer) {
       const {directory} = info(agentInstance)
 

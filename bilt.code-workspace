@@ -31,13 +31,10 @@
 			"path": "packages/repository/last-build-info"
 		},
 		{
-			"path": "packages/agents/local-docker-agent"
-		},
-		{
 			"path": "packages/fs/symlink"
 		},
 		{
-			"path": "packages/agents/remote-docker-agent"
+			"path": "packages/agents/host-agent"
 		}
 	],
 	"settings": {
