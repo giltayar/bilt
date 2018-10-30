@@ -12,7 +12,7 @@ async function buildHere(
   {upto, from, justBuild, force, repository, disabledSteps, enabledSteps, rebuild} = {},
 ) {
   const isRemoteRepo = repository
-  debug('loading configuration from', directoryToBuild)
+  debug('Loading configuration from', directoryToBuild)
   const {config: buildConfig, filepath} = await cosmiConfig('bilt', {
     rcExtensions: true,
   }).search(directoryToBuild)
