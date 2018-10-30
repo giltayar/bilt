@@ -28,7 +28,7 @@ const defaultSteps = [
       await agent.executeCommand({
         agentInstance,
         cwd: directory,
-        command: ['npm', 'update', ...dependencies],
+        command: ['npm', 'update', ...(dependencies || [])],
       }),
     condition: ({packageJsonChanged, hasChangedDependencies, steps}) =>
       packageJsonChanged || (hasChangedDependencies && !steps.find(step => step.id === 'link')),
@@ -106,11 +106,10 @@ module.exports = async ({
       const directory = path.join(directoryToBuild, artifactPath)
       debug('building npm package under directory %s', directory)
 
-      const isFirstBuild = await agent.pathExists(
+      const isFirstBuild = !(await agent.pathExists(
         agentInstance,
         path.join(directory, 'node_modules'),
-      )
-
+      ))
       const packageJsonChanged =
         isFirstBuild ||
         !filesChangedSinceLastBuild ||

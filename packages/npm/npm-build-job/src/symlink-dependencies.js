@@ -12,7 +12,7 @@ async function symlinkDependencies(
   const artifactToPathMap = new Map(artifacts.map(artifact => [artifact.name, artifact.path]))
 
   await Promise.all(
-    artifact.dependencies.map(async dependency => {
+    (artifact.dependencies || []).map(async dependency => {
       const dependentPath = artifactToPathMap.get(dependency)
 
       debug('adding symlinks for dependency %s to %s', dependency, dependentPath)
@@ -33,7 +33,7 @@ async function unsymlinkDependencies({agent, agentInstance}, artifact, artifactD
     command: [
       'rm',
       '-rf',
-      ...artifact.dependencies.map(dependency =>
+      ...(artifact.dependencies || []).map(dependency =>
         path.join(artifactDirectory, 'node_modules', dependency),
       ),
     ],
