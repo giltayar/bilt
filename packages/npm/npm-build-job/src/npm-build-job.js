@@ -2,10 +2,18 @@
 const vm = require('vm')
 const path = require('path')
 const debug = require('debug')('bilt:npm-build-job')
-const symlinkDependencies = require('./symlink-dependencies')
+const {symlinkDependencies, unsymlinkDependencies} = require('./symlink-dependencies')
 const findNextVersion = require('./find-next-version')
 
 const defaultSteps = [
+  {
+    id: 'reset-links',
+    name: 'Unlink local packages',
+    funcCommand: async ({agent, agentInstance, artifact, directory}) =>
+      await unsymlinkDependencies({agent, agentInstance}, artifact, directory),
+    condition: ({packageJsonChanged, hasChangedDependencies}) =>
+      packageJsonChanged || hasChangedDependencies,
+  },
   {
     id: 'install',
     name: 'Install',
@@ -28,8 +36,14 @@ const defaultSteps = [
   {
     id: 'link',
     name: 'Link local packages',
-    funcCommand: async ({agent, agentInstance, artifact, directoryToBuild, directory}) =>
-      await symlinkDependencies({agent, agentInstance}, artifact, directoryToBuild, directory),
+    funcCommand: async ({agent, agentInstance, artifact, directoryToBuild, directory, artifacts}) =>
+      await symlinkDependencies(
+        {agent, agentInstance},
+        artifact,
+        directoryToBuild,
+        directory,
+        artifacts,
+      ),
     condition: ({packageJsonChanged, hasChangedDependencies}) =>
       packageJsonChanged || hasChangedDependencies,
   },
