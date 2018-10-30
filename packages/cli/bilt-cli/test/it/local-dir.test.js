@@ -89,13 +89,13 @@ describe('local directory use-case', () => {
       buildDir,
       'a',
       'build',
-      'cp ../node_modules/this-pkg-does-not-exist-in-npmjs.b/b.txt .',
+      'cp node_modules/this-pkg-does-not-exist-in-npmjs.b/b.txt .',
     )
     await writeFile('something new', buildDir, 'b/b.txt')
 
     await biltHere(buildDir, {
       disabledSteps: ['increment-version', 'publish'],
-      enabledSteps: ['link'],
+      enabledSteps: ['link', 'reset-links'],
     })
 
     expect(await fileContents(buildDir, 'a/b.txt')).to.equal('something new')
