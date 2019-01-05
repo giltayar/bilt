@@ -23,10 +23,10 @@
     "lodash.merge": "^4.6.1"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
+    "chai": "^4.2.0",
     "eslint": "^4.19.1",
-    "eslint-plugin-prettier": "^2.6.2",
+    "eslint-plugin-prettier": "^2.7.0",
     "mocha": "^3.5.3",
-    "prettier": "^1.13.7"
+    "prettier": "^1.15.3"
   }
 }

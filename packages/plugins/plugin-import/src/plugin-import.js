@@ -47,8 +47,8 @@ module.exports = (pluginLists, {baseDirectory = '', useThisRequire = require} = 
   }
   pimport.finalize = async () =>
     await Promise.all(
-      [...pluginsFound].map(
-        async ([, plugin]) => (plugin.finalize ? await plugin.finalize() : undefined),
+      [...pluginsFound].map(async ([, plugin]) =>
+        plugin.finalize ? await plugin.finalize() : undefined,
       ),
     )
 
