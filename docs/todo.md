@@ -4,7 +4,6 @@
 
 ## CLI and productization
 
-1. Entry should show list of packages in order built
 1. Exit should show which packages failed and which succeeded
 1. Exit should return with exit code 1 if something failed
 1. Show step name
