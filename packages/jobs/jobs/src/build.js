@@ -82,7 +82,7 @@ async function executeSteps(buildSteps, agent, events) {
   for (const command of buildSteps) {
     events &&
       events.publish('START_STEP', {
-        step: {command: typeof command === 'string' ? command : '<function>'},
+        step: {command: command.stepName},
       })
     if (typeof command === 'function') {
       await command()

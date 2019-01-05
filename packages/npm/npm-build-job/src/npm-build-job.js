@@ -173,8 +173,8 @@ module.exports = async ({
         .map(
           s =>
             s.funcCommand != null
-              ? () => s.funcCommand(buildContext)
-              : transform({agentInstance, cwd: directory, ...s}),
+              ? Object.assign(() => s.funcCommand(buildContext), {stepName: s.name})
+              : Object.assign(transform({agentInstance, cwd: directory, ...s}), {stepName: s.name}),
         )
 
       return {buildSteps}
