@@ -100,6 +100,12 @@ describe('local directory use-case', () => {
 
     expect(await fileContents(buildDir, 'a/b.txt')).to.equal('something new')
   })
+
+  it('should support dry-run', async () => {
+    await biltHere(buildDir, {dryRun: true})
+
+    expect(await fileContents(buildDir, 'a/postinstalled.txt')).to.be.undefined
+  })
 })
 
 async function changeScript(buildDir, packageFolder, scriptName, script) {

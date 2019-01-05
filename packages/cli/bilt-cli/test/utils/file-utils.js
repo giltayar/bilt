@@ -3,7 +3,9 @@ const path = require('path')
 const {promisify: p} = require('util')
 
 async function fileContents(...paths) {
-  return await p(fs.readFile)(path.join(...paths), 'utf-8')
+  return await p(fs.readFile)(path.join(...paths), 'utf-8').catch(
+    err => (err.code === 'ENOENT' ? undefined : Promise.reject(err)),
+  )
 }
 
 async function writeFile(content, ...paths) {

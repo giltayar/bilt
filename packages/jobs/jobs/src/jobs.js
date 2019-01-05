@@ -132,7 +132,7 @@ async function deleteJobState(job, {kvStore}) {
 }
 
 async function isSubJob(job, {kvStore}) {
-  return !!await kvStore.get(`awaken:${job.id}`)
+  return !!(await kvStore.get(`awaken:${job.id}`))
 }
 
 module.exports = {

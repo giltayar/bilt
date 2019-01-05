@@ -5,6 +5,7 @@ const {expect} = require('chai')
 const {
   dependencyGraphSubsetToBuild: dependencyGraphSubsetToBuildOriginal,
   buildThatCanBeBuilt,
+  dependencyGraphBuildList,
 } = require('../..')
 
 const dependencyGraphSubsetToBuild = (
@@ -335,6 +336,20 @@ describe('artifact-dependency-graph', function() {
         build: 'b',
         hasChangedDependencies: true,
       })
+    })
+  })
+
+  describe('dependencyGraphBuildList', () => {
+    it('returns an empty array for an empty dependency graph', () => {
+      expect(dependencyGraphBuildList({})).to.eql([])
+    })
+
+    it('returns same list of artifacts if there are no dependencies', () => {
+      expect(dependencyGraphBuildList({a: [], b: [], c: []})).to.eql(['a', 'b', 'c'])
+    })
+
+    it('returns artifacts in dependency order if there are dependencies', () => {
+      expect(dependencyGraphBuildList({a: ['c'], b: ['a', 'c'], c: []})).to.eql(['c', 'a', 'b'])
     })
   })
 })

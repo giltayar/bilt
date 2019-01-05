@@ -9,7 +9,7 @@ const defaultbiltConfig = require('./default-biltrc')
 
 async function buildHere(
   directoryToBuild,
-  {upto, from, justBuild, force, repository, disabledSteps, enabledSteps, rebuild} = {},
+  {upto, from, justBuild, force, repository, disabledSteps, enabledSteps, rebuild, dryRun} = {},
 ) {
   const isRemoteRepo = repository
   debug('Loading configuration from', directoryToBuild)
@@ -42,6 +42,7 @@ async function buildHere(
       justBuild,
       force,
       isRebuild: rebuild,
+      isDryRun: dryRun,
     })
 
     await waitForJobs(pimport, jobsToWaitFor)
@@ -87,17 +88,17 @@ async function configureEventsToOutputEventToStdout(pimport) {
   await events.subscribe('START_JOB', ({job}) => {
     if (job.kind === 'repository') return
 
-    console.log('####### Building', job.artifact.path || job.directory)
+    console.log('###### Building', job.artifact.path || job.directory)
   })
   await events.subscribe('START_STEP', ({step: {command}}) => {
-    console.log('########### Step', command)
+    console.log('######### Step', command)
   })
   await events.subscribe('END_JOB', ({job, success, err}) => {
     if (job.kind === 'repository') return
 
     if (!success)
       console.log(
-        '####### Build %s failed with error: %s',
+        '###### Build %s failed with error: %s',
         job.artifact.path || job.directory,
         err.stack || err,
       )
@@ -106,16 +107,16 @@ async function configureEventsToOutputEventToStdout(pimport) {
   let nothingToBuild = false
   await events.subscribe('STARTING_REPO_JOB', ({artifactsToBeBuilt}) => {
     if (artifactsToBeBuilt.length === 0) {
-      console.log('####### Nothing to build')
+      console.log('### Nothing to build')
       nothingToBuild = true
     } else {
-      console.log('####### Building artifacts: %s', artifactsToBeBuilt.join(','))
+      console.log('### Building artifacts: %s', artifactsToBeBuilt.join(','))
     }
   })
 
   await events.subscribe('FINISHING_REPO_JOB', ({alreadyBuiltArtifacts}) => {
     if (!nothingToBuild) {
-      console.log('####### Built artifacts: %s', alreadyBuiltArtifacts.join(','))
+      console.log('### Built artifacts: %s', alreadyBuiltArtifacts.join(','))
     }
     nothingToBuild
   })
@@ -130,6 +131,7 @@ async function runRepoBuildJob({
   justBuild,
   force,
   isRebuild,
+  isDryRun,
 }) {
   debug('fetching artifacts')
   const artifacts = await (await artifactFinder()).findArtifacts(directoryToBuild)
@@ -149,6 +151,7 @@ async function runRepoBuildJob({
       linkDependencies: true,
       force,
       isRebuild,
+      isDryRun,
     }),
   ]
 }

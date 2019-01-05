@@ -1,5 +1,13 @@
 'use strict'
 
+/**
+ * @typedef {{[moduleName: string]: {dependencies: string[]}}} DependencyGraph
+ */
+
+/**
+ * @param {Array<{name: string, dependencies: string[]}>} artifacts
+ * @returns DependencyGraph
+ */
 const createDependencyGraph = artifacts =>
   objectFromEntries(artifacts.map(({name, dependencies}) => [name, dependencies || []]))
 
@@ -108,6 +116,13 @@ function removeLeafArtifactsThatDoNotNeedToBeBuilt(dependencyGraph, changedArtif
   )
 }
 
+/**
+ *
+ * @param {DependencyGraph} dependencyGraph
+ * @param {string[]} alreadyBuiltArtifacts
+ *
+ * @return string
+ */
 const buildThatCanBeBuilt = (dependencyGraph, alreadyBuiltArtifacts) => {
   const alreadyBuiltArtifactsSet = new Set(alreadyBuiltArtifacts)
   const buildsThatAreBeingBuilt = new Set(Object.keys(dependencyGraph))
@@ -214,8 +229,24 @@ function artifactsChangedDuetoDependencies(
   }
 }
 
+/**
+ * @param {DependencyGraph} dependencyGraph
+ * @returns {string[]} - array of artifact names in the order they are going to be built
+ */
+function dependencyGraphBuildList(dependencyGraph) {
+  const alreadyBuiltArtifacts = []
+  const numberOfArtifacts = Object.keys(dependencyGraph).length
+
+  while (alreadyBuiltArtifacts.length < numberOfArtifacts) {
+    alreadyBuiltArtifacts.push(buildThatCanBeBuilt(dependencyGraph, alreadyBuiltArtifacts).build)
+  }
+
+  return alreadyBuiltArtifacts
+}
+
 module.exports = {
   createDependencyGraph,
   dependencyGraphSubsetToBuild,
   buildThatCanBeBuilt,
+  dependencyGraphBuildList,
 }

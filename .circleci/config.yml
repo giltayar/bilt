@@ -32,7 +32,7 @@ jobs:
               npm install -g @bilt/bilt-cli
       - run:
           name: Bild
-          command: bilt -u @bilt/bilt-cli
+          command: CI=1 bilt -u @bilt/bilt-cli
 
       - save_cache:
           key: bilt-{{ .Branch }}-{{ .BuildNum }}

@@ -50,6 +50,12 @@ const argv = yargs
     alias: 'e',
     description: 'enable step',
     array: true,
+  })
+  .options('dry-run', {
+    alias: 'e',
+    description: 'only show packages in build order',
+    array: false,
+    boolean: true,
   }).argv
 
 async function main() {
@@ -63,6 +69,7 @@ async function main() {
     repository: argv.checkout,
     rebuild: argv.rebuild,
     enabledSteps: argv.enable,
+    dryRun: argv.dryRun,
     disabledSteps: (argv.disable || []).filter(step => !(argv.enable || []).includes(step)),
   })
 }
