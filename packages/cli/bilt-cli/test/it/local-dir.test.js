@@ -122,5 +122,5 @@ async function changeScript(buildDir, packageFolder, scriptName, script) {
 }
 
 async function gitReset(directory) {
-  await p(exec)('git reset --hard HEAD', {cwd: directory})
+  await p(exec)('git reset  --hard HEAD', {cwd: directory})
 }
