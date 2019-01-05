@@ -1,6 +1,7 @@
 'use strict'
 const path = require('path')
 const debug = require('debug')('bilt:bilt-cli')
+const chalk = require('chalk')
 const pluginImport = require('plugin-import')
 const cosmiConfig = require('cosmiconfig')
 const flatten = require('lodash.flatten')
@@ -55,10 +56,13 @@ async function buildHere(
   }
 
   if (buildsSucceeded.length > 0) {
-    console.log('### Built artifacts: %s', buildsSucceeded.join(','))
+    console.log(chalk.green.bold('### Built artifacts: %s'), buildsSucceeded.join(','))
   }
   if (buildsFailed.length > 0) {
-    console.log('### Builds failed for artifacts: %s', buildsFailed.join(','))
+    console.log(
+      chalk.red.bold.underline('### Builds failed for artifacts: %s'),
+      buildsFailed.join(','),
+    )
   }
 
   return buildsFailed.length > 0 ? 1 : 0
@@ -66,13 +70,24 @@ async function buildHere(
   async function configureEventsToOutputEventToStdout(pimport) {
     const events = await pimport('events')
 
+    await events.subscribe('STARTING_REPO_JOB', ({artifactsToBeBuilt}) => {
+      if (artifactsToBeBuilt.length === 0) {
+        console.log('### Nothing to build')
+      } else {
+        console.log(chalk.green.bold('### Building artifacts: %s'), artifactsToBeBuilt.join(','))
+      }
+    })
+
     await events.subscribe('START_JOB', ({job}) => {
       if (job.kind === 'repository') return
 
-      console.log('###### Building', job.artifact.path || job.directory)
+      console.log(
+        chalk.green.bgBlue.underline.bold('###### Building %s'),
+        job.artifact.path || job.directory,
+      )
     })
     await events.subscribe('START_STEP', ({step: {command}}) => {
-      console.log('######### Step', command)
+      console.log(chalk.green.dim('######### Step %s'), command)
     })
     await events.subscribe('END_JOB', ({job, success, err}) => {
       if (job.kind === 'repository') return
@@ -80,23 +95,10 @@ async function buildHere(
 
       if (!success)
         console.log(
-          '###### Build %s failed with error: %s',
+          chalk.red.dim('###### Build %s failed with error: %s'),
           job.artifact.path || job.directory,
           err.stack || err,
         )
-    })
-
-    await events.subscribe('STARTING_REPO_JOB', ({artifactsToBeBuilt}) => {
-      if (artifactsToBeBuilt.length === 0) {
-        console.log('### Nothing to build')
-      } else {
-        console.log('### Building artifacts: %s', artifactsToBeBuilt.join(','))
-      }
-    })
-
-    await events.subscribe('FINISHING_REPO_JOB', ({alreadyBuiltArtifacts}) => {
-      if (alreadyBuiltArtifacts.length > 0) {
-      }
     })
   }
 }
