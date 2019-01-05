@@ -60,7 +60,8 @@ describe('local directory use-case', () => {
   })
 
   it('should build the directory with all its packages, including publishing, reset, and then rebuild nothing', async () => {
-    await biltHere(buildDir, {disabledSteps: ['link']})
+    const retCode = await biltHere(buildDir, {disabledSteps: ['link']})
+    expect(retCode).to.equal(0)
 
     expect(await fileContents(buildDir, 'a/postinstalled.txt')).to.equal('')
     expect(await fileContents(buildDir, 'b/postinstalled.txt')).to.equal('lalala')
@@ -102,9 +103,18 @@ describe('local directory use-case', () => {
   })
 
   it('should support dry-run', async () => {
-    await biltHere(buildDir, {dryRun: true})
+    const retCode = await biltHere(buildDir, {dryRun: true})
 
+    expect(retCode).to.equal(0)
     expect(await fileContents(buildDir, 'a/postinstalled.txt')).to.be.undefined
+  })
+
+  it('should return 1 on failure', async () => {
+    await changeScript(buildDir, 'a', 'build', 'false')
+
+    const retCode = await biltHere(buildDir)
+
+    expect(retCode).to.equal(1)
   })
 })
 

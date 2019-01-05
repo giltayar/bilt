@@ -11,27 +11,20 @@ const {setupBuildDir} = require('../utils/setup')
 const cli = path.resolve(__dirname, '../../scripts/run-bilt-cli.js')
 const testRepoSrc = path.resolve(__dirname, 'test-repo-no-publish')
 
-describe('local directory use-case', () => {
-  describe('no publish use case', () => {
-    describe('with git', () => {
-      it('should build the directory with all its packages and then say there is nothing to rebuild', async () => {
-        const buildDir = await setupBuildDir(testRepoSrc)
+describe('local directory use-case (e2e)', () => {
+  it('should build the directory with all its packages and then say there is nothing to rebuild', async () => {
+    const buildDir = await setupBuildDir(testRepoSrc)
 
-        await p(exec)(`${process.argv0} ${cli} ${buildDir}`)
+    await p(exec)(`${process.argv0} ${cli} ${buildDir} -d publish -d increment-version`)
 
-        const {stdout, stderr} = await p(exec)(
-          `${process.argv0} ${cli} ${buildDir} -d publish -d increment-version`,
-          {
-            env: {...process.env, DEBUG: 'bilt:*'},
-          },
-        )
-        console.log(stdout, stderr)
+    expect(await fileContents(buildDir, 'a/postinstalled.txt')).to.equal('')
+    expect(await fileContents(buildDir, 'b/postinstalled.txt')).to.equal('')
+    expect(await fileContents(buildDir, 'b/built.txt')).to.equal('')
+    expect(await fileContents(buildDir, 'b/tested.txt')).to.equal('')
 
-        expect(await fileContents(buildDir, 'a/postinstalled.txt')).to.equal('')
-        expect(await fileContents(buildDir, 'b/postinstalled.txt')).to.equal('')
-        expect(await fileContents(buildDir, 'b/built.txt')).to.equal('')
-        expect(await fileContents(buildDir, 'b/tested.txt')).to.equal('')
-      })
-    })
+    const {stdout} = await p(exec)(
+      `${process.argv0} ${cli} ${buildDir} -d publish -d increment-version`,
+    )
+    expect(stdout).to.contain('Nothing to build')
   })
 })

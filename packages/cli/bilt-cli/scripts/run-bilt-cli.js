@@ -61,7 +61,7 @@ const argv = yargs
 async function main() {
   const buildDirectory = argv.repoDirectory || '.'
 
-  await biltHere(buildDirectory, {
+  const retCode = await biltHere(buildDirectory, {
     upto: argv.upto,
     from: argv.root,
     justBuild: argv.build,
@@ -72,6 +72,8 @@ async function main() {
     dryRun: argv.dryRun,
     disabledSteps: (argv.disable || []).filter(step => !(argv.enable || []).includes(step)),
   })
+
+  process.exit(retCode)
 }
 
 main().catch(err => console.log(err.stack || err))

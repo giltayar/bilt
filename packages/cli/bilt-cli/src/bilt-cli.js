@@ -11,7 +11,10 @@ async function buildHere(
   directoryToBuild,
   {upto, from, justBuild, force, repository, disabledSteps, enabledSteps, rebuild, dryRun} = {},
 ) {
-  const isRemoteRepo = repository
+  const buildsSucceeded = []
+  const buildsFailed = []
+  const isRemoteRepo = !!repository
+
   debug('Loading configuration from', directoryToBuild)
   const {config: buildConfig, filepath} = await cosmiConfig('bilt', {
     rcExtensions: true,
@@ -50,6 +53,52 @@ async function buildHere(
     debug('finalizing plugins')
     await pimport.finalize()
   }
+
+  if (buildsSucceeded.length > 0) {
+    console.log('### Built artifacts: %s', buildsSucceeded.join(','))
+  }
+  if (buildsFailed.length > 0) {
+    console.log('### Builds failed for artifacts: %s', buildsFailed.join(','))
+  }
+
+  return buildsFailed.length > 0 ? 1 : 0
+
+  async function configureEventsToOutputEventToStdout(pimport) {
+    const events = await pimport('events')
+
+    await events.subscribe('START_JOB', ({job}) => {
+      if (job.kind === 'repository') return
+
+      console.log('###### Building', job.artifact.path || job.directory)
+    })
+    await events.subscribe('START_STEP', ({step: {command}}) => {
+      console.log('######### Step', command)
+    })
+    await events.subscribe('END_JOB', ({job, success, err}) => {
+      if (job.kind === 'repository') return
+      ;(success ? buildsSucceeded : buildsFailed).push(job.artifact.name)
+
+      if (!success)
+        console.log(
+          '###### Build %s failed with error: %s',
+          job.artifact.path || job.directory,
+          err.stack || err,
+        )
+    })
+
+    await events.subscribe('STARTING_REPO_JOB', ({artifactsToBeBuilt}) => {
+      if (artifactsToBeBuilt.length === 0) {
+        console.log('### Nothing to build')
+      } else {
+        console.log('### Building artifacts: %s', artifactsToBeBuilt.join(','))
+      }
+    })
+
+    await events.subscribe('FINISHING_REPO_JOB', ({alreadyBuiltArtifacts}) => {
+      if (alreadyBuiltArtifacts.length > 0) {
+      }
+    })
+  }
 }
 
 async function createPimport(
@@ -80,46 +129,6 @@ async function createPimport(
       useThisRequire: require,
     },
   )
-}
-
-async function configureEventsToOutputEventToStdout(pimport) {
-  const events = await pimport('events')
-
-  await events.subscribe('START_JOB', ({job}) => {
-    if (job.kind === 'repository') return
-
-    console.log('###### Building', job.artifact.path || job.directory)
-  })
-  await events.subscribe('START_STEP', ({step: {command}}) => {
-    console.log('######### Step', command)
-  })
-  await events.subscribe('END_JOB', ({job, success, err}) => {
-    if (job.kind === 'repository') return
-
-    if (!success)
-      console.log(
-        '###### Build %s failed with error: %s',
-        job.artifact.path || job.directory,
-        err.stack || err,
-      )
-  })
-
-  let nothingToBuild = false
-  await events.subscribe('STARTING_REPO_JOB', ({artifactsToBeBuilt}) => {
-    if (artifactsToBeBuilt.length === 0) {
-      console.log('### Nothing to build')
-      nothingToBuild = true
-    } else {
-      console.log('### Building artifacts: %s', artifactsToBeBuilt.join(','))
-    }
-  })
-
-  await events.subscribe('FINISHING_REPO_JOB', ({alreadyBuiltArtifacts}) => {
-    if (!nothingToBuild) {
-      console.log('### Built artifacts: %s', alreadyBuiltArtifacts.join(','))
-    }
-    nothingToBuild
-  })
 }
 
 async function runRepoBuildJob({
