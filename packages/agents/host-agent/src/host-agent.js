@@ -2,9 +2,10 @@ const childProcess = require('child_process')
 const fs = require('fs')
 const path = require('path')
 const {promisify} = require('util')
+const makeDir = require('make-dir')
+const split2 = require('split2')
 const debug = require('debug')('bilt:host-agent')
 const {createSymlink: createSymlinkInHost} = require('@bilt/symlink')
-const makeDir = require('make-dir')
 
 module.exports = async ({kind}) => {
   const info = agent => agent
@@ -17,13 +18,13 @@ module.exports = async ({kind}) => {
       return
     },
 
-    async executeCommand({command, cwd, returnOutput, env} = {}) {
+    async executeCommand({command, cwd, returnOutput, callOnEachLine, env} = {}) {
       debug('dispatching command %o in directory %s', command, cwd)
       const orgEnv = process.env
       const output = await new Promise((resolve, reject) => {
         const process = childProcess.spawn(command[0], command.slice(1), {
           cwd,
-          stdio: returnOutput ? undefined : 'inherit',
+          stdio: returnOutput ? undefined : callOnEachLine ? 'pipe' : 'inherit',
           shell: false,
           env: {...orgEnv, ...env},
         })
@@ -33,6 +34,9 @@ module.exports = async ({kind}) => {
         if (returnOutput) {
           process.stdout.on('data', data => (stdout += data.toString()))
           process.stderr.on('data', data => (stderr += data.toString()))
+        } else if (callOnEachLine) {
+          process.stdout.pipe(split2()).on('data', line => callOnEachLine({line, outTo: 'stdout'}))
+          process.stderr.pipe(split2()).on('data', line => callOnEachLine({line, outTo: 'stderr'}))
         }
 
         process.on('close', code => {

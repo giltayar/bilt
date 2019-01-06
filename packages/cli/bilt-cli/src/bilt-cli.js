@@ -1,4 +1,6 @@
 'use strict'
+const {promisify: p} = require('util')
+const fs = require('fs')
 const path = require('path')
 const debug = require('debug')('bilt:bilt-cli')
 const chalk = require('chalk')
@@ -10,7 +12,18 @@ const defaultbiltConfig = require('./default-biltrc')
 
 async function buildHere(
   directoryToBuild,
-  {upto, from, justBuild, force, repository, disabledSteps, enabledSteps, rebuild, dryRun} = {},
+  {
+    upto,
+    from,
+    justBuild,
+    force,
+    repository,
+    disabledSteps,
+    enabledSteps,
+    rebuild,
+    dryRun,
+    allOutput,
+  } = {},
 ) {
   const buildsSucceeded = []
   const buildsFailed = []
@@ -78,27 +91,63 @@ async function buildHere(
       }
     })
 
-    await events.subscribe('START_JOB', ({job}) => {
+    const outputStreams = new Map()
+
+    await events.subscribe('START_JOB', async ({job}) => {
       if (job.kind === 'repository') return
 
+      const artifactBiltDir = path.resolve(directoryToBuild, job.artifact.path, '.bilt')
+      await p(fs.mkdir)(artifactBiltDir).catch(
+        err => (err.code === 'EEXIST' ? undefined : Promise.reject(err)),
+      )
+
+      const outputStream = fs.createWriteStream(path.resolve(artifactBiltDir, 'build.log'))
+      outputStreams.set(job.artifact.path, outputStream)
+
       console.log(
-        chalk.green.bgBlue.underline.bold('###### Building %s'),
+        chalk.greenBright.underline.bold('###### Building %s'),
         job.artifact.path || job.directory,
       )
     })
-    await events.subscribe('START_STEP', ({step: {command}}) => {
-      console.log(chalk.green.dim('######### Step %s'), command)
+
+    await events.subscribe('START_STEP', ({job, step: {name}}) => {
+      const line = `######### Step ${name}`
+      console.log(chalk.green.dim(line))
+      const outputStream = outputStreams.get(job.artifact.path)
+      outputStream.write(line)
+      outputStream.write('\n')
     })
-    await events.subscribe('END_JOB', ({job, success, err}) => {
+
+    await events.subscribe('STEP_LINE_OUT', ({job, outTo, line}) => {
+      const outputStream = outputStreams.get(job.artifact.path)
+      outputStream.write(line)
+      outputStream.write('\n')
+
+      if (allOutput) {
+        process[outTo].write(line)
+        process[outTo].write('\n')
+      }
+    })
+
+    await events.subscribe('END_JOB', async ({job, success}) => {
       if (job.kind === 'repository') return
       ;(success ? buildsSucceeded : buildsFailed).push(job.artifact.name)
 
-      if (!success)
-        console.log(
-          chalk.red.dim('###### Build %s failed with error: %s'),
-          job.artifact.path || job.directory,
-          err.stack || err,
+      outputStreams.get(job.artifact.path).end()
+
+      if (!success) {
+        console.log(chalk.red.dim('###### Build %s failed with error. Output:'), job.artifact.path)
+
+        const artifactBiltDir = path.resolve(directoryToBuild, job.artifact.path, '.bilt')
+        const inputStream = fs.createReadStream(path.resolve(artifactBiltDir, 'build.log'))
+
+        await new Promise((resolve, reject) =>
+          inputStream
+            .pipe(process.stderr)
+            .on('error', reject)
+            .on('close', resolve),
         )
+      }
     })
   }
 }

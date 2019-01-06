@@ -18,7 +18,7 @@ module.exports = async () => {
       debug('publishing event %s with info %o', eventCode, eventInfo)
 
       for (const subscriber of subscribers[eventCode] || []) {
-        subscriber(eventInfo)
+        await subscriber(eventInfo)
       }
     },
   }

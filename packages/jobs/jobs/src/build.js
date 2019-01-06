@@ -42,7 +42,7 @@ async function executeBuild({
         buildContext: {...jobWithArtifact, ...buildContext},
       })
 
-      await executeSteps(buildSteps, agent, events)
+      await executeSteps(jobWithArtifact, buildSteps, agent, events)
 
       return {state, jobs, success: true}
     } catch (err) {
@@ -78,16 +78,22 @@ function mergeSteps(jobSteps, builderSteps, disabledSteps = []) {
   }
 }
 
-async function executeSteps(buildSteps, agent, events) {
+async function executeSteps(job, buildSteps, agent, events) {
   for (const command of buildSteps) {
-    events &&
-      events.publish('START_STEP', {
-        step: {command: command.stepName},
+    if (events) {
+      await events.publish('START_STEP', {
+        job,
+        step: {name: command.stepName},
       })
+    }
     if (typeof command === 'function') {
       await command()
     } else {
-      await agent.executeCommand(command)
+      await agent.executeCommand({
+        ...command,
+        callOnEachLine:
+          events && (({line, outTo}) => events.publish('STEP_LINE_OUT', {job, line, outTo})),
+      })
     }
   }
 }

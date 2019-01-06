@@ -24,12 +24,7 @@ const defaultSteps = [
   {
     id: 'update',
     name: 'Update dependencies',
-    funcCommand: async ({agent, agentInstance, artifact: {dependencies}, directory}) =>
-      await agent.executeCommand({
-        agentInstance,
-        cwd: directory,
-        command: ['npm', 'update', ...(dependencies || [])],
-      }),
+    command: ({artifact: {dependencies}}) => ['npm', 'update', ...(dependencies || [])],
     condition: ({packageJsonChanged, hasChangedDependencies, steps}) =>
       packageJsonChanged || (hasChangedDependencies && !steps.find(step => step.id === 'link')),
   },
