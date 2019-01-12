@@ -1,0 +1,41 @@
+{
+    "env": {
+        "commonjs": true,
+        "es6": true,
+        "node": true
+    },
+    "parserOptions": {
+        "ecmaVersion": 2018,
+        "sourceType": "module"
+    },
+    "extends": ["plugin:node/recommended"],
+    "plugins": [
+        "prettier",
+        "mocha-no-only",
+        "node"
+    ],
+    "rules": {
+        "prettier/prettier": [
+            "error",
+            {
+                "semi": false,
+                "parser": "babylon",
+                "printWidth": 100,
+                "singleQuote": true,
+                "trailingComma": "all",
+                "bracketSpacing": false,
+                "jsxBracketSameLine": true
+            }
+        ],
+        "no-process-exit": "off",
+        "no-const-assign": "warn",
+        "no-this-before-super": "warn",
+        "no-undef": "warn",
+        "no-unreachable": "warn",
+        "no-unused-vars": ["warn", {"varsIgnorePattern": "^_", "args": "all", "argsIgnorePattern": "^_"}],
+        "constructor-super": "warn",
+        "valid-typeof": "warn",
+        "mocha-no-only/mocha-no-only": "error",
+        "node/exports-style": ["error", "module.exports"]
+    }
+}

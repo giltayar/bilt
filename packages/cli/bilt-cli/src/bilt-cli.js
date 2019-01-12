@@ -96,8 +96,8 @@ async function buildHere(
     await events.subscribe('START_JOB', async ({job}) => {
       if (job.kind === 'repository') return
 
-      const artifactBiltDir = path.resolve(directoryToBuild, job.artifact.path, '.bilt')
-      await p(fs.mkdir)(artifactBiltDir).catch(
+      const artifactBiltDir = path.resolve(finalDirectoryToBuild, job.artifact.path, '.bilt')
+      await p(fs.mkdir)(artifactBiltDir, {recursive: true}).catch(
         err => (err.code === 'EEXIST' ? undefined : Promise.reject(err)),
       )
 

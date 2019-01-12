@@ -1,0 +1,53 @@
+{
+  "name": "@applitools/npm-next-version",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/npm-next-version.js",
+  "engines": {
+    "node": ">=10.3.0"
+  },
+  "files": [
+    "src",
+    "scripts"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "bin": "./scripts/run-npm-next-version.js",
+  "scripts": {
+    "test": "npm run eslint && npm run test:mocha-parallel",
+    "test:mocha": "mocha --no-timeouts 'test/unit/*.test.js' 'test/it/*.test.js' 'test/e2e/*.test.js'",
+    "test:mocha-parallel": "mocha-parallel-tests --no-timeouts 'test/unit/*.test.js' 'test/it/*.test.js' 'test/e2e/*.test.js'",
+    "eslint": "eslint '**/*.js'",
+    "prepublishOnly": "npm version patch"
+  },
+  "keywords": [
+    "applitools",
+    "testing",
+    "browser",
+    "grid",
+    "visual-testing",
+    "nodejs",
+    "javascript"
+  ],
+  "author": "Gil Tayar <gil.tayar@applitools.com>",
+  "license": "UNLICENSED",
+  "repository": {
+    "url": "https://github.com/applitools/rendering-grid",
+    "type": "git"
+  },
+  "dependencies": {
+    "debug": "^4.1.0",
+    "yargs": "^12.0.5"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "eslint": "^5.0.1",
+    "eslint-plugin-mocha-no-only": "^1.0.0",
+    "eslint-plugin-node": "^8.0.1",
+    "eslint-plugin-prettier": "^3.0.1",
+    "mocha": "^5.2.0",
+    "mocha-parallel-tests": "^2.0.6-alpha.3",
+    "prettier": "^1.5.2"
+  }
+}

@@ -4,6 +4,9 @@
 			"path": "."
 		},
 		{
+			"path": "packages/npm/npm-next-version"
+		},
+		{
 			"path": "packages/npm/npm-build-job"
 		},
 		{
