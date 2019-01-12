@@ -1,6 +1,6 @@
 {
-  "name": "@applitools/npm-next-version",
-  "version": "1.0.0",
+  "name": "@bilt/npm-next-version",
+  "version": "1.0.1",
   "description": "",
   "main": "src/npm-next-version.js",
   "engines": {
