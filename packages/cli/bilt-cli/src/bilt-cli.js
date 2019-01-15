@@ -138,7 +138,7 @@ async function buildHere(
       if (!success) {
         console.log(chalk.red.dim('###### Build %s failed with error. Output:'), job.artifact.path)
 
-        const artifactBiltDir = path.resolve(directoryToBuild, job.artifact.path, '.bilt')
+        const artifactBiltDir = path.resolve(finalDirectoryToBuild, job.artifact.path, '.bilt')
         const inputStream = fs.createReadStream(path.resolve(artifactBiltDir, 'build.log'))
 
         await new Promise((resolve, reject) =>
