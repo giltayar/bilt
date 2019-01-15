@@ -59,7 +59,7 @@ const argv = yargs
   }).argv
 
 async function main() {
-  const buildDirectory = argv.repoDirectory || '.'
+  const buildDirectory = argv.repoDirectory || process.cwd()
 
   const retCode = await biltHere(buildDirectory, {
     upto: argv.upto,
