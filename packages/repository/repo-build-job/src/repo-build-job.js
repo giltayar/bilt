@@ -139,10 +139,7 @@ async function determineInitialStateInformation(state, lastBuildInfo, job) {
   })
   for (const {path: artifactPath, name} of job.artifacts) {
     debug('saving prebuild info for artifact %s', name)
-    await lastBuildInfo.savePrebuildBuildInfo({
-      artifactPath,
-      artifactFilesChangedSinceLastBuild: filesChangedSinceLastBuild[artifactPath],
-    })
+    await lastBuildInfo.savePrebuildBuildInfo({artifactPath})
   }
 
   return {

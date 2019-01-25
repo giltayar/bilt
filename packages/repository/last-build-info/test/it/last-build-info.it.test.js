@@ -15,10 +15,7 @@ describe('last-build-info', () => {
     })
 
     for (const {path: artifactPath} of artifacts) {
-      await buildInfo.savePrebuildBuildInfo({
-        artifactPath,
-        artifactFilesChangedSinceLastBuild: filesChanged[artifactPath],
-      })
+      await buildInfo.savePrebuildBuildInfo({artifactPath})
     }
 
     const artifactPathsBuilt = []
@@ -58,18 +55,28 @@ describe('last-build-info', () => {
       })
     })
 
-    it('should deal correctly with file that was just added', async () => {
+    it('should deal correctly with changes that occur twice after build', async () => {
       const gitDir = await setupBuildDir(path.join(__dirname, 'last-build-info/test-folder'))
       const buildInfo = await buildInfoMaker({directory: gitDir})
       const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}]
+
+      await buildAll(buildInfo, artifacts)
 
       await p(fs.writeFile)(path.join(gitDir, 'a/new-file.txt'), 'lalala')
 
       await buildAll(buildInfo, artifacts)
 
-      await buildAll(buildInfo, artifacts)
+      await p(fs.writeFile)(path.join(gitDir, 'a/newer-file.txt'), 'lalala')
 
-      await buildAll(buildInfo, artifacts)
+      expect(await buildAll(buildInfo, artifacts)).to.eql({
+        filesChanged: [['a/newer-file.txt'], []],
+        artifactPathsBuilt: ['a'],
+      })
+
+      expect(await buildAll(buildInfo, artifacts)).to.eql({
+        filesChanged: [[], []],
+        artifactPathsBuilt: [],
+      })
     })
 
     it('should show no changes in files after a commit ', async () => {

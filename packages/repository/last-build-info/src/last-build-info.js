@@ -47,7 +47,7 @@ module.exports = async ({directory}) => {
       )
     },
 
-    async savePrebuildBuildInfo({artifactPath, artifactFilesChangedSinceLastBuild}) {
+    async savePrebuildBuildInfo({artifactPath}) {
       const biltJsonDir = path.join(directory, '.bilt', artifactPath)
       await makeDir(biltJsonDir)
 
@@ -58,9 +58,9 @@ module.exports = async ({directory}) => {
           f.startsWith(artifactPath + '/'),
         ),
       )
-      const workspaceFilesThatWereBuilt = artifactFilesChangedSinceLastBuild
-        ? pickBy_(artifactFilesChangedSinceLastBuild, (_hash, f) => filesChangedInWorkspace.has(f))
-        : await readHashesOfFiles(directory, [...filesChangedInWorkspace])
+      const workspaceFilesThatWereBuilt = await readHashesOfFiles(directory, [
+        ...filesChangedInWorkspace,
+      ])
 
       await p(fs.writeFile)(
         path.join(biltJsonDir, 'bilt.prebuild.json'),
