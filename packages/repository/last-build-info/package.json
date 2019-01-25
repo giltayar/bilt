@@ -11,7 +11,7 @@
     "scripts"
   ],
   "scripts": {
-    "test": "npm run test:mocha && npm run eslint",
+    "test": "npm run eslint && npm run test:mocha",
     "test:mocha": "mocha --no-timeouts 'test/**/*.test.js'",
     "eslint": "eslint '**/*.js'",
     "publish:all": "npm version patch && npm publish"
