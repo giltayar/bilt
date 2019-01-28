@@ -1,10 +1,25 @@
 {
 	"folders": [
 		{
+			"path": "packages/artifacts/artifact-dependency-graph"
+		},
+		{
+			"path": "packages/artifacts/artifact-finder"
+		},
+		{
 			"path": "."
 		},
 		{
-			"path": "packages/npm/npm-next-version"
+			"path": "packages/cli/bilt-cli"
+		},
+		{
+			"path": "packages/agents/host-agent"
+		},
+		{
+			"path": "packages/jobs/jobs"
+		},
+		{
+			"path": "packages/repository/last-build-info"
 		},
 		{
 			"path": "packages/npm/npm-build-job"
@@ -13,31 +28,16 @@
 			"path": "packages/npm/npm-commander"
 		},
 		{
-			"path": "packages/cli/bilt-cli"
-		},
-		{
-			"path": "packages/jobs/jobs"
+			"path": "packages/npm/npm-next-version"
 		},
 		{
 			"path": "packages/plugins/plugin-import"
 		},
 		{
-			"path": "packages/artifacts/artifact-finder"
-		},
-		{
-			"path": "packages/artifacts/artifact-dependency-graph"
-		},
-		{
 			"path": "packages/repository/repo-build-job"
 		},
 		{
-			"path": "packages/repository/last-build-info"
-		},
-		{
 			"path": "packages/fs/symlink"
-		},
-		{
-			"path": "packages/agents/host-agent"
 		}
 	],
 	"settings": {
