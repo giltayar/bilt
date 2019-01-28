@@ -1,47 +1,43 @@
 {
 	"folders": [
 		{
-			"path": "packages/artifacts/artifact-dependency-graph"
+			"path": "packages/artifact-dependency-graph"
 		},
 		{
-			"path": "packages/artifacts/artifact-finder"
+			"path": "packages/artifact-finder"
 		},
 		{
 			"path": "."
 		},
 		{
-			"path": "packages/cli/bilt-cli"
+			"path": "packages/bilt-cli"
 		},
 		{
-			"path": "packages/agents/host-agent"
+			"path": "packages/host-agent"
 		},
 		{
-			"path": "packages/jobs/jobs"
+			"path": "packages/jobs"
 		},
 		{
-			"path": "packages/repository/last-build-info"
+			"path": "packages/last-build-info"
 		},
 		{
-			"path": "packages/npm/npm-build-job"
+			"path": "packages/npm-build-job"
 		},
 		{
-			"path": "packages/npm/npm-commander"
+			"path": "packages/npm-next-version"
 		},
 		{
-			"path": "packages/npm/npm-next-version"
+			"path": "packages/plugin-import"
 		},
 		{
-			"path": "packages/plugins/plugin-import"
+			"path": "packages/repo-build-job"
 		},
 		{
-			"path": "packages/repository/repo-build-job"
-		},
-		{
-			"path": "packages/fs/symlink"
+			"path": "packages/symlink"
 		}
 	],
 	"settings": {
-		"javascript.validate.enable": false,
-		"mocha.enabled": true
+		"javascript.validate.enable": false
 	}
 }

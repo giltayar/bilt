@@ -1,0 +1,8 @@
+version: '3'
+services:
+  npm-registry:
+    image: verdaccio/verdaccio
+    volumes:
+        - "./verdaccio-conf:/verdaccio/conf"
+    ports:
+        - 4873

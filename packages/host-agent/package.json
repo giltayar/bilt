@@ -1,0 +1,37 @@
+{
+  "name": "@bilt/host-agent",
+  "version": "2.0.0",
+  "description": "An agent for regular local running a process on the local host",
+  "main": "src/host-agent.js",
+  "engines": {
+    "node": ">=10.3.0"
+  },
+  "scripts": {
+    "test": "npm run prettier && npm run eslint",
+    "prettier": "prettier --write --loglevel=warn '**/*.js*'",
+    "eslint": "eslint '**/*.js'"
+  },
+  "keywords": [
+    "ci",
+    "???"
+  ],
+  "author": "Gil Tayar <gil@tayar.org>",
+  "license": "Unlicense",
+  "repository": {
+    "url": "https://github.com/giltayar/bilt",
+    "type": "git"
+  },
+  "dependencies": {
+    "@bilt/symlink": "^1.0.7",
+    "debug": "^2.6.8",
+    "make-dir": "^1.0.0",
+    "split2": "^3.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^4.2.0",
+    "eslint-plugin-mocha-no-only": "^1.1.0",
+    "eslint-plugin-node": "^8.0.1",
+    "eslint-plugin-prettier": "^2.6.2",
+    "prettier": "^1.13.7"
+  }
+}

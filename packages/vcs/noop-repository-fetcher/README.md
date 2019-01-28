@@ -1,1 +1,0 @@
-# noop-repository-fetcher

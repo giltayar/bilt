@@ -1,0 +1,32 @@
+{
+  "name": "@bilt/jobs",
+  "version": "1.0.11",
+  "description": "",
+  "main": "src/jobs.js",
+  "files": [
+    "src",
+    "scripts"
+  ],
+  "scripts": {},
+  "keywords": [
+    "ci",
+    "bilt"
+  ],
+  "author": "Gil Tayar <gil@tayar.org>",
+  "license": "Unlicense",
+  "repository": {
+    "url": "https://github.com/giltayar/bilt",
+    "type": "git"
+  },
+  "dependencies": {
+    "@bilt/host-agent": "^1.0.0",
+    "debug": "^2.6.8",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "eslint": "^4.2.0",
+    "eslint-plugin-mocha-no-only": "0.0.5",
+    "eslint-plugin-prettier": "^2.6.2",
+    "prettier": "^1.13.7"
+  }
+}

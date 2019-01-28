@@ -1,0 +1,45 @@
+{
+  "name": "@bilt/npm-build-job",
+  "version": "1.0.31",
+  "description": "Job Runner for NPM Jobs",
+  "main": "src/npm-build-job.js",
+  "engines": {
+    "node": ">=8.3.0"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "test": "npm run test:mocha && npm run eslint",
+    "test:mocha": "mocha --exit --no-timeouts 'test/**/*.test.js'",
+    "eslint": "eslint '**/*.js'",
+    "publish:all": "npm version patch && npm publish"
+  },
+  "keywords": [
+    "ci",
+    "npm"
+  ],
+  "author": "Gil Tayar <gil@tayar.org>",
+  "license": "Unlicense",
+  "repository": {
+    "url": "https://github.com/giltayar/bilt",
+    "type": "git"
+  },
+  "dependencies": {
+    "@bilt/host-agent": "^1.0.13",
+    "debug": "^3.1.0",
+    "@bilt/npm-next-version": "^1.0.1"
+  },
+  "devDependencies": {
+    "@bilt/jobs": "^1.0.9",
+    "chai": "^4.1.2",
+    "docker-compose-mocha": "^1.2.0",
+    "docker-compose-tool": "0.0.1",
+    "eslint": "^5.2.0",
+    "eslint-plugin-mocha-no-only": "^1.0.0",
+    "eslint-plugin-node": "^6.0.1",
+    "eslint-plugin-prettier": "^2.6.2",
+    "mocha": "^5.2.0",
+    "prettier": "^1.14.0"
+  }
+}
