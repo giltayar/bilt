@@ -12,8 +12,7 @@
   "scripts": {
     "test": "npm run test:mocha && npm run eslint",
     "test:mocha": "mocha --exit --no-timeouts 'test/**/*.test.js'",
-    "eslint": "eslint '**/*.js'",
-    "publish:all": "npm version patch && npm publish"
+    "eslint": "eslint '**/*.js'"
   },
   "keywords": [
     "ci",

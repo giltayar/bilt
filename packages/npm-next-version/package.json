@@ -18,8 +18,7 @@
     "test": "npm run eslint && npm run test:mocha-parallel",
     "test:mocha": "mocha --no-timeouts 'test/unit/*.test.js' 'test/it/*.test.js' 'test/e2e/*.test.js'",
     "test:mocha-parallel": "mocha-parallel-tests --no-timeouts 'test/unit/*.test.js' 'test/it/*.test.js' 'test/e2e/*.test.js'",
-    "eslint": "eslint '**/*.js'",
-    "prepublishOnly": "npm version patch"
+    "eslint": "eslint '**/*.js'"
   },
   "keywords": [
     "applitools",

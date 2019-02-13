@@ -19,8 +19,7 @@
     "start": "script/run-template-template.js",
     "build:docker": "docker build . -t applitools/templatetemplate",
     "publish:docker": "docker tag applitools/templatetemplate applitools/templatetemplate:${npm_package_version} && docker push applitools/templatetemplate:${npm_package_version} && docker push applitools/templatetemplate",
-    "build:all": "npm run build:docker",
-    "publish:all": "npm version patch && npm publish && npm run publish:docker"
+    "build:all": "npm run build:docker"
   },
   "keywords": [
     "applitools",
