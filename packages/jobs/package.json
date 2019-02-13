@@ -19,7 +19,7 @@
     "type": "git"
   },
   "dependencies": {
-    "@bilt/host-agent": "^1.0.0",
+    "@bilt/host-agent": "^2.0.0",
     "debug": "^2.6.8",
     "uuid": "^3.3.2"
   },

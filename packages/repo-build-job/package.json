@@ -24,7 +24,7 @@
     "type": "git"
   },
   "dependencies": {
-    "@bilt/artifact-dependency-graph": "^2.0.3",
+    "@bilt/artifact-dependency-graph": "^3.0.0",
     "debug": "^3.1.0",
     "lodash.flatten": "^4.4.0"
   },

@@ -35,7 +35,7 @@
     "make-dir": "^1.2.0"
   },
   "devDependencies": {
-    "@bilt/host-agent": "^1.0.31",
+    "@bilt/host-agent": "^2.0.0",
     "chai": "^4.1.2",
     "cpr": "^3.0.1",
     "eslint": "^5.1.0",
