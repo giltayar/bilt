@@ -1,6 +1,6 @@
 {
   "name": "@bilt/artifact-dependency-graph",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "",
   "main": "src/artifact-dependency-graph.js",
   "engines": {
@@ -26,14 +26,14 @@
     "type": "git"
   },
   "dependencies": {
-    "debug": "^3.0.0"
+    "debug": "^3.2.6"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
-    "eslint": "^5.1.0",
-    "eslint-plugin-mocha-no-only": "^1.0.0",
-    "eslint-plugin-prettier": "^2.6.2",
+    "chai": "^4.2.0",
+    "eslint": "^5.13.0",
+    "eslint-plugin-mocha-no-only": "^1.1.0",
+    "eslint-plugin-prettier": "^2.7.0",
     "mocha": "^5.2.0",
-    "prettier": "^1.13.7"
+    "prettier": "^1.16.4"
   }
 }

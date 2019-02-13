@@ -1,6 +1,6 @@
 {
   "name": "@bilt/host-agent",
-  "version": "3.0.0",
+  "version": "3.0.2",
   "description": "An agent for regular local running a process on the local host",
   "main": "src/host-agent.js",
   "engines": {

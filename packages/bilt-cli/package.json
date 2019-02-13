@@ -33,9 +33,8 @@
   },
   "dependencies": {
     "@bilt/artifact-finder": "^2.0.0",
-    "@bilt/host-agent": "^2.0.0",
+    "@bilt/host-agent": "^3.0.0",
     "@bilt/in-memory-events": "^2.0.0",
-    "@bilt/in-memory-job-dispatcher": "^2.0.0",
     "@bilt/jobs": "^2.0.0",
     "@bilt/last-build-info": "^3.0.0",
     "@bilt/npm-build-job": "^2.0.0",
