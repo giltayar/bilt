@@ -10,7 +10,15 @@ const debug = require('debug')('bilt:repo-build-job')
 module.exports = ({plugins: [lastBuildInfo, events]}) => {
   return {
     async setupBuildSteps({state, awakenedFrom, job}) {
-      const {force, uptoArtifacts, fromArtifacts, justBuildArtifacts, isRebuild, isDryRun} = job
+      const {
+        force,
+        uptoArtifacts,
+        fromArtifacts,
+        justBuildArtifacts,
+        isRebuild,
+        isDryRun,
+        repositoryDirectory,
+      } = job
       debug('running job repo-build-job')
 
       const {
@@ -33,6 +41,7 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
           awakenedFrom,
           initialAllArtifacts: job.artifacts,
           linkDependencies: job.linkDependencies,
+          repositoryDirectory,
           filesChangedSinceLastBuild,
           force,
           artifactBuildTimestamps,
@@ -50,6 +59,7 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
         awakenedFrom,
         initialAllArtifacts,
         linkDependencies,
+        repositoryDirectory,
         filesChangedSinceLastBuild,
         force,
         artifactBuildTimestamps,
@@ -111,6 +121,7 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
         ? undefined
         : state.filesChangedSinceLastBuild[artifact.path]
       const artifactJob = createJobFromArtifact(
+        repositoryDirectory,
         artifact,
         linkDependencies ? state.allArtifacts : undefined,
         isRebuild
@@ -178,11 +189,13 @@ function artifactsFromChanges(artifacts, filesChangedSinceLastBuild, force) {
 }
 
 const createJobFromArtifact = (
+  repositoryDirectory,
   artifact,
   artifacts,
   artifactFilesChanged,
   hasChangedDependencies,
 ) => ({
+  repositoryDirectory,
   kind: artifact.type,
   artifact,
   dependencies: artifacts ? artifact.dependencies : [],

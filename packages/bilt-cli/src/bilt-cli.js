@@ -12,22 +12,10 @@ const defaultbiltConfig = require('./default-biltrc')
 
 async function buildHere(
   directoryToBuild,
-  {
-    upto,
-    from,
-    justBuild,
-    force,
-    repository,
-    disabledSteps,
-    enabledSteps,
-    rebuild,
-    dryRun,
-    allOutput,
-  } = {},
+  {upto, from, justBuild, force, disabledSteps, enabledSteps, rebuild, dryRun, allOutput} = {},
 ) {
   const buildsSucceeded = []
   const buildsFailed = []
-  const isRemoteRepo = !!repository
 
   debug('Loading configuration from', directoryToBuild)
   const {config: buildConfig, filepath} = await cosmiConfig('bilt', {
@@ -39,9 +27,7 @@ async function buildHere(
 
   const pimport = await createPimport(
     buildConfig,
-    isRemoteRepo,
     finalDirectoryToBuild,
-    repository,
     disabledSteps,
     enabledSteps,
   )
@@ -52,7 +38,6 @@ async function buildHere(
 
     const jobsToWaitFor = await runRepoBuildJob({
       directoryToBuild: finalDirectoryToBuild,
-      repository,
       jobDispatcher,
       upto,
       from,
@@ -152,26 +137,12 @@ async function buildHere(
   }
 }
 
-async function createPimport(
-  buildConfig,
-  isRemoteRepo,
-  directoryToBuild,
-  repository,
-  disabledSteps,
-  enabledSteps,
-) {
+async function createPimport(buildConfig, directoryToBuild, disabledSteps, enabledSteps) {
   return pluginImport(
     [
       defaultbiltConfig.plugins,
       buildConfig.plugins,
       {
-        'agent:npm': {
-          directory: isRemoteRepo ? undefined : directoryToBuild,
-        },
-        repositoryFetcher: {
-          repository: isRemoteRepo ? repository : undefined,
-          directory: isRemoteRepo ? undefined : directoryToBuild,
-        },
         jobDispatcher: {disabledSteps, enabledSteps},
       },
     ],
@@ -184,7 +155,6 @@ async function createPimport(
 
 async function runRepoBuildJob({
   directoryToBuild,
-  repository,
   jobDispatcher,
   upto,
   from,
@@ -203,7 +173,7 @@ async function runRepoBuildJob({
   return [
     await jobDispatcher.dispatchJob({
       kind: 'repository',
-      repository,
+      repositoryDirectory: directoryToBuild,
       artifacts,
       uptoArtifacts: normalizeArtifacts(upto, artifacts, directoryToBuild),
       fromArtifacts: normalizeArtifacts(from, artifacts, directoryToBuild),

@@ -150,5 +150,3 @@ function evaluateStepCondition({condition}, context) {
     return condition(context)
   }
 }
-
-module.exports.plugins = ['repositoryFetcher', 'commander:npm']

@@ -54,10 +54,9 @@ async function adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress) {
     if ((await p(fs.stat)(packageDir)).isDirectory()) {
       await p(fs.writeFile)(
         path.join(packageDir, '.npmrc'),
-        `${npmRegistryAddress.replace(
-          'http:',
-          '',
-        )}/:_authToken="dummy-token-because-npm-needs-to-have-one-even-foranonymous-publishing"`,
+        `//${npmRegistryAddress}/:_authToken="dummy-token-because-npm-needs-to-have-one-even-foranonymous-publishing"
+registry=http://${npmRegistryAddress}
+`,
       )
     }
   }
