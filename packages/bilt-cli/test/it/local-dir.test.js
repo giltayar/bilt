@@ -54,7 +54,7 @@ describe('local directory use-case', () => {
     )
   })
 
-  it('should build the directory with all its packages, including publishing, reset, and then rebuild nothing', async () => {
+  it.only('should build the directory with all its packages, including publishing, reset, and then rebuild nothing', async () => {
     const retCode = await biltHere(buildDir, {disabledSteps: ['link']})
     expect(retCode).to.equal(0)
 

@@ -5,9 +5,8 @@ const {exec, execFile} = require('child_process')
 const {promisify: p} = require('util')
 const {expect} = require('chai')
 const cpr = require('cpr')
-const RegistryClient = require('npm-registry-client')
 const {executeCommand} = require('@bilt/host-agent')
-const {fileContents, writeFile} = require('../utils/file-utils')
+const {setupGit} = require('./git-utils')
 
 async function setupBuildDir(
   sourceDirectoryOfCommits,
@@ -19,7 +18,8 @@ async function setupBuildDir(
   // This folder needs to be mounted on docker, so we can't use `os.tmpdir`.
   const tmpDir = await p(fs.mkdtemp)(path.join(__dirname, '/test-resources/'))
 
-  const
+  const gitEnvOverrides = await setupGit(keysDir)
+  process.env = {...process.env, ...gitEnvOverrides}
 
   await gitInit(tmpDir)
 
@@ -38,7 +38,7 @@ async function setupBuildDir(
   if (originForInitialPush) {
     await p(execFile)('git', ['remote', 'add', 'origin', originForInitialPush], {cwd: tmpDir})
 
-    await pushOrigin(tmpDir)
+    await pushOrigin(tmpDir, gitEnvOverrides)
   }
   if (finalOrigin) {
     await p(execFile)('git', ['remote', 'set-url', 'origin', finalOrigin], {cwd: tmpDir})
@@ -47,11 +47,27 @@ async function setupBuildDir(
   return tmpDir
 }
 
+async function adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress) {
+  for (const subDir of await p(fs.readdir)(buildDir)) {
+    if (subDir.startsWith('.')) continue
+    const packageDir = path.join(buildDir, subDir)
+    if ((await p(fs.stat)(packageDir)).isDirectory()) {
+      await p(fs.writeFile)(
+        path.join(packageDir, '.npmrc'),
+        `${npmRegistryAddress.replace(
+          'http:',
+          '',
+        )}/:_authToken="dummy-token-because-npm-needs-to-have-one-even-foranonymous-publishing"`,
+      )
+    }
+  }
+}
+
 async function pushOrigin(buildDir) {
-  // gitAuthenticationKey: fs.readFileSync(path.resolve(process.env.KEYS_DIR, 'id_rsa')), // TODO
   await executeCommand({
     command: ['git', 'push', '--set-upstream', 'origin', 'master'],
     cwd: buildDir,
+    env: process.env,
   })
 }
 
@@ -92,31 +108,6 @@ async function setupFolder(sourceDirectory) {
   return tmpDir
 }
 
-async function adjustNpmRegistryInfoInRepo(
-  buildDir,
-  hostNpmRegistryAddress,
-  networkNpmRegistryAddress = hostNpmRegistryAddress,
-) {
-  const registryClient = new RegistryClient()
-  const npmToken = (await p(registryClient.adduser.bind(registryClient))(
-    `http://${hostNpmRegistryAddress}/`,
-    {
-      auth: {
-        username: 'npm-user',
-        email: 'gil@tayar.org',
-        password: 'npm-user-password',
-      },
-    },
-  )).token
-  const biltRc = await fileContents(buildDir, 'bilt.config.js')
-
-  const modifiedbiltRc = biltRc
-    .replace(/localhost\:4873/g, networkNpmRegistryAddress)
-    .replace('NPM_TOKEN', npmToken)
-
-  await writeFile(modifiedbiltRc, buildDir, 'bilt.config.js')
-}
-
 async function checkVersionExists(pkg, version, npmRegistryAddress) {
   const {stdout} = await p(execFile)('npm', [
     'view',
@@ -133,6 +124,6 @@ async function checkVersionExists(pkg, version, npmRegistryAddress) {
 module.exports = {
   setupFolder,
   setupBuildDir,
-  adjustNpmRegistryInfoInRepo,
   checkVersionExists,
+  adjustNpmRegistryInfoInRepo,
 }

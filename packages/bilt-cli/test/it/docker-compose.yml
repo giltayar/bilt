@@ -1,15 +1,11 @@
 version: '3'
 services:
   npm-registry:
-    image: strongloop/ephemeral-npm
-    environment:
-        npm_config_registry: https://registry.npmjs.org/
-        NPM_USER: npm-user
-        NPM_PASSWORD: npm-user-password
-        NPM_SECRET: very-secret
+    image: verdaccio/verdaccio
+    volumes:
+        - "./verdaccio-conf:/verdaccio/conf"
     ports:
         - 4873
-
   git-server:
     image: jkarlos/git-server-docker
     ports:
