@@ -8,7 +8,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: bilt-{{ .Branch }}
+          key: bilt-v1-{{ .Branch }}
       - run:
           name: Setup nvm and npm and git
           command: |
@@ -35,6 +35,6 @@ jobs:
           command: CI=1 bilt -u @bilt/bilt-cli -f
 
       - save_cache:
-          key: bilt-{{ .Branch }}-{{ .BuildNum }}
+          key: bilt-v1-{{ .Branch }}-{{ .BuildNum }}
           paths:
             - ".bilt"
