@@ -14,8 +14,9 @@
     "bilt": "scripts/run-bilt-cli.js"
   },
   "scripts": {
-    "test": "npm run test:mocha && npm run eslint",
-    "test:mocha": "mocha --no-timeouts 'test/**/*.test.js'",
+    "test": "npm run eslint && npm run test:mocha-parallel",
+    "test:mocha": "mocha --no-timeouts --exit 'test/unit/*.test.js' 'test/it/*.test.js' 'test/e2e/*.test.js'",
+    "test:mocha-parallel": "mocha-parallel-tests --no-timeouts --exit 'test/unit/*.test.js' 'test/it/*.test.js' 'test/e2e/*.test.js'",
     "eslint": "eslint '**/*.js'",
     "build": "npm run build:e2e-keys && npm run build:e2e-git-repo",
     "build:e2e-keys": "echo y | ssh-keygen -t rsa -P '' -f test/it/bilt-cli/git-server/keys/id_rsa",
@@ -49,6 +50,7 @@
     "jest-changed-files": "^23.4.2",
     "lodash.flatten": "^4.4.0",
     "lodash.pickby": "^4.6.0",
+    "mocha-parallel-tests": "^2.0.6-alpha.3",
     "plugin-import": "^1.0.19",
     "yargs": "^12.0.1"
   },
