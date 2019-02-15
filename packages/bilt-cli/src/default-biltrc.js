@@ -5,6 +5,5 @@ module.exports = {
     'builder:npm': '@bilt/npm-build-job',
     jobDispatcher: '@bilt/in-memory-job-dispatcher',
     lastBuildInfo: '@bilt/last-build-info',
-
   },
 }

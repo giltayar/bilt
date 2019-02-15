@@ -6,19 +6,25 @@ const path = require('path')
 const {executeCommand} = require('@bilt/host-agent')
 
 async function setupGit(keysDir, gitUserEmail, gitUserName) {
-  const gitAuthenticationKey = await p(fs.readFile)(path.resolve(keysDir, 'id_rsa'))
-  const homeDir = await p(fs.mkdtemp)(os.tmpdir() + '/')
-  const gitEnvOverrides = {
-    HOME: homeDir,
-    GIT_SSH_COMMAND: `ssh -o 'StrictHostKeyChecking no' -F '${homeDir}/.ssh/config' -i '${homeDir}/.ssh/id_rsa'`,
+  const gitAuthenticationKey = keysDir
+    ? await p(fs.readFile)(path.resolve(keysDir, 'id_rsa'))
+    : undefined
+  const homeDir = gitAuthenticationKey ? await p(fs.mkdtemp)(os.tmpdir() + '/') : undefined
+  const gitEnvOverrides = gitAuthenticationKey
+    ? {
+        HOME: homeDir,
+        GIT_SSH_COMMAND: `ssh -o 'StrictHostKeyChecking no' -F '${homeDir}/.ssh/config' -i '${homeDir}/.ssh/id_rsa'`,
+      }
+    : {}
+
+  if (gitAuthenticationKey) {
+    await p(fs.mkdir)(path.join(homeDir, '.ssh'))
+    await p(fs.writeFile)(path.join(homeDir, '.ssh/config'), Buffer.from(''))
+
+    const idRsaPath = path.join(homeDir, '.ssh/id_rsa')
+    await p(fs.writeFile)(idRsaPath, Buffer.from(gitAuthenticationKey))
+    await p(fs.chmod)(idRsaPath, 0o600)
   }
-
-  await p(fs.mkdir)(path.join(homeDir, '.ssh'))
-  await p(fs.writeFile)(path.join(homeDir, '.ssh/config'), Buffer.from(''))
-
-  const idRsaPath = path.join(homeDir, '.ssh/id_rsa')
-  await p(fs.writeFile)(idRsaPath, Buffer.from(gitAuthenticationKey))
-  await p(fs.chmod)(idRsaPath, 0o600)
 
   if (gitUserEmail) {
     await executeCommand({

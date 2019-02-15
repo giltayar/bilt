@@ -118,23 +118,37 @@ async function buildHere(
       if (job.kind === 'repository') return
       ;(success ? buildsSucceeded : buildsFailed).push(job.artifact.name)
 
-      outputStreams.get(job.artifact.path).end()
+      await closeStream(outputStreams.get(job.artifact.path))
 
       if (!success) {
         console.log(chalk.red.dim('###### Build %s failed with error. Output:'), job.artifact.path)
 
         const artifactBiltDir = path.resolve(finalDirectoryToBuild, job.artifact.path, '.bilt')
-        const inputStream = fs.createReadStream(path.resolve(artifactBiltDir, 'build.log'))
-
-        await new Promise((resolve, reject) =>
-          inputStream
-            .pipe(process.stderr)
-            .on('error', reject)
-            .on('close', resolve),
+        await writeToStream(
+          fs.createReadStream(path.resolve(artifactBiltDir, 'build.log')),
+          process.stderr,
         )
       }
     })
   }
+}
+
+async function writeToStream(inputStream, outputStream) {
+  await new Promise((resolve, reject) =>
+    inputStream
+      .pipe(outputStream)
+      .on('error', reject)
+      .on('unpipe', resolve),
+  )
+}
+
+function closeStream(stream) {
+  return new Promise((resolve, reject) => {
+    stream
+      .on('error', reject)
+      .on('close', resolve)
+      .end()
+  })
 }
 
 async function createPimport(buildConfig, directoryToBuild, disabledSteps, enabledSteps) {

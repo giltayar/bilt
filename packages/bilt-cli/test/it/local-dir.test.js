@@ -17,7 +17,7 @@ const biltHere = require('../../src/bilt-cli')
 
 const testRepoSrc = path.resolve(__dirname, 'bilt-cli/test-repo-local')
 
-describe('local directory use-case', () => {
+describe('local directory use-case it', () => {
   const pathToCompose = path.join(__dirname, 'docker-compose.yml')
 
   let gitServerRepoDir
@@ -54,7 +54,7 @@ describe('local directory use-case', () => {
     )
   })
 
-  it.only('should build the directory with all its packages, including publishing, reset, and then rebuild nothing', async () => {
+  it('should build the directory with all its packages, including publishing, reset, and then rebuild nothing', async () => {
     const retCode = await biltHere(buildDir, {disabledSteps: ['link']})
     expect(retCode).to.equal(0)
 
@@ -97,19 +97,19 @@ describe('local directory use-case', () => {
     expect(await fileContents(buildDir, 'a/b.txt')).to.equal('something new')
   })
 
-  it('should support dry-run', async () => {
-    const retCode = await biltHere(buildDir, {dryRun: true})
-
-    expect(retCode).to.equal(0)
-    expect(await fileContents(buildDir, 'a/postinstalled.txt')).to.be.undefined
-  })
-
   it('should return 1 on failure', async () => {
     await changeScript(buildDir, 'a', 'build', 'false')
 
     const retCode = await biltHere(buildDir)
 
     expect(retCode).to.equal(1)
+  })
+
+  it('should support dry-run', async () => {
+    const retCode = await biltHere(buildDir, {dryRun: true})
+
+    expect(retCode).to.equal(0)
+    expect(await fileContents(buildDir, 'a/postinstalled.txt')).to.be.undefined
   })
 })
 

@@ -48,6 +48,8 @@ async function setupBuildDir(
 }
 
 async function adjustNpmRegistryInfoInRepo(buildDir, npmRegistryAddress) {
+  process.env.npm_config_registry = `http://${npmRegistryAddress}`
+
   for (const subDir of await p(fs.readdir)(buildDir)) {
     if (subDir.startsWith('.')) continue
     const packageDir = path.join(buildDir, subDir)
