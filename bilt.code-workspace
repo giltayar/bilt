@@ -16,6 +16,12 @@
 			"path": "packages/host-agent"
 		},
 		{
+			"path": "packages/in-memory-events"
+		},
+		{
+			"path": "packages/in-memory-job-dispatcher"
+		},
+		{
 			"path": "packages/jobs"
 		},
 		{
