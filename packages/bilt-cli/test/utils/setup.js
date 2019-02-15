@@ -13,10 +13,13 @@ async function setupBuildDir(
   sourceDirectoryOfCommits,
   originForInitialPush = undefined,
   finalOrigin = undefined,
+  keysDir,
   modifyBuildDirFunc,
 ) {
   // This folder needs to be mounted on docker, so we can't use `os.tmpdir`.
   const tmpDir = await p(fs.mkdtemp)(path.join(__dirname, '/test-resources/'))
+
+  const
 
   await gitInit(tmpDir)
 
