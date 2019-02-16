@@ -7,8 +7,15 @@ const {
 } = require('@bilt/artifact-dependency-graph')
 const debug = require('debug')('bilt:repo-build-job')
 const {publish} = require('@bilt/in-memory-events')
+const {
+  savePackageLastBuildInfo,
+  savePrebuildBuildInfo,
+  lastBuildInfo,
+  artifactBuildTimestamps,
+  filesChangedSinceLastBuild,
+} = require('@bilt/last-build-info')
 
-module.exports = ({plugins: [lastBuildInfo]}) => {
+module.exports = () => {
   return {
     async setupBuildSteps({state, awakenedFrom, job}) {
       const {
@@ -25,12 +32,13 @@ module.exports = ({plugins: [lastBuildInfo]}) => {
       const {
         filesChangedSinceLastBuild,
         artifactBuildTimestamps,
-      } = await determineInitialStateInformation(state, lastBuildInfo, job)
+      } = await determineInitialStateInformation(state, job)
 
       if (awakenedFrom && awakenedFrom.result.success) {
         const artifact = awakenedFrom.job.artifact
         debug('saving package last build info for artifact %s', artifact.name)
-        await lastBuildInfo.savePackageLastBuildInfo({
+        await savePackageLastBuildInfo({
+          repositoryDirectory,
           artifactPath: artifact.path,
           artifactFilesChangedSinceLastBuild: filesChangedSinceLastBuild[artifact.path],
         })
@@ -141,23 +149,25 @@ module.exports = ({plugins: [lastBuildInfo]}) => {
     },
   }
 }
-module.exports.plugins = ['lastBuildInfo']
 
-async function determineInitialStateInformation(state, lastBuildInfo, job) {
+async function determineInitialStateInformation(state, job) {
   if (state) return state
 
-  const buildInfo = await lastBuildInfo.lastBuildInfo({artifacts: job.artifacts})
-  const filesChangedSinceLastBuild = await lastBuildInfo.filesChangedSinceLastBuild({
+  const {repositoryDirectory} = job
+
+  const buildInfo = await lastBuildInfo({repositoryDirectory, artifacts: job.artifacts})
+  const filesChangedSinceLastBuildValue = await filesChangedSinceLastBuild({
+    repositoryDirectory,
     lastBuildInfo: buildInfo,
   })
   for (const {path: artifactPath, name} of job.artifacts) {
     debug('saving prebuild info for artifact %s', name)
-    await lastBuildInfo.savePrebuildBuildInfo({artifactPath})
+    await savePrebuildBuildInfo({repositoryDirectory, artifactPath})
   }
 
   return {
-    filesChangedSinceLastBuild,
-    artifactBuildTimestamps: await lastBuildInfo.artifactBuildTimestamps({
+    filesChangedSinceLastBuild: filesChangedSinceLastBuildValue,
+    artifactBuildTimestamps: await artifactBuildTimestamps({
       lastBuildInfo: buildInfo,
     }),
   }

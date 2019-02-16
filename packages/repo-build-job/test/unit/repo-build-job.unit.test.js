@@ -1,6 +1,7 @@
 'use strict'
-const {describe, it} = require('mocha')
+const {describe, it, before} = require('mocha')
 const {expect} = require('chai')
+const {makeEvents} = require('@bilt/in-memory-events')
 
 const repoBuildJobModule = require('../..')
 
@@ -8,6 +9,9 @@ describe('repo-build-job', function() {
   const repoBuildJobRunner = repoBuildJobModule({plugins: [undefined, {publish: () => true}]})
   const names = artifacts => artifacts.map(a => a.name)
   const jobNames = jobs => jobs.map(j => j.artifact.name)
+
+  let events
+  before(async () => (events = await makeEvents()))
 
   it('should execute a simple job', () => {
     const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}, {name: 'c', path: 'ccc'}]
@@ -236,42 +240,43 @@ describe('repo-build-job', function() {
 
     expect(jobNames(jobsThatRan)).to.eql(['d2', 'a', 'd'])
   })
-})
 
-function runRepoJob(artifacts, repoJob, repoBuildJobRunner) {
-  let jobResult = repoBuildJobRunner.getBuildSteps({
-    buildContext: {
-      initialAllArtifacts: artifacts,
-      ...repoJob,
-      filesChangedSinceLastBuild: repoJob.force ? {} : repoJob.filesChangedSinceLastBuild,
-    },
-  })
-  const jobsList = [...((jobResult.jobs || []).map(j => j.job) || [])]
-  const jobsToDo = (jobResult.jobs || []).map(j => j.job) || []
-
-  while (jobResult.jobs && jobResult.jobs.length > 0) {
-    expect(jobResult.jobs.every(j => j.awaken))
-    const doneJob = jobsToDo.pop()
-
-    jobResult = repoBuildJobRunner.getBuildSteps({
+  function runRepoJob(artifacts, repoJob, repoBuildJobRunner) {
+    let jobResult = repoBuildJobRunner.getBuildSteps({
       buildContext: {
-        state: jobResult.state,
-        initialAllArtifacts: undefined,
-        awakenedFrom: {
-          job: doneJob,
-          result: {success: !artifacts.find(a => a.name === doneJob.artifact.name).failBuild},
-        },
+        initialAllArtifacts: artifacts,
+        ...repoJob,
+        filesChangedSinceLastBuild: repoJob.force ? {} : repoJob.filesChangedSinceLastBuild,
       },
-      job: repoJob,
+      events,
     })
-    jobsList.push(...(jobResult.jobs || []).map(j => j.job))
-    if (jobResult.jobs)
-      expect(jobsToDo.map(j => j.job.artifact.name)).to.not.have.members(
-        (jobResult.jobs || []).map(j => j.job.artifact.name),
-      )
-    jobsToDo.push(...(jobResult.jobs || []).map(j => j.job))
-  }
-  expect(jobsToDo).to.have.length(0)
+    const jobsList = [...((jobResult.jobs || []).map(j => j.job) || [])]
+    const jobsToDo = (jobResult.jobs || []).map(j => j.job) || []
 
-  return jobsList
-}
+    while (jobResult.jobs && jobResult.jobs.length > 0) {
+      expect(jobResult.jobs.every(j => j.awaken))
+      const doneJob = jobsToDo.pop()
+
+      jobResult = repoBuildJobRunner.getBuildSteps({
+        buildContext: {
+          state: jobResult.state,
+          initialAllArtifacts: undefined,
+          awakenedFrom: {
+            job: doneJob,
+            result: {success: !artifacts.find(a => a.name === doneJob.artifact.name).failBuild},
+          },
+        },
+        events,
+      })
+      jobsList.push(...(jobResult.jobs || []).map(j => j.job))
+      if (jobResult.jobs)
+        expect(jobsToDo.map(j => j.job.artifact.name)).to.not.have.members(
+          (jobResult.jobs || []).map(j => j.job.artifact.name),
+        )
+      jobsToDo.push(...(jobResult.jobs || []).map(j => j.job))
+    }
+    expect(jobsToDo).to.have.length(0)
+
+    return jobsList
+  }
+})

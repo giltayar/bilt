@@ -11,92 +11,118 @@ const gitRepoInfo = require('git-repo-info')
 const ignore = require('ignore')
 const {getChangedFilesForRoots} = require('jest-changed-files')
 
-const gitFindChangedFiles = root =>
-  getChangedFilesForRoots([root]).then(({changedFiles, repos}) => {
-    const repoRoot = [...repos.git][0]
+/**
+ * @typedef {string} FileHash
+ * @typedef {{name: string, path: string}} ArtifactInfo
+ * @typedef {{name: string, path: string, lastSuccessfulBuild: {timestamp: string, commit: string, changedFilesInWorkspace: {[path: string]: FileHash}}}} ArtifactBuildInfo
+ * @param {{repositoryDirectory: string, artifacts: ArtifactInfo[]}} options
+ *
+ * @typedef {ArtifactBuildInfo[]} LastBuildInfo
+ * @returns {Promise<LastBuildInfo>}
+ */
+async function lastBuildInfo({repositoryDirectory, artifacts}) {
+  return await Promise.all(
+    artifacts.map(async artifact => {
+      const biltJson = await readBiltJson(path.join(repositoryDirectory, '.bilt', artifact.path))
 
-    return [...changedFiles].map(f => root + f.slice(repoRoot.length))
-  })
-
-module.exports = async ({directory}) => {
-  return {
-    async lastBuildInfo({artifacts}) {
-      return await Promise.all(
-        artifacts.map(async artifact => {
-          const biltJson = await readBiltJson(path.join(directory, '.bilt', artifact.path))
-
-          return {
-            name: artifact.name,
-            path: artifact.path,
-            ...biltJson,
-          }
-        }),
-      )
-    },
-    // returns {[artifactPath]: {artifactFile: hash, ...}}
-    async filesChangedSinceLastBuild({lastBuildInfo}) {
-      const commit = gitRepoInfo(directory).sha
-      const currentRepoInfo = await findChangesInCurrentRepo(directory, commit)
-
-      return await calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, currentRepoInfo)
-    },
-
-    artifactBuildTimestamps({lastBuildInfo}) {
-      return objectFromEntries(
-        lastBuildInfo.map(({name, timestamp}) => [name, timestamp && new Date(timestamp)]),
-      )
-    },
-
-    async savePrebuildBuildInfo({artifactPath}) {
-      const biltJsonDir = path.join(directory, '.bilt', artifactPath)
-      await makeDir(biltJsonDir)
-
-      const commit = gitRepoInfo(directory).sha
-
-      const filesChangedInWorkspace = new Set(
-        (await listFilesChangedInWorkspace(directory, commit)).filter(f =>
-          f.startsWith(artifactPath + '/'),
-        ),
-      )
-      const workspaceFilesThatWereBuilt = await readHashesOfFiles(directory, [
-        ...filesChangedInWorkspace,
-      ])
-
-      await p(fs.writeFile)(
-        path.join(biltJsonDir, 'bilt.prebuild.json'),
-        JSON.stringify({
-          lastSuccessfulBuild: {
-            commit,
-            changedFilesInWorkspace: workspaceFilesThatWereBuilt,
-          },
-        }),
-      )
-    },
-
-    async savePackageLastBuildInfo({artifactPath, now = new Date()}) {
-      const biltJsonDir = path.join(directory, '.bilt', artifactPath)
-
-      const prebuild = JSON.parse(
-        await p(fs.readFile)(path.join(biltJsonDir, 'bilt.prebuild.json')),
-      )
-      await p(fs.writeFile)(
-        path.join(biltJsonDir, 'bilt.json'),
-        JSON.stringify({
-          lastSuccessfulBuild: {
-            timestamp: now.toISOString(),
-            commit: prebuild.lastSuccessfulBuild.commit,
-            changedFilesInWorkspace: prebuild.lastSuccessfulBuild.changedFilesInWorkspace,
-          },
-        }),
-      )
-    },
-  }
+      return {
+        name: artifact.name,
+        path: artifact.path,
+        ...biltJson,
+      }
+    }),
+  )
 }
 
-async function readBiltJson(artifactDirectory) {
+/**
+ *
+ * @param {{repositoryDirectory: string, lastBuildInfo: LastBuildInfo}} options
+ *
+ * @returns {Promise<{[artifactPath: string]: {[artifactFilePath: string]: FileHash}}>}
+ */
+async function filesChangedSinceLastBuild({repositoryDirectory, lastBuildInfo}) {
+  const commit = gitRepoInfo(repositoryDirectory).sha
+  const currentRepoInfo = await findChangesInCurrentRepo(repositoryDirectory, commit)
+
+  return await calculateFilesChangedSinceLastBuild(
+    repositoryDirectory,
+    lastBuildInfo,
+    currentRepoInfo,
+  )
+}
+
+/**
+ *
+ * @param {{lastBuildInfo: LastBuildInfo}} options
+ *
+ * @returns {{[name: string]: Date?}}
+ */
+function artifactBuildTimestamps({lastBuildInfo}) {
+  return objectFromEntries(
+    lastBuildInfo.map(({name, timestamp}) => [name, timestamp && new Date(timestamp)]),
+  )
+}
+
+/**
+ *
+ * @param {{repositoryDirectory: string, artifactPath: string}} options
+ *
+ * @returns {Promise<void>}
+ */
+async function savePrebuildBuildInfo({repositoryDirectory, artifactPath}) {
+  const biltJsonDir = path.join(repositoryDirectory, '.bilt', artifactPath)
+  await makeDir(biltJsonDir)
+
+  const commit = gitRepoInfo(repositoryDirectory).sha
+
+  const filesChangedInWorkspace = new Set(
+    (await listFilesChangedInWorkspace(repositoryDirectory, commit)).filter(f =>
+      f.startsWith(artifactPath + '/'),
+    ),
+  )
+  const workspaceFilesThatWereBuilt = await readHashesOfFiles(repositoryDirectory, [
+    ...filesChangedInWorkspace,
+  ])
+
+  await p(fs.writeFile)(
+    path.join(biltJsonDir, 'bilt.prebuild.json'),
+    JSON.stringify({
+      lastSuccessfulBuild: {
+        commit,
+        changedFilesInWorkspace: workspaceFilesThatWereBuilt,
+      },
+    }),
+  )
+}
+
+/**
+ *
+ * @param {{repositoryDirectory: string, artifactPath: string, now?: Date}} options
+ *
+ * @returns {Promise<void>}
+ */
+async function savePackageLastBuildInfo({repositoryDirectory, artifactPath, now = new Date()}) {
+  const biltJsonDir = path.join(repositoryDirectory, '.bilt', artifactPath)
+
+  const prebuild = JSON.parse(await p(fs.readFile)(path.join(biltJsonDir, 'bilt.prebuild.json')))
+  await p(fs.writeFile)(
+    path.join(biltJsonDir, 'bilt.json'),
+    JSON.stringify({
+      lastSuccessfulBuild: {
+        timestamp: now.toISOString(),
+        commit: prebuild.lastSuccessfulBuild.commit,
+        changedFilesInWorkspace: prebuild.lastSuccessfulBuild.changedFilesInWorkspace,
+      },
+    }),
+  )
+}
+
+async function readBiltJson(artifactrepositoryDirectory) {
   // {commit, changedFilesInWorkspace}
   try {
-    const biltJson = JSON.parse(await p(fs.readFile)(path.join(artifactDirectory, 'bilt.json')))
+    const biltJson = JSON.parse(
+      await p(fs.readFile)(path.join(artifactrepositoryDirectory, 'bilt.json')),
+    )
 
     return biltJson.lastSuccessfulBuild
   } catch (err) {
@@ -112,24 +138,28 @@ async function readBiltJson(artifactDirectory) {
   }
 }
 
-async function findChangesInCurrentRepo(directory, commit) {
+async function findChangesInCurrentRepo(repositoryDirectory, commit) {
   return {
     commit,
     changedFilesInWorkspace: await readHashesOfFiles(
-      directory,
-      await listFilesChangedInWorkspace(directory, commit),
+      repositoryDirectory,
+      await listFilesChangedInWorkspace(repositoryDirectory, commit),
     ),
   }
 }
 
-async function listFilesChangedInWorkspace(directory, commit) {
+async function listFilesChangedInWorkspace(repositoryDirectory, commit) {
   return (await filterBybiltIgnore(
-    directory,
-    commit ? await gitFindChangedFiles(directory) : [],
-  )).map(f => path.relative(directory, f))
+    repositoryDirectory,
+    commit ? await gitFindChangedFiles(repositoryDirectory) : [],
+  )).map(f => path.relative(repositoryDirectory, f))
 }
 
-async function calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, currentRepoInfo) {
+async function calculateFilesChangedSinceLastBuild(
+  repositoryDirectory,
+  lastBuildInfo,
+  currentRepoInfo,
+) {
   const filesChangedByArtifactPath = {}
 
   for (const artifactInfo of lastBuildInfo) {
@@ -153,13 +183,13 @@ async function calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, cur
       filesChangedByArtifactPath[artifactPath] = filesChangedSinceLastSuccesfulBuild
     } else {
       const filesChangedBetweenCommits = (await filesChangedFromCommitToCommit(
-        directory,
+        repositoryDirectory,
         commit,
         currentRepoInfo.commit,
       )).filter(file => file.startsWith(artifactPath + '/'))
       const filesChangedSinceLastSuccesfulBuild = {
         ...artifactCurrentRepoChangedFilesInWorkspace,
-        ...(await readHashesOfFiles(directory, filesChangedBetweenCommits)),
+        ...(await readHashesOfFiles(repositoryDirectory, filesChangedBetweenCommits)),
       }
       const filesThatNeedToBeBuilt = {}
 
@@ -177,9 +207,9 @@ async function calculateFilesChangedSinceLastBuild(directory, lastBuildInfo, cur
   return filesChangedByArtifactPath
 }
 
-async function readHashesOfFiles(directory, files) {
+async function readHashesOfFiles(repositoryDirectory, files) {
   const hashAndFiles = await Promise.all(
-    files.map(async file => [file, await readHashOfFile(path.resolve(directory, file))]),
+    files.map(async file => [file, await readHashOfFile(path.resolve(repositoryDirectory, file))]),
   )
 
   return hashAndFiles.reduce(
@@ -223,14 +253,14 @@ function fromEntries(entries) {
   return entries.reduce((acc, [key, value]) => ({...acc, [key]: value}), {})
 }
 
-async function filesChangedFromCommitToCommit(directory, fromCommit, toCommit) {
+async function filesChangedFromCommitToCommit(repositoryDirectory, fromCommit, toCommit) {
   return [
     ...new Set(
       (await p(childProcess.execFile)(
         'git',
         ['diff-tree', '--no-commit-id', '--name-only', '-r', fromCommit, toCommit],
         {
-          cwd: directory,
+          cwd: repositoryDirectory,
         },
       )).stdout
         .split('\n')
@@ -239,22 +269,22 @@ async function filesChangedFromCommitToCommit(directory, fromCommit, toCommit) {
   ]
 }
 
-async function filterBybiltIgnore(directory, files) {
+async function filterBybiltIgnore(repositoryDirectory, files) {
   return (await Promise.all(
-    files.map(async file => await filterFileBybiltIgnore(directory, file)),
+    files.map(async file => await filterFileBybiltIgnore(repositoryDirectory, file)),
   )).filter(f => !!f)
 }
 
-async function filterFileBybiltIgnore(directory, file) {
-  const ignoreMask = await findbiltIgnorePattern(directory, file)
+async function filterFileBybiltIgnore(repositoryDirectory, file) {
+  const ignoreMask = await findbiltIgnorePattern(repositoryDirectory, file)
 
   return ignoreMask.ignores(file) ? undefined : file
 }
 
-async function findbiltIgnorePattern(directory, file) {
+async function findbiltIgnorePattern(repositoryDirectory, file) {
   const ignoreMask = ignore()
   ignoreMask.add('.bilt')
-  for (const dir of directoriesBetween(directory, file)) {
+  for (const dir of directoriesBetween(repositoryDirectory, file)) {
     try {
       ignoreMask.add(await p(fs.readFile)(path.join(dir, '.biltignore'), {encoding: 'utf-8'}))
     } catch (err) {
@@ -265,17 +295,17 @@ async function findbiltIgnorePattern(directory, file) {
   return ignoreMask
 }
 
-function directoriesBetween(directory, file) {
-  assert(file.startsWith(directory))
+function directoriesBetween(repositoryDirectory, file) {
+  assert(file.startsWith(repositoryDirectory))
 
-  const fileDirectory = path.dirname(file)
+  const filerepositoryDirectory = path.dirname(file)
 
-  const missingSegments = fileDirectory.slice(directory.length + 1).split('/')
+  const missingSegments = filerepositoryDirectory.slice(repositoryDirectory.length + 1).split('/')
 
   return missingSegments.reduce(
     (directories, segment) =>
       directories.concat(path.join(directories[directories.length - 1], segment)),
-    [directory],
+    [repositoryDirectory],
   )
 }
 
@@ -287,4 +317,19 @@ function objectFromEntries(entries) {
   }
 
   return ret
+}
+
+const gitFindChangedFiles = root =>
+  getChangedFilesForRoots([root]).then(({changedFiles, repos}) => {
+    const repoRoot = [...repos.git][0]
+
+    return [...changedFiles].map(f => root + f.slice(repoRoot.length))
+  })
+
+module.exports = {
+  lastBuildInfo,
+  filesChangedSinceLastBuild,
+  artifactBuildTimestamps,
+  savePrebuildBuildInfo,
+  savePackageLastBuildInfo,
 }

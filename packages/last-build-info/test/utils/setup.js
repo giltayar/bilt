@@ -4,14 +4,8 @@ const path = require('path')
 const {exec, execFile} = require('child_process')
 const {promisify: p} = require('util')
 const cpr = require('cpr')
-const {executeCommand} = require('@bilt/host-agent')
 
-async function setupBuildDir(
-  sourceDirectoryOfCommits,
-  originForInitialPush = undefined,
-  finalOrigin = undefined,
-  modifyBuildDirFunc,
-) {
+async function setupBuildDir(sourceDirectoryOfCommits) {
   const tmpDir = await p(fs.mkdtemp)('/tmp/')
 
   await gitInit(tmpDir)
@@ -21,32 +15,8 @@ async function setupBuildDir(
   for (const commitDirectory of commitsToReplay) {
     await replayCommit(tmpDir, commitDirectory)
   }
-  if (modifyBuildDirFunc) {
-    await modifyBuildDirFunc(tmpDir)
-
-    await p(execFile)('git', ['add', '.'], {cwd: tmpDir})
-    await p(execFile)('git', ['commit', '-am', 'modifications...'], {cwd: tmpDir})
-  }
-
-  if (originForInitialPush) {
-    await p(execFile)('git', ['remote', 'add', 'origin', originForInitialPush], {cwd: tmpDir})
-
-    await pushOrigin(tmpDir)
-  }
-  if (finalOrigin) {
-    await p(execFile)('git', ['remote', 'set-url', 'origin', finalOrigin], {cwd: tmpDir})
-  }
 
   return tmpDir
-}
-
-async function pushOrigin(buildDir) {
-  // gitAuthenticationKey: fs.readFileSync(path.resolve(process.env.KEYS_DIR, 'id_rsa')), // TODO
-
-  await executeCommand({
-    command: ['git', 'push', '--set-upstream', 'origin', 'master'],
-    cwd: buildDir,
-  })
 }
 
 async function findCommitsToReplayInDirectory(directory) {

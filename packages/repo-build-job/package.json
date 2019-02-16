@@ -10,7 +10,8 @@
     "src"
   ],
   "scripts": {
-    "test": "mocha --no-timeouts 'test/**/*.test.js' && npm run eslint",
+    "test": "npm run eslint && npm run test:mocha",
+    "test:mocha": "mocha --no-timeouts --exit 'test/**/*.test.js'",
     "eslint": "eslint '**/*.js'"
   },
   "keywords": [
@@ -26,6 +27,7 @@
   "dependencies": {
     "@bilt/artifact-dependency-graph": "^3.0.1",
     "@bilt/in-memory-events": "^2.0.1",
+    "@bilt/last-build-info": "^3.0.2",
     "debug": "^3.1.0",
     "lodash.flatten": "^4.4.0"
   },
