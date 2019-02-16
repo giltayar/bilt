@@ -8,6 +8,7 @@ const pluginImport = require('plugin-import')
 const cosmiConfig = require('cosmiconfig')
 const flatten = require('lodash.flatten')
 const artifactFinder = require('@bilt/artifact-finder')
+const {makeEvents, subscribe} = require('@bilt/in-memory-events')
 const defaultbiltConfig = require('./default-biltrc')
 
 async function buildHere(
@@ -25,6 +26,8 @@ async function buildHere(
   const finalDirectoryToBuild = path.dirname(filepath)
   debug('building directory', finalDirectoryToBuild)
 
+  const events = await makeEvents()
+
   const pimport = await createPimport(
     buildConfig,
     finalDirectoryToBuild,
@@ -32,7 +35,7 @@ async function buildHere(
     enabledSteps,
   )
   try {
-    await configureEventsToOutputEventToStdout(pimport)
+    await configureEventsToOutputEventToStdout(events)
 
     const jobDispatcher = await pimport('jobDispatcher')
 
@@ -45,9 +48,10 @@ async function buildHere(
       force,
       isRebuild: rebuild,
       isDryRun: dryRun,
+      events,
     })
 
-    await waitForJobs(pimport, jobsToWaitFor)
+    await waitForJobs(events, jobsToWaitFor)
   } finally {
     debug('finalizing plugins')
     await pimport.finalize()
@@ -65,10 +69,8 @@ async function buildHere(
 
   return buildsFailed.length > 0 ? 1 : 0
 
-  async function configureEventsToOutputEventToStdout(pimport) {
-    const events = await pimport('events')
-
-    await events.subscribe('STARTING_REPO_JOB', ({artifactsToBeBuilt}) => {
+  async function configureEventsToOutputEventToStdout(events) {
+    await subscribe(events, 'STARTING_REPO_JOB', ({artifactsToBeBuilt}) => {
       if (artifactsToBeBuilt.length === 0) {
         console.log('### Nothing to build')
       } else {
@@ -78,7 +80,7 @@ async function buildHere(
 
     const outputStreams = new Map()
 
-    await events.subscribe('START_JOB', async ({job}) => {
+    await subscribe(events, 'START_JOB', async ({job}) => {
       if (job.kind === 'repository') return
 
       const artifactBiltDir = path.resolve(finalDirectoryToBuild, job.artifact.path, '.bilt')
@@ -95,7 +97,7 @@ async function buildHere(
       )
     })
 
-    await events.subscribe('START_STEP', ({job, step: {name}}) => {
+    await subscribe(events, 'START_STEP', ({job, step: {name}}) => {
       const line = `######### Step ${name}`
       console.log(chalk.green.dim(line))
       const outputStream = outputStreams.get(job.artifact.path)
@@ -103,7 +105,7 @@ async function buildHere(
       outputStream.write('\n')
     })
 
-    await events.subscribe('STEP_LINE_OUT', ({job, outTo, line}) => {
+    await subscribe(events, 'STEP_LINE_OUT', ({job, outTo, line}) => {
       const outputStream = outputStreams.get(job.artifact.path)
       outputStream.write(line)
       outputStream.write('\n')
@@ -114,7 +116,7 @@ async function buildHere(
       }
     })
 
-    await events.subscribe('END_JOB', async ({job, success}) => {
+    await subscribe(events, 'END_JOB', async ({job, success}) => {
       if (job.kind === 'repository') return
       ;(success ? buildsSucceeded : buildsFailed).push(job.artifact.name)
 
@@ -176,6 +178,7 @@ async function runRepoBuildJob({
   force,
   isRebuild,
   isDryRun,
+  events,
 }) {
   debug('fetching artifacts')
   const artifacts = await (await artifactFinder()).findArtifacts(directoryToBuild)
@@ -185,18 +188,21 @@ async function runRepoBuildJob({
   }
 
   return [
-    await jobDispatcher.dispatchJob({
-      kind: 'repository',
-      repositoryDirectory: directoryToBuild,
-      artifacts,
-      uptoArtifacts: normalizeArtifacts(upto, artifacts, directoryToBuild),
-      fromArtifacts: normalizeArtifacts(from, artifacts, directoryToBuild),
-      justBuildArtifacts: normalizeArtifacts(justBuild, artifacts, directoryToBuild),
-      linkDependencies: true,
-      force,
-      isRebuild,
-      isDryRun,
-    }),
+    await jobDispatcher.dispatchJob(
+      {
+        kind: 'repository',
+        repositoryDirectory: directoryToBuild,
+        artifacts,
+        uptoArtifacts: normalizeArtifacts(upto, artifacts, directoryToBuild),
+        fromArtifacts: normalizeArtifacts(from, artifacts, directoryToBuild),
+        justBuildArtifacts: normalizeArtifacts(justBuild, artifacts, directoryToBuild),
+        linkDependencies: true,
+        force,
+        isRebuild,
+        isDryRun,
+      },
+      {events},
+    ),
   ]
 }
 
@@ -225,13 +231,12 @@ function normalizeArtifacts(artifactsOrDirsToBuild, artifacts, directoryToBuild)
   )
 }
 
-async function waitForJobs(pimport, jobs) {
+async function waitForJobs(events, jobs) {
   debug('waiting for jobs %o', (jobs || []).map(job => job.id))
-  const events = await pimport('events')
   const jobsThatAreStillWorking = new Set((jobs || []).map(job => job.id))
 
   await new Promise(async resolve => {
-    await events.subscribe('END_JOB', ({job}) => {
+    await subscribe(events, 'END_JOB', ({job}) => {
       debug('job %s ended', job.id)
       jobsThatAreStillWorking.delete(job.id)
 

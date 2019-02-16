@@ -2,12 +2,11 @@
 const {runJob, prepareJobForRunning} = require('@bilt/jobs')
 
 module.exports = async ({pimport, config: {disabledSteps, enabledSteps}}) => {
-  const events = await pimport('events')
   const kvStore = new Map()
 
   const jobQueue = []
 
-  async function dispatchJob(job, {awakenedFrom} = {}) {
+  async function dispatchJob(job, {awakenedFrom, events} = {}) {
     const preparedJob = prepareJobForRunning(job)
 
     jobQueue.push(preparedJob)
@@ -22,7 +21,15 @@ module.exports = async ({pimport, config: {disabledSteps, enabledSteps}}) => {
       if (jobQueue.length === 0) return
       const job = jobQueue.shift()
 
-      runJob(job, {awakenedFrom, pimport, events, kvStore, dispatchJob, disabledSteps, enabledSteps}).then(nextJob, err => nextJob(null, err))
+      runJob(job, {
+        awakenedFrom,
+        pimport,
+        events,
+        kvStore,
+        dispatchJob,
+        disabledSteps,
+        enabledSteps,
+      }).then(nextJob, err => nextJob(null, err))
     }
 
     nextJob()

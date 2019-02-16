@@ -6,8 +6,9 @@ const {
   dependencyGraphBuildList,
 } = require('@bilt/artifact-dependency-graph')
 const debug = require('debug')('bilt:repo-build-job')
+const {publish} = require('@bilt/in-memory-events')
 
-module.exports = ({plugins: [lastBuildInfo, events]}) => {
+module.exports = ({plugins: [lastBuildInfo]}) => {
   return {
     async setupBuildSteps({state, awakenedFrom, job}) {
       const {
@@ -69,6 +70,7 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
         isRebuild,
         isDryRun,
       },
+      events,
     }) {
       if (!state) {
         debug('files changed: %o', filesChangedSinceLastBuild)
@@ -91,7 +93,7 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
         alreadyBuiltArtifacts: [],
       }
       if (!awakenedFrom) {
-        events.publish('STARTING_REPO_JOB', {
+        publish(events, 'STARTING_REPO_JOB', {
           artifactsToBeBuilt: dependencyGraphBuildList(state.dependencyGraph),
         })
         if (isDryRun) return {}
@@ -109,7 +111,7 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
       )
 
       if (!artifactToBuild) {
-        events.publish('FINISHING_REPO_JOB', {
+        publish(events, 'FINISHING_REPO_JOB', {
           alreadyBuiltArtifacts,
         })
         return {}
@@ -139,7 +141,7 @@ module.exports = ({plugins: [lastBuildInfo, events]}) => {
     },
   }
 }
-module.exports.plugins = ['lastBuildInfo', 'events']
+module.exports.plugins = ['lastBuildInfo']
 
 async function determineInitialStateInformation(state, lastBuildInfo, job) {
   if (state) return state

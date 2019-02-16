@@ -1,6 +1,7 @@
 'use strict'
 const debug = require('debug')('bilt:jobs:build')
 const {executeCommand} = require('@bilt/host-agent')
+const {publish} = require('@bilt/in-memory-events')
 
 async function executeBuild({
   builder,
@@ -38,6 +39,7 @@ async function executeBuild({
   try {
     const {buildSteps = [], state, jobs} = builder.getBuildSteps({
       buildContext: {...jobWithArtifact, ...buildContext},
+      events,
     })
 
     await executeSteps(jobWithArtifact, buildSteps, events)
@@ -76,7 +78,7 @@ function mergeSteps(jobSteps, builderSteps, disabledSteps = []) {
 async function executeSteps(job, buildSteps, events) {
   for (const command of buildSteps) {
     if (events) {
-      await events.publish('START_STEP', {
+      await publish(events, 'START_STEP', {
         job,
         step: {name: command.stepName},
       })
@@ -87,7 +89,7 @@ async function executeSteps(job, buildSteps, events) {
       await executeCommand({
         ...command,
         callOnEachLine:
-          events && (({line, outTo}) => events.publish('STEP_LINE_OUT', {job, line, outTo})),
+          events && (({line, outTo}) => publish(events, 'STEP_LINE_OUT', {job, line, outTo})),
       })
     }
   }

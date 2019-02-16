@@ -1,5 +1,6 @@
 const uuid = require('uuid/v4')
 const debug = require('debug')('bilt:jobs')
+const {publish} = require('@bilt/in-memory-events')
 const {executeBuild} = require('./build')
 
 async function runJob(
@@ -15,7 +16,7 @@ async function runJob(
     enabledSteps,
   })
 
-  return await dealWithJobResult(result, {kvStore, dispatchJob})
+  return await dealWithJobResult(result, {kvStore, dispatchJob, events})
 }
 
 async function executeJob(
@@ -28,7 +29,7 @@ async function executeJob(
 
   debug('running job %o awakened from job %s', jobWithId, awakenedFrom && awakenedFrom.job.id)
 
-  await events.publish(!awakenedFrom ? 'START_JOB' : 'AWAKEN_JOB', {job: jobWithId})
+  await publish(events, !awakenedFrom ? 'START_JOB' : 'AWAKEN_JOB', {job: jobWithId})
 
   const state = await kvStore.get(`jobstate:${job.id}`)
   debug('state for job %s found: %o', jobWithId.id, state)
@@ -44,7 +45,7 @@ async function executeJob(
   })
   debug('ran job %s', jobWithId.id)
 
-  await events.publish(jobs.length === 0 ? 'END_JOB' : 'HIBERNATE_JOB', {
+  await publish(events, jobs.length === 0 ? 'END_JOB' : 'HIBERNATE_JOB', {
     job: jobWithId,
     state: newState,
     jobs,
@@ -59,14 +60,14 @@ async function executeJob(
 
 async function dealWithJobResult(
   {job, state, jobs: subJobs, success, err},
-  {kvStore, dispatchJob},
+  {kvStore, dispatchJob, events},
 ) {
   if (success) {
     debug('saving job %s state %o', job.id, state)
     await kvStore.set(`jobstate:${job.id}`, state)
   }
 
-  await awakenParentJobIfNeeded(job, {success, err}, {kvStore, dispatchJob})
+  await awakenParentJobIfNeeded(job, {success, err}, {kvStore, dispatchJob, events})
 
   if (subJobs && subJobs.length > 0) {
     const subJobsWithId = subJobs.map(({job, awaken}) => ({
@@ -82,7 +83,7 @@ async function dealWithJobResult(
     )
 
     debug('dispatching subjobs of parent job %s', job.id)
-    await Promise.all(subJobsWithId.map(async ({job}) => await dispatchJob(job)))
+    await Promise.all(subJobsWithId.map(async ({job}) => await dispatchJob(job, {events})))
 
     return job
   } else {
@@ -93,7 +94,7 @@ async function dealWithJobResult(
   }
 }
 
-async function awakenParentJobIfNeeded(job, subJobResult, {kvStore, dispatchJob}) {
+async function awakenParentJobIfNeeded(job, subJobResult, {kvStore, dispatchJob, events}) {
   const parentJob = await kvStore.get(`awaken:${job.id}`)
 
   if (!parentJob) {
@@ -102,7 +103,7 @@ async function awakenParentJobIfNeeded(job, subJobResult, {kvStore, dispatchJob}
   }
 
   debug('dispatching parent job %o because %s awakened', parentJob, job.id)
-  await dispatchJob(parentJob, {awakenedFrom: {job, result: subJobResult}})
+  await dispatchJob(parentJob, {awakenedFrom: {job, result: subJobResult}, events})
 }
 
 async function waitForJob(jobToWaitFor, {events}) {

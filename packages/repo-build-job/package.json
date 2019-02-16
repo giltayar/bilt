@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@bilt/artifact-dependency-graph": "^3.0.1",
+    "@bilt/in-memory-events": "^2.0.1",
     "debug": "^3.1.0",
     "lodash.flatten": "^4.4.0"
   },
