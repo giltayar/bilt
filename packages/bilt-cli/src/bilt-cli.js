@@ -8,6 +8,7 @@ const pluginImport = require('plugin-import')
 const cosmiConfig = require('cosmiconfig')
 const flatten = require('lodash.flatten')
 const artifactFinder = require('@bilt/artifact-finder')
+const {makeJobDispatcher, dispatchJob} = require('@bilt/in-memory-job-dispatcher')
 const {makeEvents, subscribe} = require('@bilt/in-memory-events')
 const defaultbiltConfig = require('./default-biltrc')
 
@@ -37,7 +38,7 @@ async function buildHere(
   try {
     await configureEventsToOutputEventToStdout(events)
 
-    const jobDispatcher = await pimport('jobDispatcher')
+    const jobDispatcher = await makeJobDispatcher({pimport, disabledSteps, enabledSteps})
 
     const jobsToWaitFor = await runRepoBuildJob({
       directoryToBuild: finalDirectoryToBuild,
@@ -188,7 +189,8 @@ async function runRepoBuildJob({
   }
 
   return [
-    await jobDispatcher.dispatchJob(
+    await dispatchJob(
+      jobDispatcher,
       {
         kind: 'repository',
         repositoryDirectory: directoryToBuild,

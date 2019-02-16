@@ -15,10 +15,11 @@
     "type": "git"
   },
   "dependencies": {
-    "@bilt/jobs": "^2.0.1",
     "uuid": "^3.3.2"
   },
   "devDependencies": {
+    "@bilt/in-memory-events": "^2.0.1",
+    "@bilt/jobs": "^2.0.1",
     "eslint": "^4.2.0",
     "eslint-plugin-prettier": "^2.6.2",
     "prettier": "^1.13.7"
