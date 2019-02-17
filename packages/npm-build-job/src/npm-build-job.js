@@ -1,12 +1,54 @@
 'use strict'
-const vm = require('vm')
 const path = require('path')
 const debug = require('debug')('bilt:npm-build-job')
 const {pathExists, readFileAsBuffer} = require('@bilt/host-agent')
 const {symlinkDependencies, unsymlinkDependencies} = require('./symlink-dependencies')
 const {npmNextVersion} = require('@bilt/npm-next-version')
 
-const defaultSteps = [
+async function setupBuildSteps({job}) {
+  const {
+    artifacts,
+    repositoryDirectory,
+    artifact,
+    artifact: {path: artifactPath, steps},
+    filesChangedSinceLastBuild,
+    hasChangedDependencies,
+  } = job
+
+  const directory = path.join(repositoryDirectory, artifactPath)
+  debug('building npm package under directory %s', directory)
+
+  const isFirstBuild = !(await pathExists(path.join(directory, 'node_modules')))
+  const packageJsonChanged =
+    isFirstBuild ||
+    !filesChangedSinceLastBuild ||
+    filesChangedSinceLastBuild.includes(`${artifactPath}/package.json`)
+
+  debug('Reading package.json %s', path.join(directory, 'package.json'))
+  const packageJson = JSON.parse(await readFileAsBuffer(path.join(directory, 'package.json')))
+
+  let nextVersion
+
+  if (steps.find(s => s.id === 'increment-version') && !packageJson.private) {
+    nextVersion = await npmNextVersion(packageJson)
+  }
+
+  return {
+    buildContext: {
+      packageJson,
+      directory,
+      repositoryDirectory,
+      nextVersion,
+      artifacts,
+      artifact,
+      packageJsonChanged,
+      hasChangedDependencies,
+      steps,
+    },
+  }
+}
+
+const defaultSteps = () => [
   {
     id: 'reset-links',
     name: 'Unlink local packages',
@@ -70,83 +112,7 @@ const defaultSteps = [
   },
 ]
 
-module.exports = async ({config: {artifactDefaults = {}}}) => {
-  return {
-    defaultSteps,
-    artifactDefaults: {publish: true, ...artifactDefaults},
-    async setupBuildSteps({job}) {
-      const {
-        artifacts,
-        repositoryDirectory,
-        artifact,
-        artifact: {path: artifactPath, steps},
-        filesChangedSinceLastBuild,
-        hasChangedDependencies,
-      } = job
-
-      const directory = path.join(repositoryDirectory, artifactPath)
-      debug('building npm package under directory %s', directory)
-
-      const isFirstBuild = !(await pathExists(path.join(directory, 'node_modules')))
-      const packageJsonChanged =
-        isFirstBuild ||
-        !filesChangedSinceLastBuild ||
-        filesChangedSinceLastBuild.includes(`${artifactPath}/package.json`)
-
-      debug('Reading package.json %s', path.join(directory, 'package.json'))
-      const packageJson = JSON.parse(await readFileAsBuffer(path.join(directory, 'package.json')))
-
-      let nextVersion
-
-      if (steps.find(s => s.id === 'increment-version') && !packageJson.private) {
-        nextVersion = await npmNextVersion(packageJson)
-      }
-
-      return {
-        buildContext: {
-          packageJson,
-          directory,
-          repositoryDirectory,
-          nextVersion,
-          artifacts,
-          artifact,
-          packageJsonChanged,
-          hasChangedDependencies,
-          steps,
-        },
-      }
-    },
-
-    getBuildSteps({buildContext}) {
-      const {directory, artifact} = buildContext
-
-      const buildSteps = artifact.steps
-        .filter(s => evaluateStepCondition(s, buildContext))
-        .map(
-          s =>
-            s.funcCommand != null
-              ? s
-              : typeof s.command === 'function'
-                ? {...s, command: s.command(buildContext)}
-                : s,
-        )
-        .map(
-          s =>
-            s.funcCommand != null
-              ? Object.assign(() => s.funcCommand(buildContext), {stepName: s.name})
-              : Object.assign({cwd: directory, ...s}, {stepName: s.name}),
-        )
-
-      return {buildSteps}
-    },
-  }
-}
-
-function evaluateStepCondition({condition}, context) {
-  if (!condition) return true
-  if (typeof condition === 'string') {
-    return vm.runInContext(condition, vm.createContext(context))
-  } else {
-    return condition(context)
-  }
+module.exports = {
+  setupBuildSteps,
+  defaultSteps,
 }

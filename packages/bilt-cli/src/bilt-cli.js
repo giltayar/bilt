@@ -4,13 +4,14 @@ const fs = require('fs')
 const path = require('path')
 const debug = require('debug')('bilt:bilt-cli')
 const chalk = require('chalk')
-const pluginImport = require('plugin-import')
 const cosmiConfig = require('cosmiconfig')
 const flatten = require('lodash.flatten')
 const artifactFinder = require('@bilt/artifact-finder')
 const {makeJobDispatcher, dispatchJob} = require('@bilt/in-memory-job-dispatcher')
 const {makeEvents, subscribe} = require('@bilt/in-memory-events')
-const defaultbiltConfig = require('./default-biltrc')
+const npmBuilder = require('@bilt/npm-build-job')
+const repositoryBuilder = require('@bilt/repo-build-job')
+const {makeJobRunner} = require('@bilt/jobs')
 
 async function buildHere(
   directoryToBuild,
@@ -20,7 +21,7 @@ async function buildHere(
   const buildsFailed = []
 
   debug('Loading configuration from', directoryToBuild)
-  const {config: buildConfig, filepath} = await cosmiConfig('bilt', {
+  const {config, filepath} = await cosmiConfig('bilt', {
     rcExtensions: true,
   }).search(directoryToBuild)
 
@@ -28,35 +29,33 @@ async function buildHere(
   debug('building directory', finalDirectoryToBuild)
 
   const events = await makeEvents()
+  await configureEventsToOutputEventToStdout(events)
 
-  const pimport = await createPimport(
-    buildConfig,
-    finalDirectoryToBuild,
+  const jobRunner = await makeJobRunner({
+    config,
     disabledSteps,
     enabledSteps,
-  )
-  try {
-    await configureEventsToOutputEventToStdout(events)
+    events,
+    builders: {
+      npm: npmBuilder,
+      repository: repositoryBuilder,
+    },
+  })
+  const jobDispatcher = await makeJobDispatcher({jobRunner})
 
-    const jobDispatcher = await makeJobDispatcher({pimport, disabledSteps, enabledSteps})
+  const jobsToWaitFor = await runRepoBuildJob({
+    directoryToBuild: finalDirectoryToBuild,
+    jobDispatcher,
+    upto,
+    from,
+    justBuild,
+    force,
+    isRebuild: rebuild,
+    isDryRun: dryRun,
+    events,
+  })
 
-    const jobsToWaitFor = await runRepoBuildJob({
-      directoryToBuild: finalDirectoryToBuild,
-      jobDispatcher,
-      upto,
-      from,
-      justBuild,
-      force,
-      isRebuild: rebuild,
-      isDryRun: dryRun,
-      events,
-    })
-
-    await waitForJobs(events, jobsToWaitFor)
-  } finally {
-    debug('finalizing plugins')
-    await pimport.finalize()
-  }
+  await waitForJobs(events, jobsToWaitFor)
 
   if (buildsSucceeded.length > 0) {
     console.log(chalk.green.bold('### Built artifacts: %s'), buildsSucceeded.join(','))
@@ -152,22 +151,6 @@ function closeStream(stream) {
       .on('close', resolve)
       .end()
   })
-}
-
-async function createPimport(buildConfig, directoryToBuild, disabledSteps, enabledSteps) {
-  return pluginImport(
-    [
-      defaultbiltConfig.plugins,
-      buildConfig.plugins,
-      {
-        jobDispatcher: {disabledSteps, enabledSteps},
-      },
-    ],
-    {
-      baseDirectory: directoryToBuild,
-      useThisRequire: require,
-    },
-  )
 }
 
 async function runRepoBuildJob({

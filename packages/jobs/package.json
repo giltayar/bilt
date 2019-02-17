@@ -1,6 +1,6 @@
 {
   "name": "@bilt/jobs",
-  "version": "2.0.1",
+  "version": "2.0.3",
   "description": "",
   "main": "src/jobs.js",
   "files": [

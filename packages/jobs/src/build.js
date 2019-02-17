@@ -1,4 +1,5 @@
 'use strict'
+const vm = require('vm')
 const debug = require('debug')('bilt:jobs:build')
 const {executeCommand} = require('@bilt/host-agent')
 const {publish} = require('@bilt/in-memory-events')
@@ -6,15 +7,20 @@ const {publish} = require('@bilt/in-memory-events')
 async function executeBuild({
   builder,
   job,
-  state,
+  buildConfig,
+  state: jobState,
   awakenedFrom,
   disabledSteps,
   enabledSteps,
   events,
 }) {
+  const artifactDefaults = (buildConfig && buildConfig.artifactDefaults) || {}
   const builderArtifact = {
-    ...builder.artifactDefaults,
-    steps: mergeSteps((builder.artifactDefaults || {}).steps, builder.defaultSteps),
+    ...artifactDefaults,
+    steps: mergeSteps(
+      artifactDefaults.steps,
+      builder.defaultSteps ? builder.defaultSteps({buildConfig}) : [],
+    ),
   }
   const jobArtifact = job.artifact || {}
 
@@ -31,26 +37,29 @@ async function executeBuild({
     },
   }
   debug('final steps: %o', jobWithArtifact.artifact.steps)
-  const {buildContext} = await builder.setupBuildSteps({
-    job: jobWithArtifact,
-    state,
-    awakenedFrom,
-  })
   try {
-    const {buildSteps = [], state, jobs} = builder.getBuildSteps({
-      buildContext: {...jobWithArtifact, ...buildContext},
-      events,
-    })
+    const {buildContext} = builder.setupBuildSteps
+      ? await builder.setupBuildSteps({
+          job: jobWithArtifact,
+          buildConfig,
+          state: jobState,
+          awakenedFrom,
+        })
+      : {}
+    const buildSteps = getBuildSteps({buildContext})
 
     await executeSteps(jobWithArtifact, buildSteps, events)
 
+    const {state, jobs} = builder.getJobsToDispatch
+      ? builder.getJobsToDispatch({
+          buildContext: {...jobWithArtifact, ...buildContext},
+          events,
+        })
+      : {}
+
     return {state, jobs, success: true}
   } catch (err) {
-    return {state, success: false, err}
-  } finally {
-    if (builder.cleanupBuild) {
-      await builder.cleanupBuild({buildContext})
-    }
+    return {success: false, err}
   }
 }
 
@@ -92,6 +101,38 @@ async function executeSteps(job, buildSteps, events) {
           events && (({line, outTo}) => publish(events, 'STEP_LINE_OUT', {job, line, outTo})),
       })
     }
+  }
+}
+
+function getBuildSteps({buildContext}) {
+  const {directory, artifact} = buildContext
+
+  const buildSteps = artifact.steps
+    .filter(s => evaluateStepCondition(s, buildContext))
+    .map(
+      s =>
+        s.funcCommand != null
+          ? s
+          : typeof s.command === 'function'
+            ? {...s, command: s.command(buildContext)}
+            : s,
+    )
+    .map(
+      s =>
+        s.funcCommand != null
+          ? Object.assign(() => s.funcCommand(buildContext), {stepName: s.name})
+          : Object.assign({cwd: directory, ...s}, {stepName: s.name}),
+    )
+
+  return buildSteps
+}
+
+function evaluateStepCondition({condition}, context) {
+  if (!condition) return true
+  if (typeof condition === 'string') {
+    return vm.runInContext(condition, vm.createContext(context))
+  } else {
+    return condition(context)
   }
 }
 

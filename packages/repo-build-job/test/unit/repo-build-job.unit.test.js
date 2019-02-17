@@ -6,7 +6,7 @@ const {makeEvents} = require('@bilt/in-memory-events')
 const repoBuildJobModule = require('../..')
 
 describe('repo-build-job', function() {
-  const repoBuildJobRunner = repoBuildJobModule({plugins: [undefined, {publish: () => true}]})
+  const repoBuildJobRunner = repoBuildJobModule
   const names = artifacts => artifacts.map(a => a.name)
   const jobNames = jobs => jobs.map(j => j.artifact.name)
 
@@ -242,7 +242,7 @@ describe('repo-build-job', function() {
   })
 
   function runRepoJob(artifacts, repoJob, repoBuildJobRunner) {
-    let jobResult = repoBuildJobRunner.getBuildSteps({
+    let jobResult = repoBuildJobRunner.getJobsToDispatch({
       buildContext: {
         initialAllArtifacts: artifacts,
         ...repoJob,
@@ -257,7 +257,7 @@ describe('repo-build-job', function() {
       expect(jobResult.jobs.every(j => j.awaken))
       const doneJob = jobsToDo.pop()
 
-      jobResult = repoBuildJobRunner.getBuildSteps({
+      jobResult = repoBuildJobRunner.getJobsToDispatch({
         buildContext: {
           state: jobResult.state,
           initialAllArtifacts: undefined,

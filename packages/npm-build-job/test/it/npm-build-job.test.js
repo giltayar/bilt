@@ -16,9 +16,7 @@ describe('npm-build-job', function() {
     const {dir, packageJson} = await setupPackage('this-package-not-in-npm-reg-a', {
       shouldPublish: true,
     })
-    const builder = await npmBuildJobService({
-      config: {artifactDefaults: {publish: true}},
-    })
+    const buildConfig = {artifactDefaults: {publish: true}}
 
     const job = {
       dependencies: [],
@@ -28,7 +26,8 @@ describe('npm-build-job', function() {
       filesChangedSinceLastBuild: [],
     }
 
-    await executeBuild({builder, job})
+    const {err} = await executeBuild({builder: npmBuildJobService, buildConfig, job})
+    expect(err).to.be.undefined
 
     expect(await exists(path.join(dir, 'tested'))).to.be.true
     expect(await exists(path.join(dir, 'built'))).to.be.true
@@ -41,12 +40,8 @@ describe('npm-build-job', function() {
       shouldPublish: false,
     })
 
-    const builder = await npmBuildJobService({
-      config: {artifactDefaults: {publish: true}},
-    })
-
     await executeBuild({
-      builder,
+      builder: npmBuildJobService,
       job: {
         dependencies: [],
         artifacts: [],
@@ -66,9 +61,7 @@ describe('npm-build-job', function() {
       shouldPublish: false,
     })
 
-    const builder = await npmBuildJobService({
-      config: {artifactDefaults: {publish: true}},
-    })
+    const buildConfig = {artifactDefaults: {publish: true}}
 
     const artifact = {
       steps: [
@@ -88,7 +81,8 @@ describe('npm-build-job', function() {
     }
 
     await executeBuild({
-      builder,
+      buildConfig,
+      builder: npmBuildJobService,
       job: {
         repositoryDirectory: dir,
         dependencies: [],

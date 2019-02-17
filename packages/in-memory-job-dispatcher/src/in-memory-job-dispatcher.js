@@ -8,22 +8,22 @@ class JobDispatcher {} // eslint-disable-line
 
 /**
  *
- * @param {{pimport: (plugin: string) => Promise<any>, disabledSteps: string[], enabledSteps: string[]}} options
+ * @param {{jobRunner: import('@bilt/jobs').JobRunner}} options
  * @returns {Promise<JobDispatcher>}
  */
-async function makeJobDispatcher({pimport, disabledSteps, enabledSteps}) {
-  return {pimport, disabledSteps, enabledSteps, kvStore: new Map(), jobQueue: []}
+async function makeJobDispatcher({jobRunner}) {
+  return {jobRunner, jobQueue: []}
 }
 
 /**
  * @typedef {{job: object, result: {success: boolean}}}  AwakenedFrom
  * @param {JobDispatcher} jobDispatcher
  * @param {object} job
- * @param {{awakenedFrom: AwakenedFrom, events: import('@bilt/in-memory-events').InMemoryEvents}}
+ * @param {{awakenedFrom: AwakenedFrom}}
  * @returns {Promise<void>}
  */
-async function dispatchJob(jobDispatcher, job, {awakenedFrom, events} = {}) {
-  const {pimport, disabledSteps, enabledSteps, kvStore, jobQueue} = jobDispatcher
+async function dispatchJob(jobDispatcher, job, {awakenedFrom} = {}) {
+  const {jobQueue, jobRunner} = jobDispatcher
   const preparedJob = prepareJobForRunning(job)
 
   jobQueue.push(preparedJob)
@@ -38,14 +38,9 @@ async function dispatchJob(jobDispatcher, job, {awakenedFrom, events} = {}) {
     if (jobQueue.length === 0) return
     const job = jobQueue.shift()
 
-    runJob(job, {
+    runJob(jobRunner, job, {
       awakenedFrom,
-      pimport,
-      events,
-      kvStore,
       dispatchJob: (...args) => dispatchJob(jobDispatcher, ...args),
-      disabledSteps,
-      enabledSteps,
     }).then(nextJob, err => nextJob(null, err))
   }
 

@@ -3,13 +3,30 @@ const debug = require('debug')('bilt:jobs')
 const {publish} = require('@bilt/in-memory-events')
 const {executeBuild} = require('./build')
 
-async function runJob(
-  job,
-  {awakenedFrom, pimport, events, kvStore, dispatchJob, disabledSteps, enabledSteps},
-) {
-  const result = await executeJob(job, {
+/**
+ * @type JobRunner
+ */
+class JobRunner {} // eslint-disable-line
+
+/**
+ *
+ * @param {{config: object, disabledSteps: string[], enabledSteps: [], builders: {[name: string]: {setupBuildSteps: function, getBuildSteps: function}}, events: import('@bilt/in-memory-events').InMemoryEvents}} options
+ *
+ * @returns {Promise<JobRunner>}
+ */
+async function makeJobRunner({config, disabledSteps, enabledSteps, builders, events}) {
+  return {config, disabledSteps, enabledSteps, builders, kvStore: new Map(), events}
+}
+
+async function runJob(jobRunner, job, {awakenedFrom, dispatchJob}) {
+  const {config, builders, disabledSteps, enabledSteps, events, kvStore} = jobRunner
+
+  const builder = builders[job.kind]
+  const buildConfig = config && config[job.kind]
+
+  const result = await executeJob(job, builder, {
+    buildConfig,
     awakenedFrom,
-    pimport,
     events,
     kvStore,
     disabledSteps,
@@ -21,10 +38,9 @@ async function runJob(
 
 async function executeJob(
   job,
-  {awakenedFrom, pimport, events, kvStore, disabledSteps, enabledSteps},
+  builder,
+  {buildConfig, awakenedFrom, events, kvStore, disabledSteps, enabledSteps},
 ) {
-  const builder = await pimport(`builder:${job.kind}`)
-
   const jobWithId = prepareJobForRunning(job)
 
   debug('running job %o awakened from job %s', jobWithId, awakenedFrom && awakenedFrom.job.id)
@@ -37,6 +53,7 @@ async function executeJob(
   const {state: newState, jobs = [], success, err} = await executeBuild({
     builder,
     job: jobWithId,
+    buildConfig,
     state,
     awakenedFrom,
     disabledSteps,
@@ -106,21 +123,10 @@ async function awakenParentJobIfNeeded(job, subJobResult, {kvStore, dispatchJob,
   await dispatchJob(parentJob, {awakenedFrom: {job, result: subJobResult}, events})
 }
 
-async function waitForJob(jobToWaitFor, {events}) {
-  await new Promise((resolve, reject) => {
-    events
-      .subscribe('END_JOB', ({job}) => {
-        console.log('found end of', job)
-        if (job.id === jobToWaitFor.id) resolve()
-      })
-      .catch(reject)
-  })
-}
-
 function prepareJobForRunning(job) {
   const jobId = job.id || uuid()
 
-  return job.id ? job : Object.assign({}, {id: jobId}, job)
+  return job.id ? job : {id: jobId, ...job}
 }
 
 async function deleteJobState(job, {kvStore}) {
@@ -128,15 +134,9 @@ async function deleteJobState(job, {kvStore}) {
   await kvStore.delete(`awaken:${job.id}`)
 }
 
-async function isSubJob(job, {kvStore}) {
-  return !!(await kvStore.get(`awaken:${job.id}`))
-}
-
 module.exports = {
+  makeJobRunner,
   runJob,
-  waitForJob,
   prepareJobForRunning,
-  deleteJobState,
-  isSubJob,
   executeBuild,
 }
