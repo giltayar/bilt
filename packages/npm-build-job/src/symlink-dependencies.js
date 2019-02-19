@@ -3,7 +3,7 @@ const path = require('path')
 const debug = require('debug')('bilt:npm-build-job:symlink-dependencies')
 const {createSymlink, executeCommand} = require('@bilt/host-agent')
 
-async function symlinkDependencies(artifact, directoryToBuild, artifactDirectory, artifacts) {
+async function symlinkDependencies(artifact, repositoryDirectory, artifactDirectory, artifacts) {
   const artifactToPathMap = new Map(artifacts.map(artifact => [artifact.name, artifact.path]))
 
   await Promise.all(
@@ -13,7 +13,7 @@ async function symlinkDependencies(artifact, directoryToBuild, artifactDirectory
       debug('adding symlinks for dependency %s to %s', dependency, dependentPath)
       await createSymlink(
         path.join(artifactDirectory, 'node_modules', dependency),
-        path.join(directoryToBuild, dependentPath),
+        path.join(repositoryDirectory, dependentPath),
       )
     }),
   )

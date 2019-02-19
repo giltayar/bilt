@@ -14,12 +14,35 @@ class JobRunner {} // eslint-disable-line
  *
  * @returns {Promise<JobRunner>}
  */
-async function makeJobRunner({config, disabledSteps, enabledSteps, builders, events}) {
-  return {config, disabledSteps, enabledSteps, builders, kvStore: new Map(), events}
+async function makeJobRunner({
+  config,
+  disabledSteps,
+  enabledSteps,
+  builders,
+  events,
+  repositoryDirectory,
+}) {
+  return {
+    config,
+    disabledSteps,
+    enabledSteps,
+    builders,
+    kvStore: new Map(),
+    events,
+    repositoryDirectory,
+  }
 }
 
 async function runJob(jobRunner, job, {awakenedFrom, dispatchJob}) {
-  const {config, builders, disabledSteps, enabledSteps, events, kvStore} = jobRunner
+  const {
+    config,
+    builders,
+    disabledSteps,
+    enabledSteps,
+    events,
+    kvStore,
+    repositoryDirectory,
+  } = jobRunner
 
   const builder = builders[job.kind]
   const buildConfig = config && config[job.kind]
@@ -31,6 +54,7 @@ async function runJob(jobRunner, job, {awakenedFrom, dispatchJob}) {
     kvStore,
     disabledSteps,
     enabledSteps,
+    repositoryDirectory,
   })
 
   return await dealWithJobResult(result, {kvStore, dispatchJob, events})
@@ -39,7 +63,7 @@ async function runJob(jobRunner, job, {awakenedFrom, dispatchJob}) {
 async function executeJob(
   job,
   builder,
-  {buildConfig, awakenedFrom, events, kvStore, disabledSteps, enabledSteps},
+  {buildConfig, awakenedFrom, events, kvStore, disabledSteps, enabledSteps, repositoryDirectory},
 ) {
   const jobWithId = prepareJobForRunning(job)
 
@@ -59,6 +83,7 @@ async function executeJob(
     disabledSteps,
     enabledSteps,
     events,
+    repositoryDirectory,
   })
   debug('ran job %s', jobWithId.id)
 

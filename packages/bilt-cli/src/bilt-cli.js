@@ -14,19 +14,19 @@ const repositoryBuilder = require('@bilt/repo-build-job')
 const {makeJobRunner} = require('@bilt/jobs')
 
 async function buildHere(
-  directoryToBuild,
+  repositoryDirectory,
   {upto, from, justBuild, force, disabledSteps, enabledSteps, rebuild, dryRun, allOutput} = {},
 ) {
   const buildsSucceeded = []
   const buildsFailed = []
 
-  debug('Loading configuration from', directoryToBuild)
+  debug('Loading configuration from', repositoryDirectory)
   const {config, filepath} = await cosmiConfig('bilt', {
     rcExtensions: true,
-  }).search(directoryToBuild)
+  }).search(repositoryDirectory)
 
-  const finalDirectoryToBuild = path.dirname(filepath)
-  debug('building directory', finalDirectoryToBuild)
+  const finalRepositoryDirectory = path.dirname(filepath)
+  debug('building directory', finalRepositoryDirectory)
 
   const events = await makeEvents()
   await configureEventsToOutputEventToStdout(events)
@@ -40,11 +40,12 @@ async function buildHere(
       npm: npmBuilder,
       repository: repositoryBuilder,
     },
+    repositoryDirectory: finalRepositoryDirectory,
   })
   const jobDispatcher = await makeJobDispatcher({jobRunner})
 
   const jobsToWaitFor = await runRepoBuildJob({
-    directoryToBuild: finalDirectoryToBuild,
+    repositoryDirectory: finalRepositoryDirectory,
     jobDispatcher,
     upto,
     from,
@@ -83,7 +84,7 @@ async function buildHere(
     await subscribe(events, 'START_JOB', async ({job}) => {
       if (job.kind === 'repository') return
 
-      const artifactBiltDir = path.resolve(finalDirectoryToBuild, job.artifact.path, '.bilt')
+      const artifactBiltDir = path.resolve(finalRepositoryDirectory, job.artifact.path, '.bilt')
       await p(fs.mkdir)(artifactBiltDir, {recursive: true}).catch(
         err => (err.code === 'EEXIST' ? undefined : Promise.reject(err)),
       )
@@ -125,7 +126,7 @@ async function buildHere(
       if (!success) {
         console.log(chalk.red.dim('###### Build %s failed with error. Output:'), job.artifact.path)
 
-        const artifactBiltDir = path.resolve(finalDirectoryToBuild, job.artifact.path, '.bilt')
+        const artifactBiltDir = path.resolve(finalRepositoryDirectory, job.artifact.path, '.bilt')
         await writeToStream(
           fs.createReadStream(path.resolve(artifactBiltDir, 'build.log')),
           process.stderr,
@@ -154,7 +155,7 @@ function closeStream(stream) {
 }
 
 async function runRepoBuildJob({
-  directoryToBuild,
+  repositoryDirectory,
   jobDispatcher,
   upto,
   from,
@@ -165,7 +166,7 @@ async function runRepoBuildJob({
   events,
 }) {
   debug('fetching artifacts')
-  const artifacts = await (await artifactFinder()).findArtifacts(directoryToBuild)
+  const artifacts = await (await artifactFinder()).findArtifacts(repositoryDirectory)
 
   if (!upto && !from && !justBuild) {
     justBuild = artifacts.map(a => a.name)
@@ -176,11 +177,11 @@ async function runRepoBuildJob({
       jobDispatcher,
       {
         kind: 'repository',
-        repositoryDirectory: directoryToBuild,
+        repositoryDirectory,
         artifacts,
-        uptoArtifacts: normalizeArtifacts(upto, artifacts, directoryToBuild),
-        fromArtifacts: normalizeArtifacts(from, artifacts, directoryToBuild),
-        justBuildArtifacts: normalizeArtifacts(justBuild, artifacts, directoryToBuild),
+        uptoArtifacts: normalizeArtifacts(upto, artifacts, repositoryDirectory),
+        fromArtifacts: normalizeArtifacts(from, artifacts, repositoryDirectory),
+        justBuildArtifacts: normalizeArtifacts(justBuild, artifacts, repositoryDirectory),
         linkDependencies: true,
         force,
         isRebuild,
@@ -191,7 +192,7 @@ async function runRepoBuildJob({
   ]
 }
 
-function normalizeArtifacts(artifactsOrDirsToBuild, artifacts, directoryToBuild) {
+function normalizeArtifacts(artifactsOrDirsToBuild, artifacts, repositoryDirectory) {
   if (!artifactsOrDirsToBuild) return artifactsOrDirsToBuild
 
   return flatten(
@@ -200,7 +201,7 @@ function normalizeArtifacts(artifactsOrDirsToBuild, artifacts, directoryToBuild)
         const pathOfArtifact = path.resolve(process.cwd(), artifactNameOrDirToBuild)
         debug('looking for artifacts under %s', pathOfArtifact)
         const foundArtifacts = artifacts.filter(artifact =>
-          path.resolve(directoryToBuild, artifact.path).startsWith(pathOfArtifact),
+          path.resolve(repositoryDirectory, artifact.path).startsWith(pathOfArtifact),
         )
         if (foundArtifacts.length === 0)
           throw new Error(`could not find artifact "${artifactNameOrDirToBuild}"`)

@@ -26,7 +26,12 @@ describe('npm-build-job', function() {
       filesChangedSinceLastBuild: [],
     }
 
-    const {err} = await executeBuild({builder: npmBuildJobService, buildConfig, job})
+    const {err} = await executeBuild({
+      builder: npmBuildJobService,
+      buildConfig,
+      job,
+      repositoryDirectory: dir,
+    })
     expect(err).to.be.undefined
 
     expect(await exists(path.join(dir, 'tested'))).to.be.true
@@ -49,6 +54,7 @@ describe('npm-build-job', function() {
         artifact: {path: ''},
         filesChangedSinceLastBuild: [],
       },
+      repositoryDirectory: dir,
     })
 
     expect(await exists(path.join(dir, 'tested'))).to.be.true
@@ -90,6 +96,7 @@ describe('npm-build-job', function() {
         artifact,
         filesChangedSinceLastBuild: undefined,
       },
+      repositoryDirectory: dir,
     })
 
     expect(await exists(path.join(dir, 'installed'))).to.be.true

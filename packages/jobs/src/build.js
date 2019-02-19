@@ -1,4 +1,5 @@
 'use strict'
+const path = require('path')
 const vm = require('vm')
 const debug = require('debug')('bilt:jobs:build')
 const {executeCommand} = require('@bilt/host-agent')
@@ -13,6 +14,7 @@ async function executeBuild({
   disabledSteps,
   enabledSteps,
   events,
+  repositoryDirectory,
 }) {
   const artifactDefaults = (buildConfig && buildConfig.artifactDefaults) || {}
   const builderArtifact = {
@@ -46,7 +48,11 @@ async function executeBuild({
           awakenedFrom,
         })
       : {}
-    const buildSteps = getBuildSteps({buildContext})
+    const buildSteps = getBuildSteps({
+      buildContext,
+      artifact: jobWithArtifact.artifact,
+      repositoryDirectory,
+    })
 
     await executeSteps(jobWithArtifact, buildSteps, events)
 
@@ -104,9 +110,7 @@ async function executeSteps(job, buildSteps, events) {
   }
 }
 
-function getBuildSteps({buildContext}) {
-  const {directory, artifact} = buildContext
-
+function getBuildSteps({buildContext, artifact, repositoryDirectory}) {
   const buildSteps = artifact.steps
     .filter(s => evaluateStepCondition(s, buildContext))
     .map(
@@ -121,7 +125,10 @@ function getBuildSteps({buildContext}) {
       s =>
         s.funcCommand != null
           ? Object.assign(() => s.funcCommand(buildContext), {stepName: s.name})
-          : Object.assign({cwd: directory, ...s}, {stepName: s.name}),
+          : Object.assign(
+              {cwd: path.join(repositoryDirectory, artifact.path), ...s},
+              {stepName: s.name},
+            ),
     )
 
   return buildSteps
