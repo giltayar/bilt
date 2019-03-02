@@ -70,7 +70,7 @@ const buildSteps = () => [
       packageJsonChanged || hasChangedDependencies,
   },
   {
-    id: 'install-update-deps',
+    id: 'publish-update-deps',
     name: 'Update dependencies',
     command: ({artifact: {dependencies}}) => ['npm', 'update', ...(dependencies || [])],
     condition: ({packageJsonChanged, hasChangedDependencies}) =>
