@@ -98,6 +98,9 @@ async function buildHere(
             console.log(
               chalk.green('### Because these files changed:\n%s\n'),
               Object.keys(filesChangedSinceLastBuild)
+                .filter(
+                  artifactPath => Object.keys(filesChangedSinceLastBuild[artifactPath]).length > 0,
+                )
                 .map(
                   artifactPath =>
                     `${artifactPath}: ${Object.keys(filesChangedSinceLastBuild[artifactPath]).join(
