@@ -1,6 +1,6 @@
 {
   "name": "@bilt/npm-build-job",
-  "version": "2.0.1",
+  "version": "2.0.3",
   "description": "Job Runner for NPM Jobs",
   "main": "src/npm-build-job.js",
   "engines": {
@@ -25,12 +25,12 @@
     "type": "git"
   },
   "dependencies": {
-    "@bilt/host-agent": "^3.0.2",
-    "@bilt/npm-next-version": "^1.0.1",
+    "@bilt/host-agent": "^3.0.4",
+    "@bilt/npm-next-version": "^1.0.3",
     "debug": "^3.1.0"
   },
   "devDependencies": {
-    "@bilt/jobs": "^2.0.1",
+    "@bilt/jobs": "^2.0.4",
     "chai": "^4.1.2",
     "docker-compose-mocha": "^1.2.0",
     "docker-compose-tool": "0.0.1",

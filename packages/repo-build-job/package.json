@@ -1,6 +1,6 @@
 {
   "name": "@bilt/repo-build-job",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "",
   "main": "src/repo-build-job.js",
   "engines": {
@@ -25,9 +25,9 @@
     "type": "git"
   },
   "dependencies": {
-    "@bilt/artifact-dependency-graph": "^3.0.1",
-    "@bilt/in-memory-events": "^2.0.1",
-    "@bilt/last-build-info": "^3.0.2",
+    "@bilt/artifact-dependency-graph": "^3.0.3",
+    "@bilt/in-memory-events": "^2.0.2",
+    "@bilt/last-build-info": "^3.0.3",
     "debug": "^3.1.0",
     "lodash.flatten": "^4.4.0"
   },

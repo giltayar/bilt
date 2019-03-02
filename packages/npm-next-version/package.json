@@ -1,6 +1,6 @@
 {
   "name": "@bilt/npm-next-version",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "",
   "main": "src/npm-next-version.js",
   "engines": {
@@ -41,12 +41,12 @@
   },
   "devDependencies": {
     "chai": "^4.1.2",
-    "eslint": "^5.0.1",
+    "eslint": "^5.15.0",
     "eslint-plugin-mocha-no-only": "^1.0.0",
     "eslint-plugin-node": "^8.0.1",
     "eslint-plugin-prettier": "^3.0.1",
     "mocha": "^5.2.0",
     "mocha-parallel-tests": "^2.0.6-alpha.3",
-    "prettier": "^1.5.2"
+    "prettier": "^1.16.4"
   }
 }

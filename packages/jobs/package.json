@@ -1,6 +1,6 @@
 {
   "name": "@bilt/jobs",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "",
   "main": "src/jobs.js",
   "files": [
@@ -19,8 +19,8 @@
     "type": "git"
   },
   "dependencies": {
-    "@bilt/host-agent": "^3.0.2",
-    "@bilt/in-memory-events": "^2.0.1",
+    "@bilt/host-agent": "^3.0.4",
+    "@bilt/in-memory-events": "^2.0.2",
     "debug": "^2.6.8",
     "uuid": "^3.3.2"
   },
