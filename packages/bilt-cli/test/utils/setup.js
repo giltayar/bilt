@@ -18,7 +18,7 @@ async function setupBuildDir(
   // This folder needs to be mounted on docker, so we can't use `os.tmpdir`.
   const tmpDir = await p(fs.mkdtemp)(path.join(__dirname, '/test-resources/'))
 
-  const gitEnvOverrides = await setupGit(keysDir)
+  const gitEnvOverrides = await setupGit(keysDir, 'f@f.com', 'f')
   process.env = {...process.env, ...gitEnvOverrides}
 
   await gitInit(tmpDir)

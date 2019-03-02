@@ -58,6 +58,10 @@ async function createPackage(packageDir) {
     path.join(__dirname, packageDir, 'package.json'),
     path.join(tmpDir, 'package.json'),
   )
+  await p(fs.copyFile)(
+    path.join(__dirname, packageDir, 'package-lock.json'),
+    path.join(tmpDir, 'package-lock.json'),
+  )
 
   return tmpDir
 }

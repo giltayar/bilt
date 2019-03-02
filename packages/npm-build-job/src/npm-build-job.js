@@ -29,7 +29,7 @@ async function setupBuildSteps({job}) {
 
   let nextVersion
 
-  if (steps.find(s => s.id === 'increment-version') && !packageJson.private) {
+  if (steps.find(s => s.id === 'publish-bump-version') && !packageJson.private) {
     nextVersion = await npmNextVersion(packageJson)
   }
 
@@ -43,35 +43,41 @@ async function setupBuildSteps({job}) {
       artifact,
       packageJsonChanged,
       hasChangedDependencies,
-      steps,
     },
   }
 }
 
-const defaultSteps = () => [
+const buildSteps = () => [
   {
-    id: 'reset-links',
+    id: 'install-links-reset',
     name: 'Unlink local packages',
     funcCommand: async ({artifact, directory}) => await unsymlinkDependencies(artifact, directory),
     condition: ({packageJsonChanged, hasChangedDependencies}) =>
       packageJsonChanged || hasChangedDependencies,
   },
   {
-    id: 'install',
+    id: 'install-install',
     name: 'Install',
     command: ['npm', 'install'],
-    condition: ({packageJsonChanged, hasChangedDependencies, steps}) =>
-      packageJsonChanged || (hasChangedDependencies && !steps.find(step => step.id === 'link')),
+    condition: ({packageJsonChanged, hasChangedDependencies}) =>
+      packageJsonChanged || hasChangedDependencies,
   },
   {
-    id: 'update',
+    id: 'install-ci',
+    name: 'Install (CI)',
+    command: ['npm', 'ci'],
+    condition: ({packageJsonChanged, hasChangedDependencies}) =>
+      packageJsonChanged || hasChangedDependencies,
+  },
+  {
+    id: 'install-update-deps',
     name: 'Update dependencies',
     command: ({artifact: {dependencies}}) => ['npm', 'update', ...(dependencies || [])],
-    condition: ({packageJsonChanged, hasChangedDependencies, steps}) =>
-      packageJsonChanged || (hasChangedDependencies && !steps.find(step => step.id === 'link')),
+    condition: ({packageJsonChanged, hasChangedDependencies}) =>
+      packageJsonChanged || hasChangedDependencies,
   },
   {
-    id: 'link',
+    id: 'install-links-link',
     name: 'Link local packages',
     funcCommand: async ({artifact, repositoryDirectory, directory, artifacts}) =>
       await symlinkDependencies(artifact, repositoryDirectory, directory, artifacts),
@@ -79,7 +85,7 @@ const defaultSteps = () => [
       packageJsonChanged || hasChangedDependencies,
   },
   {
-    id: 'increment-version',
+    id: 'publish-bump-version',
     name: 'Increment Package Version',
     command: ({nextVersion}) => [
       'npm',
@@ -112,7 +118,14 @@ const defaultSteps = () => [
   },
 ]
 
+const enableSteps = ({buildConfig: {isFormalBuild = false} = {}}) =>
+  isFormalBuild ? ['install-ci', 'build', 'test', 'publish'] : ['install', 'build', 'test']
+
+const disableSteps = ({buildConfig: {isFormalBuild}}) => (isFormalBuild ? [] : ['install-ci'])
+
 module.exports = {
   setupBuildSteps,
-  defaultSteps,
+  buildSteps,
+  enableSteps,
+  disableSteps,
 }

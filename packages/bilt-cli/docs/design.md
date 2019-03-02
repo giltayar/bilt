@@ -118,7 +118,7 @@ module.exports = {
             }
           ]
         },
-        disabledSteps: ['publish', 'increment-version'],
+        disableSteps: ['publish', 'increment-version'],
       }
     },
   },

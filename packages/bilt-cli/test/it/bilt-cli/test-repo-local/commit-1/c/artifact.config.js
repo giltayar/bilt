@@ -1,7 +1,8 @@
 module.exports = {
-  publish: false,
+  disableSteps: ['publish'],
+  enableSteps: ['voodoo'],
   steps: [
-    {id: 'install'},
+    {id: 'install-install'},
     {
       id: 'voodoo',
       command: ['npm', 'run', 'voodoo'],

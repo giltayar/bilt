@@ -1,7 +1,7 @@
 const uuid = require('uuid/v4')
 const debug = require('debug')('bilt:jobs')
 const {publish} = require('@bilt/in-memory-events')
-const {executeBuild} = require('./build')
+const executeBuild = require('./execute-build')
 
 /**
  * @type JobRunner
@@ -10,22 +10,22 @@ class JobRunner {} // eslint-disable-line
 
 /**
  *
- * @param {{config: object, disabledSteps: string[], enabledSteps: [], builders: {[name: string]: {setupBuildSteps: function, getBuildSteps: function}}, events: import('@bilt/in-memory-events').InMemoryEvents}} options
+ * @param {{buildConfig: object, disableSteps: string[], enableSteps: [], builders: {[name: string]: {setupBuildSteps: function, getBuildSteps: function}}, events: import('@bilt/in-memory-events').InMemoryEvents}} options
  *
  * @returns {Promise<JobRunner>}
  */
 async function makeJobRunner({
-  config,
-  disabledSteps,
-  enabledSteps,
+  buildConfig,
+  disableSteps,
+  enableSteps,
   builders,
   events,
   repositoryDirectory,
 }) {
   return {
-    config,
-    disabledSteps,
-    enabledSteps,
+    buildConfig,
+    disableSteps,
+    enableSteps,
     builders,
     kvStore: new Map(),
     events,
@@ -35,25 +35,24 @@ async function makeJobRunner({
 
 async function runJob(jobRunner, job, {awakenedFrom, dispatchJob}) {
   const {
-    config,
+    buildConfig,
     builders,
-    disabledSteps,
-    enabledSteps,
+    disableSteps,
+    enableSteps,
     events,
     kvStore,
     repositoryDirectory,
   } = jobRunner
 
   const builder = builders[job.kind]
-  const buildConfig = config && config[job.kind]
 
   const result = await executeJob(job, builder, {
     buildConfig,
     awakenedFrom,
     events,
     kvStore,
-    disabledSteps,
-    enabledSteps,
+    disableSteps,
+    enableSteps,
     repositoryDirectory,
   })
 
@@ -63,7 +62,7 @@ async function runJob(jobRunner, job, {awakenedFrom, dispatchJob}) {
 async function executeJob(
   job,
   builder,
-  {buildConfig, awakenedFrom, events, kvStore, disabledSteps, enabledSteps, repositoryDirectory},
+  {buildConfig, awakenedFrom, events, kvStore, disableSteps, enableSteps, repositoryDirectory},
 ) {
   const jobWithId = prepareJobForRunning(job)
 
@@ -80,8 +79,8 @@ async function executeJob(
     buildConfig,
     state,
     awakenedFrom,
-    disabledSteps,
-    enabledSteps,
+    disableSteps,
+    enableSteps,
     events,
     repositoryDirectory,
   })

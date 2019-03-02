@@ -5,18 +5,17 @@ const path = require('path')
 const {describe, it, before, after} = require('mocha')
 const {expect} = require('chai')
 const {executeBuild} = require('@bilt/jobs')
+const {npmNextVersion} = require('@bilt/npm-next-version')
 const setup = require('./setup')
 const npmBuildJobService = require('../..')
-const {npmNextVersion} = require('@bilt/npm-next-version')
 
 describe('npm-build-job', function() {
   const {setupPackage} = setup(before, after)
 
-  it('should build, test, and publish a package', async () => {
+  it('should build, test, and publish a package in formal build mode', async () => {
     const {dir, packageJson} = await setupPackage('this-package-not-in-npm-reg-a', {
       shouldPublish: true,
     })
-    const buildConfig = {artifactDefaults: {publish: true}}
 
     const job = {
       dependencies: [],
@@ -28,7 +27,7 @@ describe('npm-build-job', function() {
 
     const {err} = await executeBuild({
       builder: npmBuildJobService,
-      buildConfig,
+      buildConfig: {isFormalBuild: true},
       job,
       repositoryDirectory: dir,
     })
@@ -44,9 +43,9 @@ describe('npm-build-job', function() {
     const {dir, packageJson} = await setupPackage('this-package-not-in-npm-reg-b', {
       shouldPublish: false,
     })
-
     await executeBuild({
       builder: npmBuildJobService,
+      buildConfig: {isFormalBuild: true},
       job: {
         dependencies: [],
         artifacts: [],
@@ -67,11 +66,10 @@ describe('npm-build-job', function() {
       shouldPublish: false,
     })
 
-    const buildConfig = {artifactDefaults: {publish: true}}
-
     const artifact = {
       steps: [
-        {id: 'install'},
+        {id: 'install-ci'},
+        {id: 'publish-bump-version'},
         {id: 'build'},
         {id: 'groan', command: ['npm', 'run', 'groan'], condition: 'artifact.doGroan'},
         {
@@ -79,15 +77,13 @@ describe('npm-build-job', function() {
           command: ['npm', 'run', 'sloan-does-not-exist'],
           condition: 'packageJson.scripts.sloan',
         },
-        {id: 'publish'},
       ],
-      publish: false,
       doGroan: true,
       path: '',
     }
 
     await executeBuild({
-      buildConfig,
+      buildConfig: {isFormalBuild: true},
       builder: npmBuildJobService,
       job: {
         repositoryDirectory: dir,
@@ -96,6 +92,7 @@ describe('npm-build-job', function() {
         artifact,
         filesChangedSinceLastBuild: undefined,
       },
+      enableSteps: ['groan'],
       repositoryDirectory: dir,
     })
 

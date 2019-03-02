@@ -15,6 +15,12 @@ const {
 } = require('../utils/setup')
 const biltHere = require('../../src/bilt-cli')
 
+const FIRST_FORMAL_BUILD_STEPS = {
+  isFormalBuild: true,
+  enableSteps: ['install-install'],
+  disableSteps: ['install-ci'],
+}
+
 const testRepoSrc = path.resolve(__dirname, 'bilt-cli/test-repo-local')
 
 describe('local directory use-case it', () => {
@@ -55,7 +61,8 @@ describe('local directory use-case it', () => {
   })
 
   it('should build the directory with all its packages, including publishing, reset, and then rebuild nothing', async () => {
-    const retCode = await biltHere(buildDir, {disabledSteps: ['link']})
+    const retCode = await biltHere(buildDir, FIRST_FORMAL_BUILD_STEPS)
+
     expect(retCode).to.equal(0)
 
     expect(await fileContents(buildDir, 'a/postinstalled.txt')).to.equal('')
@@ -72,14 +79,14 @@ describe('local directory use-case it', () => {
     // This simulates rerunning the same build in the CI
     await gitReset(buildDir)
 
-    await biltHere(buildDir, {disabledSteps: ['link']})
+    await biltHere(buildDir, {disableSteps: ['link']})
 
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.0', npmRegistryAddress)
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.0', npmRegistryAddress)
   })
 
   it('should support link', async () => {
-    await biltHere(buildDir)
+    await biltHere(buildDir, FIRST_FORMAL_BUILD_STEPS)
 
     await changeScript(
       buildDir,
@@ -89,10 +96,7 @@ describe('local directory use-case it', () => {
     )
     await writeFile('something new', buildDir, 'b/b.txt')
 
-    await biltHere(buildDir, {
-      disabledSteps: ['increment-version', 'publish'],
-      enabledSteps: ['link', 'reset-links'],
-    })
+    await biltHere(buildDir, {isFormalBuild: false})
 
     expect(await fileContents(buildDir, 'a/b.txt')).to.equal('something new')
   })

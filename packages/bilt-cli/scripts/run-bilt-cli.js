@@ -2,6 +2,7 @@
 'use strict'
 const yargs = require('yargs')
 const biltHere = require('../src/bilt-cli')
+const isCi = require('is-ci')
 
 process.on('unhandledRejection', err => {
   console.log(err.stack || err)
@@ -37,9 +38,10 @@ const argv = yargs
     boolean: true,
     default: false,
   })
-  .options('checkout', {
+  .options('ci', {
     alias: 'c',
-    description: 'checkout git repo',
+    default: isCi,
+    description: 'force formal build',
   })
   .options('disable', {
     alias: 'd',
@@ -68,9 +70,10 @@ async function main() {
     force: argv.force,
     repository: argv.checkout,
     rebuild: argv.rebuild,
-    enabledSteps: argv.enable,
+    enableSteps: argv.enable,
     dryRun: argv.dryRun,
-    disabledSteps: (argv.disable || []).filter(step => !(argv.enable || []).includes(step)),
+    isFormalBuild: argv.ci,
+    disableSteps: (argv.disable || []).filter(step => !(argv.enable || []).includes(step)),
   })
 
   process.exit(retCode)

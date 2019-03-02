@@ -11,31 +11,36 @@ async function executeBuild({
   buildConfig,
   state: jobState,
   awakenedFrom,
-  disabledSteps,
-  enabledSteps,
+  disableSteps,
+  enableSteps,
   events,
   repositoryDirectory,
 }) {
-  const artifactDefaults = (buildConfig && buildConfig.artifactDefaults) || {}
-  const builderArtifact = {
-    ...artifactDefaults,
-    steps: mergeSteps(
-      artifactDefaults.steps,
-      builder.defaultSteps ? builder.defaultSteps({buildConfig}) : [],
-    ),
-  }
+  const arrizeFunction = f => f || (() => [])
+
   const jobArtifact = job.artifact || {}
+
+  const availableSteps = mergeSteps(
+    arrizeFunction(builder.buildSteps)({buildConfig}),
+    jobArtifact.steps,
+  )
+  const steps = calculateBuildSteps(
+    availableSteps,
+    arrizeFunction(builder.enableSteps)({buildConfig}).concat(
+      jobArtifact.enableSteps || [],
+      enableSteps || [],
+    ),
+    arrizeFunction(builder.disableSteps)({buildConfig}).concat(
+      jobArtifact.disableSteps || [],
+      disableSteps || [],
+    ),
+  )
 
   const jobWithArtifact = {
     ...job,
     artifact: {
-      ...builderArtifact,
       ...jobArtifact,
-      steps: mergeSteps(
-        jobArtifact.steps,
-        builderArtifact.steps,
-        mergeDisabledSteps(builderArtifact.disabledSteps, disabledSteps, enabledSteps),
-      ),
+      steps,
     },
   }
   debug('final steps: %o', jobWithArtifact.artifact.steps)
@@ -69,24 +74,28 @@ async function executeBuild({
   }
 }
 
-function mergeDisabledSteps(builderDisabledSteps, disabledStepsOverride, enabledStepsOverride) {
-  return (builderDisabledSteps || [])
-    .concat(disabledStepsOverride || [])
-    .filter(disabledStep => !(enabledStepsOverride || []).includes(disabledStep))
+function mergeSteps(...availableStepsArray) {
+  return availableStepsArray.reduce(mergeTwoAvailableSteps, [])
+
+  function mergeTwoAvailableSteps(accumulatedAvailableSteps, currentAvailableSteps) {
+    if (!currentAvailableSteps) return accumulatedAvailableSteps
+
+    return currentAvailableSteps.map(currentAvailableStep => ({
+      ...currentAvailableStep,
+      ...accumulatedAvailableSteps.find(as => as.id === currentAvailableStep.id),
+    }))
+  }
 }
 
-function mergeSteps(jobSteps, builderSteps, disabledSteps = []) {
-  if (!jobSteps) return (builderSteps || []).filter(isStepEnabled)
+function calculateBuildSteps(steps, enableSteps, disableSteps) {
+  return steps.filter(step => isPartOf(step, enableSteps) && !isPartOf(step, disableSteps))
 
-  return jobSteps
-    .map(jobStep => ({
-      ...(builderSteps.find(cs => cs.id === jobStep.id) || {}),
-      ...jobStep,
-    }))
-    .filter(isStepEnabled)
-
-  function isStepEnabled(step) {
-    return !disabledSteps.includes(step.id)
+  function isPartOf({id}, collectiveStepIds) {
+    return collectiveStepIds.some(
+      collectiveStepId =>
+        id === collectiveStepId ||
+        (id.startsWith(collectiveStepId) && !/[a-z0-9]/i.test(id.charAt(collectiveStepId.length))),
+    )
   }
 }
 
@@ -143,4 +152,4 @@ function evaluateStepCondition({condition}, context) {
   }
 }
 
-module.exports = {executeBuild}
+module.exports = executeBuild

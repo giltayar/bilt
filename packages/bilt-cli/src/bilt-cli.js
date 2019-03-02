@@ -15,15 +15,30 @@ const {makeJobRunner} = require('@bilt/jobs')
 
 async function buildHere(
   repositoryDirectory,
-  {upto, from, justBuild, force, disabledSteps, enabledSteps, rebuild, dryRun, allOutput} = {},
+  {
+    upto,
+    from,
+    justBuild,
+    force,
+    disableSteps,
+    enableSteps,
+    rebuild,
+    dryRun,
+    allOutput,
+    isFormalBuild,
+  } = {},
 ) {
   const buildsSucceeded = []
   const buildsFailed = []
 
+  const defaultConfig = {isFormalBuild}
+
   debug('Loading configuration from', repositoryDirectory)
-  const {config, filepath} = await cosmiConfig('bilt', {
+  const {fileConfig, filepath} = await cosmiConfig('bilt', {
     rcExtensions: true,
   }).search(repositoryDirectory)
+
+  const buildConfig = distributeGlobalConfigToBuilderConfig({...defaultConfig, ...fileConfig})
 
   const finalRepositoryDirectory = path.dirname(filepath)
   debug('building directory', finalRepositoryDirectory)
@@ -32,9 +47,9 @@ async function buildHere(
   await configureEventsToOutputEventToStdout(events)
 
   const jobRunner = await makeJobRunner({
-    config,
-    disabledSteps,
-    enabledSteps,
+    buildConfig,
+    disableSteps,
+    enableSteps,
     events,
     builders: {
       npm: npmBuilder,
@@ -231,6 +246,22 @@ async function waitForJobs(events, jobs) {
       }
     })
   })
+}
+
+function distributeGlobalConfigToBuilderConfig(config) {
+  const builderConfigKeys = ['npm']
+
+  for (const builderConfigKey of builderConfigKeys) {
+    const globalKeys = Object.keys(config).filter(key => !builderConfigKeys.includes(key))
+
+    config[builderConfigKey] = {}
+
+    for (const globalKey of globalKeys) {
+      config[builderConfigKey][globalKey] = config[globalKey]
+    }
+  }
+
+  return config
 }
 
 module.exports = buildHere
