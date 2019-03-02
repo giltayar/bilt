@@ -44,7 +44,7 @@ async function buildHere(
   debug('building directory', finalRepositoryDirectory)
 
   const events = await makeEvents()
-  await configureEventsToOutputEventToStdout(events)
+  await configureEventsToOutputEventToStdout(events, dryRun)
 
   const jobRunner = await makeJobRunner({
     buildConfig,
@@ -85,14 +85,31 @@ async function buildHere(
 
   return buildsFailed.length > 0 ? 1 : 0
 
-  async function configureEventsToOutputEventToStdout(events) {
-    await subscribe(events, 'STARTING_REPO_JOB', ({artifactsToBeBuilt}) => {
-      if (artifactsToBeBuilt.length === 0) {
-        console.log('### Nothing to build')
-      } else {
-        console.log(chalk.green.bold('### Building artifacts: %s'), artifactsToBeBuilt.join(','))
-      }
-    })
+  async function configureEventsToOutputEventToStdout(events, isDryRun) {
+    await subscribe(
+      events,
+      'STARTING_REPO_JOB',
+      ({artifactsToBeBuilt, filesChangedSinceLastBuild}) => {
+        if (artifactsToBeBuilt.length === 0) {
+          console.log('### Nothing to build')
+        } else {
+          console.log(chalk.green.bold('### Building artifacts: %s'), artifactsToBeBuilt.join(','))
+          if (isDryRun) {
+            console.log(
+              chalk.green('### Because these files changed:\n%s\n'),
+              Object.keys(filesChangedSinceLastBuild)
+                .map(
+                  artifactPath =>
+                    `${artifactPath}: ${Object.keys(filesChangedSinceLastBuild[artifactPath]).join(
+                      ', ',
+                    )}`,
+                )
+                .join('\n'),
+            )
+          }
+        }
+      },
+    )
 
     const outputStreams = new Map()
 

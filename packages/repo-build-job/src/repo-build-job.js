@@ -101,6 +101,7 @@ function getJobsToDispatch({
   if (!awakenedFrom) {
     publish(events, 'STARTING_REPO_JOB', {
       artifactsToBeBuilt: dependencyGraphBuildList(state.dependencyGraph),
+      filesChangedSinceLastBuild,
     })
     if (isDryRun) return {}
   }
