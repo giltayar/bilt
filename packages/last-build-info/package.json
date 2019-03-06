@@ -41,7 +41,7 @@
     "eslint-plugin-node": "^6.0.1",
     "eslint-plugin-prettier": "^2.6.2",
     "mocha": "^5.2.0",
-    "plugin-import": "^1.0.42",
+    "plugin-import": "^1.0.43",
     "prettier": "^1.13.7"
   }
 }
