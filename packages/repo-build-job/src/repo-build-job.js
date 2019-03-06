@@ -180,16 +180,16 @@ function determineArtifactsThatAreAlreadyBuilt(awakenedFrom, state) {
   return awakenedFrom && awakenedFrom.result.success
     ? state.alreadyBuiltArtifacts.concat(awakenedFrom.job.artifact.name)
     : awakenedFrom && !awakenedFrom.result.success
-      ? state.alreadyBuiltArtifacts.concat(
-          Object.keys(
-            dependencyGraphSubsetToBuild({
-              dependencyGraph: state.dependencyGraph,
-              changedArtifacts: [awakenedFrom.job.artifact.name],
-              fromArtifacts: [awakenedFrom.job.artifact.name],
-            }),
-          ),
-        )
-      : []
+    ? state.alreadyBuiltArtifacts.concat(
+        Object.keys(
+          dependencyGraphSubsetToBuild({
+            dependencyGraph: state.dependencyGraph,
+            changedArtifacts: [awakenedFrom.job.artifact.name],
+            fromArtifacts: [awakenedFrom.job.artifact.name],
+          }),
+        ),
+      )
+    : []
 }
 
 function artifactsFromChanges(artifacts, filesChangedSinceLastBuild, force) {

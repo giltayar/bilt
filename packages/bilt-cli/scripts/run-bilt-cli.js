@@ -59,7 +59,6 @@ const argv = yargs
     array: true,
   })
   .options('dry-run', {
-    alias: 'e',
     description: 'only show packages in build order',
     array: false,
     boolean: true,
