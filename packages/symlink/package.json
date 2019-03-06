@@ -1,6 +1,6 @@
 {
   "name": "@bilt/symlink",
-  "version": "2.0.2",
+  "version": "2.0.9",
   "description": "",
   "main": "src/symlink.js",
   "files": [
