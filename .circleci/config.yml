@@ -29,7 +29,7 @@ jobs:
       - run:
           name: Install bilt
           command: |
-              npm install -g @bilt/bilt-cli@2
+              npm install -g @bilt/bilt-cli@2.0.5
       - run:
           name: Bild
           command: CI=1 bilt -u @bilt/bilt-cli
