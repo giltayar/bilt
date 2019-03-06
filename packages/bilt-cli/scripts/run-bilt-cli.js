@@ -43,6 +43,11 @@ const argv = yargs
     default: isCi,
     description: 'force formal build',
   })
+  .options('source-changes-pushed', {
+    alias: 'p',
+    default: !isCi,
+    description: 'are build changes to source going to be pushed',
+  })
   .options('disable', {
     alias: 'd',
     description: 'disable step',

@@ -69,7 +69,7 @@ function artifactBuildTimestamps({lastBuildInfo}) {
  *
  * @returns {Promise<void>}
  */
-async function savePrebuildBuildInfo({repositoryDirectory, artifactPath}) {
+async function saveBuildInfo({repositoryDirectory, artifactPath, isPrebuild}) {
   const biltJsonDir = path.join(repositoryDirectory, '.bilt', artifactPath)
   await makeDir(biltJsonDir)
 
@@ -85,7 +85,7 @@ async function savePrebuildBuildInfo({repositoryDirectory, artifactPath}) {
   ])
 
   await p(fs.writeFile)(
-    path.join(biltJsonDir, 'bilt.prebuild.json'),
+    path.join(biltJsonDir, `bilt${isPrebuild ? '.prebuild' : ''}.json`),
     JSON.stringify({
       lastSuccessfulBuild: {
         commit,
@@ -101,7 +101,7 @@ async function savePrebuildBuildInfo({repositoryDirectory, artifactPath}) {
  *
  * @returns {Promise<void>}
  */
-async function savePackageLastBuildInfo({repositoryDirectory, artifactPath, now = new Date()}) {
+async function copyPrebuildToLastBuildInfo({repositoryDirectory, artifactPath, now = new Date()}) {
   const biltJsonDir = path.join(repositoryDirectory, '.bilt', artifactPath)
 
   const prebuild = JSON.parse(await p(fs.readFile)(path.join(biltJsonDir, 'bilt.prebuild.json')))
@@ -330,6 +330,6 @@ module.exports = {
   lastBuildInfo,
   filesChangedSinceLastBuild,
   artifactBuildTimestamps,
-  savePrebuildBuildInfo,
-  savePackageLastBuildInfo,
+  saveBuildInfo,
+  copyPrebuildToLastBuildInfo,
 }

@@ -70,7 +70,7 @@ const buildSteps = () => [
       packageJsonChanged || hasChangedDependencies,
   },
   {
-    id: 'publish-update-deps',
+    id: 'build-update-deps',
     name: 'Update dependencies',
     command: ({artifact: {dependencies}}) => ['npm', 'update', ...(dependencies || [])],
     condition: ({packageJsonChanged, hasChangedDependencies}) =>
@@ -121,7 +121,8 @@ const buildSteps = () => [
 const enableSteps = ({buildConfig: {isFormalBuild = false} = {}}) =>
   isFormalBuild ? ['install-ci', 'build', 'test', 'publish'] : ['install', 'build', 'test']
 
-const disableSteps = ({buildConfig: {isFormalBuild}}) => (isFormalBuild ? [] : ['install-ci'])
+const disableSteps = ({buildConfig: {isFormalBuild}}) =>
+  isFormalBuild ? ['build-update-deps'] : ['install-ci']
 
 module.exports = {
   setupBuildSteps,

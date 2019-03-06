@@ -10,8 +10,8 @@ const {
   lastBuildInfo,
   artifactBuildTimestamps,
   filesChangedSinceLastBuild,
-  savePackageLastBuildInfo,
-  savePrebuildBuildInfo,
+  copyPrebuildToLastBuildInfo,
+  saveBuildInfo,
 } = require('../..')
 
 describe('last-build-info', () => {
@@ -22,7 +22,7 @@ describe('last-build-info', () => {
     })
 
     for (const {path: artifactPath} of artifacts) {
-      await savePrebuildBuildInfo({repositoryDirectory, artifactPath})
+      await saveBuildInfo({repositoryDirectory, artifactPath, isPrebuild: true})
     }
 
     const artifactPathsBuilt = []
@@ -31,7 +31,7 @@ describe('last-build-info', () => {
         filesChanged[artifactPath] === undefined ||
         Object.keys(filesChanged[artifactPath]).length > 0,
     )) {
-      await savePackageLastBuildInfo({repositoryDirectory, artifactPath, now})
+      await copyPrebuildToLastBuildInfo({repositoryDirectory, artifactPath, now})
       artifactPathsBuilt.push(artifactPath)
     }
 

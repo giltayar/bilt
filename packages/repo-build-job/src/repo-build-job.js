@@ -8,14 +8,14 @@ const {
 const debug = require('debug')('bilt:repo-build-job')
 const {publish} = require('@bilt/in-memory-events')
 const {
-  savePackageLastBuildInfo,
-  savePrebuildBuildInfo,
+  copyPrebuildToLastBuildInfo,
+  saveBuildInfo,
   lastBuildInfo,
   artifactBuildTimestamps,
   filesChangedSinceLastBuild,
 } = require('@bilt/last-build-info')
 
-async function setupBuildSteps({state, awakenedFrom, job}) {
+async function setupBuildSteps({state, awakenedFrom, job, buildConfig: {areSourceChangesPushed}}) {
   const {
     force,
     uptoArtifacts,
@@ -30,16 +30,20 @@ async function setupBuildSteps({state, awakenedFrom, job}) {
   const {
     filesChangedSinceLastBuild,
     artifactBuildTimestamps,
-  } = await determineInitialStateInformation(state, job)
+  } = await determineInitialStateInformation(state, job, areSourceChangesPushed)
 
   if (awakenedFrom && awakenedFrom.result.success) {
     const artifact = awakenedFrom.job.artifact
     debug('saving package last build info for artifact %s', artifact.name)
-    await savePackageLastBuildInfo({
-      repositoryDirectory,
-      artifactPath: artifact.path,
-      artifactFilesChangedSinceLastBuild: filesChangedSinceLastBuild[artifact.path],
-    })
+    if (areSourceChangesPushed) {
+      await saveBuildInfo({repositoryDirectory, artifact: artifact.path, isPrebuild: false})
+    } else {
+      await copyPrebuildToLastBuildInfo({
+        repositoryDirectory,
+        artifactPath: artifact.path,
+        artifactFilesChangedSinceLastBuild: filesChangedSinceLastBuild[artifact.path],
+      })
+    }
   }
 
   return {
@@ -146,7 +150,7 @@ function getJobsToDispatch({
   }
 }
 
-async function determineInitialStateInformation(state, job) {
+async function determineInitialStateInformation(state, job, areSourceChangesPushed) {
   if (state) return state
 
   const {repositoryDirectory} = job
@@ -156,9 +160,12 @@ async function determineInitialStateInformation(state, job) {
     repositoryDirectory,
     lastBuildInfo: buildInfo,
   })
-  for (const {path: artifactPath, name} of job.artifacts) {
-    debug('saving prebuild info for artifact %s', name)
-    await savePrebuildBuildInfo({repositoryDirectory, artifactPath})
+
+  if (!areSourceChangesPushed) {
+    for (const {path: artifactPath, name} of job.artifacts) {
+      debug('saving prebuild info for artifact %s', name)
+      await saveBuildInfo({repositoryDirectory, artifactPath, isPrebuild: true})
+    }
   }
 
   return {

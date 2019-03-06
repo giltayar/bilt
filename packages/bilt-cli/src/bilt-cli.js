@@ -26,12 +26,13 @@ async function buildHere(
     dryRun,
     allOutput,
     isFormalBuild,
+    areSourceChangesPushed,
   } = {},
 ) {
   const buildsSucceeded = []
   const buildsFailed = []
 
-  const defaultConfig = {isFormalBuild}
+  const defaultConfig = {isFormalBuild, areSourceChangesPushed}
 
   debug('Loading configuration from', repositoryDirectory)
   const {fileConfig, filepath} = await cosmiConfig('bilt', {

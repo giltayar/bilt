@@ -1,6 +1,6 @@
 {
   "name": "@bilt/last-build-info",
-  "version": "3.0.3",
+  "version": "4.0.0",
   "description": "",
   "main": "src/last-build-info.js",
   "engines": {
