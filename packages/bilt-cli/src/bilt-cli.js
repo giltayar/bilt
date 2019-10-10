@@ -39,10 +39,7 @@ async function buildHere(
     rcExtensions: true,
   }).search(repositoryDirectory)
 
-  const buildConfig = distributeGlobalConfigToBuilderConfig({
-    ...defaultConfig,
-    ...fileConfig,
-  })
+  const buildConfig = {...defaultConfig, ...fileConfig}
 
   const finalRepositoryDirectory = path.dirname(filepath)
   debug('building directory', finalRepositoryDirectory)
@@ -272,22 +269,6 @@ async function waitForJobs(events, jobs) {
       }
     })
   })
-}
-
-function distributeGlobalConfigToBuilderConfig(config) {
-  const builderConfigKeys = ['npm']
-
-  for (const builderConfigKey of builderConfigKeys) {
-    const globalKeys = Object.keys(config).filter(key => !builderConfigKeys.includes(key))
-
-    config[builderConfigKey] = {}
-
-    for (const globalKey of globalKeys) {
-      config[builderConfigKey][globalKey] = config[globalKey]
-    }
-  }
-
-  return config
 }
 
 module.exports = buildHere
