@@ -15,7 +15,7 @@
     "rules": {
         "prettier/prettier": [ "error", {
             "semi": false,
-            "parser": "babylon",
+            "parser": "babel",
             "printWidth": 100,
             "singleQuote": true,
             "trailingComma": "all",

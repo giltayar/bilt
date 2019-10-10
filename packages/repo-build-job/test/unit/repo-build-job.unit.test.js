@@ -13,7 +13,7 @@ describe('repo-build-job', function() {
   let events
   before(async () => (events = await makeEvents()))
 
-  it('should execute a simple job', () => {
+  it('should execute a simple job with force: true', () => {
     const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}, {name: 'c', path: 'ccc'}]
     const repoJob = {
       filesChangedSinceLastBuild: {},
@@ -26,7 +26,7 @@ describe('repo-build-job', function() {
     expect(jobNames(jobsThatRan)).to.eql(['a', 'b', 'c'])
   })
 
-  it('should execute a simple job if this is first build', () => {
+  it('should execute nothing if this is first build', () => {
     const artifacts = [{name: 'a', path: 'a'}, {name: 'b', path: 'b'}, {name: 'c', path: 'ccc'}]
     const repoJob = {
       filesChangedSinceLastBuild: {},
@@ -35,7 +35,7 @@ describe('repo-build-job', function() {
 
     const jobsThatRan = runRepoJob(artifacts, repoJob, repoBuildJobRunner)
 
-    expect(jobNames(jobsThatRan)).to.eql(['a', 'b', 'c'])
+    expect(jobNames(jobsThatRan)).to.eql([])
   })
 
   it('should execute only builds that have changed files', () => {

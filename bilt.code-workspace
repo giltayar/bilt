@@ -41,6 +41,9 @@
 		},
 		{
 			"path": "packages/symlink"
+		},
+		{
+			"path": ".circleci"
 		}
 	],
 	"settings": {

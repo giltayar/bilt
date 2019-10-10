@@ -17,6 +17,7 @@ const biltHere = require('../../src/bilt-cli')
 
 const FIRST_FORMAL_BUILD_STEPS = {
   isFormalBuild: true,
+  force: true,
   enableSteps: ['install-install'],
   disableSteps: ['install-ci'],
 }
@@ -104,13 +105,13 @@ describe('local directory use-case it', () => {
   it('should return 1 on failure', async () => {
     await changeScript(buildDir, 'a', 'build', 'false')
 
-    const retCode = await biltHere(buildDir)
+    const retCode = await biltHere(buildDir, {force: true})
 
     expect(retCode).to.equal(1)
   })
 
   it('should support dry-run', async () => {
-    const retCode = await biltHere(buildDir, {dryRun: true})
+    const retCode = await biltHere(buildDir, {dryRun: true, force: true})
 
     expect(retCode).to.equal(0)
     expect(await fileContents(buildDir, 'a/postinstalled.txt')).to.be.undefined

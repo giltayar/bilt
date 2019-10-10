@@ -36,7 +36,11 @@ async function setupBuildSteps({state, awakenedFrom, job, buildConfig: {areSourc
     const artifact = awakenedFrom.job.artifact
     debug('saving package last build info for artifact %s', artifact.name)
     if (areSourceChangesPushed) {
-      await saveBuildInfo({repositoryDirectory, artifact: artifact.path, isPrebuild: false})
+      await saveBuildInfo({
+        repositoryDirectory,
+        artifact: artifact.path,
+        isPrebuild: false,
+      })
     } else {
       await copyPrebuildToLastBuildInfo({
         repositoryDirectory,
@@ -155,7 +159,10 @@ async function determineInitialStateInformation(state, job, areSourceChangesPush
 
   const {repositoryDirectory} = job
 
-  const buildInfo = await lastBuildInfo({repositoryDirectory, artifacts: job.artifacts})
+  const buildInfo = await lastBuildInfo({
+    repositoryDirectory,
+    artifacts: job.artifacts,
+  })
   const filesChangedSinceLastBuildValue = await filesChangedSinceLastBuild({
     repositoryDirectory,
     lastBuildInfo: buildInfo,
@@ -164,7 +171,11 @@ async function determineInitialStateInformation(state, job, areSourceChangesPush
   if (!areSourceChangesPushed) {
     for (const {path: artifactPath, name} of job.artifacts) {
       debug('saving prebuild info for artifact %s', name)
-      await saveBuildInfo({repositoryDirectory, artifactPath, isPrebuild: true})
+      await saveBuildInfo({
+        repositoryDirectory,
+        artifactPath,
+        isPrebuild: true,
+      })
     }
   }
 
@@ -197,8 +208,8 @@ function artifactsFromChanges(artifacts, filesChangedSinceLastBuild, force) {
     .filter(
       artifact =>
         force ||
-        filesChangedSinceLastBuild[artifact.path] === undefined ||
-        Object.keys(filesChangedSinceLastBuild[artifact.path]).length > 0,
+        (filesChangedSinceLastBuild[artifact.path] !== undefined &&
+          Object.keys(filesChangedSinceLastBuild[artifact.path]).length > 0),
     )
     .map(artifact => artifact.name)
 }
