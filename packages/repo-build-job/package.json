@@ -25,9 +25,9 @@
     "type": "git"
   },
   "dependencies": {
-    "@bilt/artifact-dependency-graph": "^3.0.27",
-    "@bilt/in-memory-events": "^2.0.27",
-    "@bilt/last-build-info": "^4.0.15",
+    "@bilt/artifact-dependency-graph": "^3.0.30",
+    "@bilt/in-memory-events": "^2.0.30",
+    "@bilt/last-build-info": "^4.0.18",
     "debug": "^3.2.6",
     "lodash.flatten": "^4.4.0"
   },

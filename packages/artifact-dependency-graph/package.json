@@ -29,10 +29,10 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "eslint": "^5.15.1",
+    "eslint": "^5.16.0",
     "eslint-plugin-mocha-no-only": "^1.1.0",
     "eslint-plugin-prettier": "^2.7.0",
     "mocha": "^5.2.0",
-    "prettier": "^1.16.4"
+    "prettier": "^1.18.2"
   }
 }

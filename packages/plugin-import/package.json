@@ -7,6 +7,12 @@
     "test": "mocha --no-timeouts 'test/**/*.test.js' && npm run eslint",
     "eslint": "eslint '**/*.js'"
   },
+  "engines": {
+    "node": ">8.3.0"
+  },
+  "files": [
+    "src"
+  ],
   "keywords": [
     "ci",
     "plugin-repository"
@@ -18,14 +24,16 @@
     "type": "git"
   },
   "dependencies": {
-    "debug": "^2.6.9",
-    "lodash.merge": "^4.6.1"
+    "debug": "^4.1.1",
+    "lodash.merge": "^4.6.2"
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "eslint": "^4.19.1",
-    "eslint-plugin-prettier": "^2.7.0",
-    "mocha": "^3.5.3",
-    "prettier": "^1.16.4"
+    "eslint": "^6.5.1",
+    "eslint-plugin-mocha-no-only": "^1.1.0",
+    "eslint-plugin-node": "^10.0.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "mocha": "^6.2.1",
+    "prettier": "^1.18.2"
   }
 }

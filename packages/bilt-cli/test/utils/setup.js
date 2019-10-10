@@ -78,8 +78,8 @@ async function findCommitsToReplayInDirectory(directory) {
   )
 
   const commitsToReplay = (await Promise.all(
-    possibleCommitsToReplay.map(
-      async cr => ((await p(fs.stat)(cr)).isDirectory() ? cr : undefined),
+    possibleCommitsToReplay.map(async cr =>
+      (await p(fs.stat)(cr)).isDirectory() ? cr : undefined,
     ),
   )).filter(cr => !!cr)
 

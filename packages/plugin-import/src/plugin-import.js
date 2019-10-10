@@ -54,7 +54,7 @@ module.exports = (pluginLists, {baseDirectory = '', useThisRequire = require} = 
 
   return pimport
 
-  async function createPlugin(pimport, pluginInfo, kind, {pluginModule, pluginConfig}) {
+  async function createPlugin(pimport, _pluginInfo, kind, {pluginModule, pluginConfig}) {
     const dependentPlugins = pluginModule.plugins || []
     const plugins = []
 

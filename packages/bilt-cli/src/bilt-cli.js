@@ -39,7 +39,10 @@ async function buildHere(
     rcExtensions: true,
   }).search(repositoryDirectory)
 
-  const buildConfig = distributeGlobalConfigToBuilderConfig({...defaultConfig, ...fileConfig})
+  const buildConfig = distributeGlobalConfigToBuilderConfig({
+    ...defaultConfig,
+    ...fileConfig,
+  })
 
   const finalRepositoryDirectory = path.dirname(filepath)
   debug('building directory', finalRepositoryDirectory)
@@ -100,7 +103,9 @@ async function buildHere(
               chalk.green('### Because these files changed:\n%s\n'),
               Object.keys(filesChangedSinceLastBuild)
                 .filter(
-                  artifactPath => Object.keys(filesChangedSinceLastBuild[artifactPath]).length > 0,
+                  artifactPath =>
+                    filesChangedSinceLastBuild[artifactPath] &&
+                    Object.keys(filesChangedSinceLastBuild[artifactPath]).length > 0,
                 )
                 .map(
                   artifactPath =>
@@ -121,8 +126,8 @@ async function buildHere(
       if (job.kind === 'repository') return
 
       const artifactBiltDir = path.resolve(finalRepositoryDirectory, job.artifact.path, '.bilt')
-      await p(fs.mkdir)(artifactBiltDir, {recursive: true}).catch(
-        err => (err.code === 'EEXIST' ? undefined : Promise.reject(err)),
+      await p(fs.mkdir)(artifactBiltDir, {recursive: true}).catch(err =>
+        err.code === 'EEXIST' ? undefined : Promise.reject(err),
       )
 
       const outputStream = fs.createWriteStream(path.resolve(artifactBiltDir, 'build.log'))
