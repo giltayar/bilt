@@ -37,8 +37,8 @@ describe('last-build-info', () => {
 
     return {
       filesChanged: [].concat(
-        Object.values(filesChanged).map(
-          fileToHashObject => (fileToHashObject ? Object.keys(fileToHashObject) : fileToHashObject),
+        Object.values(filesChanged).map(fileToHashObject =>
+          fileToHashObject ? Object.keys(fileToHashObject) : fileToHashObject,
         ),
       ),
       artifactPathsBuilt,
