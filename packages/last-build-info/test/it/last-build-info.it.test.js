@@ -21,8 +21,8 @@ describe('last-build-info', () => {
       lastBuildInfo: await lastBuildInfo({repositoryDirectory, artifacts}),
     })
 
-    for (const {path: artifactPath} of artifacts) {
-      await saveBuildInfo({repositoryDirectory, artifactPath, isPrebuild: true})
+    for (const artifact of artifacts) {
+      await saveBuildInfo({repositoryDirectory, artifact, isPrebuild: true})
     }
 
     const artifactPathsBuilt = []

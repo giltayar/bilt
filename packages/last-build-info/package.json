@@ -1,6 +1,6 @@
 {
   "name": "@bilt/last-build-info",
-  "version": "4.0.9",
+  "version": "5.0.0",
   "description": "",
   "main": "src/last-build-info.js",
   "engines": {
@@ -31,7 +31,8 @@
     "ignore": "^4.0.6",
     "jest-changed-files": "^23.4.2",
     "lodash.pickby": "^4.6.0",
-    "make-dir": "^1.2.0"
+    "make-dir": "^1.2.0",
+    "rimraf": "^3.0.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",

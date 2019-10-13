@@ -13,7 +13,7 @@ const {
   adjustNpmRegistryInfoInRepo,
   checkVersionExists,
 } = require('../utils/setup')
-const biltHere = require('../../src/bilt-cli')
+const {build} = require('../../src/bilt-cli')
 
 const FIRST_FORMAL_BUILD_STEPS = {
   isFormalBuild: true,
@@ -62,7 +62,7 @@ describe('local directory use-case it', () => {
   })
 
   it('should build the directory with all its packages, including publishing, reset, and then rebuild nothing', async () => {
-    const retCode = await biltHere(buildDir, FIRST_FORMAL_BUILD_STEPS)
+    const retCode = await build(buildDir, {}, FIRST_FORMAL_BUILD_STEPS)
 
     expect(retCode).to.equal(0)
 
@@ -80,14 +80,14 @@ describe('local directory use-case it', () => {
     // This simulates rerunning the same build in the CI
     await gitReset(buildDir)
 
-    await biltHere(buildDir, {disableSteps: ['link']})
+    await build(buildDir, {}, {disableSteps: ['link']})
 
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.a', '1.0.0', npmRegistryAddress)
     await checkVersionExists('this-pkg-does-not-exist-in-npmjs.b', '3.2.0', npmRegistryAddress)
   })
 
   it('should support link', async () => {
-    await biltHere(buildDir, FIRST_FORMAL_BUILD_STEPS)
+    await build(buildDir, {}, FIRST_FORMAL_BUILD_STEPS)
 
     await changeScript(
       buildDir,
@@ -97,7 +97,7 @@ describe('local directory use-case it', () => {
     )
     await writeFile('something new', buildDir, 'b/b.txt')
 
-    await biltHere(buildDir, {isFormalBuild: false})
+    await build(buildDir, {}, {isFormalBuild: false})
 
     expect(await fileContents(buildDir, 'a/b.txt')).to.equal('something new')
   })
@@ -105,13 +105,13 @@ describe('local directory use-case it', () => {
   it('should return 1 on failure', async () => {
     await changeScript(buildDir, 'a', 'build', 'false')
 
-    const retCode = await biltHere(buildDir, {force: true})
+    const retCode = await build(buildDir, {}, {force: true})
 
     expect(retCode).to.equal(1)
   })
 
   it('should support dry-run', async () => {
-    const retCode = await biltHere(buildDir, {dryRun: true, force: true})
+    const retCode = await build(buildDir, {}, {dryRun: true, force: true})
 
     expect(retCode).to.equal(0)
     expect(await fileContents(buildDir, 'a/postinstalled.txt')).to.be.undefined

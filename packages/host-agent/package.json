@@ -22,7 +22,7 @@
     "type": "git"
   },
   "dependencies": {
-    "@bilt/symlink": "^2.0.32",
+    "@bilt/symlink": "^2.0.33",
     "debug": "^2.6.8",
     "make-dir": "^1.0.0",
     "split2": "^3.1.0"

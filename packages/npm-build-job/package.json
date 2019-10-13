@@ -25,12 +25,12 @@
     "type": "git"
   },
   "dependencies": {
-    "@bilt/host-agent": "^3.0.30",
-    "@bilt/npm-next-version": "^1.0.27",
+    "@bilt/host-agent": "^3.0.31",
+    "@bilt/npm-next-version": "^1.0.28",
     "debug": "^3.1.0"
   },
   "devDependencies": {
-    "@bilt/jobs": "^2.0.27",
+    "@bilt/jobs": "^2.0.28",
     "chai": "^4.1.2",
     "docker-compose-mocha": "^1.2.0",
     "docker-compose-tool": "0.0.1",

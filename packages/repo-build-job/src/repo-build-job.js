@@ -38,7 +38,7 @@ async function setupBuildSteps({state, awakenedFrom, job, buildConfig: {areSourc
     if (areSourceChangesPushed) {
       await saveBuildInfo({
         repositoryDirectory,
-        artifact: artifact.path,
+        artifact,
         isPrebuild: false,
       })
     } else {
@@ -169,13 +169,8 @@ async function determineInitialStateInformation(state, job, areSourceChangesPush
   })
 
   if (!areSourceChangesPushed) {
-    for (const {path: artifactPath, name} of job.artifacts) {
-      debug('saving prebuild info for artifact %s', name)
-      await saveBuildInfo({
-        repositoryDirectory,
-        artifactPath,
-        isPrebuild: true,
-      })
+    for (const artifact of job.artifacts) {
+      await saveBuildInfo({repositoryDirectory, artifact, isPrebuild: true})
     }
   }
 

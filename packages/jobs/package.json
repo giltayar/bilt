@@ -19,8 +19,8 @@
     "type": "git"
   },
   "dependencies": {
-    "@bilt/host-agent": "^3.0.30",
-    "@bilt/in-memory-events": "^2.0.30",
+    "@bilt/host-agent": "^3.0.31",
+    "@bilt/in-memory-events": "^2.0.31",
     "debug": "^2.6.8",
     "uuid": "^3.3.2"
   },

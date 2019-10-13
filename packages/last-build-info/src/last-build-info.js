@@ -6,6 +6,7 @@ const assert = require('assert')
 const childProcess = require('child_process')
 const {promisify: p} = require('util')
 const makeDir = require('make-dir')
+const rimraf = require('rimraf')
 const pickBy_ = require('lodash.pickby')
 const gitRepoInfo = require('git-repo-info')
 const ignore = require('ignore')
@@ -69,7 +70,11 @@ function artifactBuildTimestamps({lastBuildInfo}) {
  *
  * @returns {Promise<void>}
  */
-async function saveBuildInfo({repositoryDirectory, artifactPath, isPrebuild}) {
+async function saveBuildInfo({
+  repositoryDirectory,
+  artifact: {name, path: artifactPath},
+  isPrebuild,
+}) {
   const biltJsonDir = path.join(repositoryDirectory, '.bilt', artifactPath)
   await makeDir(biltJsonDir)
 
@@ -87,6 +92,8 @@ async function saveBuildInfo({repositoryDirectory, artifactPath, isPrebuild}) {
   await p(fs.writeFile)(
     path.join(biltJsonDir, `bilt${isPrebuild ? '.prebuild' : ''}.json`),
     JSON.stringify({
+      name,
+      path: artifactPath,
       lastSuccessfulBuild: {
         commit,
         changedFilesInWorkspace: workspaceFilesThatWereBuilt,
@@ -115,6 +122,68 @@ async function copyPrebuildToLastBuildInfo({repositoryDirectory, artifactPath, n
       },
     }),
   )
+}
+
+async function listBuildInfo({repositoryDirectory}) {
+  try {
+    return await listBuildInfoDo(path.join(repositoryDirectory, '.bilt'))
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      return []
+    }
+    throw err
+  }
+
+  async function listBuildInfoDo(dir) {
+    const directoryEntries = await p(fs.readdir)(dir, {
+      withFileTypes: true,
+    })
+
+    const biltJsonEntry = directoryEntries.find(
+      directoryEntry => directoryEntry.isFile() && directoryEntry.name === 'bilt.json',
+    )
+
+    const subDirectories = directoryEntries.filter(directoryEntry => directoryEntry.isDirectory())
+
+    const [biltJson, subDirBiltJsons] = await Promise.all([
+      biltJsonEntry ? readBiltJson(dir) : undefined,
+      subDirectories.length > 0
+        ? Promise.all(
+            subDirectories.map(subDirectory => listBuildInfoDo(path.join(dir, subDirectory.name))),
+          )
+        : Promise.resolve([]),
+    ])
+
+    return (biltJson ? [{name: biltJson.name, path: biltJson.path}] : []).concat(
+      [].concat(...subDirBiltJsons),
+    )
+  }
+
+  async function readBiltJson(dir) {
+    return JSON.parse(await p(fs.readFile)(path.join(dir, 'bilt.json')))
+  }
+}
+
+async function addBuildInfo({repositoryDirectory, artifact}) {
+  const biltJsonDir = path.join(repositoryDirectory, '.bilt', artifact.path)
+
+  const biltJson = path.join(biltJsonDir, 'bilt.json')
+
+  if (await p(fs.exists)(biltJson)) { // eslint-disable-line
+    // eslint-disable-line
+    return true
+  }
+
+  await makeDir(biltJsonDir)
+  await p(fs.writeFile)(biltJson, JSON.stringify({name: artifact.name, path: artifact.path}))
+
+  return false
+}
+
+async function removeBuildInfo({repositoryDirectory, artifactPath}) {
+  const biltJsonDir = path.join(repositoryDirectory, '.bilt', artifactPath)
+
+  await p(rimraf)(biltJsonDir)
 }
 
 async function readBiltJson(artifactrepositoryDirectory) {
@@ -286,7 +355,11 @@ async function findbiltIgnorePattern(repositoryDirectory, file) {
   ignoreMask.add('.bilt')
   for (const dir of directoriesBetween(repositoryDirectory, file)) {
     try {
-      ignoreMask.add(await p(fs.readFile)(path.join(dir, '.biltignore'), {encoding: 'utf-8'}))
+      ignoreMask.add(
+        await p(fs.readFile)(path.join(dir, '.biltignore'), {
+          encoding: 'utf-8',
+        }),
+      )
     } catch (err) {
       if (err.code !== 'ENOENT') throw err
     }
@@ -332,4 +405,7 @@ module.exports = {
   artifactBuildTimestamps,
   saveBuildInfo,
   copyPrebuildToLastBuildInfo,
+  listBuildInfo,
+  addBuildInfo,
+  removeBuildInfo,
 }

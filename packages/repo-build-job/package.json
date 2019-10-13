@@ -25,18 +25,18 @@
     "type": "git"
   },
   "dependencies": {
-    "@bilt/artifact-dependency-graph": "^3.0.30",
-    "@bilt/in-memory-events": "^2.0.30",
+    "@bilt/artifact-dependency-graph": "^3.0.31",
+    "@bilt/in-memory-events": "^2.0.31",
     "@bilt/last-build-info": "^4.0.18",
-    "debug": "^3.2.6",
+    "debug": "^4.1.1",
     "lodash.flatten": "^4.4.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "eslint": "^5.15.1",
+    "eslint": "^6.5.1",
     "eslint-plugin-mocha-no-only": "^1.1.0",
-    "eslint-plugin-prettier": "^2.7.0",
-    "mocha": "^5.2.0",
-    "prettier": "^1.16.4"
+    "eslint-plugin-prettier": "^3.1.1",
+    "mocha": "^6.2.1",
+    "prettier": "^1.18.2"
   }
 }

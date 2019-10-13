@@ -4,7 +4,6 @@ const fs = require('fs')
 const path = require('path')
 const debug = require('debug')('bilt:bilt-cli')
 const chalk = require('chalk')
-const cosmiConfig = require('cosmiconfig')
 const flatten = require('lodash.flatten')
 const artifactFinder = require('@bilt/artifact-finder')
 const {makeJobDispatcher, dispatchJob} = require('@bilt/in-memory-job-dispatcher')
@@ -13,8 +12,16 @@ const npmBuilder = require('@bilt/npm-build-job')
 const repositoryBuilder = require('@bilt/repo-build-job')
 const {makeJobRunner} = require('@bilt/jobs')
 
-async function buildHere(
-  repositoryDirectory,
+const {
+  listDevelopmentList,
+  addToDevelopmentList,
+  removeFromDevelopmentList,
+  resetDevelopmentList,
+} = require('./development-list')
+
+async function build(
+  buildDirectory,
+  config,
   {
     upto,
     from,
@@ -34,15 +41,7 @@ async function buildHere(
 
   const defaultConfig = {isFormalBuild, areSourceChangesPushed}
 
-  debug('Loading configuration from', repositoryDirectory)
-  const {fileConfig, filepath} = await cosmiConfig('bilt', {
-    rcExtensions: true,
-  }).search(repositoryDirectory)
-
-  const buildConfig = {...defaultConfig, ...fileConfig}
-
-  const finalRepositoryDirectory = path.dirname(filepath)
-  debug('building directory', finalRepositoryDirectory)
+  const buildConfig = {...defaultConfig, ...config}
 
   const events = await makeEvents()
   await configureEventsToOutputEventToStdout(events, dryRun)
@@ -56,12 +55,12 @@ async function buildHere(
       npm: npmBuilder,
       repository: repositoryBuilder,
     },
-    repositoryDirectory: finalRepositoryDirectory,
+    repositoryDirectory: buildDirectory,
   })
   const jobDispatcher = await makeJobDispatcher({jobRunner})
 
   const jobsToWaitFor = await runRepoBuildJob({
-    repositoryDirectory: finalRepositoryDirectory,
+    repositoryDirectory: buildDirectory,
     jobDispatcher,
     upto,
     from,
@@ -122,7 +121,7 @@ async function buildHere(
     await subscribe(events, 'START_JOB', async ({job}) => {
       if (job.kind === 'repository') return
 
-      const artifactBiltDir = path.resolve(finalRepositoryDirectory, job.artifact.path, '.bilt')
+      const artifactBiltDir = path.resolve(buildDirectory, job.artifact.path, '.bilt')
       await p(fs.mkdir)(artifactBiltDir, {recursive: true}).catch(err =>
         err.code === 'EEXIST' ? undefined : Promise.reject(err),
       )
@@ -164,7 +163,7 @@ async function buildHere(
       if (!success) {
         console.log(chalk.red.dim('###### Build %s failed with error. Output:'), job.artifact.path)
 
-        const artifactBiltDir = path.resolve(finalRepositoryDirectory, job.artifact.path, '.bilt')
+        const artifactBiltDir = path.resolve(buildDirectory, job.artifact.path, '.bilt')
         await writeToStream(
           fs.createReadStream(path.resolve(artifactBiltDir, 'build.log')),
           process.stderr,
@@ -271,4 +270,10 @@ async function waitForJobs(events, jobs) {
   })
 }
 
-module.exports = buildHere
+module.exports = {
+  build,
+  listDevelopmentList,
+  addToDevelopmentList,
+  removeFromDevelopmentList,
+  resetDevelopmentList,
+}
