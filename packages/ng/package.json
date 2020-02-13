@@ -5,7 +5,7 @@
   "main": "lib/ng.js",
   "types": "lib/ng.d.ts",
   "engines": {
-    "node": ">=10.3.0"
+    "node": ">=12.3.0"
   },
   "files": [
     "lib",
@@ -36,6 +36,7 @@
     "type": "git"
   },
   "dependencies": {
+    "@bilt/artifact-finder": "^2.0.28",
     "debug": "^4.1.1"
   },
   "devDependencies": {

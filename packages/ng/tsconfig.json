@@ -11,6 +11,9 @@
     "declarationMap": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
+    "isolatedModules": true,
+    "maxNodeModuleJsDepth": 1,
+    "allowJs": true,
     "typeRoots": ["./node_modules/@types", "./typings"]
   },
   "include": ["src/**/*.ts"]
