@@ -1,48 +1,67 @@
 {
 	"folders": [
 		{
+			"name": "artifact-dependency-graph",
 			"path": "packages/artifact-dependency-graph"
 		},
 		{
+			"name": "artifact-finder",
 			"path": "packages/artifact-finder"
 		},
 		{
+			"name": "bilt",
 			"path": "."
 		},
 		{
+			"name": "bilt-cli",
 			"path": "packages/bilt-cli"
 		},
 		{
+			"name": "host-agent",
 			"path": "packages/host-agent"
 		},
 		{
+			"name": "in-memory-events",
 			"path": "packages/in-memory-events"
 		},
 		{
+			"name": "in-memory-job-dispatcher",
 			"path": "packages/in-memory-job-dispatcher"
 		},
 		{
+			"name": "jobs",
 			"path": "packages/jobs"
 		},
 		{
+			"name": "last-build-info",
 			"path": "packages/last-build-info"
 		},
 		{
+			"name": "ng",
+			"path": "packages/ng"
+		},
+		{
+			"name": "npm-build-job",
 			"path": "packages/npm-build-job"
 		},
 		{
+			"name": "npm-next-version",
 			"path": "packages/npm-next-version"
 		},
 		{
+			"name": "plugin-import",
 			"path": "packages/plugin-import"
 		},
 		{
+			"name": "repo-build-job",
 			"path": "packages/repo-build-job"
 		},
 		{
+			"name": "symlink",
 			"path": "packages/symlink"
 		},
 		{
+			"name": ".circleci",
 			"path": ".circleci"
 		}
 	],
