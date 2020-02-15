@@ -45,6 +45,10 @@
 			"path": "packages/ng-packages"
 		},
 		{
+			"name": "ng-what-to-build",
+			"path": "packages/ng-what-to-build"
+		},
+		{
 			"name": "npm-build-job",
 			"path": "packages/npm-build-job"
 		},
