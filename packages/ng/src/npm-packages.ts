@@ -11,7 +11,7 @@ export async function findNpmPackages({
 
   const result = (await findArtifacts(rootDirectory)) as {path: string}[]
 
-  return result.map(artifact => ({package: artifact.path}))
+  return result.map(artifact => ({directory: artifact.path}))
 }
 
 export async function findNpmPackageInfos({
@@ -24,26 +24,26 @@ export async function findNpmPackageInfos({
   const packageNameToPackagePath = Object.fromEntries(
     interimPackageInfos.map(interimPackageInfo => [
       interimPackageInfo.name,
-      interimPackageInfo.package,
+      interimPackageInfo.directory,
     ]),
   )
 
   return Object.fromEntries(
     interimPackageInfos.map(interimPackageInfo => [
-      interimPackageInfo.package,
+      interimPackageInfo.directory,
       interimPackageInfoToPackageInfo(interimPackageInfo, packageNameToPackagePath),
     ]),
   )
 }
 
 type InterimPackageInfo = {
-  package: RelativeDirectoryPath
+  directory: RelativeDirectoryPath
   name: string
   dependencies: string[]
 }
 
 async function loadInterimPackageInfo(pkg: Package): Promise<InterimPackageInfo> {
-  const packageJson = JSON.parse(await fs.readFile(pkg.package as string, 'utf-8'))
+  const packageJson = JSON.parse(await fs.readFile(pkg.directory as string, 'utf-8'))
   const name = packageJson.name
   const dependenciesByName = [
     ...Object.keys(packageJson.dependencies || []),
@@ -62,7 +62,7 @@ function interimPackageInfoToPackageInfo(
   packageNamesToPackagePaths: {[packageName: string]: RelativeDirectoryPath},
 ): PackageInfo {
   return {
-    package: interimPackageInfo.package,
+    directory: interimPackageInfo.directory,
     name: interimPackageInfo.name,
     dependencies: (interimPackageInfo.dependencies
       .map(dep =>

@@ -67,7 +67,7 @@ export function calculatePackagesToBuild({
   const changedAndFailedPackages = changedPackages.concat(
     buildResults
       .filter(buildResult => buildResult.buildResult === 'failure')
-      .map(buildResult => buildResult.packageInfo),
+      .map(buildResult => buildResult.package),
   )
 
   const artifactsToBuild = dependencyGraphSubsetToBuild({
@@ -83,8 +83,8 @@ export function calculatePackagesToBuild({
 
 function packageInfoToArtifact(packageInfo: PackageInfo) {
   return {
-    name: packageInfo.package as string,
-    dependencies: packageInfo.dependencies.map(dep => dep.package as string),
+    name: packageInfo.directory as string,
+    dependencies: packageInfo.dependencies.map(dep => dep.directory as string),
   }
 }
 
@@ -97,7 +97,7 @@ function packagesToArtifacts(
   packages: Package[],
   packageInfos: PackageInfos,
 ): DependencyGraphArtifacts {
-  return packages.map(pkg => packageInfoToArtifact(packageInfos[pkg.package as string]))
+  return packages.map(pkg => packageInfoToArtifact(packageInfos[pkg.directory as string]))
 }
 
 function artifactsToPackageInfos(

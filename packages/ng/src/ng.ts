@@ -43,7 +43,7 @@ export function calculateBuildOrder({packageInfos}: {packageInfos: PackageInfos}
     const packagesToBuild = findPackagesWithNoDependencies(packageInfos)
 
     for (const packageToBuild of packagesToBuild) {
-      const build = buildsAlreadyAdded[packageToBuild.package as string] || {
+      const build = buildsAlreadyAdded[packageToBuild.directory as string] || {
         packageToBuild,
         buildOrderAfter: calculateBuildOrderDo(
           filterOutPackageInfosAlreadyAdded(packageInfos, buildsAlreadyAdded),
@@ -75,7 +75,7 @@ export async function* build({
     packagesThatCannotBeBuilt: Set<RelativeDirectoryPath>,
   ): AsyncGenerator<BuildPackageResult> {
     for (const build of buildOrder) {
-      const packageDirectory = build.packageToBuild.package as string
+      const packageDirectory = build.packageToBuild.directory as string
       if (packagesThatCannotBeBuilt.has(packageDirectory)) continue
       if (--build.numberOfReferences > 0) continue
 
@@ -120,7 +120,7 @@ export async function saveBuildResults({
 }) {
   if (buildPackageResult.buildResult !== 'success') return
 
-  const resultDirectory = path.join(rootDir as string, buildPackageResult.package.package as string)
+  const resultDirectory = path.join(rootDir as string, buildPackageResult.package.directory as string)
   await fs.mkdir(resultDirectory, {
     recursive: true,
   })
@@ -140,7 +140,7 @@ export async function loadBuildResults({
 }): Promise<(BuildPackageResult | undefined)[]> {
   return await Promise.all(
     packages.map(async pkg => {
-      const resultDirectory = path.join(rootDir as string, pkg.package as string)
+      const resultDirectory = path.join(rootDir as string, pkg.directory as string)
       const [error, buildResultJsonString] = await presult(
         fs.readFile(path.join(resultDirectory, '.buildresult.json'), 'utf-8'),
       )
@@ -169,7 +169,7 @@ function filterOutPackageInfosAlreadyAdded(
 ): PackageInfos {
   return Object.fromEntries(
     Object.entries(packageInfos)
-      .filter(([, packageInfo]) => (packageInfo.package as string) in buildsAlreadyAdded)
+      .filter(([, packageInfo]) => (packageInfo.directory as string) in buildsAlreadyAdded)
       .map(([key, packageInfo]) => [
         key,
         removeDependenciesAlreadyAdded(packageInfo, buildsAlreadyAdded),
@@ -184,7 +184,7 @@ function removeDependenciesAlreadyAdded(
   return {
     ...packageInfo,
     dependencies: packageInfo.dependencies.filter(
-      dep => (dep.package as string) in buildsAlreadyAdded,
+      dep => (dep.directory as string) in buildsAlreadyAdded,
     ),
   }
 }
@@ -201,7 +201,7 @@ function addSubTreeToPackagesThatCannotBeBuilt(
   packagesThatCannotBeBuilt: Set<RelativeDirectoryPath>,
 ) {
   for (const build of buildOrder) {
-    packagesThatCannotBeBuilt.add(build.packageToBuild.package as string)
+    packagesThatCannotBeBuilt.add(build.packageToBuild.directory as string)
 
     addSubTreeToPackagesThatCannotBeBuilt(build.buildOrderAfter, packagesThatCannotBeBuilt)
   }

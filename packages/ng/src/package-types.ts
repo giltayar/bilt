@@ -4,7 +4,7 @@ export interface RelativeFilePath extends String {}
 export interface Commitish extends String {}
 
 export interface Package {
-  package: RelativeDirectoryPath
+  directory: RelativeDirectoryPath
 }
 
 export interface PackageInfo extends Package {
