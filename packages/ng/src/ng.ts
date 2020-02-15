@@ -1,38 +1,54 @@
 import {Package, Commitish, PackageInfos, PackageInfo, Directory} from './package-types'
 import {BuildPackageSuccessResult, BuildPackageResult} from './build-types'
 
-interface Build {
+export {calculatePackagesToBuild, findChangedFiles, findChangedPackages} from './what-to-build'
+export {findNpmPackageInfos, findNpmPackages} from './npm-packages'
+
+export interface Build {
   packageToBuild: Package
   buildOrderAfter: BuildOrder
+  numberOfReferences: number
 }
 
-type BuildOrder = Build[]
+export type BuildOrder = Build[]
 
-export function filterPackageInfosByPackage({
-  packageInfos,
-  packages,
-}: {
-  packageInfos: PackageInfos
-  packages: Package[]
-}): PackageInfos {
-  ;[packages, packageInfos, packages]
-
-  throw new Error('Unimplemented')
-}
-
-export function calculateBuildOrder({packageInfos}: {packageInfos: PackageInfos}): BuildOrder {
-  ;[packageInfos]
-
-  throw new Error('Unimplemented')
-}
-
-type BuildPackageFunction = ({
+export type BuildPackageFunction = ({
   rootDirectory,
   packageInfo,
 }: {
   rootDirectory: Directory
   packageInfo: PackageInfo
 }) => Promise<BuildPackageSuccessResult>
+
+export function calculateBuildOrder({packageInfos}: {packageInfos: PackageInfos}): BuildOrder {
+  return calculateBuildOrderDo(packageInfos, {})
+
+  function calculateBuildOrderDo(
+    packageInfos: PackageInfos,
+    buildsAlreadyAdded: PackageBuildsAlreadyAdded,
+  ): BuildOrder {
+    const ret = [] as BuildOrder
+
+    if (Object.keys(packageInfos).length === 0) return ret
+
+    const packagesToBuild = findPackagesWithNoDependencies(packageInfos)
+
+    for (const packageToBuild of packagesToBuild) {
+      const build = buildsAlreadyAdded[packageToBuild.package as string] || {
+        packageToBuild,
+        buildOrderAfter: calculateBuildOrderDo(
+          filterOutPackageInfosAlreadyAdded(packageInfos, buildsAlreadyAdded),
+          buildsAlreadyAdded,
+        ),
+        numberOfReferences: 0,
+      }
+      ++build.numberOfReferences
+      ret.push(build)
+    }
+
+    return ret
+  }
+}
 
 export async function* build({
   buildOrder,
@@ -70,4 +86,38 @@ export async function loadBuildResults({
   ;[rootDir, packages]
 
   throw new Error('Unimplemented')
+}
+
+type PackageBuildsAlreadyAdded = {
+  [packageDirectory: string]: Build
+}
+
+function findPackagesWithNoDependencies(packageInfos: PackageInfos): Package[] {
+  return Object.values(packageInfos).filter(packageInfo => packageInfo.dependencies.length === 0)
+}
+
+function filterOutPackageInfosAlreadyAdded(
+  packageInfos: PackageInfos,
+  buildsAlreadyAdded: PackageBuildsAlreadyAdded,
+): PackageInfos {
+  return Object.fromEntries(
+    Object.entries(packageInfos)
+      .filter(([, packageInfo]) => (packageInfo.package as string) in buildsAlreadyAdded)
+      .map(([key, packageInfo]) => [
+        key,
+        removeDependenciesAlreadyAdded(packageInfo, buildsAlreadyAdded),
+      ]),
+  )
+}
+
+function removeDependenciesAlreadyAdded(
+  packageInfo: PackageInfo,
+  buildsAlreadyAdded: PackageBuildsAlreadyAdded,
+): PackageInfo {
+  return {
+    ...packageInfo,
+    dependencies: packageInfo.dependencies.filter(
+      dep => (dep.package as string) in buildsAlreadyAdded,
+    ),
+  }
 }

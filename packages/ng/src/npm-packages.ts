@@ -1,5 +1,5 @@
 import {promises as fs} from 'fs'
-import {Directory, Package, PackageInfos, PackageInfo} from './package-types'
+import {Directory, Package, PackageInfos, PackageInfo, RelativeDirectoryPath} from './package-types'
 import makeFindArtifacts from '@bilt/artifact-finder'
 
 export async function findNpmPackages({
@@ -19,24 +19,33 @@ export async function findNpmPackageInfos({
 }: {
   packages: Package[]
 }): Promise<PackageInfos> {
-  const packageInfosAsArray: PackageInfo[] = await Promise.all(
-    packages.map(pkg => packageToPackageInfo(pkg, packages)),
+  const interimPackageInfos = await Promise.all(packages.map(pkg => loadInterimPackageInfo(pkg)))
+
+  const packageNameToPackagePath = Object.fromEntries(
+    interimPackageInfos.map(interimPackageInfo => [
+      interimPackageInfo.name,
+      interimPackageInfo.package,
+    ]),
   )
 
   return Object.fromEntries(
-    packageInfosAsArray.map(packageInfo => [packageInfo.package, packageInfo]),
+    interimPackageInfos.map(interimPackageInfo => [
+      interimPackageInfo.package,
+      interimPackageInfoToPackageInfo(interimPackageInfo, packageNameToPackagePath),
+    ]),
   )
 }
 
-async function packageToPackageInfo(
-  pkg: Package,
-  packageInfos: PackageInfos,
-): Promise<PackageInfo> {
-  const packageInfosByName = packageInfosToPackageInfosByName(packageInfos)
+type InterimPackageInfo = {
+  package: RelativeDirectoryPath
+  name: string
+  dependencies: string[]
+}
 
+async function loadInterimPackageInfo(pkg: Package): Promise<InterimPackageInfo> {
   const packageJson = JSON.parse(await fs.readFile(pkg.package as string, 'utf-8'))
   const name = packageJson.name
-  const dependencies = [
+  const dependenciesByName = [
     ...Object.keys(packageJson.dependencies || []),
     ...Object.keys(packageJson.devDependencies || []),
   ]
@@ -44,14 +53,23 @@ async function packageToPackageInfo(
   return {
     ...pkg,
     name,
-    dependencies: dependencies.map(dependency => packageInfosByName[dependency]),
+    dependencies: dependenciesByName,
   }
 }
 
-function packageInfosToPackageInfosByName(
-  packageInfos: PackageInfos,
-): {[name: string]: PackageInfo} {
-  return Object.fromEntries(
-    Object.values(packageInfos).map(packageInfo => [packageInfo.name, packageInfo]),
-  )
+function interimPackageInfoToPackageInfo(
+  interimPackageInfo: InterimPackageInfo,
+  packageNamesToPackagePaths: {[packageName: string]: RelativeDirectoryPath},
+): PackageInfo {
+  return {
+    package: interimPackageInfo.package,
+    name: interimPackageInfo.name,
+    dependencies: (interimPackageInfo.dependencies
+      .map(dep =>
+        packageNamesToPackagePaths[dep] == null
+          ? {package: packageNamesToPackagePaths[dep]}
+          : undefined,
+      )
+      .filter(dep => dep !== undefined) as unknown) as PackageInfo[],
+  }
 }

@@ -36,6 +36,7 @@
     "type": "git"
   },
   "dependencies": {
+    "@bilt/artifact-dependency-graph": "^3.0.31",
     "@bilt/artifact-finder": "^2.0.28",
     "debug": "^4.1.1"
   },

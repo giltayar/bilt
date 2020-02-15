@@ -1,6 +1,14 @@
 import {promisify} from 'util'
 import {execFile} from 'child_process'
-import {Package, Commitish, PackageInfos, RelativeFilePath, Directory} from './package-types'
+import {dependencyGraphSubsetToBuild, createDependencyGraph} from '@bilt/artifact-dependency-graph'
+import {
+  Package,
+  Commitish,
+  PackageInfos,
+  RelativeFilePath,
+  Directory,
+  PackageInfo,
+} from './package-types'
 import {BuildPackageResult} from './build-types'
 
 export async function findChangedFiles({
@@ -36,19 +44,71 @@ export function findChangedPackages({
 }
 
 export function calculatePackagesToBuild({
-  packages,
+  packageInfos,
   changedPackages,
   buildResults,
   buildUpTo,
   shouldForceBuildAll,
 }: {
-  packages: PackageInfos
+  packageInfos: PackageInfos
   changedPackages: Package[]
   buildResults: BuildPackageResult[]
   buildUpTo: Package[]
   shouldForceBuildAll: boolean
-}): Package[] {
-  ;[packages, changedPackages, buildResults, buildUpTo, shouldForceBuildAll]
+}): PackageInfos {
+  if (shouldForceBuildAll) {
+    return packageInfos
+  }
 
-  throw new Error('Unimplemented')
+  const dependencyGraph = createDependencyGraph(
+    Object.values(packageInfos).map(packageInfoToArtifact),
+  )
+
+  const changedAndFailedPackages = changedPackages.concat(
+    buildResults
+      .filter(buildResult => buildResult.buildResult === 'failure')
+      .map(buildResult => buildResult.package),
+  )
+
+  const artifactsToBuild = dependencyGraphSubsetToBuild({
+    dependencyGraph,
+    changedArtifacts: packagesToArtifacts(changedAndFailedPackages, packageInfos),
+    uptoArtifacts: packagesToArtifacts(buildUpTo, packageInfos),
+    fromArtifacts: [],
+    justBuildArtifacts: [],
+  }) as DependencyGraphArtifacts
+
+  return artifactsToPackageInfos(artifactsToBuild, packageInfos)
+}
+
+function packageInfoToArtifact(packageInfo: PackageInfo) {
+  return {
+    name: packageInfo.package as string,
+    dependencies: packageInfo.dependencies.map(dep => dep.package as string),
+  }
+}
+
+type DependencyGraphArtifacts = {
+  name: string
+  dependencies: string[]
+}[]
+
+function packagesToArtifacts(
+  packages: Package[],
+  packageInfos: PackageInfos,
+): DependencyGraphArtifacts {
+  return packages.map(pkg => packageInfoToArtifact(packageInfos[pkg.package as string]))
+}
+
+function artifactsToPackageInfos(
+  artifactsToBuild: DependencyGraphArtifacts,
+  packageInfos: PackageInfos,
+) {
+  const ret: PackageInfos = {}
+
+  for (const artifactToBuild of artifactsToBuild) {
+    ret[artifactToBuild.name] = packageInfos[artifactToBuild.name]
+  }
+
+  return ret
 }
