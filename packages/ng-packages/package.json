@@ -1,6 +1,6 @@
 {
   "name": "@bilt/ng-packages",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "lib/ng-packages.js",
   "types": "lib/ng-packages.d.ts",
