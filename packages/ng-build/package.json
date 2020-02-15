@@ -39,6 +39,7 @@
     "@bilt/artifact-dependency-graph": "^3.0.31",
     "@bilt/artifact-finder": "^2.0.28",
     "@bilt/ng-packages": "^1.0.1",
+    "@bilt/ng-what-to-build": "^1.0.0",
     "debug": "^4.1.1"
   },
   "devDependencies": {

@@ -8,7 +8,14 @@ import {
   Directory,
   RelativeDirectoryPath,
 } from '@bilt/ng-packages'
-import {BuildPackageSuccessResult, BuildPackageResult} from './build-types'
+
+export type BuildPackageSuccessResult = 'success' | 'failure'
+
+export interface BuildPackageResult {
+  package: Package
+  buildResult: BuildPackageSuccessResult | 'not-built'
+  error?: any
+}
 
 export interface Build {
   packageToBuild: Package
