@@ -37,8 +37,8 @@
 			"path": "packages/last-build-info"
 		},
 		{
-			"name": "ng",
-			"path": "packages/ng"
+			"name": "ng-build",
+			"path": "packages/ng-build"
 		},
 		{
 			"name": "npm-build-job",

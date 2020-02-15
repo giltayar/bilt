@@ -120,7 +120,10 @@ export async function saveBuildResults({
 }) {
   if (buildPackageResult.buildResult !== 'success') return
 
-  const resultDirectory = path.join(rootDir as string, buildPackageResult.package.directory as string)
+  const resultDirectory = path.join(
+    rootDir as string,
+    buildPackageResult.package.directory as string,
+  )
   await fs.mkdir(resultDirectory, {
     recursive: true,
   })
