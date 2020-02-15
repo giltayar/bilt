@@ -67,7 +67,7 @@ export function calculatePackagesToBuild({
   const changedAndFailedPackages = changedPackages.concat(
     buildResults
       .filter(buildResult => buildResult.buildResult === 'failure')
-      .map(buildResult => buildResult.package),
+      .map(buildResult => buildResult.packageInfo),
   )
 
   const artifactsToBuild = dependencyGraphSubsetToBuild({

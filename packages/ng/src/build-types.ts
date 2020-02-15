@@ -1,8 +1,9 @@
-import {PackageInfo} from './package-types'
+import {Package} from './package-types'
 
 export type BuildPackageSuccessResult = 'success' | 'failure'
 
 export interface BuildPackageResult {
-  package: PackageInfo
+  package: Package
   buildResult: BuildPackageSuccessResult | 'not-built'
+  error?: any
 }
