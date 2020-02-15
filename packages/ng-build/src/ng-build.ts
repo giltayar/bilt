@@ -7,11 +7,8 @@ import {
   PackageInfo,
   Directory,
   RelativeDirectoryPath,
-} from './package-types'
+} from '@bilt/ng-packages'
 import {BuildPackageSuccessResult, BuildPackageResult} from './build-types'
-
-export {calculatePackagesToBuild, findChangedFiles, findChangedPackages} from './what-to-build'
-export {findNpmPackageInfos, findNpmPackages} from './npm-packages'
 
 export interface Build {
   packageToBuild: Package

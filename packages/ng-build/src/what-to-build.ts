@@ -8,7 +8,7 @@ import {
   RelativeFilePath,
   Directory,
   PackageInfo,
-} from './package-types'
+} from '@bilt/ng-packages'
 import {BuildPackageResult} from './build-types'
 
 export async function findChangedFiles({

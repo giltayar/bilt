@@ -1,9 +1,9 @@
 {
-  "name": "@applitools/ng-build",
+  "name": "@bilt/ng-build",
   "version": "1.0.0",
   "description": "",
-  "main": "lib/ng.js",
-  "types": "lib/ng.d.ts",
+  "main": "lib/ng-build.js",
+  "types": "lib/ng-build.d.ts",
   "engines": {
     "node": ">=12.3.0"
   },
@@ -12,7 +12,7 @@
     "src"
   ],
   "publishConfig": {
-    "access": "restricted"
+    "access": "public"
   },
   "scripts": {
     "build": "tsc",
@@ -29,23 +29,24 @@
     "nodejs",
     "javascript"
   ],
-  "author": "Gil Tayar <gil.tayar@applitools.com>",
+  "author": "Gil Tayar <gil@tayar.org>",
   "license": "UNLICENSED",
   "repository": {
-    "url": "https://github.com/applitools/rendering-grid",
+    "url": "https://github.com/giltayar/bilt",
     "type": "git"
   },
   "dependencies": {
     "@bilt/artifact-dependency-graph": "^3.0.31",
     "@bilt/artifact-finder": "^2.0.28",
+    "@bilt/ng-packages": "^1.0.1",
     "debug": "^4.1.1"
   },
   "devDependencies": {
     "@types/chai": "^4.2.9",
     "@types/mocha": "^7.0.1",
     "@types/node": "^13.7.0",
-    "@typescript-eslint/eslint-plugin": "^2.19.0",
-    "@typescript-eslint/parser": "^2.19.0",
+    "@typescript-eslint/eslint-plugin": "^2.19.2",
+    "@typescript-eslint/parser": "^2.19.2",
     "chai": "^4.2.0",
     "eslint": "^6.8.0",
     "eslint-plugin-mocha-no-only": "^1.1.0",

@@ -1,4 +1,4 @@
-import {Package} from './package-types'
+import {Package} from '@bilt/ng-packages'
 
 export type BuildPackageSuccessResult = 'success' | 'failure'
 
