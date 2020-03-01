@@ -1,5 +1,6 @@
 import {promises as fs} from 'fs'
 import makeFindArtifacts from '@bilt/artifact-finder'
+import path from 'path'
 
 export interface Directory extends String {}
 export interface RelativeDirectoryPath extends String {}
@@ -32,11 +33,15 @@ export async function findNpmPackages({
 }
 
 export async function findNpmPackageInfos({
+  rootDirectory,
   packages,
 }: {
+  rootDirectory: Directory
   packages: Package[]
 }): Promise<PackageInfos> {
-  const interimPackageInfos = await Promise.all(packages.map(pkg => loadInterimPackageInfo(pkg)))
+  const interimPackageInfos = await Promise.all(
+    packages.map(pkg => loadInterimPackageInfo(rootDirectory, pkg)),
+  )
 
   const packageNameToPackagePath = Object.fromEntries(
     interimPackageInfos.map(interimPackageInfo => [
@@ -59,8 +64,16 @@ type InterimPackageInfo = {
   dependencies: string[]
 }
 
-async function loadInterimPackageInfo(pkg: Package): Promise<InterimPackageInfo> {
-  const packageJson = JSON.parse(await fs.readFile(pkg.directory as string, 'utf-8'))
+async function loadInterimPackageInfo(
+  rootDirectory: Directory,
+  pkg: Package,
+): Promise<InterimPackageInfo> {
+  const packageJson = JSON.parse(
+    await fs.readFile(
+      path.join(rootDirectory as string, pkg.directory as string, 'package.json'),
+      'utf-8',
+    ),
+  )
   const name = packageJson.name
   const dependenciesByName = [
     ...Object.keys(packageJson.dependencies || []),
@@ -83,8 +96,8 @@ function interimPackageInfoToPackageInfo(
     name: interimPackageInfo.name,
     dependencies: (interimPackageInfo.dependencies
       .map(dep =>
-        packageNamesToPackagePaths[dep] == null
-          ? {package: packageNamesToPackagePaths[dep]}
+        packageNamesToPackagePaths[dep] != null
+          ? {directory: packageNamesToPackagePaths[dep]}
           : undefined,
       )
       .filter(dep => dep !== undefined) as unknown) as PackageInfo[],
