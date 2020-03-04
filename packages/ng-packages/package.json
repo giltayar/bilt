@@ -5,7 +5,7 @@
   "main": "lib/src/ng-packages.js",
   "types": "lib/src/ng-packages.d.ts",
   "engines": {
-    "node": ">=12.3.0"
+    "node": ">=12.4.0"
   },
   "files": [
     "lib/src",
