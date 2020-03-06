@@ -11,11 +11,11 @@ import {
 } from '@bilt/ng-packages'
 
 export async function findChangedFiles({
-  rootDir,
+  rootDirectory,
   fromCommit,
   toCommit,
 }: {
-  rootDir: Directory
+  rootDirectory: Directory
   fromCommit: Commitish
   toCommit: Commitish
 }): Promise<RelativeFilePath[]> {
@@ -23,7 +23,7 @@ export async function findChangedFiles({
     'git',
     ['diff-tree', '--no-commit-id', '--name-only', '-r', fromCommit as string, toCommit as string],
     {
-      cwd: rootDir as string,
+      cwd: rootDirectory as string,
     },
   )
 
@@ -39,32 +39,28 @@ export function findChangedPackages({
   changedFiles: RelativeFilePath[]
   packages: Package[]
 }): Package[] {
-  return packages.filter(pkg => changedFiles.some(changedFile => changedFile.startsWith(pkg + '/')))
+  return packages.filter(pkg =>
+    changedFiles.some(changedFile => changedFile.startsWith(pkg.directory + '/')),
+  )
 }
 
 export function calculatePackagesToBuild({
   packageInfos,
   basePackagesToBuild,
   buildUpTo,
-  shouldForceBuildAll,
 }: {
   packageInfos: PackageInfos
   basePackagesToBuild: Package[]
   buildUpTo: Package[]
-  shouldForceBuildAll: boolean
 }): PackageInfos {
-  if (shouldForceBuildAll) {
-    return packageInfos
-  }
-
   const dependencyGraph = createDependencyGraph(
     Object.values(packageInfos).map(packageInfoToArtifact),
-  )
+  ) as DependencyGraphArtifacts
 
   const artifactsToBuild = dependencyGraphSubsetToBuild({
     dependencyGraph,
-    changedArtifacts: packagesToArtifacts(basePackagesToBuild, packageInfos),
-    uptoArtifacts: packagesToArtifacts(buildUpTo, packageInfos),
+    changedArtifacts: packagesToArtifactNames(basePackagesToBuild, packageInfos),
+    uptoArtifacts: packagesToArtifactNames(buildUpTo, packageInfos),
     fromArtifacts: [],
     justBuildArtifacts: [],
   }) as DependencyGraphArtifacts
@@ -79,16 +75,14 @@ function packageInfoToArtifact(packageInfo: PackageInfo) {
   }
 }
 
-type DependencyGraphArtifacts = {
-  name: string
-  dependencies: string[]
-}[]
+function packageInfoToArtifactName(packageInfo: PackageInfo) {
+  return packageInfo.directory as string
+}
 
-function packagesToArtifacts(
-  packages: Package[],
-  packageInfos: PackageInfos,
-): DependencyGraphArtifacts {
-  return packages.map(pkg => packageInfoToArtifact(packageInfos[pkg.directory as string]))
+type DependencyGraphArtifacts = {[moduleName: string]: {dependencies: string[]}}
+
+function packagesToArtifactNames(packages: Package[], packageInfos: PackageInfos): string[] {
+  return packages.map(pkg => packageInfoToArtifactName(packageInfos[pkg.directory as string]))
 }
 
 function artifactsToPackageInfos(
@@ -97,8 +91,8 @@ function artifactsToPackageInfos(
 ) {
   const ret: PackageInfos = {}
 
-  for (const artifactToBuild of artifactsToBuild) {
-    ret[artifactToBuild.name] = packageInfos[artifactToBuild.name]
+  for (const name of Object.keys(artifactsToBuild)) {
+    ret[name] = packageInfos[name]
   }
 
   return ret

@@ -16,5 +16,5 @@
     "allowJs": true,
     "typeRoots": ["./node_modules/@types"]
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "scripts/**/*.ts", "test/**/*.ts"]
 }
