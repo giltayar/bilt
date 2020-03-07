@@ -61,8 +61,8 @@ export function calculatePackagesToBuild({
     dependencyGraph,
     changedArtifacts: packagesToArtifactNames(basePackagesToBuild, packageInfos),
     uptoArtifacts: packagesToArtifactNames(buildUpTo, packageInfos),
-    fromArtifacts: [],
-    justBuildArtifacts: [],
+    fromArtifacts: undefined,
+    justBuildArtifacts: undefined,
   }) as DependencyGraphArtifacts
 
   return artifactsToPackageInfos(artifactsToBuild, packageInfos)

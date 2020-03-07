@@ -1,6 +1,6 @@
 {
   "name": "@bilt/ng-what-to-build",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "main": "lib/ng-what-to-build.js",
   "types": "lib/ng-what-to-build.d.ts",
@@ -44,7 +44,7 @@
   "devDependencies": {
     "@types/chai": "^4.2.10",
     "@types/mocha": "^7.0.2",
-    "@types/node": "^13.7.7",
+    "@types/node": "^13.9.0",
     "@typescript-eslint/eslint-plugin": "^2.22.0",
     "@typescript-eslint/parser": "^2.22.0",
     "chai": "^4.2.0",

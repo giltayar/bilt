@@ -75,7 +75,7 @@ describe('calculatePackagesToBuild (unit)', function() {
     })
   })
 
-  it.skip('should support two buildUptos that are medium', () => {
+  it('should support two buildUptos that are medium', () => {
     const packagesToBuild = calculatePackagesToBuild({
       packageInfos,
       buildUpTo: [cPackage, bPackage],
