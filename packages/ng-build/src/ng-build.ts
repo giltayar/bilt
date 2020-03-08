@@ -25,10 +25,8 @@ export interface Build {
 export type BuildOrder = Build[]
 
 export type BuildPackageFunction = ({
-  rootDirectory,
   packageInfo,
 }: {
-  rootDirectory: Directory
   packageInfo: PackageInfo
 }) => Promise<BuildPackageSuccessResult>
 
@@ -65,15 +63,13 @@ export function calculateBuildOrder({packageInfos}: {packageInfos: PackageInfos}
 }
 
 export async function* build({
-  rootDirectory,
-  buildOrder,
-  buildPackage,
   packageInfos,
+  buildOrder,
+  buildPackageFunc,
 }: {
-  rootDirectory: Directory
-  buildOrder: BuildOrder
-  buildPackage: BuildPackageFunction
   packageInfos: PackageInfos
+  buildOrder: BuildOrder
+  buildPackageFunc: BuildPackageFunction
 }): AsyncGenerator<BuildPackageResult> {
   const packagesThatCannotBeBuilt = new Set<RelativeDirectoryPath>()
 
@@ -90,7 +86,7 @@ export async function* build({
   ): AsyncGenerator<BuildPackageResult> {
     for (const build of buildOrder) {
       const packageDirectory = build.packageToBuild.directory as string
-      if (packagesThatCannotBeBuilt.has(packageDirectory)) continue
+      if (packagesAlreadyBuilt.has(packageDirectory)) continue
 
       const packageInfo = packageInfos[packageDirectory]
       if (packageInfo.dependencies.some(dep => !packagesAlreadyBuilt.has(dep.directory))) {
@@ -98,19 +94,22 @@ export async function* build({
       }
 
       const [error, buildResult] = await presult(
-        buildPackage({
-          rootDirectory,
+        buildPackageFunc({
           packageInfo,
         }),
       )
+      packagesAlreadyBuilt.add(packageDirectory)
 
       if (error) {
         packagesThatCannotBeBuilt.add(packageDirectory)
-        yield {package: packageInfo, buildResult: 'failure', error}
+        yield {package: {directory: packageInfo.directory}, buildResult: 'failure', error}
 
         addSubTreeToPackagesThatCannotBeBuilt(build.buildOrderAfter, packagesThatCannotBeBuilt)
       } else {
-        yield {package: packageInfo, buildResult: buildResult as BuildPackageSuccessResult}
+        yield {
+          package: {directory: packageInfo.directory},
+          buildResult: buildResult as BuildPackageSuccessResult,
+        }
 
         yield* buildDo(build.buildOrderAfter, packagesAlreadyBuilt, packagesThatCannotBeBuilt)
       }
