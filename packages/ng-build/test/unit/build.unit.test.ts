@@ -65,4 +65,44 @@ describe('build (unit)', function() {
 
     expect(packagesBuilt).to.eql(['edir', 'cdir', 'ddir', 'packages/bdir', 'adir', 'fdir'])
   })
+
+  it('should fail to build correctly', async () => {
+    const buildOrder = calculateBuildOrder({packageInfos})
+
+    const packagesBuilt: RelativeDirectoryPath[] = []
+
+    async function buildPackageFunc({
+      packageInfo,
+    }: {
+      packageInfo: PackageInfo
+    }): Promise<BuildPackageSuccessResult> {
+      packagesBuilt.push(packageInfo.directory)
+
+      return packageInfo.name === 'cpackage' ? 'failure' : 'success'
+    }
+
+    let countFailures = 0
+    let countSuccesses = 0
+    let countNotBuilt = 0
+    for await (const buildResult of build({packageInfos, buildOrder, buildPackageFunc})) {
+      const shouldBeSuccesful = ['edir', 'fdir'].includes(buildResult.package.directory as string)
+      const shouldFail = ['cdir'].includes(buildResult.package.directory as string)
+
+      if (buildResult.buildResult === 'success') {
+        countSuccesses++
+      } else if (buildResult.buildResult === 'failure') {
+        countFailures++
+      } else {
+        countNotBuilt++
+      }
+      expect(buildResult.buildResult).to.eql(
+        shouldBeSuccesful ? 'success' : shouldFail ? 'failure' : 'not-built',
+      )
+    }
+
+    expect(packagesBuilt).to.eql(['edir', 'cdir', 'fdir'])
+    expect(countSuccesses).to.eql(2)
+    expect(countFailures).to.eql(1)
+    expect(countNotBuilt).to.eql(3)
+  })
 })

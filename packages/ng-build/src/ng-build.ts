@@ -87,6 +87,7 @@ export async function* build({
     for (const build of buildOrder) {
       const packageDirectory = build.packageToBuild.directory as string
       if (packagesAlreadyBuilt.has(packageDirectory)) continue
+      if (packagesThatCannotBeBuilt.has(packageDirectory)) continue
 
       const packageInfo = packageInfos[packageDirectory]
       if (packageInfo.dependencies.some(dep => !packagesAlreadyBuilt.has(dep.directory))) {
@@ -100,11 +101,14 @@ export async function* build({
       )
       packagesAlreadyBuilt.add(packageDirectory)
 
-      if (error) {
-        packagesThatCannotBeBuilt.add(packageDirectory)
+      if (error || buildResult === 'failure') {
         yield {package: {directory: packageInfo.directory}, buildResult: 'failure', error}
 
-        addSubTreeToPackagesThatCannotBeBuilt(build.buildOrderAfter, packagesThatCannotBeBuilt)
+        addSubTreeToPackagesThatCannotBeBuilt(
+          build.buildOrderAfter,
+          packagesThatCannotBeBuilt,
+          packagesAlreadyBuilt,
+        )
       } else {
         yield {
           package: {directory: packageInfo.directory},
@@ -190,10 +194,18 @@ async function presult<T>(promise: Promise<T>): Promise<[any | undefined, T | un
 function addSubTreeToPackagesThatCannotBeBuilt(
   buildOrder: BuildOrder,
   packagesThatCannotBeBuilt: Set<RelativeDirectoryPath>,
+  packagesAlreadyBuilt: Set<RelativeDirectoryPath>,
 ) {
   for (const build of buildOrder) {
-    packagesThatCannotBeBuilt.add(build.packageToBuild.directory as string)
+    if (packagesAlreadyBuilt.has(build.packageToBuild.directory)) continue
+    if (packagesThatCannotBeBuilt.has(build.packageToBuild.directory)) continue
 
-    addSubTreeToPackagesThatCannotBeBuilt(build.buildOrderAfter, packagesThatCannotBeBuilt)
+    packagesThatCannotBeBuilt.add(build.packageToBuild.directory)
+
+    addSubTreeToPackagesThatCannotBeBuilt(
+      build.buildOrderAfter,
+      packagesThatCannotBeBuilt,
+      packagesAlreadyBuilt,
+    )
   }
 }
