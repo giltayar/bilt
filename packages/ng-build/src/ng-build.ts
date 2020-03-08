@@ -1,5 +1,4 @@
 import {promises as fs} from 'fs'
-import assert from 'assert'
 import path from 'path'
 import {
   Package,
@@ -46,20 +45,19 @@ export function calculateBuildOrder({packageInfos}: {packageInfos: PackageInfos}
     const packagesToBuild = findPackagesWithDependenciesOnRoot(packageInfos, rootPackage)
 
     for (const packageToBuild of packagesToBuild) {
-      const isFirstBuild = !buildsAlreadyAdded.has(packageToBuild.directory)
       const build = buildsAlreadyAdded.get(packageToBuild.directory) || {
         packageToBuild,
         buildOrderAfter: [],
       }
 
+      buildsAlreadyAdded.set(packageToBuild.directory, build)
       ret.push(build)
-      if (isFirstBuild) {
-        build.buildOrderAfter = calculateBuildOrderDo(
-          packageInfos,
-          buildsAlreadyAdded,
-          packageToBuild,
-        )
-      }
+
+      build.buildOrderAfter = calculateBuildOrderDo(
+        packageInfos,
+        buildsAlreadyAdded,
+        packageToBuild,
+      )
     }
 
     return ret

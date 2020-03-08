@@ -10,13 +10,21 @@ inspect.defaultOptions.depth = 1000
 describe('calculateBuildOrder (unit)', function() {
   const ePackage: PackageInfo = {directory: 'edir', name: 'epackage', dependencies: []}
   const fPackage: PackageInfo = {directory: 'fdir', name: 'fpackage', dependencies: []}
-  const dPackage: PackageInfo = {directory: 'ddir', name: 'dpackage', dependencies: [ePackage]}
+  const cPackage: PackageInfo = {
+    directory: 'cdir',
+    name: 'cpackage',
+    dependencies: [ePackage],
+  }
+  const dPackage: PackageInfo = {
+    directory: 'ddir',
+    name: 'dpackage',
+    dependencies: [cPackage, ePackage],
+  }
   const bPackage: PackageInfo = {
     directory: 'packages/bdir',
     name: 'bpackage',
     dependencies: [dPackage],
   }
-  const cPackage: PackageInfo = {directory: 'cdir', name: 'cpackage', dependencies: [ePackage]}
   const aPackage: PackageInfo = {
     directory: 'adir',
     name: 'apackage',
@@ -33,6 +41,16 @@ describe('calculateBuildOrder (unit)', function() {
 
   it('should create the correct build order for the above packageInfos', () => {
     const aBuild: Build = {packageToBuild: aPackage, buildOrderAfter: []}
+    const dBuild = {
+      packageToBuild: dPackage,
+      buildOrderAfter: [
+        {
+          packageToBuild: bPackage,
+          buildOrderAfter: [aBuild],
+        },
+      ],
+    }
+
     const result = calculateBuildOrder({packageInfos})
 
     expect(result).to.eql([
@@ -41,17 +59,9 @@ describe('calculateBuildOrder (unit)', function() {
         buildOrderAfter: [
           {
             packageToBuild: cPackage,
-            buildOrderAfter: [aBuild],
+            buildOrderAfter: [aBuild, dBuild],
           },
-          {
-            packageToBuild: dPackage,
-            buildOrderAfter: [
-              {
-                packageToBuild: bPackage,
-                buildOrderAfter: [aBuild],
-              },
-            ],
-          },
+          dBuild,
         ],
       },
       {
