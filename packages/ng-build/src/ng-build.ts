@@ -1,4 +1,5 @@
 import {promises as fs} from 'fs'
+import assert from 'assert'
 import path from 'path'
 import {
   Package,
@@ -34,33 +35,53 @@ export type BuildPackageFunction = ({
 }) => Promise<BuildPackageSuccessResult>
 
 export function calculateBuildOrder({packageInfos}: {packageInfos: PackageInfos}): BuildOrder {
-  return calculateBuildOrderDo(packageInfos, {})
+  return calculateBuildOrderDo(packageInfos, new Map<RelativeDirectoryPath, Build>(), undefined)
 
   function calculateBuildOrderDo(
     packageInfos: PackageInfos,
-    buildsAlreadyAdded: PackageBuildsAlreadyAdded,
+    buildsAlreadyAdded: BuildsAlreadyAdded,
+    rootPackage: Package | undefined,
   ): BuildOrder {
     const ret = [] as BuildOrder
 
-    if (Object.keys(packageInfos).length === 0) return ret
-
-    const packagesToBuild = findPackagesWithNoDependencies(packageInfos)
+    const packagesToBuild = findPackagesWithDependenciesOnRoot(packageInfos, rootPackage)
+    addPackagesToBuildsAlreadyAdded(packagesToBuild, buildsAlreadyAdded)
 
     for (const packageToBuild of packagesToBuild) {
-      const build = buildsAlreadyAdded[packageToBuild.directory as string] || {
-        packageToBuild,
-        buildOrderAfter: calculateBuildOrderDo(
-          filterOutPackageInfosAlreadyAdded(packageInfos, buildsAlreadyAdded),
-          buildsAlreadyAdded,
-        ),
-        numberOfReferences: 0,
+      const build = buildsAlreadyAdded.get(packageToBuild.directory)
+
+      if (build) {
+        ++build.numberOfReferences
+        ret.push(build)
+        if (build.numberOfReferences === 1) {
+          build.buildOrderAfter = calculateBuildOrderDo(
+            packageInfos,
+            buildsAlreadyAdded,
+            packageToBuild,
+          )
+        }
+      } else {
+        assert.fail('has to be not null')
       }
-      ++build.numberOfReferences
-      ret.push(build)
     }
 
     return ret
   }
+}
+
+function addPackagesToBuildsAlreadyAdded(
+  packagesToBuild: Package[],
+  buildsAlreadyAdded: BuildsAlreadyAdded,
+) {
+  packagesToBuild.forEach(packageToBuild => {
+    if (!buildsAlreadyAdded.has(packageToBuild.directory)) {
+      buildsAlreadyAdded.set(packageToBuild.directory, {
+        packageToBuild,
+        numberOfReferences: 0,
+        buildOrderAfter: [],
+      })
+    }
+  })
 }
 
 export async function* build({
@@ -162,38 +183,18 @@ export async function loadBuildResults({
   )
 }
 
-type PackageBuildsAlreadyAdded = {
-  [packageDirectory: string]: Build
-}
+type BuildsAlreadyAdded = Map<RelativeDirectoryPath, Build>
 
-function findPackagesWithNoDependencies(packageInfos: PackageInfos): Package[] {
-  return Object.values(packageInfos).filter(packageInfo => packageInfo.dependencies.length === 0)
-}
-
-function filterOutPackageInfosAlreadyAdded(
+function findPackagesWithDependenciesOnRoot(
   packageInfos: PackageInfos,
-  buildsAlreadyAdded: PackageBuildsAlreadyAdded,
-): PackageInfos {
-  return Object.fromEntries(
-    Object.entries(packageInfos)
-      .filter(([, packageInfo]) => (packageInfo.directory as string) in buildsAlreadyAdded)
-      .map(([key, packageInfo]) => [
-        key,
-        removeDependenciesAlreadyAdded(packageInfo, buildsAlreadyAdded),
-      ]),
+  rootPackage: Package | undefined,
+): Package[] {
+  return Object.values(packageInfos).filter(packageInfo =>
+    rootPackage
+      ? packageInfo.dependencies.length > 0 &&
+        packageInfo.dependencies.some(dep => dep.directory === rootPackage.directory)
+      : packageInfo.dependencies.length === 0,
   )
-}
-
-function removeDependenciesAlreadyAdded(
-  packageInfo: PackageInfo,
-  buildsAlreadyAdded: PackageBuildsAlreadyAdded,
-): PackageInfo {
-  return {
-    ...packageInfo,
-    dependencies: packageInfo.dependencies.filter(
-      dep => (dep.directory as string) in buildsAlreadyAdded,
-    ),
-  }
 }
 
 async function presult<T>(promise: Promise<T>): Promise<[any | undefined, T | undefined]> {

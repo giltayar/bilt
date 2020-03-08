@@ -1,6 +1,6 @@
 {
   "name": "@bilt/ng-build",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "lib/ng-build.js",
   "types": "lib/ng-build.d.ts",
@@ -38,24 +38,24 @@
   "dependencies": {
     "@bilt/artifact-dependency-graph": "^3.0.31",
     "@bilt/artifact-finder": "^2.0.28",
-    "@bilt/ng-packages": "^1.0.1",
-    "@bilt/ng-what-to-build": "^1.0.0",
+    "@bilt/ng-packages": "^1.0.2",
+    "@bilt/ng-what-to-build": "^1.0.2",
     "debug": "^4.1.1"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.9",
-    "@types/mocha": "^7.0.1",
-    "@types/node": "^13.7.0",
-    "@typescript-eslint/eslint-plugin": "^2.19.2",
-    "@typescript-eslint/parser": "^2.19.2",
+    "@types/chai": "^4.2.10",
+    "@types/mocha": "^7.0.2",
+    "@types/node": "^13.9.0",
+    "@typescript-eslint/eslint-plugin": "^2.22.0",
+    "@typescript-eslint/parser": "^2.22.0",
     "chai": "^4.2.0",
     "eslint": "^6.8.0",
     "eslint-plugin-mocha-no-only": "^1.1.0",
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-prettier": "^3.1.2",
-    "mocha": "^7.0.1",
+    "mocha": "^7.1.0",
     "prettier": "^1.19.1",
     "ts-node": "^8.6.2",
-    "typescript": "^3.7.5"
+    "typescript": "^3.8.3"
   }
 }
