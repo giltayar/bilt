@@ -21,7 +21,6 @@ export interface BuildPackageResult {
 export interface Build {
   packageToBuild: Package
   buildOrderAfter: BuildOrder
-  numberOfReferences: number
 }
 
 export type BuildOrder = Build[]
@@ -45,43 +44,26 @@ export function calculateBuildOrder({packageInfos}: {packageInfos: PackageInfos}
     const ret = [] as BuildOrder
 
     const packagesToBuild = findPackagesWithDependenciesOnRoot(packageInfos, rootPackage)
-    addPackagesToBuildsAlreadyAdded(packagesToBuild, buildsAlreadyAdded)
 
     for (const packageToBuild of packagesToBuild) {
-      const build = buildsAlreadyAdded.get(packageToBuild.directory)
+      const isFirstBuild = !buildsAlreadyAdded.has(packageToBuild.directory)
+      const build = buildsAlreadyAdded.get(packageToBuild.directory) || {
+        packageToBuild,
+        buildOrderAfter: [],
+      }
 
-      if (build) {
-        ++build.numberOfReferences
-        ret.push(build)
-        if (build.numberOfReferences === 1) {
-          build.buildOrderAfter = calculateBuildOrderDo(
-            packageInfos,
-            buildsAlreadyAdded,
-            packageToBuild,
-          )
-        }
-      } else {
-        assert.fail('has to be not null')
+      ret.push(build)
+      if (isFirstBuild) {
+        build.buildOrderAfter = calculateBuildOrderDo(
+          packageInfos,
+          buildsAlreadyAdded,
+          packageToBuild,
+        )
       }
     }
 
     return ret
   }
-}
-
-function addPackagesToBuildsAlreadyAdded(
-  packagesToBuild: Package[],
-  buildsAlreadyAdded: BuildsAlreadyAdded,
-) {
-  packagesToBuild.forEach(packageToBuild => {
-    if (!buildsAlreadyAdded.has(packageToBuild.directory)) {
-      buildsAlreadyAdded.set(packageToBuild.directory, {
-        packageToBuild,
-        numberOfReferences: 0,
-        buildOrderAfter: [],
-      })
-    }
-  })
 }
 
 export async function* build({
@@ -95,16 +77,28 @@ export async function* build({
   buildPackage: BuildPackageFunction
   packageInfos: PackageInfos
 }): AsyncGenerator<BuildPackageResult> {
+  const packagesThatCannotBeBuilt = new Set<RelativeDirectoryPath>()
+
+  yield* buildDo(buildOrder, new Set<RelativeDirectoryPath>(), packagesThatCannotBeBuilt)
+
+  for (const packageNotBuilt of packagesThatCannotBeBuilt) {
+    yield {package: packageInfos[packageNotBuilt as string], buildResult: 'not-built'}
+  }
+
   async function* buildDo(
     buildOrder: BuildOrder,
+    packagesAlreadyBuilt: Set<RelativeDirectoryPath>,
     packagesThatCannotBeBuilt: Set<RelativeDirectoryPath>,
   ): AsyncGenerator<BuildPackageResult> {
     for (const build of buildOrder) {
       const packageDirectory = build.packageToBuild.directory as string
       if (packagesThatCannotBeBuilt.has(packageDirectory)) continue
-      if (--build.numberOfReferences > 0) continue
 
       const packageInfo = packageInfos[packageDirectory]
+      if (packageInfo.dependencies.some(dep => !packagesAlreadyBuilt.has(dep.directory))) {
+        continue
+      }
+
       const [error, buildResult] = await presult(
         buildPackage({
           rootDirectory,
@@ -120,17 +114,9 @@ export async function* build({
       } else {
         yield {package: packageInfo, buildResult: buildResult as BuildPackageSuccessResult}
 
-        yield* buildDo(build.buildOrderAfter, packagesThatCannotBeBuilt)
+        yield* buildDo(build.buildOrderAfter, packagesAlreadyBuilt, packagesThatCannotBeBuilt)
       }
     }
-  }
-
-  const packagesThatCannotBeBuilt = new Set<RelativeDirectoryPath>()
-
-  yield* buildDo(buildOrder, packagesThatCannotBeBuilt)
-
-  for (const packageThatWasNotBuilt of packagesThatCannotBeBuilt) {
-    yield {package: packageInfos[packageThatWasNotBuilt as string], buildResult: 'not-built'}
   }
 }
 

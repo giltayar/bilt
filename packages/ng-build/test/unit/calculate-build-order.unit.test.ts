@@ -32,26 +32,22 @@ describe('calculateBuildOrder (unit)', function() {
   }
 
   it('should create the correct build order for the above packageInfos', () => {
-    const aBuild: Build = {packageToBuild: aPackage, numberOfReferences: 2, buildOrderAfter: []}
+    const aBuild: Build = {packageToBuild: aPackage, buildOrderAfter: []}
     const result = calculateBuildOrder({packageInfos})
 
     expect(result).to.eql([
       {
         packageToBuild: ePackage,
-        numberOfReferences: 1,
         buildOrderAfter: [
           {
             packageToBuild: cPackage,
-            numberOfReferences: 1,
             buildOrderAfter: [aBuild],
           },
           {
             packageToBuild: dPackage,
-            numberOfReferences: 1,
             buildOrderAfter: [
               {
                 packageToBuild: bPackage,
-                numberOfReferences: 1,
                 buildOrderAfter: [aBuild],
               },
             ],
@@ -60,7 +56,6 @@ describe('calculateBuildOrder (unit)', function() {
       },
       {
         packageToBuild: fPackage,
-        numberOfReferences: 1,
         buildOrderAfter: [],
       },
     ] as ReturnType<typeof calculateBuildOrder>)
