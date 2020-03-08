@@ -121,19 +121,19 @@ export async function* build({
   }
 }
 
-export async function saveBuildResults({
-  rootDir,
+export async function saveCommitOfLastSuccesfulBuild({
+  rootDirectory,
   buildPackageResult,
   commit,
 }: {
-  rootDir: Directory
+  rootDirectory: Directory
   buildPackageResult: BuildPackageResult
   commit: Commitish
 }) {
   if (buildPackageResult.buildResult !== 'success') return
 
   const resultDirectory = path.join(
-    rootDir as string,
+    rootDirectory as string,
     buildPackageResult.package.directory as string,
   )
   await fs.mkdir(resultDirectory, {
@@ -141,23 +141,23 @@ export async function saveBuildResults({
   })
 
   await fs.writeFile(
-    path.join(resultDirectory, '.buildresult.json'),
-    JSON.stringify({buildPackageResult, commit}),
+    path.join(resultDirectory, '.lastsuccesfulbuild.json'),
+    JSON.stringify({commit}),
   )
 }
 
-export async function loadBuildResults({
-  rootDir,
+export async function loadCommitsOfLastSuccesfulBuilds({
+  rootDirectory,
   packages,
 }: {
-  rootDir: Directory
+  rootDirectory: Directory
   packages: Package[]
-}): Promise<(BuildPackageResult | undefined)[]> {
+}): Promise<({commit: Commitish} | undefined)[]> {
   return await Promise.all(
     packages.map(async pkg => {
-      const resultDirectory = path.join(rootDir as string, pkg.directory as string)
+      const resultDirectory = path.join(rootDirectory as string, pkg.directory as string)
       const [error, buildResultJsonString] = await presult(
-        fs.readFile(path.join(resultDirectory, '.buildresult.json'), 'utf-8'),
+        fs.readFile(path.join(resultDirectory, '.lastsuccesfulbuild.json'), 'utf-8'),
       )
 
       if (error) {
@@ -165,7 +165,9 @@ export async function loadBuildResults({
         else throw error
       }
 
-      return JSON.parse(buildResultJsonString as string).buildPackageResult as BuildPackageResult
+      return JSON.parse(buildResultJsonString as string) as {
+        commit: Commitish
+      }
     }),
   )
 }
