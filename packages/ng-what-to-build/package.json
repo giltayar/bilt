@@ -1,9 +1,9 @@
 {
   "name": "@bilt/ng-what-to-build",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "",
-  "main": "lib/ng-what-to-build.js",
-  "types": "lib/ng-what-to-build.d.ts",
+  "main": "lib/src/ng-what-to-build.js",
+  "types": "lib/src/ng-what-to-build.d.ts",
   "engines": {
     "node": ">=12.3.0"
   },
