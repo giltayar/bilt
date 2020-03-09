@@ -1,6 +1,6 @@
 {
   "name": "@bilt/ng-what-to-build",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "main": "lib/ng-what-to-build.js",
   "types": "lib/ng-what-to-build.d.ts",
@@ -8,7 +8,7 @@
     "node": ">=12.3.0"
   },
   "files": [
-    "lib",
+    "lib/src",
     "src"
   ],
   "publishConfig": {
