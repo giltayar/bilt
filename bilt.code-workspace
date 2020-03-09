@@ -41,6 +41,10 @@
 			"path": "packages/ng-build"
 		},
 		{
+			"name": "ng-e2e",
+			"path": "packages/ng-e2e"
+		},
+		{
 			"name": "ng-packages",
 			"path": "packages/ng-packages"
 		},
