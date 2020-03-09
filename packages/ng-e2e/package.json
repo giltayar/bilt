@@ -36,6 +36,9 @@
     "type": "git"
   },
   "dependencies": {
+    "@bilt/ng-build": "^1.0.8",
+    "@bilt/ng-packages": "^1.0.2",
+    "@bilt/ng-what-to-build": "^1.0.5",
     "debug": "^4.1.1"
   },
   "devDependencies": {

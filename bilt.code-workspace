@@ -9,10 +9,6 @@
 			"path": "packages/artifact-finder"
 		},
 		{
-			"name": "bilt",
-			"path": "."
-		},
-		{
 			"name": "bilt-cli",
 			"path": "packages/bilt-cli"
 		},
