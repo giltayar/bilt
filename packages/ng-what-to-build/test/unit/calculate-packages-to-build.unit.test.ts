@@ -4,7 +4,7 @@ import {PackageInfo, PackageInfos} from '@bilt/ng-packages'
 
 import {calculatePackagesToBuild} from '../../src/ng-what-to-build'
 
-describe('calculatePackagesToBuild (unit)', function() {
+describe('calculatePackagesToBuild (unit)', function () {
   const ePackage: PackageInfo = {directory: 'edir', name: 'epackage', dependencies: []}
   const dPackage: PackageInfo = {directory: 'ddir', name: 'dpackage', dependencies: [ePackage]}
   const bPackage: PackageInfo = {

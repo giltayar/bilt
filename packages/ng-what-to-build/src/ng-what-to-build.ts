@@ -10,9 +10,12 @@ import {
   PackageInfo,
   RelativeDirectoryPath,
 } from '@bilt/ng-packages'
-import {lstatSync} from 'fs'
 
 export type ChangedFilesInGit = Map<Commitish, RelativeFilePath[]>
+export interface LastSuccesfulBuildOfPackage {
+  package: Package
+  lastSuccesfulBuild: Commitish
+}
 
 export async function findChangedFiles({
   rootDirectory,
@@ -58,13 +61,6 @@ export async function findChangedFiles({
 
   return ret
 }
-
-interface LastSuccesfulBuildOfPackage {
-  package: Package
-  lastSuccesfulBuild: Commitish
-}
-
-type LastSuccesfulBuildOfPackages = []
 
 export function findChangedPackages({
   changedFilesInGit,

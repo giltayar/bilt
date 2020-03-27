@@ -4,7 +4,7 @@ import {expect} from 'chai'
 import {findChangedFiles, findChangedPackages} from '../../src/ng-what-to-build'
 import {Commitish, RelativeFilePath} from '@bilt/ng-packages'
 
-describe('findChanged (it)', function() {
+describe('findChanged (it)', function () {
   describe('findChangedFiles', () => {
     it('should be able find files changes between two commit in this repo (it will not include the files in fromCommit', async () => {
       const changedFilesInGit = await findChangedFiles({
