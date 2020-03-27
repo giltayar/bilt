@@ -7,7 +7,7 @@ export function logFilesDuringBuild(
   rootDirectory: Directory,
   logLines: {[x: string]: string},
 ): BuildPackageFunction {
-  return async function({packageInfo}: {packageInfo: PackageInfo}) {
+  return async function ({packageInfo}: {packageInfo: PackageInfo}) {
     const directory = path.join(rootDirectory as string, packageInfo.directory as string)
 
     const files = await fs.promises.readdir(directory)

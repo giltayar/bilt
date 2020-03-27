@@ -30,7 +30,7 @@ export async function gitWritePackageJson(
     JSON.stringify({
       name,
       version: '1.0.0',
-      dependencies: Object.fromEntries(dependencies.map(dep => [dep, '^1.0.0'])),
+      dependencies: Object.fromEntries(dependencies.map((dep) => [dep, '^1.0.0'])),
     }),
   )
 }

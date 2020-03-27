@@ -11,10 +11,9 @@ import {
 } from './e2e-git-utils'
 import {logFilesDuringBuild} from './e2e-build-utils'
 
-describe('buildJustChangedPackages (e2e)', function() {
-  it.only('should build only changed packages', async () => {
+describe('buildJustChangedPackages (e2e)', function () {
+  it('should build only changed packages', async () => {
     const gitDir = await gitMakeTemporaryDirectory()
-    console.log(`*********** `, {gitDir}) //@@@GIL
     await gitInit(gitDir)
     await gitWrite(gitDir, '.gitignore', '.bilt\n')
 
@@ -38,6 +37,6 @@ describe('buildJustChangedPackages (e2e)', function() {
     await gitWrite(gitDir, 'adir/hello.txt', 'hello1')
     await gitCommitAll(gitDir)
     await buildJustChangedPackages(gitDir, logFilesDuringBuild(gitDir, build3))
-    expect(build3).to.eql({'adir/hello.txt': 'hello'})
+    expect(build3).to.eql({'adir/hello.txt': 'hello1'})
   })
 })
