@@ -7,7 +7,7 @@ import {calculateBuildOrder, build, BuildPackageSuccessResult} from '../../src/n
 
 inspect.defaultOptions.depth = 1000
 
-describe('build (unit)', function() {
+describe('build (unit)', function () {
   const ePackage: PackageInfo = {directory: 'edir', name: 'epackage', dependencies: []}
   const fPackage: PackageInfo = {directory: 'fdir', name: 'fpackage', dependencies: []}
   const cPackage: PackageInfo = {

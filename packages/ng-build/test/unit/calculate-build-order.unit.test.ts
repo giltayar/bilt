@@ -7,7 +7,7 @@ import {calculateBuildOrder, Build} from '../../src/ng-build'
 
 inspect.defaultOptions.depth = 1000
 
-describe('calculateBuildOrder (unit)', function() {
+describe('calculateBuildOrder (unit)', function () {
   const ePackage: PackageInfo = {directory: 'edir', name: 'epackage', dependencies: []}
   const fPackage: PackageInfo = {directory: 'fdir', name: 'fpackage', dependencies: []}
   const cPackage: PackageInfo = {

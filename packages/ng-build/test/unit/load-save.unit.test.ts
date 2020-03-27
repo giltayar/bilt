@@ -6,21 +6,16 @@ import {expect} from 'chai'
 import {saveCommitOfLastSuccesfulBuild, loadCommitsOfLastSuccesfulBuilds} from '../../src/ng-build'
 import {Package} from '@bilt/ng-packages'
 
-describe('load-save (unit)', function() {
-  const packages: Package[] = [
-    {directory: 'adir'},
-    {directory: 'packages/bdir'},
-    {directory: 'cdir'},
-  ]
+describe('load-save (unit)', function () {
+  const pa = {directory: 'adir'}
+  const pb = {directory: 'packages/bdir'}
+  const pc = {directory: 'cdir'}
+  const packages: Package[] = [pa, pb, pc]
 
   it('load an empty dir with undefined', async () => {
     const rootDirectory = await fs.promises.mkdtemp(os.tmpdir + '/')
 
-    expect(await loadCommitsOfLastSuccesfulBuilds({rootDirectory, packages})).to.eql([
-      undefined,
-      undefined,
-      undefined,
-    ])
+    expect(await loadCommitsOfLastSuccesfulBuilds({rootDirectory, packages})).to.eql([])
   })
 
   it('load a succesful build result if one was saved', async () => {
@@ -33,9 +28,7 @@ describe('load-save (unit)', function() {
     })
 
     expect(await loadCommitsOfLastSuccesfulBuilds({rootDirectory, packages})).to.eql([
-      undefined,
-      {commit: '123'},
-      undefined,
+      {package: pb, lastSuccesfulBuild: '123'},
     ])
   })
 
@@ -59,9 +52,7 @@ describe('load-save (unit)', function() {
     })
 
     expect(await loadCommitsOfLastSuccesfulBuilds({rootDirectory, packages})).to.eql([
-      undefined,
-      {commit: '123'},
-      undefined,
+      {package: pb, lastSuccesfulBuild: '123'},
     ])
   })
 
@@ -85,9 +76,8 @@ describe('load-save (unit)', function() {
     })
 
     expect(await loadCommitsOfLastSuccesfulBuilds({rootDirectory, packages})).to.eql([
-      {commit: '456'},
-      {commit: '456'},
-      undefined,
+      {package: pa, lastSuccesfulBuild: '456'},
+      {package: pb, lastSuccesfulBuild: '456'},
     ])
   })
 })

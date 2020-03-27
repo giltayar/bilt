@@ -8,6 +8,7 @@ import {
   Directory,
   RelativeDirectoryPath,
 } from '@bilt/ng-packages'
+import {LastSuccesfulBuildOfPackage} from '@bilt/ng-what-to-build'
 
 export type BuildPackageSuccessResult = 'success' | 'failure'
 
@@ -152,24 +153,28 @@ export async function loadCommitsOfLastSuccesfulBuilds({
 }: {
   rootDirectory: Directory
   packages: Package[]
-}): Promise<({commit: Commitish} | undefined)[]> {
-  return await Promise.all(
-    packages.map(async pkg => {
-      const resultDirectory = path.join(rootDirectory as string, pkg.directory as string)
-      const [error, buildResultJsonString] = await presult(
-        fs.readFile(path.join(resultDirectory, '.lastsuccesfulbuild.json'), 'utf-8'),
-      )
+}): Promise<LastSuccesfulBuildOfPackage[]> {
+  return (
+    await Promise.all(
+      packages.map(async pkg => {
+        const resultDirectory = path.join(rootDirectory as string, pkg.directory as string)
+        const [error, buildResultJsonString] = await presult(
+          fs.readFile(path.join(resultDirectory, '.lastsuccesfulbuild.json'), 'utf-8'),
+        )
 
-      if (error) {
-        if (error.code === 'ENOENT') return undefined
-        else throw error
-      }
+        if (error) {
+          if (error.code === 'ENOENT') return undefined
+          else throw error
+        }
 
-      return JSON.parse(buildResultJsonString as string) as {
-        commit: Commitish
-      }
-    }),
-  )
+        const result = JSON.parse(buildResultJsonString as string) as {
+          commit: Commitish
+        }
+
+        return {package: pkg, lastSuccesfulBuild: result.commit}
+      }),
+    )
+  ).filter(lsbop => !!lsbop) as LastSuccesfulBuildOfPackage[]
 }
 
 type BuildsAlreadyAdded = Map<RelativeDirectoryPath, Build>
