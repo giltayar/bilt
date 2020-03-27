@@ -120,12 +120,13 @@ export function calculatePackagesToBuild({
     Object.values(packageInfos).map(packageInfoToArtifact),
   ) as DependencyGraphArtifacts
 
+  const changedArtifacts = packagesToArtifactNames(basePackagesToBuild, packageInfos)
   const artifactsToBuild = dependencyGraphSubsetToBuild({
     dependencyGraph,
-    changedArtifacts: packagesToArtifactNames(basePackagesToBuild, packageInfos),
+    changedArtifacts: changedArtifacts,
     uptoArtifacts: packagesToArtifactNames(buildUpTo, packageInfos),
     fromArtifacts: undefined,
-    justBuildArtifacts: undefined,
+    justBuildArtifacts: changedArtifacts,
   }) as DependencyGraphArtifacts
 
   return artifactsToPackageInfos(artifactsToBuild, packageInfos)

@@ -26,6 +26,16 @@ describe('calculatePackagesToBuild (unit)', function () {
     [ePackage.directory as string]: ePackage,
   }
 
+  it('if buildUpTo is empty, only base pacakges are build', () => {
+    const packagesToBuild = calculatePackagesToBuild({
+      packageInfos,
+      buildUpTo: [],
+      basePackagesToBuild: [dPackage],
+    })
+
+    expect(packagesToBuild).to.eql({[dPackage.directory as string]: dPackage})
+  })
+
   it('if package with no dependents is asked to be built, that is the only package that will be built', () => {
     const packagesToBuild = calculatePackagesToBuild({
       packageInfos,
