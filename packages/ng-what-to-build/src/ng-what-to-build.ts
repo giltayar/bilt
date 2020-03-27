@@ -22,9 +22,9 @@ export async function findChangedFiles({
   fromGitDate = '1 year ago',
   toCommit = 'HEAD',
 }: {
-  fromGitDate: string
-  toCommit: Commitish
-  rootDirectory: Directory
+  fromGitDate?: string
+  toCommit?: Commitish
+  rootDirectory?: Directory
 }): Promise<ChangedFilesInGit> {
   const COMMIT_PREFIX_IN_LOG = '----'
   const diffTreeResult = await promisify(execFile)(
