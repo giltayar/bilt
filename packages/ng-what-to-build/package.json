@@ -1,6 +1,6 @@
 {
   "name": "@bilt/ng-what-to-build",
-  "version": "1.0.5",
+  "version": "2.0.0",
   "description": "",
   "main": "lib/src/ng-what-to-build.js",
   "types": "lib/src/ng-what-to-build.d.ts",
@@ -11,9 +11,6 @@
     "lib/src",
     "src"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
   "scripts": {
     "build": "tsc",
     "test": "npm run eslint && npm run test:mocha",
@@ -44,9 +41,9 @@
   "devDependencies": {
     "@types/chai": "^4.2.10",
     "@types/mocha": "^7.0.2",
-    "@types/node": "^13.9.0",
-    "@typescript-eslint/eslint-plugin": "^2.23.0",
-    "@typescript-eslint/parser": "^2.23.0",
+    "@types/node": "^13.9.4",
+    "@typescript-eslint/eslint-plugin": "^2.25.0",
+    "@typescript-eslint/parser": "^2.25.0",
     "chai": "^4.2.0",
     "eslint": "^6.8.0",
     "eslint-plugin-mocha-no-only": "^1.1.0",

@@ -18,6 +18,7 @@
       {"terms": ["fixme", "removeme", "xxx", "@@@"], "location": "anywhere"}
     ],
     "no-process-exit": "off",
+    "no-var": "off",
     "no-const-assign": "error",
     "no-this-before-super": "error",
     "no-undef": "warn",
