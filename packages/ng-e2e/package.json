@@ -5,7 +5,7 @@
   "main": "lib/src/ng-e2e.js",
   "types": "lib/src/ng-e2e.d.ts",
   "engines": {
-    "node": ">=10.3.0"
+    "node": ">=12.3.0"
   },
   "files": [
     "lib/src",
@@ -17,7 +17,7 @@
   "scripts": {
     "build": "tsc",
     "test": "npm run eslint && npm run test:mocha",
-    "test:mocha": "mocha -r ts-node/register --no-timeouts --exit 'test/unit/*.test.?s' 'test/it/*.test.?s'",
+    "test:mocha": "mocha -r ts-node/register --no-timeouts --exit 'test/unit/*.test.?s' 'test/it/*.test.?s' 'test/e2e/*.test.?s'",
     "eslint": "eslint 'test/**/*.?s' 'test/**/*.?s'"
   },
   "keywords": [

@@ -6,6 +6,7 @@ import {
   findNpmPackageInfos,
   findNpmPackages,
   RelativeDirectoryPath,
+  PackageInfos,
 } from '@bilt/ng-packages'
 import {
   findChangedFiles,
@@ -20,6 +21,12 @@ import {
   saveCommitOfLastSuccesfulBuild,
 } from '@bilt/ng-build'
 
+export async function forceBuild(rootDirectory: Directory, buildPackageFunc: BuildPackageFunction) {
+  const {packageInfos, commit} = await determineBuildInformation(rootDirectory)
+
+  await buildPackages(packageInfos, packageInfos, buildPackageFunc, rootDirectory, commit)
+}
+
 export async function buildJustChangedPackages(
   rootDirectory: Directory,
   buildPackageFunc: BuildPackageFunction,
@@ -32,16 +39,7 @@ export async function buildJustChangedPackages(
     buildUpTo: [],
   })
 
-  const buildOrder = calculateBuildOrder({packageInfos: packagesToBuild})
-
-  for await (const buildPackageResult of build({packageInfos, buildOrder, buildPackageFunc})) {
-    console.log(
-      `package ${buildPackageResult.package} built: ${buildPackageResult.buildResult}${
-        buildPackageResult.error ? '. Error: ' + buildPackageResult.error : ''
-      }`,
-    )
-    await saveCommitOfLastSuccesfulBuild({rootDirectory, buildPackageResult, commit})
-  }
+  await buildPackages(packagesToBuild, packageInfos, buildPackageFunc, rootDirectory, commit)
 }
 
 export async function buildUpTo(
@@ -57,20 +55,11 @@ export async function buildUpTo(
     buildUpTo: upToPackages.map(upTo => ({directory: upTo})),
   })
 
-  const buildOrder = calculateBuildOrder({packageInfos: packagesToBuild})
-
-  for await (const buildPackageResult of build({packageInfos, buildOrder, buildPackageFunc})) {
-    console.log(
-      `package ${buildPackageResult.package} built: ${buildPackageResult.buildResult}${
-        buildPackageResult.error ? '. Error: ' + buildPackageResult.error : ''
-      }`,
-    )
-    await saveCommitOfLastSuccesfulBuild({rootDirectory, buildPackageResult, commit})
-  }
+  await buildPackages(packagesToBuild, packageInfos, buildPackageFunc, rootDirectory, commit)
 }
 
 async function determineBuildInformation(rootDirectory: Directory) {
-  const {stdout} = await promisify(exec)('git rev-parse HEAD')
+  const {stdout} = await promisify(exec)('git rev-parse HEAD', {cwd: rootDirectory as string})
   const toCommit = stdout.trim()
 
   const packages = await findNpmPackages({rootDirectory})
@@ -84,4 +73,26 @@ async function determineBuildInformation(rootDirectory: Directory) {
   const changedPackages = findChangedPackages({changedFilesInGit, lastSuccesfulBuildOfPackages})
 
   return {packageInfos, changedPackages, commit: toCommit}
+}
+
+async function buildPackages(
+  packagesToBuild: PackageInfos,
+  packageInfos: PackageInfos,
+  buildPackageFunc: BuildPackageFunction,
+  rootDirectory: Directory,
+  commit: string,
+) {
+  const buildOrder = calculateBuildOrder({packageInfos: packagesToBuild})
+  for await (const buildPackageResult of build({packageInfos, buildOrder, buildPackageFunc})) {
+    console.log(
+      `package ${buildPackageResult.package.directory} built: ${buildPackageResult.buildResult}${
+        buildPackageResult.error ? '. Error: ' + buildPackageResult.error : ''
+      }`,
+    )
+    await saveCommitOfLastSuccesfulBuild({
+      rootDirectory: path.join(rootDirectory as string, '.bilt'),
+      buildPackageResult,
+      commit,
+    })
+  }
 }
