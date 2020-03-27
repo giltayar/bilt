@@ -24,7 +24,7 @@ export async function buildJustChangedPackages(
   rootDirectory: Directory,
   buildPackageFunc: BuildPackageFunction,
 ) {
-  const {changedPackages, packageInfos, commit} = await commonBuild(rootDirectory)
+  const {changedPackages, packageInfos, commit} = await determineBuildInformation(rootDirectory)
 
   const packagesToBuild = calculatePackagesToBuild({
     packageInfos,
@@ -49,7 +49,7 @@ export async function buildUpTo(
   upToPackages: RelativeDirectoryPath[],
   buildPackageFunc: BuildPackageFunction,
 ) {
-  const {changedPackages, packageInfos, commit} = await commonBuild(rootDirectory)
+  const {changedPackages, packageInfos, commit} = await determineBuildInformation(rootDirectory)
 
   const packagesToBuild = calculatePackagesToBuild({
     packageInfos,
@@ -69,28 +69,19 @@ export async function buildUpTo(
   }
 }
 
-async function commonBuild(rootDirectory: Directory) {
+async function determineBuildInformation(rootDirectory: Directory) {
   const {stdout} = await promisify(exec)('git rev-parse HEAD')
   const toCommit = stdout.trim()
 
   const packages = await findNpmPackages({rootDirectory})
   const packageInfos = await findNpmPackageInfos({rootDirectory, packages})
-  const packageSuccessfulCommits = await loadCommitsOfLastSuccesfulBuilds({
+  const lastSuccesfulBuildOfPackages = await loadCommitsOfLastSuccesfulBuilds({
     rootDirectory: path.join(rootDirectory as string, '.bilt'),
     packages,
   })
 
-  const changedFiles = (
-    await Promise.all(
-      packageSuccessfulCommits.map(packageSuccessfulCommit =>
-        packageSuccessfulCommit?.commit
-          ? findChangedFiles({rootDirectory, fromCommit: packageSuccessfulCommit.commit, toCommit})
-          : undefined,
-      ),
-    )
-  ).flat()
-
-  const changedPackages = await findChangedPackages({changedFiles, packages})
+  const changedFilesInGit = await findChangedFiles({rootDirectory})
+  const changedPackages = findChangedPackages({changedFilesInGit, lastSuccesfulBuildOfPackages})
 
   return {packageInfos, changedPackages, commit: toCommit}
 }
