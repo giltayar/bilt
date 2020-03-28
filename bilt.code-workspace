@@ -9,20 +9,28 @@
 			"path": "packages/artifact-finder"
 		},
 		{
-			"name": "ng-build",
-			"path": "packages/ng-build"
+			"name": "build",
+			"path": "packages/build"
 		},
 		{
-			"name": "ng-e2e",
-			"path": "packages/ng-e2e"
+			"name": "e2e-build",
+			"path": "packages/e2e-build"
 		},
 		{
-			"name": "ng-packages",
-			"path": "packages/ng-packages"
+			"name": "git-packages",
+			"path": "packages/git-packages"
 		},
 		{
-			"name": "ng-what-to-build",
-			"path": "packages/ng-what-to-build"
+			"name": "npm-packages",
+			"path": "packages/npm-packages"
+		},
+		{
+			"name": "packages-to-build",
+			"path": "packages/packages-to-build"
+		},
+		{
+			"name": "types",
+			"path": "packages/types"
 		},
 		{
 			"name": ".circleci",
