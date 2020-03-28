@@ -36,7 +36,7 @@ export async function buildJustChangedPackages(
   const packagesToBuild = calculatePackagesToBuild({
     packageInfos,
     basePackagesToBuild: changedPackages,
-    buildUpTo: [],
+    buildUpTo: undefined,
   })
 
   await buildPackages(packagesToBuild, packageInfos, buildPackageFunc, rootDirectory, commit)
@@ -52,7 +52,7 @@ export async function buildUpTo(
   const packagesToBuild = calculatePackagesToBuild({
     packageInfos,
     basePackagesToBuild: changedPackages,
-    buildUpTo: upToPackages.map(upTo => ({directory: upTo})),
+    buildUpTo: upToPackages.map((upTo) => ({directory: upTo})),
   })
 
   await buildPackages(packagesToBuild, packageInfos, buildPackageFunc, rootDirectory, commit)

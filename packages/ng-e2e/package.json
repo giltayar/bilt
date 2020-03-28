@@ -1,6 +1,6 @@
 {
   "name": "@applitools/ng-e2e",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "lib/src/ng-e2e.js",
   "types": "lib/src/ng-e2e.d.ts",
@@ -38,7 +38,7 @@
   "dependencies": {
     "@bilt/ng-build": "^2.0.0",
     "@bilt/ng-packages": "^1.0.2",
-    "@bilt/ng-what-to-build": "^2.0.4",
+    "@bilt/ng-what-to-build": "^3.0.0",
     "debug": "^4.1.1"
   },
   "devDependencies": {
