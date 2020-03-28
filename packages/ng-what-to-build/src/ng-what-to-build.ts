@@ -9,13 +9,10 @@ import {
   Directory,
   PackageInfo,
   RelativeDirectoryPath,
+  LastSuccesfulBuildOfPackage,
 } from '@bilt/ng-packages'
 
 export type ChangedFilesInGit = Map<Commitish, RelativeFilePath[]>
-export interface LastSuccesfulBuildOfPackage {
-  package: Package
-  lastSuccesfulBuild: Commitish
-}
 
 export async function findChangedFiles({
   rootDirectory,

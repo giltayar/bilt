@@ -1,6 +1,6 @@
 {
   "name": "@bilt/ng-what-to-build",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "",
   "main": "lib/src/ng-what-to-build.js",
   "types": "lib/src/ng-what-to-build.d.ts",
@@ -35,11 +35,11 @@
   "dependencies": {
     "@bilt/artifact-dependency-graph": "^3.0.31",
     "@bilt/artifact-finder": "^2.0.28",
-    "@bilt/ng-packages": "^1.0.2",
+    "@bilt/ng-packages": "^1.1.1",
     "debug": "^4.1.1"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.10",
+    "@types/chai": "^4.2.11",
     "@types/mocha": "^7.0.2",
     "@types/node": "^13.9.5",
     "@typescript-eslint/eslint-plugin": "^2.25.0",
@@ -49,9 +49,9 @@
     "eslint-plugin-mocha-no-only": "^1.1.0",
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-prettier": "^3.1.2",
-    "mocha": "^7.1.0",
+    "mocha": "^7.1.1",
     "prettier": "^2.0.2",
-    "ts-node": "^8.6.2",
+    "ts-node": "^8.8.1",
     "typescript": "^3.8.3"
   }
 }
