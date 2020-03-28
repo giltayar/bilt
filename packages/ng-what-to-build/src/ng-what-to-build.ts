@@ -42,8 +42,8 @@ export async function findChangedFiles({
   )
   const gitLogLines = diffTreeResult.stdout
     .split('\n')
-    .map(l => l.trim())
-    .filter(l => !!l)
+    .map((l) => l.trim())
+    .filter((l) => !!l)
 
   const ret = new Map<Commitish, RelativeFilePath[]>()
 
@@ -83,8 +83,8 @@ export function findChangedPackages({
       packageWithSuccefulBuildWasFound || lastSuccesfulBuildCommitToPackages.has(commit)
     if (!packageWithSuccefulBuildWasFound) continue
 
-    const packagesInCommit = packages.filter(pkg =>
-      changedFiles.some(changedFile => changedFile.startsWith(pkg.directory + '/')),
+    const packagesInCommit = packages.filter((pkg) =>
+      changedFiles.some((changedFile) => changedFile.startsWith(pkg.directory + '/')),
     )
     const packagesThatWereLastSuccesfullyBuiltInThisCommit = lastSuccesfulBuildCommitToPackages.get(
       commit,
@@ -114,7 +114,7 @@ export function calculatePackagesToBuild({
 }: {
   packageInfos: PackageInfos
   basePackagesToBuild: Package[]
-  buildUpTo: Package[]
+  buildUpTo: Package[] | undefined
 }): PackageInfos {
   const dependencyGraph = createDependencyGraph(
     Object.values(packageInfos).map(packageInfoToArtifact),
@@ -124,9 +124,9 @@ export function calculatePackagesToBuild({
   const artifactsToBuild = dependencyGraphSubsetToBuild({
     dependencyGraph,
     changedArtifacts: changedArtifacts,
-    uptoArtifacts: packagesToArtifactNames(buildUpTo, packageInfos),
+    uptoArtifacts: buildUpTo ? packagesToArtifactNames(buildUpTo, packageInfos) : [],
     fromArtifacts: undefined,
-    justBuildArtifacts: changedArtifacts,
+    justBuildArtifacts: buildUpTo == null ? changedArtifacts : undefined,
   }) as DependencyGraphArtifacts
 
   return artifactsToPackageInfos(artifactsToBuild, packageInfos)
@@ -135,7 +135,7 @@ export function calculatePackagesToBuild({
 function packageInfoToArtifact(packageInfo: PackageInfo) {
   return {
     name: packageInfo.directory as string,
-    dependencies: packageInfo.dependencies.map(dep => dep.directory as string),
+    dependencies: packageInfo.dependencies.map((dep) => dep.directory as string),
   }
 }
 
@@ -146,7 +146,7 @@ function packageInfoToArtifactName(packageInfo: PackageInfo) {
 type DependencyGraphArtifacts = {[moduleName: string]: {dependencies: string[]}}
 
 function packagesToArtifactNames(packages: Package[], packageInfos: PackageInfos): string[] {
-  return packages.map(pkg => packageInfoToArtifactName(packageInfos[pkg.directory as string]))
+  return packages.map((pkg) => packageInfoToArtifactName(packageInfos[pkg.directory as string]))
 }
 
 function artifactsToPackageInfos(

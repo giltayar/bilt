@@ -26,14 +26,17 @@ describe('calculatePackagesToBuild (unit)', function () {
     [ePackage.directory as string]: ePackage,
   }
 
-  it('if buildUpTo is empty, only base pacakges are build', () => {
+  it('if buildUpTo is undefined, only base pacakges are build', () => {
     const packagesToBuild = calculatePackagesToBuild({
       packageInfos,
-      buildUpTo: [],
-      basePackagesToBuild: [dPackage],
+      buildUpTo: undefined,
+      basePackagesToBuild: [dPackage, ePackage],
     })
 
-    expect(packagesToBuild).to.eql({[dPackage.directory as string]: dPackage})
+    expect(packagesToBuild).to.eql({
+      [dPackage.directory as string]: dPackage,
+      [ePackage.directory as string]: ePackage,
+    })
   })
 
   it('if package with no dependents is asked to be built, that is the only package that will be built', () => {
@@ -51,6 +54,23 @@ describe('calculatePackagesToBuild (unit)', function () {
       packageInfos,
       buildUpTo: [aPackage],
       basePackagesToBuild: [ePackage],
+    })
+
+    expect(packagesToBuild).to.eql(packageInfos)
+  })
+
+  it('if basePackages include packages that do not "lead" to buildUpTo packages, they will not be built', () => {
+    const gPackage: PackageInfo = {directory: 'gdir', name: 'gpackage', dependencies: []}
+    const fPackage: PackageInfo = {directory: 'fdir', name: 'fpackage', dependencies: [gPackage]}
+
+    const packagesToBuild = calculatePackagesToBuild({
+      packageInfos: {
+        ...packageInfos,
+        [gPackage.directory as string]: gPackage,
+        [fPackage.directory as string]: fPackage,
+      },
+      buildUpTo: [aPackage],
+      basePackagesToBuild: [ePackage, gPackage],
     })
 
     expect(packagesToBuild).to.eql(packageInfos)

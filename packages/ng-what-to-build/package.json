@@ -1,6 +1,6 @@
 {
   "name": "@bilt/ng-what-to-build",
-  "version": "2.0.4",
+  "version": "3.0.0",
   "description": "",
   "main": "lib/src/ng-what-to-build.js",
   "types": "lib/src/ng-what-to-build.d.ts",
