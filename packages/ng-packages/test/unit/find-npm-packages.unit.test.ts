@@ -4,7 +4,7 @@ import {expect} from 'chai'
 
 import {findNpmPackages} from '../../src/ng-packages'
 
-describe('findNpmPackages (unit)', function() {
+describe('findNpmPackages (unit)', function () {
   it('should find npm packages', async () => {
     const rootDirectory = path.join(__dirname, 'test-repo')
 

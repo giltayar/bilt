@@ -1,6 +1,6 @@
 {
   "name": "@bilt/ng-packages",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "",
   "main": "lib/src/ng-packages.js",
   "types": "lib/src/ng-packages.d.ts",
@@ -52,7 +52,7 @@
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-prettier": "^3.1.2",
     "mocha": "^7.1.1",
-    "prettier": "^1.19.1",
+    "prettier": "^2.0.2",
     "ts-node": "^8.8.1",
     "typescript": "^3.8.3"
   }
