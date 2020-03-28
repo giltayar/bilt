@@ -20,6 +20,11 @@ export interface PackageInfos {
   [packageDirectory: string]: PackageInfo
 }
 
+export interface LastSuccesfulBuildOfPackage {
+  package: Package
+  lastSuccesfulBuild: Commitish
+}
+
 export async function findNpmPackages({
   rootDirectory,
 }: {

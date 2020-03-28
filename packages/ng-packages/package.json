@@ -1,6 +1,6 @@
 {
   "name": "@bilt/ng-packages",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "",
   "main": "lib/src/ng-packages.js",
   "types": "lib/src/ng-packages.d.ts",
@@ -41,19 +41,19 @@
     "debug": "^4.1.1"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.9",
-    "@types/mocha": "^7.0.1",
-    "@types/node": "^13.7.7",
-    "@typescript-eslint/eslint-plugin": "^2.21.0",
-    "@typescript-eslint/parser": "^2.21.0",
+    "@types/chai": "^4.2.11",
+    "@types/mocha": "^7.0.2",
+    "@types/node": "^13.9.5",
+    "@typescript-eslint/eslint-plugin": "^2.25.0",
+    "@typescript-eslint/parser": "^2.25.0",
     "chai": "^4.2.0",
     "eslint": "^6.8.0",
     "eslint-plugin-mocha-no-only": "^1.1.0",
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-prettier": "^3.1.2",
-    "mocha": "^7.1.0",
+    "mocha": "^7.1.1",
     "prettier": "^1.19.1",
-    "ts-node": "^8.6.2",
+    "ts-node": "^8.8.1",
     "typescript": "^3.8.3"
   }
 }
