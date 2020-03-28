@@ -1,14 +1,14 @@
 {
   "name": "@bilt/types",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
-  "main": "lib/src/types.js",
-  "types": "lib/src/types.d.ts",
+  "main": "lib/types.js",
+  "types": "lib/types.d.ts",
   "engines": {
     "node": ">=12.4.0"
   },
   "files": [
-    "lib/src",
+    "lib",
     "src"
   ],
   "publishConfig": {
