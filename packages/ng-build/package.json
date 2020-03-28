@@ -1,6 +1,6 @@
 {
   "name": "@bilt/ng-build",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "",
   "main": "lib/src/ng-build.js",
   "types": "lib/src/ng-build.d.ts",
@@ -38,14 +38,13 @@
   "dependencies": {
     "@bilt/artifact-dependency-graph": "^3.0.31",
     "@bilt/artifact-finder": "^2.0.28",
-    "@bilt/ng-packages": "^1.0.2",
-    "@bilt/ng-what-to-build": "^2.0.1",
+    "@bilt/ng-packages": "^1.1.1",
     "debug": "^4.1.1"
   },
   "devDependencies": {
     "@types/chai": "^4.2.11",
     "@types/mocha": "^7.0.2",
-    "@types/node": "^13.9.4",
+    "@types/node": "^13.9.5",
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",
     "chai": "^4.2.0",

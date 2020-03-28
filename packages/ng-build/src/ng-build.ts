@@ -7,8 +7,8 @@ import {
   PackageInfo,
   Directory,
   RelativeDirectoryPath,
+  LastSuccesfulBuildOfPackage,
 } from '@bilt/ng-packages'
-import {LastSuccesfulBuildOfPackage} from '@bilt/ng-what-to-build'
 
 export type BuildPackageSuccessResult = 'success' | 'failure'
 
@@ -91,7 +91,7 @@ export async function* build({
       if (packagesThatCannotBeBuilt.has(packageDirectory)) continue
 
       const packageInfo = packageInfos[packageDirectory]
-      if (packageInfo.dependencies.some(dep => !packagesAlreadyBuilt.has(dep.directory))) {
+      if (packageInfo.dependencies.some((dep) => !packagesAlreadyBuilt.has(dep.directory))) {
         continue
       }
 
@@ -156,7 +156,7 @@ export async function loadCommitsOfLastSuccesfulBuilds({
 }): Promise<LastSuccesfulBuildOfPackage[]> {
   return (
     await Promise.all(
-      packages.map(async pkg => {
+      packages.map(async (pkg) => {
         const resultDirectory = path.join(rootDirectory as string, pkg.directory as string)
         const [error, buildResultJsonString] = await presult(
           fs.readFile(path.join(resultDirectory, '.lastsuccesfulbuild.json'), 'utf-8'),
@@ -174,7 +174,7 @@ export async function loadCommitsOfLastSuccesfulBuilds({
         return {package: pkg, lastSuccesfulBuild: result.commit}
       }),
     )
-  ).filter(lsbop => !!lsbop) as LastSuccesfulBuildOfPackage[]
+  ).filter((lsbop) => !!lsbop) as LastSuccesfulBuildOfPackage[]
 }
 
 type BuildsAlreadyAdded = Map<RelativeDirectoryPath, Build>
@@ -183,18 +183,18 @@ function findPackagesWithDependenciesOnRoot(
   packageInfos: PackageInfos,
   rootPackage: Package | undefined,
 ): Package[] {
-  return Object.values(packageInfos).filter(packageInfo =>
+  return Object.values(packageInfos).filter((packageInfo) =>
     rootPackage
       ? packageInfo.dependencies.length > 0 &&
-        packageInfo.dependencies.some(dep => dep.directory === rootPackage.directory)
+        packageInfo.dependencies.some((dep) => dep.directory === rootPackage.directory)
       : packageInfo.dependencies.length === 0,
   )
 }
 
 async function presult<T>(promise: Promise<T>): Promise<[any | undefined, T | undefined]> {
   return promise.then(
-    v => [undefined, v],
-    err => [err, undefined],
+    (v) => [undefined, v],
+    (err) => [err, undefined],
   )
 }
 
