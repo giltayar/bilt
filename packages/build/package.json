@@ -1,9 +1,9 @@
 {
-  "name": "@bilt/ng-build",
+  "name": "@bilt/build",
   "version": "2.0.2",
   "description": "",
-  "main": "lib/src/ng-build.js",
-  "types": "lib/src/ng-build.d.ts",
+  "main": "lib/src/build.js",
+  "types": "lib/src/build.d.ts",
   "engines": {
     "node": ">=12.3.0"
   },

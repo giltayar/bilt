@@ -3,7 +3,7 @@ import fs from 'fs'
 import {describe, it} from 'mocha'
 import {expect} from 'chai'
 
-import {saveCommitOfLastSuccesfulBuild, loadCommitsOfLastSuccesfulBuilds} from '../../src/ng-build'
+import {saveCommitOfLastSuccesfulBuild, loadCommitsOfLastSuccesfulBuilds} from '../../src/build'
 import {Package} from '@bilt/types'
 
 describe('load-save (unit)', function () {

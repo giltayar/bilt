@@ -3,7 +3,7 @@ import {describe, it} from 'mocha'
 import {expect} from 'chai'
 import {PackageInfo, PackageInfos} from '@bilt/types'
 
-import {calculateBuildOrder, Build} from '../../src/ng-build'
+import {calculateBuildOrder, Build} from '../../src/build'
 
 inspect.defaultOptions.depth = 1000
 
