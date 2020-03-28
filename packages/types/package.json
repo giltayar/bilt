@@ -1,0 +1,51 @@
+{
+  "name": "@bilt/types",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/src/types.js",
+  "types": "lib/src/types.d.ts",
+  "engines": {
+    "node": ">=12.4.0"
+  },
+  "files": [
+    "lib/src",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run eslint",
+    "eslint": "eslint 'src/**/*.?s'"
+  },
+  "keywords": [
+    "applitools",
+    "testing",
+    "browser",
+    "grid",
+    "visual-testing",
+    "nodejs",
+    "javascript"
+  ],
+  "author": "Gil Tayar <gil@tayar.org>",
+  "license": "UNLICENSED",
+  "repository": {
+    "url": "https://github.com/giltayar/bilt",
+    "type": "git",
+    "directory": "packages/types"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^13.9.5",
+    "@typescript-eslint/eslint-plugin": "^2.25.0",
+    "@typescript-eslint/parser": "^2.25.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-mocha-no-only": "^1.1.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "prettier": "^2.0.2",
+    "ts-node": "^8.8.1",
+    "typescript": "^3.8.3"
+  }
+}
