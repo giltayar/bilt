@@ -9,8 +9,16 @@
 			"path": "packages/artifact-finder"
 		},
 		{
+			"name": "bilt-applitools-cli",
+			"path": "packages/bilt-applitools-cli"
+		},
+		{
 			"name": "build",
 			"path": "packages/build"
+		},
+		{
+			"name": "build-testkit",
+			"path": "packages/build-testkit"
 		},
 		{
 			"name": "e2e-build",
@@ -19,6 +27,10 @@
 		{
 			"name": "git-packages",
 			"path": "packages/git-packages"
+		},
+		{
+			"name": "git-testkit",
+			"path": "packages/git-testkit"
 		},
 		{
 			"name": "npm-packages",
