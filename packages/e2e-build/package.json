@@ -1,6 +1,6 @@
 {
-  "name": "@applitools/e2e-build",
-  "version": "1.0.1",
+  "name": "@bilt/e2e-build",
+  "version": "1.0.2",
   "description": "",
   "main": "lib/src/e2e-build.js",
   "types": "lib/src/e2e-build.d.ts",
@@ -11,9 +11,6 @@
     "lib/src",
     "src"
   ],
-  "publishConfig": {
-    "access": "restricted"
-  },
   "scripts": {
     "build": "tsc",
     "test": "npm run eslint && npm run test:mocha",
@@ -29,7 +26,7 @@
     "nodejs",
     "javascript"
   ],
-  "author": "Gil Tayar <gil.tayar@applitools.com>",
+  "author": "Gil Tayar <gil.tayar@bilt.com>",
   "license": "UNLICENSED",
   "repository": {
     "url": "https://github.com/applitools/rendering-grid",
@@ -37,6 +34,7 @@
   },
   "dependencies": {
     "@bilt/build": "^2.0.2",
+    "@bilt/build-testkit": "^1.0.1",
     "@bilt/git-packages": "^3.0.2",
     "@bilt/npm-packages": "^1.1.2",
     "@bilt/packages-to-build": "^2.0.1",
@@ -44,6 +42,7 @@
     "debug": "^4.1.1"
   },
   "devDependencies": {
+    "@bilt/git-testkit": "file:../git-testkit",
     "@types/chai": "^4.2.11",
     "@types/mocha": "^7.0.2",
     "@types/node": "^13.9.5",

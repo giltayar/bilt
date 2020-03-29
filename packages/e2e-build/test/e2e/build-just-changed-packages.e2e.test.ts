@@ -3,27 +3,27 @@ import {expect} from 'chai'
 
 import {buildJustChangedPackages, forceBuild} from '../../src/e2e-build'
 import {
-  gitMakeTemporaryDirectory,
-  gitInit,
-  gitWrite,
-  gitWritePackageJson,
-  gitCommitAll,
-} from './e2e-git-utils'
-import {logFilesDuringBuild} from './e2e-build-utils'
+  makeTemporaryDirectory,
+  init,
+  writeFile,
+  writePackageJson,
+  commitAll,
+} from '@bilt/git-testkit'
+import {logFilesDuringBuild} from '@bilt/build-testkit'
 
 describe('buildJustChangedPackages (e2e)', function () {
   it('should build only changed packages', async () => {
-    const gitDir = await gitMakeTemporaryDirectory()
-    await gitInit(gitDir)
-    await gitWrite(gitDir, '.gitignore', '.bilt\n')
+    const gitDir = await makeTemporaryDirectory()
+    await init(gitDir)
+    await writeFile(gitDir, '.gitignore', '.bilt\n')
 
-    await gitWritePackageJson(gitDir, 'adir/package.json', 'a-package')
-    await gitWrite(gitDir, 'adir/hello.txt', 'hello')
+    await writePackageJson(gitDir, 'adir/package.json', 'a-package')
+    await writeFile(gitDir, 'adir/hello.txt', 'hello')
 
-    await gitWritePackageJson(gitDir, 'bdir/package.json', 'b-package')
-    await gitWrite(gitDir, 'bdir/boogie.txt', 'boogie')
+    await writePackageJson(gitDir, 'bdir/package.json', 'b-package')
+    await writeFile(gitDir, 'bdir/boogie.txt', 'boogie')
 
-    await gitCommitAll(gitDir)
+    await commitAll(gitDir)
 
     const build1 = {}
     await forceBuild(gitDir, logFilesDuringBuild(gitDir, build1))
@@ -34,8 +34,8 @@ describe('buildJustChangedPackages (e2e)', function () {
     expect(build2).to.eql({})
 
     const build3 = {}
-    await gitWrite(gitDir, 'adir/hello.txt', 'hello1')
-    await gitCommitAll(gitDir)
+    await writeFile(gitDir, 'adir/hello.txt', 'hello1')
+    await commitAll(gitDir)
     await buildJustChangedPackages(gitDir, logFilesDuringBuild(gitDir, build3))
     expect(build3).to.eql({'adir/hello.txt': 'hello1'})
   })
