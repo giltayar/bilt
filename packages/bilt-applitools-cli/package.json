@@ -1,0 +1,45 @@
+{
+  "name": "@applitools/bilt-applitools-cli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/bilt-applitools-cli.js",
+  "engines": {
+    "node": ">=10.3.0"
+  },
+  "files": [
+    "src",
+    "scripts"
+  ],
+  "bin": {
+    "btp2": "./scripts/btp2.js"
+  },
+  "scripts": {
+    "test": "npm run eslint && npm run test:mocha",
+    "test:mocha": "mocha --no-timeouts --exit 'test/unit/*.test.js' 'test/it/*.test.js' 'test/e2e/*.test.js'",
+    "eslint": "eslint '**/*.js'"
+  },
+  "keywords": [
+    "applitools",
+    "buildd",
+    "monorepo"
+  ],
+  "author": "Gil Tayar <gil@tayar.org>",
+  "license": "UNLICENSED",
+  "repository": {
+    "url": "https://github.com/applitools/rendering-grid",
+    "type": "git"
+  },
+  "dependencies": {
+    "debug": "^4.1.1",
+    "yargs": "^15.3.1"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-mocha-no-only": "^1.1.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "mocha": "^7.1.1",
+    "prettier": "^2.0.2"
+  }
+}
