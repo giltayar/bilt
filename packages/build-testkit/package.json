@@ -1,0 +1,46 @@
+{
+  "name": "@bilt/build-testkit",
+  "version": "1.0.1",
+  "description": "",
+  "main": "src/build-testkit.js",
+  "engines": {
+    "node": ">=12.3.0"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "test": "npm run test:mocha && npm run eslint",
+    "test:mocha": "mocha --no-timeouts --exit 'test/unit/*.test.js' 'test/it/*.test.js'",
+    "eslint": "eslint '**/*.js'"
+  },
+  "keywords": [
+    "applitools",
+    "testing",
+    "browser",
+    "grid",
+    "visual-testing",
+    "nodejs",
+    "javascript"
+  ],
+  "author": "Gil Tayar <gil@tayar.org>",
+  "license": "UNLICENSED",
+  "repository": {
+    "url": "https://github.com/applitools/rendering-grid",
+    "type": "git"
+  },
+  "dependencies": {
+    "debug": "^4.1.1"
+  },
+  "devDependencies": {
+    "@bilt/build": "^2.0.2",
+    "@bilt/types": "^1.0.1",
+    "chai": "^4.2.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-mocha-no-only": "^1.1.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "mocha": "^7.1.1",
+    "prettier": "^2.0.2"
+  }
+}
