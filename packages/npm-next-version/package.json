@@ -1,0 +1,48 @@
+{
+  "name": "@bilt/npm-next-version",
+  "version": "2.0.0",
+  "description": "",
+  "main": "src/npm-next-version.js",
+  "engines": {
+    "node": ">=10.3.0"
+  },
+  "files": [
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "npm run eslint && npm run test:mocha-parallel",
+    "test:mocha": "mocha --no-timeouts 'test/unit/*.test.js' 'test/it/*.test.js' 'test/e2e/*.test.js'",
+    "test:mocha-parallel": "mocha-parallel-tests --no-timeouts 'test/unit/*.test.js' 'test/it/*.test.js'",
+    "eslint": "eslint '**/*.js'"
+  },
+  "keywords": [
+    "ci",
+    "build",
+    "bilt",
+    "tool",
+    "monorepo"
+  ],
+  "author": "Gil Tayar <gil@tayar.org>",
+  "license": "Unlicense",
+  "repository": {
+    "url": "https://github.com/giltayar/bilt",
+    "type": "git",
+    "directory": "packages/npm-next-version"
+  },
+  "dependencies": {
+    "debug": "^4.1.1"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-mocha-no-only": "^1.1.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "mocha": "^7.1.1",
+    "mocha-parallel-tests": "^2.3.0",
+    "prettier": "^2.0.2"
+  }
+}
