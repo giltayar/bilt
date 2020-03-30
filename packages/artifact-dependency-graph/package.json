@@ -1,6 +1,6 @@
 {
   "name": "@bilt/artifact-dependency-graph",
-  "version": "3.0.10",
+  "version": "3.0.32",
   "description": "",
   "main": "src/artifact-dependency-graph.js",
   "engines": {
@@ -16,23 +16,27 @@
   },
   "keywords": [
     "ci",
-    "bilt"
+    "build",
+    "bilt",
+    "tool",
+    "monorepo"
   ],
   "author": "Gil Tayar <gil@tayar.org>",
   "license": "Unlicense",
   "repository": {
     "url": "https://github.com/giltayar/bilt",
-    "type": "git"
+    "type": "git",
+    "directory": "packages/artifact-dependency-graph"
   },
   "dependencies": {
-    "debug": "^3.2.6"
+    "debug": "^4.1.1"
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "eslint": "^5.16.0",
+    "eslint": "^6.8.0",
     "eslint-plugin-mocha-no-only": "^1.1.0",
-    "eslint-plugin-prettier": "^2.7.0",
-    "mocha": "^5.2.0",
-    "prettier": "^1.18.2"
+    "eslint-plugin-prettier": "^3.1.2",
+    "mocha": "^7.1.1",
+    "prettier": "^2.0.2"
   }
 }

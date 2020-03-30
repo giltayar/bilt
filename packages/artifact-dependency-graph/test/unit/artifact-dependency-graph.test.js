@@ -21,7 +21,7 @@ const dependencyGraphSubsetToBuild = (
     artifactBuildTimestamps,
   })
 
-describe('artifact-dependency-graph', function() {
+describe('artifact-dependency-graph', function () {
   describe('dependencyGraphSubsetToBuild', () => {
     describe('changedFiles', () => {
       it('should return nothing if it"s only that', () => {

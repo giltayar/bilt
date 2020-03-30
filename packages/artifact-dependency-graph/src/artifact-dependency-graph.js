@@ -8,7 +8,7 @@
  * @param {Array<{name: string, dependencies: string[]}>} artifacts
  * @returns DependencyGraph
  */
-const createDependencyGraph = artifacts =>
+const createDependencyGraph = (artifacts) =>
   objectFromEntries(artifacts.map(({name, dependencies}) => [name, dependencies || []]))
 
 function dependencyGraphSubsetToBuild({
@@ -46,14 +46,14 @@ function dependencyGraphSubsetToBuild({
 
       addArtifactsAffectedByBuildingArtifactsInClosure(fromClosure, dependencyGraph)
 
-      uptoClosure.forEach(artifact => {
+      uptoClosure.forEach((artifact) => {
         if (!fromClosure.has(artifact)) {
           uptoClosure.delete(artifact)
         }
       })
     }
 
-    uptoClosure.forEach(build => (dependencyGraphSubset[build] = dependencyGraph[build]))
+    uptoClosure.forEach((build) => (dependencyGraphSubset[build] = dependencyGraph[build]))
   }
 
   // from
@@ -67,13 +67,13 @@ function dependencyGraphSubsetToBuild({
 
       addArtifactsAffectedByBuildingArtifactsInClosure(moreFromClosure, dependencyGraph)
 
-      fromClosure.forEach(artifact => {
+      fromClosure.forEach((artifact) => {
         if (!moreFromClosure.has(artifact)) {
           fromClosure.delete(artifact)
         }
       })
     }
-    fromClosure.forEach(build => (dependencyGraphSubset[build] = dependencyGraph[build]))
+    fromClosure.forEach((build) => (dependencyGraphSubset[build] = dependencyGraph[build]))
   }
 
   // justBuild
@@ -83,7 +83,7 @@ function dependencyGraphSubsetToBuild({
       : justBuildArtifacts
 
     justBuildChangedArtifacts.forEach(
-      build => (dependencyGraphSubset[build] = dependencyGraph[build]),
+      (build) => (dependencyGraphSubset[build] = dependencyGraph[build]),
     )
   }
 
@@ -131,7 +131,7 @@ const buildThatCanBeBuilt = (dependencyGraph, alreadyBuiltArtifacts) => {
     ([build, dependencies]) =>
       !alreadyBuiltArtifactsSet.has(build) &&
       dependencies.every(
-        dependentBuild =>
+        (dependentBuild) =>
           alreadyBuiltArtifactsSet.has(dependentBuild) ||
           !buildsThatAreBeingBuilt.has(dependentBuild),
       ),
@@ -145,7 +145,7 @@ const buildThatCanBeBuilt = (dependencyGraph, alreadyBuiltArtifacts) => {
   )
 }
 
-const intersection = (arr, bset) => arr.filter(aMember => bset.includes(aMember))
+const intersection = (arr, bset) => arr.filter((aMember) => bset.includes(aMember))
 
 function addArtifactsAffectedByBuildingArtifactsInClosure(closure, dependencyGraph) {
   let addToBuildsInClosure = true
@@ -153,7 +153,7 @@ function addArtifactsAffectedByBuildingArtifactsInClosure(closure, dependencyGra
   while (addToBuildsInClosure) {
     const lengthOfClosure = closure.size
 
-    artifactsAffectedByBuildingArtifactsInClosure(closure, dependencyGraph).forEach(build =>
+    artifactsAffectedByBuildingArtifactsInClosure(closure, dependencyGraph).forEach((build) =>
       closure.add(build),
     )
 
@@ -163,7 +163,7 @@ function addArtifactsAffectedByBuildingArtifactsInClosure(closure, dependencyGra
 
 function artifactsAffectedByBuildingArtifactsInClosure(closure, dependencyGraph) {
   return Object.entries(dependencyGraph)
-    .filter(([, dependencies]) => !!dependencies.find(dependent => closure.has(dependent)))
+    .filter(([, dependencies]) => !!dependencies.find((dependent) => closure.has(dependent)))
     .map(([build]) => build)
 }
 
@@ -173,18 +173,19 @@ function addArtifactsNeededToBeBuiltForArtifactsInClosure(closure, dependencyGra
   while (addToBuildsInClosure) {
     const lengthOfClosure = closure.size
 
-    artifactsNeededToBeDirectlyBuiltForArtifactsInClosure(closure, dependencyGraph).forEach(build =>
-      closure.add(build),
-    )
+    artifactsNeededToBeDirectlyBuiltForArtifactsInClosure(
+      closure,
+      dependencyGraph,
+    ).forEach((build) => closure.add(build))
 
     addToBuildsInClosure = lengthOfClosure < closure.size
   }
 }
 
-const flatten = arr => [].concat(...arr)
+const flatten = (arr) => [].concat(...arr)
 
 function artifactsNeededToBeDirectlyBuiltForArtifactsInClosure(closure, dependencyGraph) {
-  return flatten([...closure].map(artifact => dependencyGraph[artifact]))
+  return flatten([...closure].map((artifact) => dependencyGraph[artifact]))
 }
 
 function objectFromEntries(entries) {
@@ -209,7 +210,7 @@ function artifactsChangedDuetoDependencies(
   for (const [artifact, dependencies] of Object.entries(dependencyGraph)) {
     const artifactChangeTime = (artifactBuildTimestamps[artifact] || now).getTime()
     const artifactsChangedDueToDepencies = dependencies.filter(
-      dep => (artifactBuildTimestamps[dep] || now).getTime() > artifactChangeTime,
+      (dep) => (artifactBuildTimestamps[dep] || now).getTime() > artifactChangeTime,
     )
 
     if (artifactsChangedDueToDepencies.length > 0) {
