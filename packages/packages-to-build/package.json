@@ -1,6 +1,6 @@
 {
   "name": "@bilt/packages-to-build",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "",
   "main": "lib/src/packages-to-build.js",
   "types": "lib/src/packages-to-build.d.ts",
@@ -21,23 +21,22 @@
     "eslint": "eslint 'src/**/*.?s' 'test/**/*.?s' 'test/**/*.?s'"
   },
   "keywords": [
-    "applitools",
-    "testing",
-    "browser",
-    "grid",
-    "visual-testing",
-    "nodejs",
-    "javascript"
+    "ci",
+    "build",
+    "bilt",
+    "tool",
+    "monorepo"
   ],
   "author": "Gil Tayar <gil@tayar.org>",
-  "license": "UNLICENSED",
+  "license": "Unlicense",
   "repository": {
     "url": "https://github.com/giltayar/bilt",
-    "type": "git"
+    "type": "git",
+    "directory": "packages/packages-to-build"
   },
   "dependencies": {
-    "@bilt/artifact-dependency-graph": "^3.0.31",
-    "@bilt/types": "^1.0.0",
+    "@bilt/artifact-dependency-graph": "^3.0.32",
+    "@bilt/types": "^1.0.2",
     "debug": "^4.1.1"
   },
   "devDependencies": {
