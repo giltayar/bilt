@@ -1,6 +1,6 @@
 {
-  "name": "@applitools/bilt-applitools-cli",
-  "version": "1.0.0",
+  "name": "@bilt/bilt-applitools-cli",
+  "version": "1.0.1",
   "description": "",
   "main": "src/bilt-applitools-cli.js",
   "engines": {
@@ -19,15 +19,18 @@
     "eslint": "eslint '**/*.js'"
   },
   "keywords": [
-    "applitools",
-    "buildd",
+    "ci",
+    "build",
+    "bilt",
+    "tool",
     "monorepo"
   ],
   "author": "Gil Tayar <gil@tayar.org>",
-  "license": "UNLICENSED",
+  "license": "Unlicense",
   "repository": {
-    "url": "https://github.com/applitools/rendering-grid",
-    "type": "git"
+    "url": "https://github.com/giltayar/bilt",
+    "type": "git",
+    "directory": "packages/bilt-applitools-cli"
   },
   "dependencies": {
     "debug": "^4.1.1",
