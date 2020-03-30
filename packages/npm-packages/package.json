@@ -1,6 +1,6 @@
 {
   "name": "@bilt/npm-packages",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "",
   "main": "lib/src/npm-packages.js",
   "types": "lib/src/npm-packages.d.ts",
@@ -21,19 +21,22 @@
     "eslint": "eslint 'src/**/*.?s' 'test/**/*.?s' 'test/**/*.?s'"
   },
   "keywords": [
+    "ci",
     "build",
     "bilt",
+    "tool",
     "monorepo"
   ],
   "author": "Gil Tayar <gil@tayar.org>",
-  "license": "UNLICENSED",
+  "license": "Unlicense",
   "repository": {
     "url": "https://github.com/giltayar/bilt",
-    "type": "git"
+    "type": "git",
+    "directory": "packages/npm-packages"
   },
   "dependencies": {
-    "@bilt/artifact-finder": "^2.0.28",
-    "@bilt/types": "^1.0.1",
+    "@bilt/artifact-finder": "^2.0.29",
+    "@bilt/types": "^1.0.2",
     "debug": "^4.1.1"
   },
   "devDependencies": {
