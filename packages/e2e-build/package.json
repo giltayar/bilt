@@ -1,6 +1,6 @@
 {
   "name": "@bilt/e2e-build",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "main": "lib/src/e2e-build.js",
   "types": "lib/src/e2e-build.d.ts",
@@ -18,27 +18,26 @@
     "eslint": "eslint 'src/**/*.?s' 'test/**/*.?s' 'test/**/*.?s'"
   },
   "keywords": [
-    "applitools",
-    "testing",
-    "browser",
-    "grid",
-    "visual-testing",
-    "nodejs",
-    "javascript"
+    "ci",
+    "build",
+    "bilt",
+    "tool",
+    "monorepo"
   ],
-  "author": "Gil Tayar <gil.tayar@bilt.com>",
-  "license": "UNLICENSED",
+  "author": "Gil Tayar <gil@tayar.org>",
+  "license": "Unlicense",
   "repository": {
-    "url": "https://github.com/applitools/rendering-grid",
-    "type": "git"
+    "url": "https://github.com/giltayar/bilt",
+    "type": "git",
+    "directory": "packages/e2e-build"
   },
   "dependencies": {
-    "@bilt/build": "^2.0.2",
-    "@bilt/build-testkit": "^1.0.1",
-    "@bilt/git-packages": "^3.0.2",
-    "@bilt/npm-packages": "^1.1.2",
-    "@bilt/packages-to-build": "^2.0.1",
-    "@bilt/types": "^1.0.1",
+    "@bilt/build": "^2.0.3",
+    "@bilt/build-testkit": "^1.0.2",
+    "@bilt/git-packages": "^3.0.3",
+    "@bilt/npm-packages": "^1.1.3",
+    "@bilt/packages-to-build": "^2.0.2",
+    "@bilt/types": "^1.0.2",
     "debug": "^4.1.1"
   },
   "devDependencies": {
