@@ -4,8 +4,8 @@ const {expect} = require('chai')
 const path = require('path')
 const thisModule = require('..')
 
-describe('e2e test on a real folder', function() {
-  it('should generate a file with the correct artifacts', async function() {
+describe('e2e test on a real folder', function () {
+  it('should generate a file with the correct artifacts', async function () {
     const {findArtifacts} = await thisModule()
     const newYml = await findArtifacts(path.resolve(__dirname, 'e2e-test-dir'), '.zitignore')
 

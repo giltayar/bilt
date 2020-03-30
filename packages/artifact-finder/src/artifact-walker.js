@@ -13,23 +13,23 @@ const artifactWalker = async (
 ) => {
   const {entries, ignoreStack: newIgnoreStack} = await fetchEntriesOfDir(dir, ignoreStack)
   const filenames = entries
-    .filter(entry => entry.type === 'file')
-    .map(entry => path.join(dir, entry.name))
+    .filter((entry) => entry.type === 'file')
+    .map((entry) => path.join(dir, entry.name))
 
   const artifactsOfFiles = await Promise.all(
-    filenames.map(filename => extractArtifacts(filename, baseDir)),
+    filenames.map((filename) => extractArtifacts(filename, baseDir)),
   )
 
-  const aFileIsAnArtifactLeaf = d => !!d
+  const aFileIsAnArtifactLeaf = (d) => !!d
 
   if (find(artifactsOfFiles, aFileIsAnArtifactLeaf)) {
-    return extractorMerger(flatten(artifactsOfFiles).filter(a => !!a))
+    return extractorMerger(flatten(artifactsOfFiles).filter((a) => !!a))
   }
 
   const artifacts = await Promise.all(
     entries
-      .filter(entry => entry.type === 'dir')
-      .map(entry =>
+      .filter((entry) => entry.type === 'dir')
+      .map((entry) =>
         artifactWalker(
           fetchEntriesOfDir,
           path.join(dir, entry.name),
@@ -41,7 +41,7 @@ const artifactWalker = async (
       ),
   )
 
-  return flatten(artifacts).filter(a => !!a)
+  return flatten(artifacts).filter((a) => !!a)
 }
 
 module.exports = artifactWalker

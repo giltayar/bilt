@@ -16,7 +16,7 @@ const ARTIFACTRC_POSSIBLE_NAMES = [
   'artifact.config.js',
 ]
 
-module.exports = fileFetcher => {
+module.exports = (fileFetcher) => {
   return {
     async npmExtractor(filename, basedir) {
       if (path.basename(filename) != 'package.json') {
@@ -34,7 +34,7 @@ module.exports = fileFetcher => {
             Object.keys(packageJson.devDependencies || []),
           ),
           owners: (packageJson.contributors || [])
-            .map(c => c.email || parseAuthor(c).email)
+            .map((c) => c.email || parseAuthor(c).email)
             .concat(
               packageJson.author ? packageJson.author || parseAuthor(packageJson.author).email : [],
             ),
@@ -68,14 +68,14 @@ module.exports = fileFetcher => {
     },
     combinedExtractorCreator(extractors) {
       return async (filename, basedir) => {
-        return await Promise.all(extractors.map(extractor => extractor(filename, basedir)))
-          .then(extractorResults => extractorResults.filter(r => !!r))
-          .then(extractorResults => (extractorResults.length ? extractorResults : undefined))
+        return await Promise.all(extractors.map((extractor) => extractor(filename, basedir)))
+          .then((extractorResults) => extractorResults.filter((r) => !!r))
+          .then((extractorResults) => (extractorResults.length ? extractorResults : undefined))
       }
     },
     extractorMerger(artifacts) {
-      const npmArtifact = find(artifacts, e => e.type === 'npm')
-      const artifactsRcYmlArtifact = find(artifacts, e => !e.type)
+      const npmArtifact = find(artifacts, (e) => e.type === 'npm')
+      const artifactsRcYmlArtifact = find(artifacts, (e) => !e.type)
 
       const npmDependencies = (npmArtifact || {}).dependencies || []
       const artifactsRcYmlDependencies = (artifactsRcYmlArtifact || {}).dependencies || []

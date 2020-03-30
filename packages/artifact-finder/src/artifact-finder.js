@@ -11,7 +11,7 @@ const debug = require('debug')('bilt:artifact-finder')
 module.exports = async () => {
   return {
     async findArtifacts(dir, ignoreFile = '.gitignore') {
-      const fileFetcher = filename => promisify(fs.readFile)(filename)
+      const fileFetcher = (filename) => promisify(fs.readFile)(filename)
       const extractors = artifactExtractorsCreator(fileFetcher)
 
       const artifacts = await artifactWalker(
@@ -42,20 +42,20 @@ const fetchEntriesOfDir = async (ignoreFile, baseDir, dir, ignoreStack = []) => 
     retGitIgnored = retGitIgnored.concat(
       (await readFileAsync(path.join(dir, ignoreFile), {encoding: 'utf-8'}))
         .split(/\r?\n/g)
-        .filter(l => l.trim() && !l.trim().startsWith('#')),
+        .filter((l) => l.trim() && !l.trim().startsWith('#')),
     )
   }
-  const igFilter = ignore()
-    .add(retGitIgnored)
-    .createFilter()
+  const igFilter = ignore().add(retGitIgnored).createFilter()
 
   return {
     entries: await Promise.all(
-      entryNames.filter(name => !name.startsWith('.') && igFilter(name)).map(async name => {
-        const fullName = path.join(dir, name)
-        const stat = await statAsync(fullName)
-        return {name, type: stat.isDirectory() ? 'dir' : 'file'}
-      }),
+      entryNames
+        .filter((name) => !name.startsWith('.') && igFilter(name))
+        .map(async (name) => {
+          const fullName = path.join(dir, name)
+          const stat = await statAsync(fullName)
+          return {name, type: stat.isDirectory() ? 'dir' : 'file'}
+        }),
     ),
     ignoreStack: retGitIgnored,
   }
