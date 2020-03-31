@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/bilt-applitools-cli.js",
   "engines": {
-    "node": ">=10.3.0"
+    "node": ">=12.3.0"
   },
   "files": [
     "src",
@@ -33,10 +33,17 @@
     "directory": "packages/bilt-applitools-cli"
   },
   "dependencies": {
+    "@bilt/build": "^2.0.4",
+    "@bilt/git-packages": "^3.0.4",
+    "@bilt/npm-next-version": "^2.0.0",
+    "@bilt/npm-packages": "^1.1.4",
+    "@bilt/packages-to-build": "^2.0.3",
+    "cosmiconfig": "^6.0.0",
     "debug": "^4.1.1",
     "yargs": "^15.3.1"
   },
   "devDependencies": {
+    "@bilt/types": "^2.0.0",
     "chai": "^4.2.0",
     "eslint": "^6.8.0",
     "eslint-plugin-mocha-no-only": "^1.1.0",

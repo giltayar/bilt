@@ -1,5 +1,6 @@
 'use strict'
 const yargs = require('yargs')
+const {cosmiconfig} = require('cosmiconfig')
 
 async function main(argv, {shouldExitOnError = false} = {}) {
   const commandLineOptions = yargs
@@ -16,7 +17,17 @@ async function main(argv, {shouldExitOnError = false} = {}) {
 
   const {_: [command = 'build'] = [], ...args} = commandLineOptions.parse(argv)
 
-  await require(`./command-${command}`)(args)
+  const {rootDirectory} = await loadConfigFile()
+
+  await require(`./command-${command}`)({rootDirectory, ...args})
+}
+
+async function loadConfigFile() {
+  const explorer = cosmiconfig('bilt-applitools')
+
+  const result = await explorer.search()
+
+  return {rootDirectory: result.filepath}
 }
 
 module.exports = main
