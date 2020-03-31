@@ -86,7 +86,7 @@ export async function* build({
     packagesThatCannotBeBuilt: Set<RelativeDirectoryPath>,
   ): AsyncGenerator<BuildPackageResult> {
     for (const build of buildOrder) {
-      const packageDirectory = build.packageToBuild.directory as string
+      const packageDirectory = build.packageToBuild.directory
       if (packagesAlreadyBuilt.has(packageDirectory)) continue
       if (packagesThatCannotBeBuilt.has(packageDirectory)) continue
 

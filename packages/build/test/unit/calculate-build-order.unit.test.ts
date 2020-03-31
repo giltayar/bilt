@@ -1,42 +1,50 @@
 import {inspect} from 'util'
 import {describe, it} from 'mocha'
 import {expect} from 'chai'
-import {PackageInfo, PackageInfos} from '@bilt/types'
+import {PackageInfo, PackageInfos, RelativeDirectoryPath} from '@bilt/types'
 
 import {calculateBuildOrder, Build} from '../../src/build'
 
 inspect.defaultOptions.depth = 1000
 
 describe('calculateBuildOrder (unit)', function () {
-  const ePackage: PackageInfo = {directory: 'edir', name: 'epackage', dependencies: []}
-  const fPackage: PackageInfo = {directory: 'fdir', name: 'fpackage', dependencies: []}
+  const ePackage: PackageInfo = {
+    directory: 'edir' as RelativeDirectoryPath,
+    name: 'epackage',
+    dependencies: [],
+  }
+  const fPackage: PackageInfo = {
+    directory: 'fdir' as RelativeDirectoryPath,
+    name: 'fpackage',
+    dependencies: [],
+  }
   const cPackage: PackageInfo = {
-    directory: 'cdir',
+    directory: 'cdir' as RelativeDirectoryPath,
     name: 'cpackage',
     dependencies: [ePackage],
   }
   const dPackage: PackageInfo = {
-    directory: 'ddir',
+    directory: 'ddir' as RelativeDirectoryPath,
     name: 'dpackage',
     dependencies: [cPackage, ePackage],
   }
   const bPackage: PackageInfo = {
-    directory: 'packages/bdir',
+    directory: 'packages/bdir' as RelativeDirectoryPath,
     name: 'bpackage',
     dependencies: [dPackage],
   }
   const aPackage: PackageInfo = {
-    directory: 'adir',
+    directory: 'adir' as RelativeDirectoryPath,
     name: 'apackage',
     dependencies: [bPackage, cPackage],
   }
   const packageInfos: PackageInfos = {
-    [aPackage.directory as string]: aPackage,
-    [bPackage.directory as string]: bPackage,
-    [cPackage.directory as string]: cPackage,
-    [dPackage.directory as string]: dPackage,
-    [ePackage.directory as string]: ePackage,
-    [fPackage.directory as string]: fPackage,
+    [aPackage.directory]: aPackage,
+    [bPackage.directory]: bPackage,
+    [cPackage.directory]: cPackage,
+    [dPackage.directory]: dPackage,
+    [ePackage.directory]: ePackage,
+    [fPackage.directory]: fPackage,
   }
 
   it('should create the correct build order for the above packageInfos', () => {

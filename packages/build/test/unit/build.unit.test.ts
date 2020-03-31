@@ -8,35 +8,43 @@ import {calculateBuildOrder, build, BuildPackageSuccessResult} from '../../src/b
 inspect.defaultOptions.depth = 1000
 
 describe('build (unit)', function () {
-  const ePackage: PackageInfo = {directory: 'edir', name: 'epackage', dependencies: []}
-  const fPackage: PackageInfo = {directory: 'fdir', name: 'fpackage', dependencies: []}
+  const ePackage: PackageInfo = {
+    directory: 'edir' as RelativeDirectoryPath,
+    name: 'epackage',
+    dependencies: [],
+  }
+  const fPackage: PackageInfo = {
+    directory: 'fdir' as RelativeDirectoryPath,
+    name: 'fpackage',
+    dependencies: [],
+  }
   const cPackage: PackageInfo = {
-    directory: 'cdir',
+    directory: 'cdir' as RelativeDirectoryPath,
     name: 'cpackage',
     dependencies: [ePackage],
   }
   const dPackage: PackageInfo = {
-    directory: 'ddir',
+    directory: 'ddir' as RelativeDirectoryPath,
     name: 'dpackage',
     dependencies: [cPackage, ePackage],
   }
   const bPackage: PackageInfo = {
-    directory: 'packages/bdir',
+    directory: 'packages/bdir' as RelativeDirectoryPath,
     name: 'bpackage',
     dependencies: [dPackage],
   }
   const aPackage: PackageInfo = {
-    directory: 'adir',
+    directory: 'adir' as RelativeDirectoryPath,
     name: 'apackage',
     dependencies: [bPackage, cPackage],
   }
   const packageInfos: PackageInfos = {
-    [aPackage.directory as string]: aPackage,
-    [bPackage.directory as string]: bPackage,
-    [cPackage.directory as string]: cPackage,
-    [dPackage.directory as string]: dPackage,
-    [ePackage.directory as string]: ePackage,
-    [fPackage.directory as string]: fPackage,
+    [aPackage.directory]: aPackage,
+    [bPackage.directory]: bPackage,
+    [cPackage.directory]: cPackage,
+    [dPackage.directory]: dPackage,
+    [ePackage.directory]: ePackage,
+    [fPackage.directory]: fPackage,
   }
 
   it('should build in the correct order', async () => {
@@ -49,7 +57,7 @@ describe('build (unit)', function () {
     }: {
       packageInfo: PackageInfo
     }): Promise<BuildPackageSuccessResult> {
-      expect(packageInfo).to.eql(packageInfos[packageInfo.directory as string])
+      expect(packageInfo).to.eql(packageInfos[packageInfo.directory])
 
       packagesBuilt.push(packageInfo.directory)
 
@@ -85,8 +93,8 @@ describe('build (unit)', function () {
     let countSuccesses = 0
     let countNotBuilt = 0
     for await (const buildResult of build({packageInfos, buildOrder, buildPackageFunc})) {
-      const shouldBeSuccesful = ['edir', 'fdir'].includes(buildResult.package.directory as string)
-      const shouldFail = ['cdir'].includes(buildResult.package.directory as string)
+      const shouldBeSuccesful = ['edir', 'fdir'].includes(buildResult.package.directory)
+      const shouldFail = ['cdir'].includes(buildResult.package.directory)
 
       if (buildResult.buildResult === 'success') {
         countSuccesses++
