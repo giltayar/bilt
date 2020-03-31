@@ -47,10 +47,12 @@
 		{
 			"name": ".circleci",
 			"path": ".circleci"
+		},
+		{
+			"path": "packages/npm-next-version"
 		}
 	],
 	"settings": {
-		"javascript.validate.enable": false,
 		"debug.node.autoAttach": "on"
 	}
 }
