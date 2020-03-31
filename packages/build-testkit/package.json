@@ -1,6 +1,6 @@
 {
   "name": "@bilt/build-testkit",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "main": "src/build-testkit.js",
   "engines": {
@@ -32,8 +32,8 @@
     "debug": "^4.1.1"
   },
   "devDependencies": {
-    "@bilt/build": "^2.0.3",
-    "@bilt/types": "^1.0.2",
+    "@bilt/build": "^2.0.4",
+    "@bilt/types": "^2.0.0",
     "chai": "^4.2.0",
     "eslint": "^6.8.0",
     "eslint-plugin-mocha-no-only": "^1.1.0",

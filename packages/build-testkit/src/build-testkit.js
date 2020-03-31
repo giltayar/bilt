@@ -4,8 +4,8 @@ const path = require('path')
 
 /**@return {import('@bilt/build').BuildPackageFunction} */
 function logFilesDuringBuild(
-  /**@@type {import('@bilt/types').Directory} */ rootDirectory,
-  /**@@type {{[x: string]: string}*/ logLines,
+  /**@type {import('@bilt/types').Directory} */ rootDirectory,
+  /**@type {{[x: string]: string}}*/ logLines,
 ) {
   return async function (
     /**@type {{packageInfo: import('@bilt/types').PackageInfo}}*/ {packageInfo},
