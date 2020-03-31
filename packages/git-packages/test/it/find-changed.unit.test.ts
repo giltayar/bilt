@@ -2,19 +2,19 @@ import {describe, it} from 'mocha'
 import {expect} from 'chai'
 
 import {findChangedFiles, findChangedPackages} from '../../src/git-packages'
-import {Commitish, RelativeFilePath} from '@bilt/types'
+import {Commitish, RelativeFilePath, Directory, RelativeDirectoryPath} from '@bilt/types'
 
 describe('findChanged (it)', function () {
   describe('findChangedFiles', () => {
     it('should be able find files changes between two commit in this repo (it will not include the files in fromCommit', async () => {
       const changedFilesInGit = await findChangedFiles({
-        rootDirectory: __dirname,
+        rootDirectory: __dirname as Directory,
         fromGitDate: 'Sat Feb 15 21:30:36 2020 +0200', //79921a9be6ef8b509326220f4de55a3e7817d9cc
-        toCommit: 'f02bc9d5aef8531d9aeab19613920f933e87ad89',
+        toCommit: 'f02bc9d5aef8531d9aeab19613920f933e87ad89' as Commitish,
       })
 
       expect(changedFilesInGit).to.eql(
-        new Map<Commitish, RelativeFilePath[]>([
+        toChangedFilesInGit([
           ['f02bc9d5aef8531d9aeab19613920f933e87ad89', ['packages/ng-packages/package.json']],
           [
             '0307438373a557e69cb6aa5532f61df694199e3e',
@@ -36,20 +36,21 @@ describe('findChanged (it)', function () {
     })
   })
   describe('findChangedPackages', () => {
-    const changedFilesInGit = new Map<Commitish, RelativeFilePath[]>([
+    const changedFilesInGit = toChangedFilesInGit([
       ['2', ['a/foo.txt', 'a/boo.txt', 'b/foo.txt', 'c/foo.txt']],
       ['1.5', ['c/foo.txt']],
       ['1', ['a/foo.txt', 'a/boo.txt', 'b/foo.txt', 'c/foo.txt']],
       ['0', ['c/foo.txt', 'a/boo.txt', 'b/foo.txt', 'c/foo.txt']],
       ['-1', ['c/foo.txt', 'a/boo.txt', 'b/foo.txt']],
     ])
-    const pa = {directory: 'a'}
-    const pb = {directory: 'b'}
+
+    const pa = {directory: 'a' as RelativeDirectoryPath}
+    const pb = {directory: 'b' as RelativeDirectoryPath}
 
     it('should find no packages if last succesful build is the HEAD', async () => {
       const changedPackages = findChangedPackages({
         changedFilesInGit,
-        lastSuccesfulBuildOfPackages: [{package: pa, lastSuccesfulBuild: '2'}],
+        lastSuccesfulBuildOfPackages: [{package: pa, lastSuccesfulBuild: '2' as Commitish}],
       })
 
       expect(changedPackages).to.eql([])
@@ -59,8 +60,8 @@ describe('findChanged (it)', function () {
       const changedPackages = findChangedPackages({
         changedFilesInGit,
         lastSuccesfulBuildOfPackages: [
-          {package: pa, lastSuccesfulBuild: '1'},
-          {package: pb, lastSuccesfulBuild: '1'},
+          {package: pa, lastSuccesfulBuild: '1' as Commitish},
+          {package: pb, lastSuccesfulBuild: '1' as Commitish},
         ],
       })
 
@@ -71,8 +72,8 @@ describe('findChanged (it)', function () {
       const changedPackages = findChangedPackages({
         changedFilesInGit,
         lastSuccesfulBuildOfPackages: [
-          {package: pa, lastSuccesfulBuild: '1'},
-          {package: pb, lastSuccesfulBuild: '2'},
+          {package: pa, lastSuccesfulBuild: '1' as Commitish},
+          {package: pb, lastSuccesfulBuild: '2' as Commitish},
         ],
       })
 
@@ -80,3 +81,9 @@ describe('findChanged (it)', function () {
     })
   })
 })
+
+function toChangedFilesInGit(raw: [string, string[]][]) {
+  return new Map<Commitish, RelativeFilePath[]>(
+    raw.map(([commitish, filePaths]) => [commitish as Commitish, filePaths as RelativeFilePath[]]),
+  )
+}

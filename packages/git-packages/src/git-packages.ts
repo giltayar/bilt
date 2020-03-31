@@ -14,7 +14,7 @@ export type ChangedFilesInGit = Map<Commitish, RelativeFilePath[]>
 export async function findChangedFiles({
   rootDirectory,
   fromGitDate = '1 year ago',
-  toCommit = 'HEAD',
+  toCommit = 'HEAD' as Commitish,
 }: {
   fromGitDate?: string
   toCommit?: Commitish
@@ -44,10 +44,10 @@ export async function findChangedFiles({
   for (const gitLogLine of gitLogLines) {
     var currentCommit //eslint-disable-line
     if (gitLogLine.startsWith(COMMIT_PREFIX_IN_LOG)) {
-      currentCommit = gitLogLine.trim().slice(COMMIT_PREFIX_IN_LOG.length)
+      currentCommit = gitLogLine.trim().slice(COMMIT_PREFIX_IN_LOG.length) as Commitish
       ret.set(currentCommit, [])
     } else if (currentCommit) {
-      ;(ret.get(currentCommit) as RelativeFilePath[]).push(gitLogLine)
+      ret.get(currentCommit)?.push(gitLogLine as RelativeFilePath)
     } else {
       throw new Error(`something is wrong here: ${gitLogLine}`)
     }
