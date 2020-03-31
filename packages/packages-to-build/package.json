@@ -1,6 +1,6 @@
 {
   "name": "@bilt/packages-to-build",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "",
   "main": "lib/src/packages-to-build.js",
   "types": "lib/src/packages-to-build.d.ts",
@@ -36,15 +36,15 @@
   },
   "dependencies": {
     "@bilt/artifact-dependency-graph": "^3.0.32",
-    "@bilt/types": "^1.0.2",
+    "@bilt/types": "^2.0.0",
     "debug": "^4.1.1"
   },
   "devDependencies": {
     "@types/chai": "^4.2.11",
     "@types/mocha": "^7.0.2",
-    "@types/node": "^13.9.5",
-    "@typescript-eslint/eslint-plugin": "^2.25.0",
-    "@typescript-eslint/parser": "^2.25.0",
+    "@types/node": "^13.9.8",
+    "@typescript-eslint/eslint-plugin": "^2.26.0",
+    "@typescript-eslint/parser": "^2.26.0",
     "chai": "^4.2.0",
     "eslint": "^6.8.0",
     "eslint-plugin-mocha-no-only": "^1.1.0",

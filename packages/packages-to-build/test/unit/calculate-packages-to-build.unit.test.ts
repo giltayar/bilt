@@ -1,20 +1,32 @@
 import {describe, it} from 'mocha'
 import {expect} from 'chai'
-import {PackageInfo, PackageInfos} from '@bilt/types'
+import {PackageInfo, PackageInfos, RelativeDirectoryPath} from '@bilt/types'
 
 import {calculatePackagesToBuild} from '../../src/packages-to-build'
 
 describe('calculatePackagesToBuild (unit)', function () {
-  const ePackage: PackageInfo = {directory: 'edir', name: 'epackage', dependencies: []}
-  const dPackage: PackageInfo = {directory: 'ddir', name: 'dpackage', dependencies: [ePackage]}
+  const ePackage: PackageInfo = {
+    directory: 'edir' as RelativeDirectoryPath,
+    name: 'epackage',
+    dependencies: [],
+  }
+  const dPackage: PackageInfo = {
+    directory: 'ddir' as RelativeDirectoryPath,
+    name: 'dpackage',
+    dependencies: [ePackage],
+  }
   const bPackage: PackageInfo = {
-    directory: 'packages/bdir',
+    directory: 'packages/bdir' as RelativeDirectoryPath,
     name: 'bpackage',
     dependencies: [dPackage],
   }
-  const cPackage: PackageInfo = {directory: 'cdir', name: 'cpackage', dependencies: [dPackage]}
+  const cPackage: PackageInfo = {
+    directory: 'cdir' as RelativeDirectoryPath,
+    name: 'cpackage',
+    dependencies: [dPackage],
+  }
   const aPackage: PackageInfo = {
-    directory: 'adir',
+    directory: 'adir' as RelativeDirectoryPath,
     name: 'apackage',
     dependencies: [bPackage, cPackage],
   }
@@ -60,8 +72,16 @@ describe('calculatePackagesToBuild (unit)', function () {
   })
 
   it('if basePackages include packages that do not "lead" to buildUpTo packages, they will not be built', () => {
-    const gPackage: PackageInfo = {directory: 'gdir', name: 'gpackage', dependencies: []}
-    const fPackage: PackageInfo = {directory: 'fdir', name: 'fpackage', dependencies: [gPackage]}
+    const gPackage: PackageInfo = {
+      directory: 'gdir' as RelativeDirectoryPath,
+      name: 'gpackage',
+      dependencies: [],
+    }
+    const fPackage: PackageInfo = {
+      directory: 'fdir' as RelativeDirectoryPath,
+      name: 'fpackage',
+      dependencies: [gPackage],
+    }
 
     const packagesToBuild = calculatePackagesToBuild({
       packageInfos: {
