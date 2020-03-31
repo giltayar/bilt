@@ -1,7 +1,7 @@
 import path from 'path'
 import {promisify} from 'util'
 import {exec} from 'child_process'
-import {Directory, RelativeDirectoryPath, PackageInfos} from '@bilt/types'
+import {Directory, RelativeDirectoryPath, PackageInfos, Commitish} from '@bilt/types'
 import {findNpmPackageInfos, findNpmPackages} from '@bilt/npm-packages'
 import {findChangedFiles, findChangedPackages} from '@bilt/git-packages'
 import {calculatePackagesToBuild} from '@bilt/packages-to-build'
@@ -52,12 +52,12 @@ export async function buildUpTo(
 
 async function determineBuildInformation(rootDirectory: Directory) {
   const {stdout} = await promisify(exec)('git rev-parse HEAD', {cwd: rootDirectory as string})
-  const toCommit = stdout.trim()
+  const toCommit = stdout.trim() as Commitish
 
   const packages = await findNpmPackages({rootDirectory})
   const packageInfos = await findNpmPackageInfos({rootDirectory, packages})
   const lastSuccesfulBuildOfPackages = await loadCommitsOfLastSuccesfulBuilds({
-    rootDirectory: path.join(rootDirectory as string, '.bilt'),
+    rootDirectory: path.join(rootDirectory, '.bilt') as Directory,
     packages,
   })
 
@@ -72,7 +72,7 @@ async function buildPackages(
   packageInfos: PackageInfos,
   buildPackageFunc: BuildPackageFunction,
   rootDirectory: Directory,
-  commit: string,
+  commit: Commitish,
 ) {
   const buildOrder = calculateBuildOrder({packageInfos: packagesToBuild})
   for await (const buildPackageResult of build({packageInfos, buildOrder, buildPackageFunc})) {
@@ -82,7 +82,7 @@ async function buildPackages(
       }`,
     )
     await saveCommitOfLastSuccesfulBuild({
-      rootDirectory: path.join(rootDirectory as string, '.bilt'),
+      rootDirectory: path.join(rootDirectory, '.bilt') as Directory,
       buildPackageResult,
       commit,
     })

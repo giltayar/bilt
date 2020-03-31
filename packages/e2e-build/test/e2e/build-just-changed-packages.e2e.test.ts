@@ -1,7 +1,5 @@
 import {describe, it} from 'mocha'
 import {expect} from 'chai'
-
-import {buildJustChangedPackages, forceBuild} from '../../src/e2e-build'
 import {
   makeTemporaryDirectory,
   init,
@@ -10,10 +8,13 @@ import {
   commitAll,
 } from '@bilt/git-testkit'
 import {logFilesDuringBuild} from '@bilt/build-testkit'
+import {Directory} from '@bilt/types'
+
+import {buildJustChangedPackages, forceBuild} from '../../src/e2e-build'
 
 describe('buildJustChangedPackages (e2e)', function () {
   it('should build only changed packages', async () => {
-    const gitDir = await makeTemporaryDirectory()
+    const gitDir = (await makeTemporaryDirectory()) as Directory
     await init(gitDir)
     await writeFile(gitDir, '.gitignore', '.bilt\n')
 

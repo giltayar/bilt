@@ -1,6 +1,6 @@
 {
   "name": "@bilt/e2e-build",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "main": "lib/src/e2e-build.js",
   "types": "lib/src/e2e-build.d.ts",
@@ -32,21 +32,21 @@
     "directory": "packages/e2e-build"
   },
   "dependencies": {
-    "@bilt/build": "^2.0.3",
-    "@bilt/build-testkit": "^1.0.2",
-    "@bilt/git-packages": "^3.0.3",
-    "@bilt/npm-packages": "^1.1.3",
-    "@bilt/packages-to-build": "^2.0.2",
-    "@bilt/types": "^1.0.2",
+    "@bilt/build": "^2.0.4",
+    "@bilt/build-testkit": "^1.0.3",
+    "@bilt/git-packages": "^3.0.4",
+    "@bilt/npm-packages": "^1.1.4",
+    "@bilt/packages-to-build": "^2.0.3",
+    "@bilt/types": "^2.0.0",
     "debug": "^4.1.1"
   },
   "devDependencies": {
     "@bilt/git-testkit": "file:../git-testkit",
     "@types/chai": "^4.2.11",
     "@types/mocha": "^7.0.2",
-    "@types/node": "^13.9.5",
-    "@typescript-eslint/eslint-plugin": "^2.25.0",
-    "@typescript-eslint/parser": "^2.25.0",
+    "@types/node": "^13.9.8",
+    "@typescript-eslint/eslint-plugin": "^2.26.0",
+    "@typescript-eslint/parser": "^2.26.0",
     "chai": "^4.2.0",
     "eslint": "^6.8.0",
     "eslint-plugin-mocha-no-only": "^1.1.0",
