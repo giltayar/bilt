@@ -1,12 +1,13 @@
 import path from 'path'
 import {describe, it} from 'mocha'
 import {expect} from 'chai'
+import {Directory} from '@bilt/types'
 
 import {findNpmPackages, findNpmPackageInfos} from '../../src/npm-packages'
 
 describe('findNpmPackageInfos (unit)', function () {
   it('should find npm package infos', async () => {
-    const rootDirectory = path.join(__dirname, 'test-repo')
+    const rootDirectory = path.join(__dirname, 'test-repo') as Directory
 
     const packages = await findNpmPackages({rootDirectory})
     const packageInfos = await findNpmPackageInfos({rootDirectory, packages})

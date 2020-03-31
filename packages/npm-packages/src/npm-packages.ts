@@ -10,7 +10,7 @@ export async function findNpmPackages({
 }): Promise<Package[]> {
   const {findArtifacts} = await makeFindArtifacts()
 
-  const result = (await findArtifacts(rootDirectory)) as {path: string}[]
+  const result = (await findArtifacts(rootDirectory)) as {path: RelativeDirectoryPath}[]
 
   return result.map((artifact) => ({directory: artifact.path}))
 }
@@ -35,7 +35,7 @@ export async function findNpmPackageInfos({
 
   return Object.fromEntries(
     interimPackageInfos.map((interimPackageInfo) => [
-      interimPackageInfo.directory,
+      interimPackageInfo.directory as string,
       interimPackageInfoToPackageInfo(interimPackageInfo, packageNameToPackagePath),
     ]),
   )
