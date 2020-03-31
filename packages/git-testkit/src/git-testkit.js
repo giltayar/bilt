@@ -6,17 +6,17 @@ const os = require('os')
 const {exec} = require('child_process')
 const execAsync = promisify(exec)
 
-/**@return {string} */
+/**@return {Promise<string>} */
 async function makeTemporaryDirectory() {
   return await fs.promises.mkdtemp(os.tmpdir() + '/')
 }
 
-/**@return {Promise<undefined>} */
+/**@return {Promise<void>} */
 async function init(/**@type {string} */ gitDir) {
   await execAsync('git init', {cwd: gitDir})
 }
 
-/**@return {Promise<undefined>} */
+/**@return {Promise<void>} */
 async function writeFile(
   /**@type {string} */ gitDir,
   /**@type {string} */ filePath,
@@ -25,7 +25,7 @@ async function writeFile(
   await fs.promises.writeFile(path.join(gitDir, filePath), content)
 }
 
-/**@return {Promise<undefined>} */
+/**@return {Promise<void>} */
 async function writePackageJson(
   /**@type {string} */ gitDir,
   /**@type {string} */ filePath,
@@ -43,7 +43,7 @@ async function writePackageJson(
   )
 }
 
-/**@return {Promise<undefined>} */
+/**@return {Promise<void>} */
 async function commitAll(/**@type {string} */ gitDir, /**@type {string?} */ message = undefined) {
   await execAsync('git add .', {cwd: gitDir})
   await execAsync(`git commit -m "${message ? 'message' : 'nomessage'}"`, {cwd: gitDir})

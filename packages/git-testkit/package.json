@@ -1,6 +1,6 @@
 {
   "name": "@bilt/git-testkit",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "main": "src/git-testkit.js",
   "engines": {
