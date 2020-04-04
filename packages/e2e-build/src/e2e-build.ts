@@ -3,7 +3,7 @@ import {promisify} from 'util'
 import {exec} from 'child_process'
 import {Directory, RelativeDirectoryPath, PackageInfos, Commitish} from '@bilt/types'
 import {findNpmPackageInfos, findNpmPackages} from '@bilt/npm-packages'
-import {findChangedFiles, findChangedPackages} from '@bilt/git-packages'
+import {findChangedFiles, findChangedPackagesUsingLastSuccesfulBuild} from '@bilt/git-packages'
 import {calculatePackagesToBuild} from '@bilt/packages-to-build'
 import {
   loadCommitsOfLastSuccesfulBuilds,
@@ -62,9 +62,16 @@ async function determineBuildInformation(rootDirectory: Directory) {
   })
 
   const changedFilesInGit = await findChangedFiles({rootDirectory})
-  const changedPackages = findChangedPackages({changedFilesInGit, lastSuccesfulBuildOfPackages})
+  const changedPackages = findChangedPackagesUsingLastSuccesfulBuild({
+    changedFilesInGit,
+    lastSuccesfulBuildOfPackages,
+  })
 
-  return {packageInfos, changedPackages, commit: toCommit}
+  return {
+    packageInfos,
+    changedPackages: changedPackages.map(({package: pkg}) => pkg),
+    commit: toCommit,
+  }
 }
 
 async function buildPackages(
