@@ -1,6 +1,6 @@
 {
   "name": "@bilt/git-packages",
-  "version": "3.0.4",
+  "version": "5.0.0",
   "description": "",
   "main": "lib/src/git-packages.js",
   "types": "lib/src/git-packages.d.ts",
@@ -38,7 +38,7 @@
   "devDependencies": {
     "@types/chai": "^4.2.11",
     "@types/mocha": "^7.0.2",
-    "@types/node": "^13.9.8",
+    "@types/node": "^13.11.0",
     "@typescript-eslint/eslint-plugin": "^2.26.0",
     "@typescript-eslint/parser": "^2.26.0",
     "chai": "^4.2.0",

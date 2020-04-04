@@ -37,8 +37,8 @@ describe('findChanged (it)', function () {
   })
   describe('findChangedPackages', () => {
     const changedFilesInGit = toChangedFilesInGit([
-      ['2', ['a/foo.txt', 'a/boo.txt', 'b/foo.txt', 'c/foo.txt']],
-      ['1.5', ['c/foo.txt']],
+      ['2', ['a/foo.txt', 'a/boo.txt', 'c/foo.txt']],
+      ['1.5', ['c/foo.txt', 'b/foo.txt']],
       ['1', ['a/foo.txt', 'a/boo.txt', 'b/foo.txt', 'c/foo.txt']],
       ['0', ['c/foo.txt', 'a/boo.txt', 'b/foo.txt', 'c/foo.txt']],
       ['-1', ['c/foo.txt', 'a/boo.txt', 'b/foo.txt']],
@@ -65,7 +65,10 @@ describe('findChanged (it)', function () {
         ],
       })
 
-      expect(changedPackages).to.eql([pa, pb])
+      expect(changedPackages).to.eql([
+        {package: pa, commitOfLastChange: '2'},
+        {package: pb, commitOfLastChange: '1.5'},
+      ])
     })
 
     it('should find only one changed packages in HEAD if the other one was last built in HEAD', async () => {
@@ -77,7 +80,7 @@ describe('findChanged (it)', function () {
         ],
       })
 
-      expect(changedPackages).to.eql([pa])
+      expect(changedPackages).to.eql([{package: pa, commitOfLastChange: '2'}])
     })
   })
 })

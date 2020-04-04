@@ -62,8 +62,9 @@ export function findChangedPackages({
 }: {
   changedFilesInGit: ChangedFilesInGit
   lastSuccesfulBuildOfPackages: LastSuccesfulBuildOfPackage[]
-}): Package[] {
+}): {package: Package; commitOfLastChange: Commitish}[] {
   const packageChangeCounts = new Map<RelativeDirectoryPath, number>()
+  const lastCommitOfPackages = new Map<RelativeDirectoryPath, Commitish>()
   const lastSuccesfulBuildCommitToPackages: Map<Commitish, Package[]> = makeCommitsToPackages(
     lastSuccesfulBuildOfPackages,
   )
@@ -85,6 +86,7 @@ export function findChangedPackages({
     )
 
     for (const packageInCommit of packagesInCommit) {
+      lastCommitOfPackages.set(packageInCommit.directory, commit)
       if (packagesThatWereLastSuccesfullyBuiltInThisCommit?.includes(packageInCommit)) {
         packagesWhosLastSuccesfulBuildWasFound.add(packageInCommit.directory)
       }
@@ -98,7 +100,14 @@ export function findChangedPackages({
 
   return [...packageChangeCounts.entries()]
     .filter(([, count]) => count > 1)
-    .map(([packageDirectory]) => ({directory: packageDirectory}))
+    .map(([packageDirectory]) => ({
+      package: {directory: packageDirectory},
+      commitOfLastChange: nonNullable(lastCommitOfPackages.get(packageDirectory)),
+    }))
+}
+
+function nonNullable<T>(t: T) {
+  return t as NonNullable<T>
 }
 
 function makeCommitsToPackages(
