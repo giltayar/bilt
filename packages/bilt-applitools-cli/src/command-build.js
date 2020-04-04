@@ -1,80 +1,91 @@
 //@ts-check
 'use strict'
 const path = require('path')
-const {promisify} = require('util')
-const {exec} = require('child_process')
 const {findNpmPackageInfos, findNpmPackages} = require('@bilt/npm-packages')
-const {
-  loadCommitsOfLastSuccesfulBuilds,
-  calculateBuildOrder,
-  saveCommitOfLastSuccesfulBuild,
-  build,
-} = require('@bilt/build')
+const {calculateBuildOrder, build} = require('@bilt/build')
 const {calculatePackagesToBuild} = require('@bilt/packages-to-build')
-const {findChangedFiles, findChangedPackages} = require('@bilt/git-packages')
+const {findChangedFiles, findLatestPackageChanges} = require('@bilt/git-packages')
 const applitoolsBuild = require('./applitools-build')
+const {sh, shWithOutput} = require('./sh')
 
-async function buildCommand(
-  /**@type {{rootDirectory: import('@bilt/types').Directory, packages: string[], upto: [], force: boolean, dryRun: boolean}}*/ {
+/**@param {{
+ * rootDirectory: import('@bilt/types').Directory
+ * packageDirectories: string[]
+ * upto: []
+ * force: boolean
+ * dryRun: boolean
+ * message: string
+ * }} param*/
+async function buildCommand({rootDirectory, packageDirectories, upto, force, dryRun, message}) {
+  const initialSetOfPackagesToBuild = packageDirectories.map((pd) => ({
+    directory: /**@type {import('@bilt/types').RelativeDirectoryPath}*/ (pd),
+  }))
+  const {packagesToBuild, packageInfos} = await determineBuildInformation(
     rootDirectory,
-    packages,
-    upto,
+    initialSetOfPackagesToBuild,
     force,
-    dryRun,
-  },
-) {
-  const {changedPackages, packageInfos, commit} = await determineBuildInformation(rootDirectory)
+  )
 
-  const packagesToBuild = force
-    ? await findNpmPackageInfos({
-        rootDirectory,
-        packages: packages.map((pkg) => ({
-          directory: /**@type {import('@bilt/types').RelativeDirectoryPath}*/ (pkg),
-        })),
-      })
+  const finalPackagesToBuild = force
+    ? filterPackageInfos(packageInfos, initialSetOfPackagesToBuild)
     : calculatePackagesToBuild({
         packageInfos,
-        basePackagesToBuild: changedPackages,
-        buildUpTo: upto,
+        basePackagesToBuild: packagesToBuild,
+        buildUpTo: force ? undefined : upto,
       })
 
   const packagesBuildOrder = []
   await buildPackages(
-    packagesToBuild,
+    finalPackagesToBuild,
     packageInfos,
     dryRun
-      ? /**@type {import('@bilt/build').BuildPackageFunction} */ async ({packageInfo}) => {
+      ? async ({packageInfo}) => {
           packagesBuildOrder.push(packageInfo.directory)
-          return /**@type {import('@bilt/build').BuildPackageSuccessResult} */ 'success'
+          return 'success'
         }
       : applitoolsBuild(rootDirectory),
     rootDirectory,
-    commit,
     dryRun,
   )
 
   if (dryRun) {
     console.log(packagesBuildOrder.join(', '))
+    return
   }
+
+  await sh(`git commit -m '${message}\n\n\n[bilt-artifacts]\n'`, {cwd: rootDirectory})
 }
 
+/**@returns {Promise<{
+ * packageInfos: import('@bilt/types').PackageInfos,
+ * packagesToBuild: import('@bilt/types').Package[],
+ * }>} */
 async function determineBuildInformation(
-  /**@type import('@bilt/types').Directory */ rootDirectory,
+  /**@type {import('@bilt/types').Directory} */ rootDirectory,
+  /**@type {import('@bilt/types').Package[]} */ initialSetOfPackagesToBuild,
+  /**@type {boolean} */ force,
 ) {
-  const {stdout} = await promisify(exec)('git rev-parse HEAD', {cwd: rootDirectory})
-  const toCommit = /**@type {import('@bilt/types').Commitish}*/ (stdout.trim())
-
   const packages = await findNpmPackages({rootDirectory})
   const packageInfos = await findNpmPackageInfos({rootDirectory, packages})
-  const lastSuccesfulBuildOfPackages = await loadCommitsOfLastSuccesfulBuilds({
-    rootDirectory: /**@type {import('@bilt/types').Directory}*/ (path.join(rootDirectory, '.bilt')),
-    packages,
-  })
+
+  if (force) {
+    return {packageInfos, packagesToBuild: initialSetOfPackagesToBuild}
+  }
 
   const changedFilesInGit = await findChangedFiles({rootDirectory})
-  const changedPackages = findChangedPackages({changedFilesInGit, lastSuccesfulBuildOfPackages})
+  const tentativeChangedPackages = findLatestPackageChanges({
+    changedFilesInGit,
+    packages,
+  })
+  const changedPackages = await filterOutPackagesThatWereAlreadyBuilt(
+    tentativeChangedPackages,
+    rootDirectory,
+  )
 
-  return {packageInfos, changedPackages, commit: toCommit}
+  return {
+    packageInfos,
+    packagesToBuild: changedPackages.map(({package: pkg}) => pkg),
+  }
 }
 
 async function buildPackages(
@@ -82,11 +93,12 @@ async function buildPackages(
   /**@type {import('@bilt/types').PackageInfos} */ packageInfos,
   /**@type {import('@bilt/build').BuildPackageFunction} */ buildPackageFunc,
   /**@type {import('@bilt/types').Directory} */ rootDirectory,
-  /**@type {import('@bilt/types').Commitish}*/ commit,
   /**@type {boolean}*/ dryRun,
 ) {
   const buildOrder = calculateBuildOrder({packageInfos: packagesToBuild})
+
   for await (const buildPackageResult of build({packageInfos, buildOrder, buildPackageFunc})) {
+    const packageDirectory = path.join(rootDirectory, buildPackageResult.package.directory)
     if (buildPackageResult.buildResult === 'failure') {
       const error = buildPackageResult.error
 
@@ -95,16 +107,45 @@ async function buildPackages(
         error.stack || error.toString(),
       )
     }
-    if (!dryRun)
-      await saveCommitOfLastSuccesfulBuild({
-        rootDirectory: /**@type import('@bilt/types').Directory */ (path.join(
-          rootDirectory,
-          '.bilt',
-        )),
-        buildPackageResult,
-        commit,
-      })
+    if (!dryRun) {
+      await sh(`git add .`, {cwd: packageDirectory})
+    }
   }
+}
+
+/**
+ *
+ * @param {import('@bilt/git-packages').PackageChange[]} changedPackages
+ * @param {import('@bilt/types').Directory} rootDirectory
+ * @returns {Promise<import('@bilt/git-packages').PackageChange[]>}
+ */
+async function filterOutPackagesThatWereAlreadyBuilt(changedPackages, rootDirectory) {
+  return (
+    await Promise.all(
+      changedPackages.map(async ({package: pkg, commit}) => {
+        const stdout = await shWithOutput(`git show --format=%B -s ${commit}`, {cwd: rootDirectory})
+
+        if (stdout.includes('[bilt-artifacts]')) {
+          return {package: pkg, commit, isBuild: true}
+        } else {
+          return {package: pkg, commit, isBuild: false}
+        }
+      }),
+    )
+  ).filter((x) => !x.isBuild)
+}
+
+/**
+ *
+ * @param {import('@bilt/types').PackageInfos} packageInfos
+ * @param {import('@bilt/types').Package[]} initialSetOfPackagesToBuild
+ */
+function filterPackageInfos(packageInfos, initialSetOfPackagesToBuild) {
+  return Object.fromEntries(
+    Object.entries(packageInfos).filter(([directory]) =>
+      initialSetOfPackagesToBuild.some(({directory: d2}) => d2 === directory),
+    ),
+  )
 }
 
 module.exports = buildCommand

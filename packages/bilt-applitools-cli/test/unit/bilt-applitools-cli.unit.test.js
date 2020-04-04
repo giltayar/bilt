@@ -1,5 +1,5 @@
 'use strict'
-const {describe = global.describe, it = global.it} = require('mocha')
+const {describe = globalThis.describe, it = globalThis.it} = require('mocha')
 const {expect} = require('chai')
 
 const m = require('../..')

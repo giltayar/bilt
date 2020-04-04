@@ -1,9 +1,8 @@
 'use strict'
 const path = require('path')
 const fs = require('fs')
-const {once} = require('events')
-const {spawn} = require('child_process')
 const {npmNextVersion} = require('@bilt/npm-next-version')
+const {sh} = require('./sh')
 
 /**@return {import('@bilt/build').BuildPackageFunction} */
 function makeApplitoolsBuild(/**@type {import('@bilt/types').Directory}*/ rootDirectory) {
@@ -11,10 +10,10 @@ function makeApplitoolsBuild(/**@type {import('@bilt/types').Directory}*/ rootDi
   return async function applitoolsBuild({packageInfo}) {
     const packageDirectory = path.join(rootDirectory, packageInfo.directory)
 
-    await sh('npm install')
+    await sh('npm install', {cwd: packageDirectory})
 
-    await sh('npm update')
-    await sh('npm audit fix')
+    await sh('npm update', {cwd: packageDirectory})
+    await sh('npm audit fix', {cwd: packageDirectory})
 
     const packageJson = JSON.parse(
       await fs.promises.readFile(path.join(packageDirectory, 'package.json'), 'utf8'),
@@ -23,33 +22,20 @@ function makeApplitoolsBuild(/**@type {import('@bilt/types').Directory}*/ rootDi
     const newVersion = await npmNextVersion(packageJson)
 
     if (newVersion) {
-      await sh(`npm version ${newVersion} --allow-same-version --no-git-tag-version`)
+      await sh(`npm version ${newVersion} --allow-same-version --no-git-tag-version`, {
+        cwd: packageDirectory,
+      })
     }
 
     if ((packageJson.scripts || {}).build) {
-      await sh('npm run build')
+      await sh('npm run build', {cwd: packageDirectory})
     }
 
-    await sh('npm test')
+    await sh('npm test', {cwd: packageDirectory})
 
-    await sh('npm publish')
+    await sh('npm publish', {cwd: packageDirectory})
 
     return 'success'
-
-    async function sh(command) {
-      const childProcess = spawn(command, {cwd: packageDirectory, stdio: 'inherit'})
-
-      const [[exitCode], [error]] = await Promise.race([
-        once(childProcess, 'error'),
-        once(childProcess, 'exit'),
-      ])
-
-      if (error) {
-        throw error
-      } else if (exitCode !== 0) {
-        throw new Error(`'${command}' failed with exit code ${exitCode}`)
-      }
-    }
   }
 }
 
