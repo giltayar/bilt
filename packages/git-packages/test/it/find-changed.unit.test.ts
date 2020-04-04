@@ -1,7 +1,11 @@
 import {describe, it} from 'mocha'
 import {expect} from 'chai'
 
-import {findChangedFiles, findChangedPackages} from '../../src/git-packages'
+import {
+  findChangedFiles,
+  findChangedPackagesUsingLastSuccesfulBuild,
+  findLatestPackageChanges,
+} from '../../src/git-packages'
 import {Commitish, RelativeFilePath, Directory, RelativeDirectoryPath} from '@bilt/types'
 
 describe('findChanged (it)', function () {
@@ -35,7 +39,7 @@ describe('findChanged (it)', function () {
       )
     })
   })
-  describe('findChangedPackages', () => {
+  describe('findChangedPackagesUsingLastSuccesfulBuild', () => {
     const changedFilesInGit = toChangedFilesInGit([
       ['2', ['a/foo.txt', 'a/boo.txt', 'c/foo.txt']],
       ['1.5', ['c/foo.txt', 'b/foo.txt']],
@@ -48,7 +52,7 @@ describe('findChanged (it)', function () {
     const pb = {directory: 'b' as RelativeDirectoryPath}
 
     it('should find no packages if last succesful build is the HEAD', async () => {
-      const changedPackages = findChangedPackages({
+      const changedPackages = findChangedPackagesUsingLastSuccesfulBuild({
         changedFilesInGit,
         lastSuccesfulBuildOfPackages: [{package: pa, lastSuccesfulBuild: '2' as Commitish}],
       })
@@ -57,7 +61,7 @@ describe('findChanged (it)', function () {
     })
 
     it('should find changed packages in HEAD if it is the only one that was not built', async () => {
-      const changedPackages = findChangedPackages({
+      const changedPackages = findChangedPackagesUsingLastSuccesfulBuild({
         changedFilesInGit,
         lastSuccesfulBuildOfPackages: [
           {package: pa, lastSuccesfulBuild: '1' as Commitish},
@@ -66,13 +70,13 @@ describe('findChanged (it)', function () {
       })
 
       expect(changedPackages).to.eql([
-        {package: pa, commitOfLastChange: '2'},
-        {package: pb, commitOfLastChange: '1.5'},
+        {package: pa, commit: '2'},
+        {package: pb, commit: '1.5'},
       ])
     })
 
     it('should find only one changed packages in HEAD if the other one was last built in HEAD', async () => {
-      const changedPackages = findChangedPackages({
+      const changedPackages = findChangedPackagesUsingLastSuccesfulBuild({
         changedFilesInGit,
         lastSuccesfulBuildOfPackages: [
           {package: pa, lastSuccesfulBuild: '1' as Commitish},
@@ -80,7 +84,45 @@ describe('findChanged (it)', function () {
         ],
       })
 
-      expect(changedPackages).to.eql([{package: pa, commitOfLastChange: '2'}])
+      expect(changedPackages).to.eql([{package: pa, commit: '2'}])
+    })
+  })
+
+  describe('findLatestPackageChanges', () => {
+    const changedFilesInGit = toChangedFilesInGit([
+      ['2', ['a/foo.txt', 'a/boo.txt', 'c/foo.txt']],
+      ['1.5', ['c/foo.txt', 'b/foo.txt']],
+      ['1', ['a/foo.txt', 'a/boo.txt', 'b/foo.txt', 'c/foo.txt']],
+      ['0', ['c/foo.txt', 'a/boo.txt', 'b/foo.txt', 'c/foo.txt']],
+      ['-1', ['c/foo.txt', 'a/boo.txt', 'b/foo.txt']],
+    ])
+
+    const pa = {directory: 'a' as RelativeDirectoryPath}
+    const pb = {directory: 'b' as RelativeDirectoryPath}
+    const pc = {directory: 'c' as RelativeDirectoryPath}
+    const pd = {directory: 'd' as RelativeDirectoryPath}
+    const packages = [pa, pb, pc, pd]
+
+    it('should find no packages if last succesful build is the HEAD', async () => {
+      const changedPackages = findLatestPackageChanges({
+        changedFilesInGit,
+        packages: [pd],
+      })
+
+      expect(changedPackages).to.eql([])
+    })
+
+    it('should find changed latest change in packages', async () => {
+      const changedPackages = findLatestPackageChanges({
+        changedFilesInGit,
+        packages,
+      })
+
+      expect(changedPackages).to.have.deep.members([
+        {package: pa, commit: '2'},
+        {package: pb, commit: '1.5'},
+        {package: pc, commit: '2'},
+      ])
     })
   })
 })

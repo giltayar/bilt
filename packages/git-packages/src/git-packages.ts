@@ -56,13 +56,18 @@ export async function findChangedFiles({
   return ret
 }
 
-export function findChangedPackages({
+export type PackageChange = {
+  package: Package
+  commit: Commitish
+}
+
+export function findChangedPackagesUsingLastSuccesfulBuild({
   changedFilesInGit,
   lastSuccesfulBuildOfPackages,
 }: {
   changedFilesInGit: ChangedFilesInGit
   lastSuccesfulBuildOfPackages: LastSuccesfulBuildOfPackage[]
-}): {package: Package; commitOfLastChange: Commitish}[] {
+}): PackageChange[] {
   const packageChangeCounts = new Map<RelativeDirectoryPath, number>()
   const lastCommitOfPackages = new Map<RelativeDirectoryPath, Commitish>()
   const lastSuccesfulBuildCommitToPackages: Map<Commitish, Package[]> = makeCommitsToPackages(
@@ -102,8 +107,35 @@ export function findChangedPackages({
     .filter(([, count]) => count > 1)
     .map(([packageDirectory]) => ({
       package: {directory: packageDirectory},
-      commitOfLastChange: nonNullable(lastCommitOfPackages.get(packageDirectory)),
+      commit: nonNullable(lastCommitOfPackages.get(packageDirectory)),
     }))
+}
+
+export function findLatestPackageChanges({
+  changedFilesInGit,
+  packages,
+}: {
+  changedFilesInGit: ChangedFilesInGit
+  packages: Package[]
+}): PackageChange[] {
+  const lastCommitOfPackages = new Map<RelativeDirectoryPath, Commitish>()
+
+  for (const [commit, changedFiles] of [...changedFilesInGit.entries()]) {
+    const packagesInCommit = packages.filter((pkg) =>
+      changedFiles.some((changedFile) => changedFile.startsWith(pkg.directory + '/')),
+    )
+    for (const packageInCommit of packagesInCommit) {
+      if (!lastCommitOfPackages.has(packageInCommit.directory))
+        lastCommitOfPackages.set(packageInCommit.directory, commit)
+    }
+    if (lastCommitOfPackages.size === packages.length) {
+      break
+    }
+  }
+  return [...lastCommitOfPackages.entries()].map(([packageDirectory, commitOfLastChange]) => ({
+    package: {directory: packageDirectory},
+    commit: commitOfLastChange,
+  }))
 }
 
 function nonNullable<T>(t: T) {
