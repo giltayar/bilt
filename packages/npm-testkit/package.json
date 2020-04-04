@@ -1,0 +1,45 @@
+{
+  "name": "@bilt/npm-testkit",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/npm-testkit.js",
+  "engines": {
+    "node": ">=10.3.0"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "test": "npm run eslint && npm run test:mocha",
+    "test:mocha": "mocha --no-timeouts --exit 'test/unit/*.test.js' 'test/it/*.test.js'",
+    "eslint": "eslint '**/*.js'"
+  },
+  "keywords": [
+    "bilt",
+    "build",
+    "monorepo",
+    "nodejs",
+    "javascript"
+  ],
+  "author": "Gil Tayar <gil@tayar.org>",
+  "license": "unlicense",
+  "repository": {
+    "url": "https://github.com/giltayar/bilt",
+    "type": "git",
+    "directory": "packages/npm-testkit"
+  },
+  "dependencies": {
+    "debug": "^4.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^13.11.0",
+    "chai": "^4.2.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-mocha-no-only": "^1.1.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "mocha": "^7.1.1",
+    "prettier": "^2.0.2",
+    "typescript": "^3.8.3"
+  }
+}
