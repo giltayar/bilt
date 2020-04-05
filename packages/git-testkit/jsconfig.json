@@ -1,4 +1,0 @@
-{
-  "compilerOptions": {"checkJs": true, "target": "es2019", "noEmit": true},
-  "exclude": ["node_modules/"]
-}
