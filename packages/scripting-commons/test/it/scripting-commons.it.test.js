@@ -2,7 +2,14 @@
 const {describe, it} = require('mocha')
 const expect = require('unexpected')
 
-const {sh, shWithOutput, makeTemporaryDirectory} = require('../../src/scripting-commons')
+const {
+  sh,
+  shWithOutput,
+  makeTemporaryDirectory,
+  writeFile,
+  readFileAsString,
+  readFileAsJson,
+} = require('../../src/scripting-commons')
 
 describe('scripting-commons', function () {
   it('should output command output', async () => {
@@ -39,5 +46,17 @@ describe('scripting-commons', function () {
       'to be rejected with error satisfying',
       {message: /No such file or directory/, code: 1},
     )
+  })
+
+  it('should read/write files', async () => {
+    const cwd = await makeTemporaryDirectory()
+
+    await writeFile('foo.txt', 'hello', {cwd})
+    await writeFile(['bar', 'bar.txt'], 'world', {cwd})
+    await writeFile('foo.json', {hello: 'world'}, {cwd})
+
+    expect(await readFileAsString('foo.txt', {cwd}), 'to equal', 'hello')
+    expect(await readFileAsString(['bar', 'bar.txt'], {cwd}), 'to equal', 'world')
+    expect(await readFileAsJson(['foo.json'], {cwd}), 'to equal', {hello: 'world'})
   })
 })
