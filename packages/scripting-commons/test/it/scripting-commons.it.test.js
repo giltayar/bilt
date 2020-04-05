@@ -22,6 +22,15 @@ describe('scripting-commons', function () {
     expect(lsOutput, 'to equal', 'bar\nfoo\n')
   })
 
+  it('should support env', async () => {
+    const tmpDir = await makeTemporaryDirectory()
+
+    await sh('echo bart > $BAR', {cwd: tmpDir, env: {BAR: 'bar'}})
+    const lsOutput = await shWithOutput('cat $BAR', {cwd: tmpDir, env: {BAR: 'bar'}})
+
+    expect(lsOutput, 'to equal', 'bart\n')
+  })
+
   it('should fail on bad command', async () => {
     await expect(
       sh('this-executable-should-not-exist', {cwd: process.cwd()}),

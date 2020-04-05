@@ -10,10 +10,11 @@ const {spawn, exec} = require('child_process')
  * @param {string} command
  * @param {{
  * cwd: string
+ * env?: object|undefined
  * }} params
  */
-async function sh(command, {cwd}) {
-  const childProcess = spawn(command, {cwd, stdio: 'inherit', shell: true})
+async function sh(command, {cwd, env}) {
+  const childProcess = spawn(command, {cwd, stdio: 'inherit', shell: true, env})
   const [result] = await Promise.race([once(childProcess, 'error'), once(childProcess, 'exit')])
   if (typeof result === 'number') {
     if (result !== 0) {
@@ -36,10 +37,11 @@ async function sh(command, {cwd}) {
  * @param {string} command
  * @param {{
  * cwd: string
+ * env?: object|undefined
  * }} params
  */
-async function shWithOutput(command, {cwd}) {
-  const {stdout} = await promisify(exec)(command, {cwd})
+async function shWithOutput(command, {cwd, env}) {
+  const {stdout} = await promisify(exec)(command, {cwd, env})
 
   return stdout
 }
