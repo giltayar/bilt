@@ -33,6 +33,10 @@
 			"path": "packages/git-testkit"
 		},
 		{
+			"name": "npm-next-version",
+			"path": "packages/npm-next-version"
+		},
+		{
 			"name": "npm-packages",
 			"path": "packages/npm-packages"
 		},
@@ -55,10 +59,6 @@
 		{
 			"name": ".circleci",
 			"path": ".circleci"
-		},
-		{
-			"name": "npm-next-version",
-			"path": "packages/npm-next-version"
 		}
 	],
 	"settings": {
