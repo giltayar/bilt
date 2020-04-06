@@ -32,7 +32,7 @@ function makeApplitoolsBuild(/**@type {import('@bilt/types').Directory}*/ rootDi
       await fs.promises.readFile(path.join(packageDirectory, 'package.json'), 'utf8'),
     )
 
-    const newVersion = await npmNextVersion(packageJson)
+    const newVersion = await npmNextVersion({...packageJson, packageDirectory})
     debug('new version of', packageInfo.directory, 'is', newVersion, packageJson)
 
     if (newVersion) {
@@ -53,6 +53,7 @@ function makeApplitoolsBuild(/**@type {import('@bilt/types').Directory}*/ rootDi
     if (!packageJson.private) {
       const isPublic = (packageJson.publishConfig || {}).access !== 'restricted'
       debug('publishing package', packageInfo.directory, isPublic ? 'publicly' : '')
+
       await sh(`npm publish --access=${isPublic ? 'public' : 'restricted'}`, {
         cwd: packageDirectory,
       })

@@ -1,6 +1,6 @@
 {
   "name": "@bilt/bilt-applitools-cli",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "main": "src/bilt-applitools-cli.js",
   "engines": {
@@ -14,7 +14,7 @@
     "btp2": "./scripts/btp2.js"
   },
   "scripts": {
-    "test": "npm run eslint && tsc && npm run test:mocha",
+    "test": "npm run eslint && npm run test:mocha",
     "test:mocha": "mocha --no-timeouts --exit 'test/unit/*.test.js' 'test/it/*.test.js' 'test/e2e/*.test.js'",
     "eslint": "eslint '**/*.js'"
   },
@@ -35,7 +35,7 @@
   "dependencies": {
     "@bilt/build": "^2.0.4",
     "@bilt/git-packages": "^6.0.0",
-    "@bilt/npm-next-version": "^2.0.0",
+    "@bilt/npm-next-version": "^2.2.0",
     "@bilt/npm-packages": "^1.1.4",
     "@bilt/packages-to-build": "^2.0.3",
     "@bilt/scripting-commons": "^1.2.0",
@@ -44,8 +44,8 @@
     "yargs": "^15.3.1"
   },
   "devDependencies": {
-    "@bilt/git-testkit": "^1.1.1",
-    "@bilt/npm-testkit": "^1.1.0",
+    "@bilt/git-testkit": "^1.1.2",
+    "@bilt/npm-testkit": "^1.2.1",
     "@bilt/types": "^2.0.0",
     "@types/node": "^13.11.0",
     "chai": "^4.2.0",
@@ -54,7 +54,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.1.2",
     "mocha": "^7.1.1",
-    "prettier": "^2.0.3",
+    "prettier": "^2.0.4",
     "typescript": "^3.8.3"
   }
 }

@@ -69,6 +69,9 @@ async function buildCommand({
 
   debug('commiting packages')
   await sh(`git commit -m '${message}\n\n\n[bilt-artifacts]\n'`, {cwd: rootDirectory})
+
+  debug('pushing')
+  await sh('git push', {cwd: rootDirectory})
 }
 
 /**@returns {Promise<{
