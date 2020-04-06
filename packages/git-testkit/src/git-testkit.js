@@ -13,7 +13,7 @@ async function makeTemporaryDirectory() {
 
 /**
  * @param {string} gitDir
- * @param {{bare?: boolean, origin?: string}} [options]
+ * @param {{bare?: boolean, origin?: string}} options
  * @return {Promise<void>}
  */
 async function init(gitDir, {bare, origin} = {}) {
@@ -21,7 +21,7 @@ async function init(gitDir, {bare, origin} = {}) {
   if (origin) {
     await execAsync(`git remote add origin ${origin}`, {cwd: gitDir})
     await execAsync(`git commit -m "first commit" --allow-empty`, {cwd: gitDir})
-    await execAsync(`git push origin master`, {cwd: gitDir})
+    await execAsync(`git push --set-upstream origin master`, {cwd: gitDir})
   }
 }
 

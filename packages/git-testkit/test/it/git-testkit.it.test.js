@@ -22,7 +22,7 @@ describe('git-testkit (it)', function () {
 
     expect(history, 'to have a value satisfying', ['bar.txt', 'foo.txt'])
 
-    await sh(`git push origin master`, {cwd: cwdSource})
+    await sh(`git push`, {cwd: cwdSource})
 
     const targetHistory = await commitHistory(cwdTarget)
     expect(Object.keys(targetHistory), 'to have length', 2)
