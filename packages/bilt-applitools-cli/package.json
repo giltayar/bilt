@@ -38,11 +38,14 @@
     "@bilt/npm-next-version": "^2.0.0",
     "@bilt/npm-packages": "^1.1.4",
     "@bilt/packages-to-build": "^2.0.3",
+    "@bilt/scripting-commons": "^1.2.0",
     "cosmiconfig": "^6.0.0",
     "debug": "^4.1.1",
     "yargs": "^15.3.1"
   },
   "devDependencies": {
+    "@bilt/git-testkit": "^1.1.1",
+    "@bilt/npm-testkit": "^1.1.0",
     "@bilt/types": "^2.0.0",
     "@types/node": "^13.11.0",
     "chai": "^4.2.0",
@@ -51,7 +54,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.1.2",
     "mocha": "^7.1.1",
-    "prettier": "^2.0.2",
+    "prettier": "^2.0.3",
     "typescript": "^3.8.3"
   }
 }

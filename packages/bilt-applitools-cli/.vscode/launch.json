@@ -17,7 +17,7 @@
         "'test/e2e/*.test.js'"
       ],
       "env": {
-        "DEBUG": "applitools:${workspaceFolderBasename}*"
+        "DEBUG": "bilt:${workspaceFolderBasename}*"
       },
       "cwd": "${workspaceRoot}",
       "protocol": "inspector",

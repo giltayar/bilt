@@ -1,22 +1,31 @@
 //@ts-check
 'use strict'
 const path = require('path')
+const debug = require('debug')('bilt:bilt-applitools-cli:build')
 const {findNpmPackageInfos, findNpmPackages} = require('@bilt/npm-packages')
 const {calculateBuildOrder, build} = require('@bilt/build')
 const {calculatePackagesToBuild} = require('@bilt/packages-to-build')
 const {findChangedFiles, findLatestPackageChanges} = require('@bilt/git-packages')
 const applitoolsBuild = require('./applitools-build')
-const {sh, shWithOutput} = require('./sh')
+const {sh, shWithOutput} = require('@bilt/scripting-commons')
 
 /**@param {{
  * rootDirectory: import('@bilt/types').Directory
- * packageDirectories: string[]
+ * packages: string[]
  * upto: []
  * force: boolean
  * dryRun: boolean
  * message: string
  * }} param*/
-async function buildCommand({rootDirectory, packageDirectories, upto, force, dryRun, message}) {
+async function buildCommand({
+  rootDirectory,
+  packages: packageDirectories,
+  upto,
+  force,
+  dryRun,
+  message,
+}) {
+  debug(`starting build of ${rootDirectory}`)
   const initialSetOfPackagesToBuild = packageDirectories.map((pd) => ({
     directory: /**@type {import('@bilt/types').RelativeDirectoryPath}*/ (pd),
   }))
@@ -24,6 +33,10 @@ async function buildCommand({rootDirectory, packageDirectories, upto, force, dry
     rootDirectory,
     initialSetOfPackagesToBuild,
     force,
+  )
+  debug(
+    `determined packages to build`,
+    packagesToBuild.map((pkg) => pkg.directory),
   )
 
   const finalPackagesToBuild = force
@@ -33,6 +46,7 @@ async function buildCommand({rootDirectory, packageDirectories, upto, force, dry
         basePackagesToBuild: packagesToBuild,
         buildUpTo: force ? undefined : upto,
       })
+  debug(`determined final list of packages to build`, Object.keys(finalPackagesToBuild))
 
   const packagesBuildOrder = []
   await buildPackages(
@@ -53,6 +67,7 @@ async function buildCommand({rootDirectory, packageDirectories, upto, force, dry
     return
   }
 
+  debug('commiting packages')
   await sh(`git commit -m '${message}\n\n\n[bilt-artifacts]\n'`, {cwd: rootDirectory})
 }
 
@@ -97,7 +112,13 @@ async function buildPackages(
 ) {
   const buildOrder = calculateBuildOrder({packageInfos: packagesToBuild})
 
+  debug('starting build')
   for await (const buildPackageResult of build({packageInfos, buildOrder, buildPackageFunc})) {
+    debug(
+      `build of ${buildPackageResult.package.directory} ended. result: ${
+        buildPackageResult.buildResult
+      }.${buildPackageResult.error ? 'Error: ' + buildPackageResult.error : ''}`,
+    )
     const packageDirectory = path.join(rootDirectory, buildPackageResult.package.directory)
     if (buildPackageResult.buildResult === 'failure') {
       const error = buildPackageResult.error
@@ -107,7 +128,8 @@ async function buildPackages(
         error.stack || error.toString(),
       )
     }
-    if (!dryRun) {
+    if (!dryRun && buildPackageResult.buildResult === 'success') {
+      debug('adding', packageDirectory, 'to git')
       await sh(`git add .`, {cwd: packageDirectory})
     }
   }
