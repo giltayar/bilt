@@ -4,7 +4,7 @@ const {describe, it} = require('mocha')
 const {expect} = require('chai')
 const {init, commitAll, commitHistory} = require('@bilt/git-testkit')
 const {startNpmRegistry} = require('@bilt/npm-testkit')
-const {makeTemporaryDirectory, writeFile, shWithOutput} = require('@bilt/scripting-commons')
+const {makeTemporaryDirectory, writeFile, shWithOutput, sh} = require('@bilt/scripting-commons')
 
 const applitoolsBuild = require('../../src/bilt-applitools-cli')
 
@@ -21,9 +21,11 @@ describe('applitools build', function () {
 
     await writeFile(['a', 'package.json'], {name: 'a-package', version: '1.0.0'}, {cwd})
     await writeFile(['a', '.npmrc'], `registry=${registry}\n`, {cwd})
+    await sh('npm publish', {cwd: path.join(cwd, 'a')})
 
     await writeFile(['b', 'package.json'], {name: 'b-package', version: '2.0.0'}, {cwd})
     await writeFile(['b', '.npmrc'], `registry=${registry}\n`, {cwd})
+    await sh('npm publish', {cwd: path.join(cwd, 'b')})
 
     await writeFile(['not-a-package', 'foo.txt'], 'foo', {cwd})
 
@@ -38,25 +40,40 @@ describe('applitools build', function () {
       'first build',
     ])
 
-    const history = await commitHistory(cwd)
-
-    expect(Object.entries(history)[0][1]).to.have.members([
+    const firstBuildHistory = await commitHistory(cwd)
+    expect(Object.entries(firstBuildHistory)[0][1]).to.have.members([
       'a/package.json',
       'a/package-lock.json',
       'b/package.json',
       'b/package-lock.json',
     ])
 
-    expect(await shWithOutput('npm view a-package version', {cwd})).to.eql('1.0.0\n')
-    expect(await shWithOutput('npm view b-package version', {cwd})).to.eql('2.0.0\n')
+    expect(await shWithOutput('npm view a-package version', {cwd})).to.eql('1.0.1\n')
+    expect(await shWithOutput('npm view b-package version', {cwd})).to.eql('2.0.1\n')
+
+    await writeFile(['a', 'a.txt'], 'touching a', {cwd})
+    await commitAll(cwd, 'second commit to build')
+
+    await applitoolsBuild([
+      'a',
+      'b',
+      '--config',
+      path.join(cwd, '.biltrc.json'),
+      '-m',
+      'first build',
+    ])
+    const history = await commitHistory(cwd)
+
+    expect(Object.entries(history)[0][1]).to.have.members(['a/package.json', 'a/package-lock.json'])
+
+    expect(await shWithOutput('npm view a-package version', {cwd})).to.eql('1.0.2\n')
+    expect(await shWithOutput('npm view b-package version', {cwd})).to.eql('2.0.1\n')
 
     const pushedHistory = await commitHistory(pushTarget)
 
     expect(Object.entries(pushedHistory)[0][1]).to.have.members([
       'a/package.json',
       'a/package-lock.json',
-      'b/package.json',
-      'b/package-lock.json',
     ])
   })
 })

@@ -49,7 +49,7 @@ async function buildCommand({
   debug(`determined final list of packages to build`, Object.keys(finalPackagesToBuild))
 
   const packagesBuildOrder = []
-  await buildPackages(
+  const aPackageWasBuilt = await buildPackages(
     finalPackagesToBuild,
     packageInfos,
     dryRun
@@ -67,11 +67,13 @@ async function buildCommand({
     return
   }
 
-  debug('commiting packages')
-  await sh(`git commit -m '${message}\n\n\n[bilt-artifacts]\n'`, {cwd: rootDirectory})
+  if (aPackageWasBuilt) {
+    debug('commiting packages')
+    await sh(`git commit -m '${message}\n\n\n[bilt-artifacts]\n'`, {cwd: rootDirectory})
 
-  debug('pushing')
-  await sh('git push', {cwd: rootDirectory})
+    debug('pushing')
+    await sh('git push', {cwd: rootDirectory})
+  }
 }
 
 /**@returns {Promise<{
@@ -106,6 +108,7 @@ async function determineBuildInformation(
   }
 }
 
+/**@returns {Promise<boolean>} */
 async function buildPackages(
   /**@type {import('@bilt/types').PackageInfos} */ packagesToBuild,
   /**@type {import('@bilt/types').PackageInfos} */ packageInfos,
@@ -116,6 +119,7 @@ async function buildPackages(
   const buildOrder = calculateBuildOrder({packageInfos: packagesToBuild})
 
   debug('starting build')
+  let aPackageWasBuilt = false
   for await (const buildPackageResult of build({packageInfos, buildOrder, buildPackageFunc})) {
     debug(
       `build of ${buildPackageResult.package.directory} ended. result: ${
@@ -130,12 +134,16 @@ async function buildPackages(
         `************** Building package ${buildPackageResult.package.directory} failed: `,
         error.stack || error.toString(),
       )
-    }
-    if (!dryRun && buildPackageResult.buildResult === 'success') {
-      debug('adding', packageDirectory, 'to git')
-      await sh(`git add .`, {cwd: packageDirectory})
+    } else if (buildPackageResult.buildResult === 'success') {
+      aPackageWasBuilt = true
+      if (!dryRun) {
+        debug('adding', packageDirectory, 'to git')
+        await sh(`git add .`, {cwd: packageDirectory})
+      }
     }
   }
+
+  return aPackageWasBuilt
 }
 
 /**
@@ -166,6 +174,7 @@ async function filterOutPackagesThatWereAlreadyBuilt(changedPackages, rootDirect
  * @param {import('@bilt/types').Package[]} initialSetOfPackagesToBuild
  */
 function filterPackageInfos(packageInfos, initialSetOfPackagesToBuild) {
+  //@ts-ignore
   return Object.fromEntries(
     Object.entries(packageInfos).filter(([directory]) =>
       initialSetOfPackagesToBuild.some(({directory: d2}) => d2 === directory),

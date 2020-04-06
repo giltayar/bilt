@@ -26,6 +26,12 @@ async function main(argv, {shouldExitOnError = false} = {}) {
           type: 'boolean',
           default: false,
         })
+        .option('force', {
+          alias: 'f',
+          describe: 'force build of packages',
+          type: 'boolean',
+          default: false,
+        })
         .option('message', {
           alias: 'm',
           describe: 'commit message for the build',
