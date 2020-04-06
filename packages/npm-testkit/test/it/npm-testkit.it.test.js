@@ -13,14 +13,13 @@ describe('startNpmRegistry', function () {
   before(async () => ({registry, close} = await startNpmRegistry()))
   after(() => close())
 
-  it('should enable running an npm registry', async () => {
+  it('should enable running an npm registry and publishing to it', async () => {
     const cwd = await makeTemporaryDirectory()
     await writeFile('package.json', {name: 'foo-package', version: '6.6.6'}, {cwd})
+    await writeFile('.npmrc', `registry=${registry}`, {cwd})
 
-    const npmShOptions = {cwd, env: {...process.env, npm_config_registry: registry}}
+    await sh('npm publish', {cwd})
 
-    await sh('npm publish', npmShOptions)
-
-    expect(await shWithOutput('npm view foo-package version', npmShOptions), 'to equal', '6.6.6\n')
+    expect(await shWithOutput('npm view foo-package version', {cwd}), 'to equal', '6.6.6\n')
   })
 })
