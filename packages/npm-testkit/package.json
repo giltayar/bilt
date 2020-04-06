@@ -1,6 +1,6 @@
 {
   "name": "@bilt/npm-testkit",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "",
   "main": "src/npm-testkit.js",
   "engines": {
