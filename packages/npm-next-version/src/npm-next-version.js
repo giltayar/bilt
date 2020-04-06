@@ -4,11 +4,11 @@ const {execFile} = require('child_process')
 const calculateNextVersion = require('./calculate-next-version')
 
 /**
- * @param {{version: string, name: string}} options - you can pass a packageJson too. It has the right properties.
- * @returns {string} the version that should be published
+ * @param {{version: string, name: string, packageDirectory?: string}} options
+ * @returns {Promise<string>} the version that should be published
  */
-async function npmNextVersion({version, name}) {
-  const registryPackageinfo = await getRegistryPackageInfo(name)
+async function npmNextVersion({version, name, packageDirectory}) {
+  const registryPackageinfo = await getRegistryPackageInfo(name, packageDirectory)
 
   const registryVersions =
     registryPackageinfo === undefined ? [] : normalizeVersions(registryPackageinfo.versions)
@@ -16,9 +16,15 @@ async function npmNextVersion({version, name}) {
   return calculateNextVersion(version, registryVersions)
 }
 
-async function getRegistryPackageInfo(packageName) {
+/**
+ * @param {string} packageName
+ * @param {string} packageDirectory
+ */
+async function getRegistryPackageInfo(packageName, packageDirectory) {
   try {
-    const {stdout} = await p(execFile)('npm', ['view', '--json', packageName])
+    const {stdout} = await p(execFile)('npm', ['view', '--json', packageName], {
+      cwd: packageDirectory,
+    })
     if (!stdout) return undefined
 
     return JSON.parse(stdout)
@@ -31,6 +37,9 @@ async function getRegistryPackageInfo(packageName) {
   }
 }
 
+/**
+ * @param {any} versions
+ */
 function normalizeVersions(versions) {
   return (versions || []).concat(versions)
 }
