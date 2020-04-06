@@ -5,16 +5,19 @@ const {promisify} = require('util')
 const {default: startVerdaccio} = require('verdaccio')
 const getPort = require('get-port')
 
-/**@returns {Promise<{
+/**@type {(options: {logLevel: 'http' | 'trace' | 'warn' | 'error' | 'info'}) =>
+ * Promise<{
  * registry: string
  * close: () => Promise<void>
- * }>} registry */
-async function startNpmRegistry() {
+ * }>} */
+async function startNpmRegistry({logLevel} = {logLevel: 'http'}) {
   const storageDir = await fs.promises.mkdtemp(os.tmpdir() + '/')
   const port = await getPort()
 
   const webserver = await new Promise((resolve) =>
-    startVerdaccio(makeConfig(storageDir), port, '', '', '', (webserver) => resolve(webserver)),
+    startVerdaccio(makeConfig(storageDir, logLevel), port, '', '', '', (webserver) =>
+      resolve(webserver),
+    ),
   )
   await new Promise((resolve, reject) =>
     webserver.listen(port, 'localhost', (err) => (err ? reject(err) : resolve())),
@@ -28,7 +31,7 @@ async function startNpmRegistry() {
   }
 }
 
-const makeConfig = (storage) => ({
+const makeConfig = (storage, logLevel) => ({
   storage,
   uplinks: {
     npmjs: {
@@ -54,7 +57,7 @@ const makeConfig = (storage) => ({
     {
       type: 'stdout',
       format: 'pretty',
-      level: 'trace',
+      level: logLevel,
     },
   ],
   self_path: '/foo/bar',
