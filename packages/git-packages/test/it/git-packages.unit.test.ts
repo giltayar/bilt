@@ -1,5 +1,8 @@
+import {promisify} from 'util'
+import {exec} from 'child_process'
 import {describe, it} from 'mocha'
 import {expect} from 'chai'
+import {init, makeTemporaryDirectory, writeFile, commitAll} from '@applitools/git-testkit'
 
 import {
   findChangedFiles,
@@ -8,13 +11,14 @@ import {
 } from '../../src/git-packages'
 import {Commitish, RelativeFilePath, Directory, RelativeDirectoryPath} from '@bilt/types'
 
-describe('findChanged (it)', function () {
+describe('git-packages (it)', function () {
   describe('findChangedFiles', () => {
     it('should be able find files changes between two commit in this repo (it will not include the files in fromCommit', async () => {
       const changedFilesInGit = await findChangedFiles({
         rootDirectory: __dirname as Directory,
         fromGitDate: 'Sat Feb 15 21:30:36 2020 +0200', //79921a9be6ef8b509326220f4de55a3e7817d9cc
         toCommit: 'f02bc9d5aef8531d9aeab19613920f933e87ad89' as Commitish,
+        includeWorkspaceFiles: false,
       })
 
       expect(changedFilesInGit).to.eql(
@@ -38,7 +42,27 @@ describe('findChanged (it)', function () {
         ]),
       )
     })
+
+    it('should be able to find changed files that have not yet been commited', async () => {
+      const gitDir = await makeTemporaryDirectory()
+      await init(gitDir)
+
+      await writeFile(gitDir, 'a', '1')
+      await writeFile(gitDir, 'b', '1')
+      await writeFile(gitDir, 'c', '1')
+      await commitAll(gitDir)
+
+      await writeFile(gitDir, 'b', '2')
+      await writeFile(gitDir, 'c', '2')
+      await promisify(exec)('git add b', {cwd: gitDir})
+
+      const changedFiles = await findChangedFiles({rootDirectory: gitDir as Directory})
+
+      expect([...changedFiles.values()][0]).to.have.members(['b', 'c'])
+      expect([...changedFiles.values()][1]).to.have.members(['a', 'b', 'c'])
+    })
   })
+
   describe('findChangedPackagesUsingLastSuccesfulBuild', () => {
     const changedFilesInGit = toChangedFilesInGit([
       ['2', ['a/foo.txt', 'a/boo.txt', 'c/foo.txt']],

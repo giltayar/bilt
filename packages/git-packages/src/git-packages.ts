@@ -11,47 +11,45 @@ import {
 
 export type ChangedFilesInGit = Map<Commitish, RelativeFilePath[]>
 
+const DUMMY_COMMITISH_FOR_UNCOMMITED_FILES = '__WORKSPACE__' as Commitish
+const COMMIT_PREFIX_IN_LOG = '----'
+
 export async function findChangedFiles({
   rootDirectory,
   fromGitDate = '1 year ago',
   toCommit = 'HEAD' as Commitish,
+  includeWorkspaceFiles = true,
 }: {
   fromGitDate?: string
   toCommit?: Commitish
   rootDirectory?: Directory
+  includeWorkspaceFiles?: boolean
 }): Promise<ChangedFilesInGit> {
-  const COMMIT_PREFIX_IN_LOG = '----'
-  const diffTreeResult = await promisify(execFile)(
-    'git',
-    [
-      'log',
-      `--format=format:${COMMIT_PREFIX_IN_LOG}%H`,
-      '--name-only',
-      `--since="${fromGitDate}"`,
-      toCommit as string,
-    ],
-    {
+  const [diffTreeResult, statusResult] = await Promise.all([
+    promisify(execFile)(
+      'git',
+      [
+        'log',
+        `--format=format:${COMMIT_PREFIX_IN_LOG}%H`,
+        '--name-only',
+        `--since="${fromGitDate}"`,
+        toCommit as string,
+      ],
+      {
+        cwd: rootDirectory as string,
+      },
+    ),
+    promisify(execFile)('git', ['status', `--porcelain`, '--no-renames'], {
       cwd: rootDirectory as string,
-    },
-  )
-  const gitLogLines = diffTreeResult.stdout
-    .split('\n')
-    .map((l) => l.trim())
-    .filter((l) => !!l)
+    }),
+  ])
 
   const ret = new Map<Commitish, RelativeFilePath[]>()
 
-  for (const gitLogLine of gitLogLines) {
-    var currentCommit //eslint-disable-line
-    if (gitLogLine.startsWith(COMMIT_PREFIX_IN_LOG)) {
-      currentCommit = gitLogLine.trim().slice(COMMIT_PREFIX_IN_LOG.length) as Commitish
-      ret.set(currentCommit, [])
-    } else if (currentCommit) {
-      ret.get(currentCommit)?.push(gitLogLine as RelativeFilePath)
-    } else {
-      throw new Error(`something is wrong here: ${gitLogLine}`)
-    }
+  if (includeWorkspaceFiles) {
+    addChangedFilesFromGitStatus(ret, statusResult)
   }
+  addChangedFilesFromDiffTree(ret, diffTreeResult)
 
   return ret
 }
@@ -158,4 +156,45 @@ function makeCommitsToPackages(
   }
 
   return ret
+}
+
+function addChangedFilesFromDiffTree(
+  changedFiles: ChangedFilesInGit,
+  diffTreeResult: {stdout: string},
+) {
+  const gitDiffTreeLogLines = diffTreeResult.stdout
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => !!l)
+  for (const gitLogLine of gitDiffTreeLogLines) {
+        var currentCommit //eslint-disable-line
+    if (gitLogLine.startsWith(COMMIT_PREFIX_IN_LOG)) {
+      currentCommit = gitLogLine.trim().slice(COMMIT_PREFIX_IN_LOG.length) as Commitish
+      changedFiles.set(currentCommit, [])
+    } else if (currentCommit) {
+      changedFiles.get(currentCommit)?.push(gitLogLine as RelativeFilePath)
+    } else {
+      throw new Error(`something is wrong here: ${gitLogLine}`)
+    }
+  }
+}
+
+function addChangedFilesFromGitStatus(
+  changedFiles: ChangedFilesInGit,
+  statusResult: {stdout: string},
+) {
+  const statusLines = statusResult.stdout.split('\n').filter((l) => !!l)
+  for (const statusLine of statusLines) {
+    const stagingStatus = statusLine[0]
+    const workspaceStatus = statusLine[1]
+    const fileName = statusLine.slice(3)
+
+    if (stagingStatus === ' ' && workspaceStatus === ' ') continue
+
+    if (changedFiles.has(DUMMY_COMMITISH_FOR_UNCOMMITED_FILES)) {
+      changedFiles.get(DUMMY_COMMITISH_FOR_UNCOMMITED_FILES)?.push(fileName as RelativeFilePath)
+    } else {
+      changedFiles.set(DUMMY_COMMITISH_FOR_UNCOMMITED_FILES, [fileName as RelativeFilePath])
+    }
+  }
 }
