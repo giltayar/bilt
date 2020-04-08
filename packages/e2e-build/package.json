@@ -1,6 +1,6 @@
 {
   "name": "@bilt/e2e-build",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "",
   "main": "lib/src/e2e-build.js",
   "types": "lib/src/e2e-build.d.ts",
@@ -34,7 +34,7 @@
   "dependencies": {
     "@bilt/build": "^2.0.4",
     "@bilt/build-testkit": "^1.0.3",
-    "@bilt/git-packages": "^6.0.0",
+    "@bilt/git-packages": "^7.0.0",
     "@bilt/npm-packages": "^1.1.4",
     "@bilt/packages-to-build": "^2.0.3",
     "@bilt/types": "^2.0.0",
@@ -45,16 +45,16 @@
     "@types/chai": "^4.2.11",
     "@types/mocha": "^7.0.2",
     "@types/node": "^13.11.0",
-    "@typescript-eslint/eslint-plugin": "^2.26.0",
-    "@typescript-eslint/parser": "^2.26.0",
+    "@typescript-eslint/eslint-plugin": "^2.27.0",
+    "@typescript-eslint/parser": "^2.27.0",
     "chai": "^4.2.0",
     "eslint": "^6.8.0",
     "eslint-plugin-mocha-no-only": "^1.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.1.2",
     "mocha": "^7.1.1",
-    "prettier": "^2.0.2",
-    "ts-node": "^8.8.1",
+    "prettier": "^2.0.4",
+    "ts-node": "^8.8.2",
     "typescript": "^3.8.3"
   }
 }
