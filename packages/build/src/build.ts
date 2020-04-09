@@ -91,7 +91,11 @@ export async function* build({
       if (packagesThatCannotBeBuilt.has(packageDirectory)) continue
 
       const packageInfo = packageInfos[packageDirectory]
-      if (packageInfo.dependencies.some((dep) => !packagesAlreadyBuilt.has(dep.directory))) {
+      if (
+        packageInfo.dependencies.some(
+          (dep) => dep.directory in packageInfos && !packagesAlreadyBuilt.has(dep.directory),
+        )
+      ) {
         continue
       }
 

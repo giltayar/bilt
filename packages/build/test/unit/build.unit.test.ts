@@ -74,6 +74,53 @@ describe('build (unit)', function () {
     expect(packagesBuilt).to.eql(['edir', 'cdir', 'ddir', 'packages/bdir', 'adir', 'fdir'])
   })
 
+  it('should build in the correct order even if dependencies includes a package not in packageInfos', async () => {
+    const cPackage: PackageInfo = {
+      directory: 'packages/cdir' as RelativeDirectoryPath,
+      name: 'cpackage',
+      dependencies: [],
+    }
+    const bPackage: PackageInfo = {
+      directory: 'packages/bdir' as RelativeDirectoryPath,
+      name: 'bpackage',
+      dependencies: [cPackage],
+    }
+    const aPackage: PackageInfo = {
+      directory: 'adir' as RelativeDirectoryPath,
+      name: 'apackage',
+      dependencies: [bPackage],
+    }
+    const packageInfos: PackageInfos = {
+      [aPackage.directory]: aPackage,
+      [bPackage.directory]: bPackage,
+    }
+
+    const buildOrder = calculateBuildOrder({packageInfos})
+
+    const packagesBuilt: RelativeDirectoryPath[] = []
+
+    async function buildPackageFunc({
+      packageInfo,
+    }: {
+      packageInfo: PackageInfo
+    }): Promise<BuildPackageSuccessResult> {
+      expect(packageInfo).to.eql(packageInfos[packageInfo.directory])
+
+      packagesBuilt.push(packageInfo.directory)
+
+      return 'success'
+    }
+
+    for await (const buildResult of build({packageInfos, buildOrder, buildPackageFunc})) {
+      expect(buildResult).to.eql({
+        package: {directory: packagesBuilt[packagesBuilt.length - 1]},
+        buildResult: 'success',
+      })
+    }
+
+    expect(packagesBuilt).to.eql(['packages/bdir', 'adir'])
+  })
+
   it('should fail to build correctly', async () => {
     const buildOrder = calculateBuildOrder({packageInfos})
 
