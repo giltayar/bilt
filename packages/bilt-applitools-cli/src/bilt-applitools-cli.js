@@ -25,6 +25,8 @@ async function main(argv, {shouldExitOnError = false} = {}) {
     })
     .command(['build <packages...>', '* <packages...>'], 'build the packages', (yargs) =>
       yargs
+        .normalize('packages')
+        .coerce('packages', coercePackages(rootDirectory))
         .option('dry-run', {
           describe: 'just show what packages will be built and in what order',
           type: 'boolean',
@@ -47,18 +49,7 @@ async function main(argv, {shouldExitOnError = false} = {}) {
           type: 'string',
           array: true,
           normalize: true,
-          coerce: (filepaths) => {
-            for (const filepath of filepaths)
-              if (!fs.existsSync(path.join(rootDirectory, filepath, 'package.json')))
-                throw new Error(
-                  `${filepath} is not a valid package path, because package.json was not found in ${path.join(
-                    rootDirectory,
-                    filepath,
-                  )} (if you used --config, it should be the first option)`,
-                )
-
-            return filepaths
-          },
+          coerce: coercePackages(rootDirectory),
         }),
     )
     .exitProcess(shouldExitOnError)
@@ -78,6 +69,23 @@ async function main(argv, {shouldExitOnError = false} = {}) {
     if (result == null) throw new Error('could not find `.bilt-applitoolsrc` config file')
 
     rootDirectory = path.dirname(result.filepath)
+  }
+}
+
+/**
+ * @param {string} rootDirectory
+ */
+function coercePackages(rootDirectory) {
+  return (filepaths) => {
+    for (const filepath of filepaths)
+      if (!fs.existsSync(path.join(rootDirectory, filepath, 'package.json')))
+        throw new Error(
+          `${filepath} is not a valid package path, because package.json was not found in ${path.join(
+            rootDirectory,
+            filepath,
+          )} (if you used --config, it should be the first option)`,
+        )
+    return filepaths
   }
 }
 
