@@ -75,7 +75,7 @@ describe('applitools build', function () {
     expect(noBuildHistory).to.have.length(history.length)
 
     async function runBuild(cwd) {
-      await applitoolsBuild(['a', 'b', '--config', path.join(cwd, '.biltrc.json'), '-m', 'a build'])
+      await applitoolsBuild(['--config', path.join(cwd, '.biltrc.json'), '-m', 'a build'])
     }
   })
 
@@ -188,7 +188,6 @@ describe('applitools build', function () {
 
     async function runBuild(/**@type {string}*/ cwd) {
       await applitoolsBuild([
-        'c',
         '--upto',
         'a',
         '--config',

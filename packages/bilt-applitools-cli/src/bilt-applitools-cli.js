@@ -23,7 +23,7 @@ async function main(argv, {shouldExitOnError = false} = {}) {
         return filepath
       },
     })
-    .command(['build <packages...>', '* <packages...>'], 'build the packages', (yargs) =>
+    .command(['build [packages...]', '* [packages...]'], 'build the packages', (yargs) =>
       yargs
         .normalize('packages')
         .coerce('packages', coercePackages(rootDirectory))

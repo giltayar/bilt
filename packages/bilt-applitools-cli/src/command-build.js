@@ -30,7 +30,7 @@ async function buildCommand({
   message,
 }) {
   debug(`starting build of ${rootDirectory}`)
-  const initialSetOfPackagesToBuild = packageDirectories.map((pd) => ({
+  const initialSetOfPackagesToBuild = (packageDirectories || []).map((pd) => ({
     directory: /**@type {import('@bilt/types').RelativeDirectoryPath}*/ (pd),
   }))
   const uptoPackages =
