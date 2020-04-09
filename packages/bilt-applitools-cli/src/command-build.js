@@ -5,7 +5,11 @@ const debug = require('debug')('bilt:bilt-applitools-cli:build')
 const {findNpmPackageInfos, findNpmPackages} = require('@bilt/npm-packages')
 const {calculateBuildOrder, build} = require('@bilt/build')
 const {calculatePackagesToBuild} = require('@bilt/packages-to-build')
-const {findChangedFiles, findLatestPackageChanges} = require('@bilt/git-packages')
+const {
+  findChangedFiles,
+  findLatestPackageChanges,
+  FAKE_COMMITISH_FOR_UNCOMMITED_FILES,
+} = require('@bilt/git-packages')
 const applitoolsBuild = require('./applitools-build')
 const {sh, shWithOutput} = require('@bilt/scripting-commons')
 
@@ -156,6 +160,9 @@ async function filterOutPackagesThatWereAlreadyBuilt(changedPackages, rootDirect
   return (
     await Promise.all(
       changedPackages.map(async ({package: pkg, commit}) => {
+        if (commit === FAKE_COMMITISH_FOR_UNCOMMITED_FILES) {
+          return {package: pkg, commit, isBuild: false}
+        }
         const stdout = await shWithOutput(`git show --format=%B -s ${commit}`, {cwd: rootDirectory})
 
         if (stdout.includes('[bilt-artifacts]')) {

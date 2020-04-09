@@ -9,7 +9,9 @@ const {makeTemporaryDirectory, writeFile, shWithOutput, sh} = require('@bilt/scr
 const applitoolsBuild = require('../../src/bilt-applitools-cli')
 
 describe('applitools build', function () {
-  it('should build two packages, first time, no dependencies', async () => {
+  it(`should build two packages, first time, no dependencies,
+      then build one if it changed,
+      then not build because nothing changed`, async () => {
     const cwd = await makeTemporaryDirectory()
     const pushTarget = await makeTemporaryDirectory()
     await init(pushTarget, {bare: true})
@@ -29,8 +31,6 @@ describe('applitools build', function () {
 
     await writeFile(['not-a-package', 'foo.txt'], 'foo', {cwd})
 
-    await commitAll(cwd, 'first commit')
-
     await applitoolsBuild([
       'a',
       'b',
@@ -40,10 +40,13 @@ describe('applitools build', function () {
       'first build',
     ])
 
-    const firstBuildHistory = await commitHistory(cwd)
-    expect(Object.entries(firstBuildHistory)[0][1]).to.have.members([
+    const firstBuildHistory = Object.entries(await commitHistory(cwd))
+    expect(firstBuildHistory).to.have.length(2)
+    expect(firstBuildHistory[0][1]).to.have.members([
+      'a/.npmrc',
       'a/package.json',
       'a/package-lock.json',
+      'b/.npmrc',
       'b/package.json',
       'b/package-lock.json',
     ])
@@ -62,9 +65,10 @@ describe('applitools build', function () {
       '-m',
       'first build',
     ])
-    const history = await commitHistory(cwd)
+    const history = Object.entries(await commitHistory(cwd))
+    expect(history).to.have.length(firstBuildHistory.length + 2)
 
-    expect(Object.entries(history)[0][1]).to.have.members(['a/package.json', 'a/package-lock.json'])
+    expect(history[0][1]).to.have.members(['a/package.json', 'a/package-lock.json'])
 
     expect(await shWithOutput('npm view a-package version', {cwd})).to.eql('1.0.2\n')
     expect(await shWithOutput('npm view b-package version', {cwd})).to.eql('2.0.1\n')
@@ -75,5 +79,16 @@ describe('applitools build', function () {
       'a/package.json',
       'a/package-lock.json',
     ])
+
+    await applitoolsBuild([
+      'a',
+      'b',
+      '--config',
+      path.join(cwd, '.biltrc.json'),
+      '-m',
+      'first build',
+    ])
+    const noBuildHistory = Object.entries(await commitHistory(cwd))
+    expect(noBuildHistory).to.have.length(history.length)
   })
 })
