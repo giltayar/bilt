@@ -1,0 +1,61 @@
+{
+  "name": "@bilt/cli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/cli.js",
+  "engines": {
+    "node": ">=12.3.0"
+  },
+  "files": [
+    "src",
+    "scripts"
+  ],
+  "bin": {
+    "bilt": "./scripts/cli.js"
+  },
+  "scripts": {
+    "test": "npm run eslint && npm run test:mocha",
+    "test:mocha": "mocha --no-timeouts --exit 'test/unit/*.test.js' 'test/it/*.test.js' 'test/e2e/*.test.js'",
+    "eslint": "eslint '**/*.js'"
+  },
+  "keywords": [
+    "ci",
+    "build",
+    "bilt",
+    "tool",
+    "monorepo"
+  ],
+  "author": "Gil Tayar <gil@tayar.org>",
+  "license": "Unlicense",
+  "repository": {
+    "url": "https://github.com/giltayar/bilt",
+    "type": "git",
+    "directory": "packages/cli"
+  },
+  "dependencies": {
+    "@bilt/build": "^2.0.7",
+    "@bilt/git-packages": "^7.1.0",
+    "@bilt/npm-next-version": "^2.2.0",
+    "@bilt/npm-packages": "^1.1.4",
+    "@bilt/packages-to-build": "^2.0.3",
+    "@bilt/scripting-commons": "^1.2.0",
+    "cosmiconfig": "^6.0.0",
+    "debug": "^4.1.1",
+    "yargs": "^15.3.1"
+  },
+  "devDependencies": {
+    "@bilt/git-testkit": "^1.1.2",
+    "@bilt/npm-testkit": "^1.2.1",
+    "@bilt/types": "^2.0.0",
+    "@types/node": "^13.11.1",
+    "chai": "^4.2.0",
+    "chai-subset": "^1.6.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-mocha-no-only": "^1.1.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "mocha": "^7.1.1",
+    "prettier": "^2.0.4",
+    "typescript": "^3.8.3"
+  }
+}
