@@ -187,7 +187,8 @@ function findPackagesWithDependenciesOnRoot(
     rootPackage
       ? packageInfo.dependencies.length > 0 &&
         packageInfo.dependencies.some((dep) => dep.directory === rootPackage.directory)
-      : packageInfo.dependencies.length === 0,
+      : packageInfo.dependencies.length === 0 ||
+        packageInfo.dependencies.every((dep) => !(dep.directory in packageInfos)),
   )
 }
 

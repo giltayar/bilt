@@ -78,4 +78,40 @@ describe('calculateBuildOrder (unit)', function () {
       },
     ] as ReturnType<typeof calculateBuildOrder>)
   })
+
+  it('should calculate correct build order even if dependencies includes a package not in packageInfos', () => {
+    const cPackage: PackageInfo = {
+      directory: 'packages/cdir' as RelativeDirectoryPath,
+      name: 'cpackage',
+      dependencies: [],
+    }
+    const bPackage: PackageInfo = {
+      directory: 'packages/bdir' as RelativeDirectoryPath,
+      name: 'bpackage',
+      dependencies: [cPackage],
+    }
+    const aPackage: PackageInfo = {
+      directory: 'adir' as RelativeDirectoryPath,
+      name: 'apackage',
+      dependencies: [bPackage],
+    }
+    const packageInfos: PackageInfos = {
+      [aPackage.directory]: aPackage,
+      [bPackage.directory]: bPackage,
+    }
+
+    const result = calculateBuildOrder({packageInfos})
+
+    expect(result).to.eql([
+      {
+        packageToBuild: bPackage,
+        buildOrderAfter: [
+          {
+            packageToBuild: aPackage,
+            buildOrderAfter: [],
+          },
+        ],
+      },
+    ] as ReturnType<typeof calculateBuildOrder>)
+  })
 })
