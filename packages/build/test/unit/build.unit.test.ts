@@ -96,7 +96,6 @@ describe('build (unit)', function () {
     }
 
     const buildOrder = calculateBuildOrder({packageInfos})
-
     const packagesBuilt: RelativeDirectoryPath[] = []
 
     async function buildPackageFunc({

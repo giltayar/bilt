@@ -92,9 +92,9 @@ export async function* build({
 
       const packageInfo = packageInfos[packageDirectory]
       if (
-        packageInfo.dependencies.some(
-          (dep) => dep.directory in packageInfos && !packagesAlreadyBuilt.has(dep.directory),
-        )
+        packageInfo.dependencies
+          .filter((dep) => dep.directory in packageInfos)
+          .some((dep) => !packagesAlreadyBuilt.has(dep.directory))
       ) {
         continue
       }
