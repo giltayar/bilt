@@ -9,16 +9,16 @@
 			"path": "packages/artifact-finder"
 		},
 		{
-			"name": "bilt-applitools-cli",
-			"path": "packages/bilt-applitools-cli"
-		},
-		{
 			"name": "build",
 			"path": "packages/build"
 		},
 		{
 			"name": "build-testkit",
 			"path": "packages/build-testkit"
+		},
+		{
+			"name": "cli",
+			"path": "packages/cli"
 		},
 		{
 			"name": "e2e-build",
