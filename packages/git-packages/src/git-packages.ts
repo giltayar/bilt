@@ -11,7 +11,7 @@ import {
 
 export type ChangedFilesInGit = Map<Commitish, RelativeFilePath[]>
 
-const DUMMY_COMMITISH_FOR_UNCOMMITED_FILES = '__WORKSPACE__' as Commitish
+export const FAKE_COMMITISH_FOR_UNCOMMITED_FILES = '' as Commitish
 const COMMIT_PREFIX_IN_LOG = '----'
 
 export async function findChangedFiles({
@@ -191,10 +191,10 @@ function addChangedFilesFromGitStatus(
 
     if (stagingStatus === ' ' && workspaceStatus === ' ') continue
 
-    if (changedFiles.has(DUMMY_COMMITISH_FOR_UNCOMMITED_FILES)) {
-      changedFiles.get(DUMMY_COMMITISH_FOR_UNCOMMITED_FILES)?.push(fileName as RelativeFilePath)
+    if (changedFiles.has(FAKE_COMMITISH_FOR_UNCOMMITED_FILES)) {
+      changedFiles.get(FAKE_COMMITISH_FOR_UNCOMMITED_FILES)?.push(fileName as RelativeFilePath)
     } else {
-      changedFiles.set(DUMMY_COMMITISH_FOR_UNCOMMITED_FILES, [fileName as RelativeFilePath])
+      changedFiles.set(FAKE_COMMITISH_FOR_UNCOMMITED_FILES, [fileName as RelativeFilePath])
     }
   }
 }

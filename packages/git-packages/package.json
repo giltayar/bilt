@@ -1,6 +1,6 @@
 {
   "name": "@bilt/git-packages",
-  "version": "7.0.0",
+  "version": "7.1.0",
   "description": "",
   "main": "lib/src/git-packages.js",
   "types": "lib/src/git-packages.d.ts",
@@ -39,7 +39,7 @@
     "@applitools/git-testkit": "^1.0.0",
     "@types/chai": "^4.2.11",
     "@types/mocha": "^7.0.2",
-    "@types/node": "^13.11.0",
+    "@types/node": "^13.11.1",
     "@typescript-eslint/eslint-plugin": "^2.27.0",
     "@typescript-eslint/parser": "^2.27.0",
     "chai": "^4.2.0",
