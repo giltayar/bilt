@@ -1,10 +1,18 @@
 'use strict'
 const path = require('path')
 const {describe, it} = require('mocha')
-const {expect} = require('chai')
+const {expect, use} = require('chai')
+use(require('chai-subset'))
 const {init, commitAll, commitHistory} = require('@bilt/git-testkit')
 const {startNpmRegistry} = require('@bilt/npm-testkit')
-const {makeTemporaryDirectory, writeFile, shWithOutput, sh} = require('@bilt/scripting-commons')
+const {
+  makeTemporaryDirectory,
+  writeFile,
+  shWithOutput,
+  sh,
+  readFileAsJson,
+  readFileAsString,
+} = require('@bilt/scripting-commons')
 
 const applitoolsBuild = require('../../src/bilt-applitools-cli')
 
@@ -12,11 +20,7 @@ describe('applitools build', function () {
   it(`should build two packages, first time, no dependencies,
       then build one if it changed,
       then not build because nothing changed`, async () => {
-    const cwd = await makeTemporaryDirectory()
-    const pushTarget = await makeTemporaryDirectory()
-    await init(pushTarget, {bare: true})
-    await init(cwd, {origin: pushTarget})
-    const {registry} = await startNpmRegistry()
+    const {registry, cwd, pushTarget} = await prepareGitAndNpm()
 
     await writeFile(['.biltrc.json'], {}, {cwd})
     await writeFile('.npmrc', `registry=${registry}\n`, {cwd})
@@ -31,14 +35,7 @@ describe('applitools build', function () {
 
     await writeFile(['not-a-package', 'foo.txt'], 'foo', {cwd})
 
-    await applitoolsBuild([
-      'a',
-      'b',
-      '--config',
-      path.join(cwd, '.biltrc.json'),
-      '-m',
-      'first build',
-    ])
+    await runBuild(cwd)
 
     const firstBuildHistory = Object.entries(await commitHistory(cwd))
     expect(firstBuildHistory).to.have.length(2)
@@ -57,14 +54,7 @@ describe('applitools build', function () {
     await writeFile(['a', 'a.txt'], 'touching a', {cwd})
     await commitAll(cwd, 'second commit to build')
 
-    await applitoolsBuild([
-      'a',
-      'b',
-      '--config',
-      path.join(cwd, '.biltrc.json'),
-      '-m',
-      'first build',
-    ])
+    await runBuild(cwd)
     const history = Object.entries(await commitHistory(cwd))
     expect(history).to.have.length(firstBuildHistory.length + 2)
 
@@ -80,15 +70,111 @@ describe('applitools build', function () {
       'a/package-lock.json',
     ])
 
-    await applitoolsBuild([
-      'a',
-      'b',
-      '--config',
-      path.join(cwd, '.biltrc.json'),
-      '-m',
-      'first build',
-    ])
+    await runBuild(cwd)
     const noBuildHistory = Object.entries(await commitHistory(cwd))
     expect(noBuildHistory).to.have.length(history.length)
+
+    async function runBuild(cwd) {
+      await applitoolsBuild(['a', 'b', '--config', path.join(cwd, '.biltrc.json'), '-m', 'a build'])
+    }
   })
+
+  it('should build packages with dependencies correctly', async () => {
+    const {registry, cwd} = await prepareGitAndNpm()
+
+    await writeFile(['.biltrc.json'], {}, {cwd})
+    await writeFile('.npmrc', `registry=${registry}\n`, {cwd})
+
+    const build = `echo $(expr $(cat build-count) + 1) >build-count`
+
+    await writeFile(
+      ['a', 'package.json'],
+      {
+        name: 'a-package',
+        version: '1.0.0',
+        dependencies: {'b-package': '^2.0.0'},
+        scripts: {test: 'cp node_modules/b-package/package.json ./b-package.json', build},
+      },
+      {cwd},
+    )
+    await writeFile(['a', 'build-count'], '0', {cwd})
+    await writeFile(['a', '.npmrc'], `registry=${registry}\n`, {cwd})
+
+    const bPackageJson = {
+      name: 'b-package',
+      version: '2.0.0',
+      dependencies: {'c-package': '^3.0.0'},
+      scripts: {test: 'cp node_modules/c-package/package.json ./c-package.json', build},
+    }
+    await writeFile(['b', 'package.json'], bPackageJson, {cwd})
+    await writeFile(['b', '.npmrc'], `registry=${registry}\n`, {cwd})
+    await writeFile(['b', 'build-count'], '0', {cwd})
+    await sh('npm publish', {cwd: path.join(cwd, 'b')})
+
+    const cPackageJson = {name: 'c-package', version: '3.0.0', scripts: {build}}
+    await writeFile(['c', 'package.json'], cPackageJson, {cwd})
+    await writeFile(['c', '.npmrc'], `registry=${registry}\n`, {cwd})
+    await writeFile(['c', 'build-count'], '0', {cwd})
+    await sh('npm publish', {cwd: path.join(cwd, 'c')})
+
+    // first build
+    await runBuild(cwd)
+    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsJson(['b', 'c-package.json'], {cwd})).to.containSubset({
+      ...cPackageJson,
+      version: '3.0.1',
+    })
+    expect(await readFileAsJson(['a', 'b-package.json'], {cwd})).to.containSubset({
+      ...bPackageJson,
+      version: '2.0.1',
+    })
+
+    // second build
+    await writeFile(['b', 'build-this'], 'yes!', {cwd})
+    await runBuild(cwd)
+    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('2\n')
+    expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('2\n')
+    expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsJson(['b', 'c-package.json'], {cwd})).to.containSubset({
+      ...cPackageJson,
+      version: '3.0.1',
+    })
+    expect(await readFileAsJson(['a', 'b-package.json'], {cwd})).to.containSubset({
+      ...bPackageJson,
+      version: '2.0.2',
+    })
+
+    // third build
+    await runBuild(cwd)
+    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('2\n')
+    expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('2\n')
+    expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
+
+    async function runBuild(/**@type {string}*/ cwd) {
+      await applitoolsBuild([
+        'a',
+        'b',
+        'c',
+        '--upto',
+        'a',
+        '--config',
+        path.join(cwd, '.biltrc.json'),
+        '-m',
+        'some build',
+      ])
+    }
+  })
+  it('should not commit failed packages and packages not built')
 })
+
+async function prepareGitAndNpm() {
+  const cwd = await makeTemporaryDirectory()
+  const pushTarget = await makeTemporaryDirectory()
+  await init(pushTarget, {bare: true})
+  await init(cwd, {origin: pushTarget})
+  const {registry} = await startNpmRegistry()
+
+  return {registry, cwd, pushTarget}
+}

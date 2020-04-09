@@ -33,7 +33,7 @@ function makeApplitoolsBuild(/**@type {import('@bilt/types').Directory}*/ rootDi
     )
 
     const newVersion = await npmNextVersion({...packageJson, packageDirectory})
-    debug('new version of', packageInfo.directory, 'is', newVersion, packageJson)
+    debug('new version of', packageInfo.directory, 'is', newVersion)
 
     if (newVersion) {
       debug('setting new version', packageInfo.directory)

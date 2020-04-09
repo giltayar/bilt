@@ -16,7 +16,7 @@ const {sh, shWithOutput} = require('@bilt/scripting-commons')
 /**@param {{
  * rootDirectory: import('@bilt/types').Directory
  * packages: string[]
- * upto: []
+ * upto: string[]
  * force: boolean
  * dryRun: boolean
  * message: string
@@ -33,6 +33,11 @@ async function buildCommand({
   const initialSetOfPackagesToBuild = packageDirectories.map((pd) => ({
     directory: /**@type {import('@bilt/types').RelativeDirectoryPath}*/ (pd),
   }))
+  const uptoPackages =
+    upto &&
+    upto.map((pd) => ({
+      directory: /**@type {import('@bilt/types').RelativeDirectoryPath}*/ (pd),
+    }))
   const {packagesToBuild, packageInfos} = await determineBuildInformation(
     rootDirectory,
     initialSetOfPackagesToBuild,
@@ -48,14 +53,13 @@ async function buildCommand({
     : calculatePackagesToBuild({
         packageInfos,
         basePackagesToBuild: packagesToBuild,
-        buildUpTo: force ? undefined : upto,
+        buildUpTo: force ? undefined : uptoPackages,
       })
   debug(`determined final list of packages to build`, Object.keys(finalPackagesToBuild))
 
   const packagesBuildOrder = []
   const aPackageWasBuilt = await buildPackages(
     finalPackagesToBuild,
-    packageInfos,
     dryRun
       ? async ({packageInfo}) => {
           packagesBuildOrder.push(packageInfo.directory)
@@ -114,17 +118,20 @@ async function determineBuildInformation(
 
 /**@returns {Promise<boolean>} */
 async function buildPackages(
-  /**@type {import('@bilt/types').PackageInfos} */ packagesToBuild,
-  /**@type {import('@bilt/types').PackageInfos} */ packageInfos,
+  /**@type {import('@bilt/types').PackageInfos} */ packageInfosToBuild,
   /**@type {import('@bilt/build').BuildPackageFunction} */ buildPackageFunc,
   /**@type {import('@bilt/types').Directory} */ rootDirectory,
   /**@type {boolean}*/ dryRun,
 ) {
-  const buildOrder = calculateBuildOrder({packageInfos: packagesToBuild})
+  const buildOrder = calculateBuildOrder({packageInfos: packageInfosToBuild})
 
   debug('starting build')
   let aPackageWasBuilt = false
-  for await (const buildPackageResult of build({packageInfos, buildOrder, buildPackageFunc})) {
+  for await (const buildPackageResult of build({
+    packageInfos: packageInfosToBuild,
+    buildOrder,
+    buildPackageFunc,
+  })) {
     debug(
       `build of ${buildPackageResult.package.directory} ended. result: ${
         buildPackageResult.buildResult
