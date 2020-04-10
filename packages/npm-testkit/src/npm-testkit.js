@@ -14,7 +14,7 @@ const getPort = require('get-port')
  * registry: string
  * close: () => Promise<void>
  * }>} */
-async function startNpmRegistry({logLevel = 'http', shouldDeleteNpmRegistryEnvVars = true} = {}) {
+async function startNpmRegistry({logLevel = 'error', shouldDeleteNpmRegistryEnvVars = true} = {}) {
   const storageDir = await fs.promises.mkdtemp(os.tmpdir() + '/')
   const port = await getPort()
 
