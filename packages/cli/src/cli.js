@@ -4,6 +4,18 @@ const fs = require('fs')
 const yargs = require('yargs')
 const {cosmiconfigSync} = require('cosmiconfig')
 
+const BUILD_OPTIONS = [
+  'pull',
+  'push',
+  'commit',
+  'install',
+  'update',
+  'audit',
+  'build',
+  'test',
+  'publish',
+]
+
 async function main(argv, {shouldExitOnError = false} = {}) {
   const commandLineOptions = yargs
     .option('config', {
@@ -11,9 +23,8 @@ async function main(argv, {shouldExitOnError = false} = {}) {
       describe: 'config that shows where root dir is',
       type: 'string',
     })
-    .command(['build [packages...]', '* [packages...]'], 'build the packages', (yargs) =>
-      yargs
-        .normalize('packages')
+    .command(['build [packages...]', '* [packages...]'], 'build the packages', (yargs) => {
+      let yargsAfterOptions = yargs
         .option('dry-run', {
           describe: 'just show what packages will be built and in what order',
           type: 'boolean',
@@ -32,24 +43,40 @@ async function main(argv, {shouldExitOnError = false} = {}) {
         })
         .option('upto', {
           alias: 'u',
-          describe: 'packages to build up to',
+          describe: 'packages to build up to. Use "-" for no upto-s',
           type: 'string',
           array: true,
           normalize: true,
         })
+
+      for (const specificBuildOption of BUILD_OPTIONS) {
+        yargsAfterOptions = yargsAfterOptions.option(...buildOption(specificBuildOption))
+      }
+      return yargsAfterOptions
+        .option(...buildOption('git', 'no-git disables push/pull/commit all at once'))
+        .middleware(applyGitOption)
         .middleware(determineConfig)
         .middleware(setupPackages('packages'))
-        .middleware(setupPackages('upto')),
-    )
+        .middleware(setupPackages('upto'))
+    })
     .exitProcess(shouldExitOnError)
     .strict()
     .help()
 
-  const {_: [command = 'build'] = [], ...args} = commandLineOptions.parse(argv)
+  const {_: [command = 'build'] = [], config, upto, ...args} = commandLineOptions.parse(argv)
 
-  await require(`./command-${command}`)({rootDirectory: path.dirname(args.config), ...args})
+  const finalUpto = upto && /**@type {string[]}*/ (upto).length === 1 && upto[0] === '-' ? [] : upto
+
+  await require(`./command-${command}`)({
+    rootDirectory: path.dirname(/**@type {string}*/ (config)),
+    upto: finalUpto,
+    ...args,
+  })
 }
 
+/**
+ * @param {{ config: string }} argv
+ */
 function determineConfig(argv) {
   const {config} = argv
   if (config) {
@@ -65,6 +92,15 @@ function determineConfig(argv) {
     argv.config = result.filepath
   }
 
+  return argv
+}
+
+function applyGitOption(argv) {
+  if (argv.git === false) {
+    argv.pull = false
+    argv.commit = false
+    argv.push = false
+  }
   return argv
 }
 
@@ -90,6 +126,23 @@ function setupPackages(option) {
 
     return argv
   }
+}
+
+/**
+ * @param {string} option
+ * @param {string} [describe]
+ * @returns {[string, import('yargs').Options]}
+ */
+function buildOption(option, describe) {
+  return [
+    option,
+    {
+      describe: describe || `enables disables "${option}" when building`,
+      group: 'Build options:',
+      type: 'boolean',
+      default: true,
+    },
+  ]
 }
 
 module.exports = main

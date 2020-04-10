@@ -10,9 +10,23 @@ const {
   findLatestPackageChanges,
   FAKE_COMMITISH_FOR_UNCOMMITED_FILES,
 } = require('@bilt/git-packages')
-const applitoolsBuild = require('./package-build')
+const buildPackage = require('./package-build')
 const {sh, shWithOutput} = require('@bilt/scripting-commons')
 const o = require('./outputting')
+
+/**
+ * @typedef {{
+ * pull: boolean
+ * push: boolean
+ * commit: boolean
+ * install: boolean
+ * update: boolean
+ * audit: boolean
+ * build: boolean
+ * test: boolean
+ * publish: boolean
+ * }} BuildOptions
+ */
 
 /**@param {{
  * rootDirectory: import('@bilt/types').Directory
@@ -21,7 +35,8 @@ const o = require('./outputting')
  * force: boolean
  * dryRun: boolean
  * message: string
- * }} param*/
+ * } & BuildOptions} options
+ */
 async function buildCommand({
   rootDirectory,
   packages: packageDirectories,
@@ -29,7 +44,17 @@ async function buildCommand({
   force,
   dryRun,
   message,
+  pull,
+  push,
+  commit,
+  install,
+  update,
+  audit,
+  build,
+  test,
+  publish,
 }) {
+  const buildOptions = {pull, push, commit, install, update, audit, build, test, publish}
   debug(`starting build of ${rootDirectory}`)
   const initialSetOfPackagesToBuild = (packageDirectories || []).map((pd) => ({
     directory: /**@type {import('@bilt/types').RelativeDirectoryPath}*/ (pd),
@@ -60,7 +85,7 @@ async function buildCommand({
 
   o.globalHeader(`building ${Object.keys(finalPackagesToBuild).join(', ')}`)
 
-  if (!dryRun) {
+  if (!dryRun && buildOptions.pull) {
     o.globalOperation(`pulling commits from remote`)
     await sh('git pull --rebase --autostash', {cwd: rootDirectory})
   }
@@ -73,9 +98,10 @@ async function buildCommand({
           packagesBuildOrder.push(packageInfo.directory)
           return 'success'
         }
-      : applitoolsBuild(rootDirectory),
+      : buildPackage(rootDirectory, buildOptions),
     rootDirectory,
     dryRun,
+    buildOptions,
   )
 
   if (dryRun) {
@@ -84,11 +110,19 @@ async function buildCommand({
   }
 
   if (aPackageWasBuilt) {
-    o.globalOperation('commiting packages')
-    await sh(`git commit -m '${message}\n\n\n[bilt-artifacts]\n'`, {cwd: rootDirectory})
+    if (buildOptions.commit) {
+      o.globalOperation('commiting packages')
+      await sh(`git commit --allow-empty -m '${message}\n\n\n[bilt-artifacts]\n'`, {
+        cwd: rootDirectory,
+      })
+    }
 
-    o.globalOperation('pushing commits to remote')
-    await sh('git push', {cwd: rootDirectory})
+    if (buildOptions.push) {
+      o.globalOperation('pulling again to push')
+      await sh('git pull --rebase --autostash', {cwd: rootDirectory})
+      o.globalOperation('pushing commits to remote')
+      await sh('git push', {cwd: rootDirectory})
+    }
   } else if (Object.keys(finalPackagesToBuild).length === 0) {
     o.globalFooter('nothing to build')
   }
@@ -136,6 +170,7 @@ async function buildPackages(
   /**@type {import('@bilt/build').BuildPackageFunction} */ buildPackageFunc,
   /**@type {import('@bilt/types').Directory} */ rootDirectory,
   /**@type {boolean}*/ dryRun,
+  /**@type {BuildOptions} */ buildOptions,
 ) {
   const buildOrder = calculateBuildOrder({packageInfos: packageInfosToBuild})
 
@@ -165,8 +200,10 @@ async function buildPackages(
           'build package succeeded',
           packageInfosToBuild[buildPackageResult.package.directory],
         )
-        debug('adding', packageDirectory, 'to git')
-        await sh(`git add .`, {cwd: packageDirectory})
+        if (buildOptions.commit) {
+          debug('adding', packageDirectory, 'to git')
+          await sh(`git add .`, {cwd: packageDirectory})
+        }
       }
     }
   }

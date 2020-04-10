@@ -4,10 +4,9 @@ const {execFile} = require('child_process')
 const {init} = require('@bilt/git-testkit')
 const {startNpmRegistry} = require('@bilt/npm-testkit')
 const {makeTemporaryDirectory, writeFile, sh} = require('@bilt/scripting-commons')
-const applitoolsBuild = require('../../src/cli')
+const cli = require('../../src/cli')
 
 async function createAdepsBdepsCPackages(cwd, registry) {
-  await writeFile(['.biltrc.json'], {}, {cwd})
   await writeFile('.npmrc', `registry=${registry}\n`, {cwd})
   const {cPackageJson, bPackageJson} = await createPackages(cwd, registry, 'a', 'b', 'c')
   return {cPackageJson, bPackageJson}
@@ -57,6 +56,9 @@ async function prepareGitAndNpm() {
   await init(pushTarget, {bare: true})
   await init(cwd, {origin: pushTarget})
   const {registry} = await startNpmRegistry()
+
+  await writeFile('.npmrc', `registry=${registry}\n`, {cwd})
+  await writeFile(['.biltrc.json'], {}, {cwd})
   return {registry, cwd, pushTarget}
 }
 
@@ -65,16 +67,18 @@ async function prepareGitAndNpm() {
  * @param {string} [message]
  * @param {string[]} [packages]
  * @param {string[]} [uptos]
+ * @param {string[]} [moreArgs]
  */
-async function runBuild(cwd, message, packages = undefined, uptos = undefined) {
+async function runBuild(cwd, message, packages = undefined, uptos = undefined, moreArgs = []) {
   const currentDir = process.cwd()
   try {
     process.chdir(cwd)
-    await applitoolsBuild([
+    await cli([
       ...(packages && packages.length > 0 ? packages : []),
       '-m',
       message,
       ...(uptos && uptos.length > 0 ? ['--upto', ...uptos] : []),
+      ...moreArgs,
     ])
   } finally {
     process.chdir(currentDir)
