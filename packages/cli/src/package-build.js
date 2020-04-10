@@ -1,11 +1,9 @@
 'use strict'
-const {promisify} = require('util')
 const path = require('path')
 const fs = require('fs')
 const debug = require('debug')('bilt:cli:package-build')
 const {npmNextVersion} = require('@bilt/npm-next-version')
-const {exec} = require('child_process')
-const sh = promisify(exec)
+const {sh} = require('@bilt/scripting-commons')
 
 /**@return {import('@bilt/build').BuildPackageFunction} */
 function makeApplitoolsBuild(/**@type {import('@bilt/types').Directory}*/ rootDirectory) {
@@ -20,13 +18,7 @@ function makeApplitoolsBuild(/**@type {import('@bilt/types').Directory}*/ rootDi
     debug('updating', packageInfo.directory)
     await sh('npm update', {cwd: packageDirectory})
     debug('audit fixing', packageInfo.directory)
-    await sh('npm audit fix', {cwd: packageDirectory}).catch((error) => {
-      if (error.stderr.includes('ENOAUDIT')) {
-        debug('npm registry does not support auditing')
-      } else {
-        throw error
-      }
-    })
+    await sh('npm audit fix', {cwd: packageDirectory})
 
     const packageJson = JSON.parse(
       await fs.promises.readFile(path.join(packageDirectory, 'package.json'), 'utf8'),
