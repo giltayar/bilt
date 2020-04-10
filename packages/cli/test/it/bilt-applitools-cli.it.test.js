@@ -35,7 +35,7 @@ describe('applitools build', function () {
 
     await writeFile(['not-a-package', 'foo.txt'], 'foo', {cwd})
 
-    await runBuild(cwd)
+    await runBuild(cwd, 'first build', ['a', 'b'])
 
     const firstBuildHistory = Object.entries(await commitHistory(cwd))
     expect(firstBuildHistory).to.have.length(2)
@@ -54,7 +54,7 @@ describe('applitools build', function () {
     await writeFile(['a', 'a.txt'], 'touching a', {cwd})
     await commitAll(cwd, 'second commit to build')
 
-    await runBuild(cwd)
+    await runBuild(cwd, 'second build', ['a', 'b'])
     const history = Object.entries(await commitHistory(cwd))
     expect(history).to.have.length(firstBuildHistory.length + 2)
 
@@ -70,21 +70,16 @@ describe('applitools build', function () {
       'a/package-lock.json',
     ])
 
-    await runBuild(cwd)
+    await runBuild(cwd, 'third build')
     const noBuildHistory = Object.entries(await commitHistory(cwd))
     expect(noBuildHistory).to.have.length(history.length)
-
-    async function runBuild(cwd) {
-      await applitoolsBuild(['--config', path.join(cwd, '.biltrc.json'), '-m', 'a build'])
-    }
   })
 
   it('should build packages with dependencies correctly', async () => {
     const {registry, cwd} = await prepareGitAndNpm()
     const {cPackageJson, bPackageJson} = await createAdepsBdepsCPackages(cwd, registry)
 
-    // first build
-    await runBuild(cwd)
+    await runBuild(cwd, 'first build', undefined, ['a'])
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
@@ -97,9 +92,8 @@ describe('applitools build', function () {
       version: '2.0.1',
     })
 
-    // second build
     await writeFile(['b', 'build-this'], 'yes!', {cwd})
-    await runBuild(cwd)
+    await runBuild(cwd, 'second build', undefined, ['a'])
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('2\n')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('2\n')
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
@@ -112,25 +106,10 @@ describe('applitools build', function () {
       version: '2.0.2',
     })
 
-    // third build
-    await runBuild(cwd)
+    await runBuild(cwd, 'second build', undefined, ['a'])
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('2\n')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('2\n')
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
-
-    async function runBuild(/**@type {string}*/ cwd) {
-      await applitoolsBuild([
-        'a',
-        'b',
-        'c',
-        '--upto',
-        'a',
-        '--config',
-        path.join(cwd, '.biltrc.json'),
-        '-m',
-        'some build',
-      ])
-    }
   })
 
   it('should not commit failed packages and packages not built', async () => {
@@ -181,55 +160,100 @@ describe('applitools build', function () {
       {cwd},
     )
 
-    await runBuild(cwd)
+    await runBuild(cwd, 'last build', undefined, ['a'])
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('2\n')
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
+  })
 
-    async function runBuild(/**@type {string}*/ cwd) {
-      await applitoolsBuild([
-        '--upto',
-        'a',
-        '--config',
-        path.join(cwd, '.biltrc.json'),
-        '-m',
-        'some build',
-      ])
-    }
+  it('should ignore packages not in [packages]', async () => {
+    const {registry, cwd} = await prepareGitAndNpm()
+    await createAdepsBdepsCPackages(cwd, registry)
+
+    await runBuild(cwd, 'first build', ['c'], [])
+
+    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('0')
+    expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('0')
+    expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
+
+    await runBuild(cwd, 'first build', ['b'], ['a'])
+
+    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
+  })
+
+  it('should ignore packages not in the "project (i.e. not leading to the uptos)', async () => {
+    const {registry, cwd} = await prepareGitAndNpm()
+    await createAdepsBdepsCPackages(cwd, registry)
+    await createPackages(cwd, registry, 'd', 'e', 'f')
+
+    await runBuild(cwd, 'build abc project', undefined, ['a'])
+
+    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsString(['d', 'build-count'], {cwd})).to.equal('0')
+    expect(await readFileAsString(['e', 'build-count'], {cwd})).to.equal('0')
+    expect(await readFileAsString(['f', 'build-count'], {cwd})).to.equal('0')
+
+    await runBuild(cwd, 'build def project', undefined, ['d'])
+
+    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsString(['d', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsString(['e', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsString(['f', 'build-count'], {cwd})).to.equal('1\n')
   })
 })
 
 async function createAdepsBdepsCPackages(cwd, registry) {
   await writeFile(['.biltrc.json'], {}, {cwd})
   await writeFile('.npmrc', `registry=${registry}\n`, {cwd})
+  const {cPackageJson, bPackageJson} = await createPackages(cwd, registry, 'a', 'b', 'c')
+  return {cPackageJson, bPackageJson}
+}
+
+async function createPackages(cwd, registry, aPackage, bPackage, cPackage) {
   const build = `echo $(expr $(cat build-count) + 1) >build-count`
   await writeFile(
-    ['a', 'package.json'],
+    [aPackage, 'package.json'],
     {
-      name: 'a-package',
+      name: `${aPackage}-package`,
       version: '1.0.0',
-      dependencies: {'b-package': '^2.0.0'},
-      scripts: {test: 'cp node_modules/b-package/package.json ./b-package.json', build},
+      dependencies: {[`${bPackage}-package`]: '^2.0.0'},
+      scripts: {
+        test: `cp node_modules/${bPackage}-package/package.json ./${bPackage}-package.json`,
+        build,
+      },
     },
     {cwd},
   )
-  await writeFile(['a', 'build-count'], '0', {cwd})
-  await writeFile(['a', '.npmrc'], `registry=${registry}\n`, {cwd})
+  await writeFile([aPackage, 'build-count'], '0', {cwd})
+  await writeFile([aPackage, '.npmrc'], `registry=${registry}\n`, {cwd})
   const bPackageJson = {
-    name: 'b-package',
+    name: `${bPackage}-package`,
     version: '2.0.0',
-    dependencies: {'c-package': '^3.0.0'},
-    scripts: {test: 'cp node_modules/c-package/package.json ./c-package.json', build},
+    dependencies: {[`${cPackage}-package`]: '^3.0.0'},
+    scripts: {
+      test: `cp node_modules/${cPackage}-package/package.json ./${cPackage}-package.json`,
+      build,
+    },
   }
-  await writeFile(['b', 'package.json'], bPackageJson, {cwd})
-  await writeFile(['b', '.npmrc'], `registry=${registry}\n`, {cwd})
-  await writeFile(['b', 'build-count'], '0', {cwd})
-  await sh('npm publish', {cwd: path.join(cwd, 'b')})
-  const cPackageJson = {name: 'c-package', version: '3.0.0', scripts: {build}}
-  await writeFile(['c', 'package.json'], cPackageJson, {cwd})
-  await writeFile(['c', '.npmrc'], `registry=${registry}\n`, {cwd})
-  await writeFile(['c', 'build-count'], '0', {cwd})
-  await sh('npm publish', {cwd: path.join(cwd, 'c')})
+  await writeFile([bPackage, 'package.json'], bPackageJson, {cwd})
+  await writeFile([bPackage, '.npmrc'], `registry=${registry}\n`, {cwd})
+  await writeFile([bPackage, 'build-count'], '0', {cwd})
+  await sh('npm publish', {cwd: path.join(cwd, bPackage)})
+  const cPackageJson = {name: `${cPackage}-package`, version: '3.0.0', scripts: {build}}
+  await writeFile([cPackage, 'package.json'], cPackageJson, {cwd})
+
+  await writeFile([cPackage, '.npmrc'], `registry=${registry}\n`, {cwd})
+
+  await writeFile([cPackage, 'build-count'], '0', {cwd})
+
+  await sh('npm publish', {cwd: path.join(cwd, cPackage)})
+
   return {cPackageJson, bPackageJson}
 }
 
@@ -241,4 +265,21 @@ async function prepareGitAndNpm() {
   const {registry} = await startNpmRegistry()
 
   return {registry, cwd, pushTarget}
+}
+
+/**
+ * @param {string} cwd
+ * @param {string} [message]
+ * @param {string[]} [packages]
+ * @param {string[]} [uptos]
+ */
+async function runBuild(cwd, message, packages = undefined, uptos = undefined) {
+  await applitoolsBuild([
+    '--config',
+    path.join(cwd, '.biltrc.json'),
+    ...(packages && packages.length > 0 ? packages : []),
+    '-m',
+    message,
+    ...(uptos && uptos.length > 0 ? ['--upto', ...uptos] : []),
+  ])
 }

@@ -41,6 +41,7 @@ async function buildCommand({
   const {packagesToBuild, packageInfos} = await determineBuildInformation(
     rootDirectory,
     initialSetOfPackagesToBuild,
+    uptoPackages,
     force,
   )
   debug(
@@ -91,9 +92,13 @@ async function buildCommand({
 async function determineBuildInformation(
   /**@type {import('@bilt/types').Directory} */ rootDirectory,
   /**@type {import('@bilt/types').Package[]} */ initialSetOfPackagesToBuild,
+  /**@type {import('@bilt/types').Package[]} */ uptoPackages,
   /**@type {boolean} */ force,
 ) {
-  const packages = await findNpmPackages({rootDirectory})
+  const packages =
+    initialSetOfPackagesToBuild && initialSetOfPackagesToBuild.length > 0
+      ? mergePackages(initialSetOfPackagesToBuild, uptoPackages || [])
+      : await findNpmPackages({rootDirectory})
   const packageInfos = await findNpmPackageInfos({rootDirectory, packages})
 
   if (force) {
@@ -194,6 +199,23 @@ function filterPackageInfos(packageInfos, initialSetOfPackagesToBuild) {
       initialSetOfPackagesToBuild.some(({directory: d2}) => d2 === directory),
     ),
   )
+}
+
+/**
+ *
+ * @param {import('@bilt/types').Package[]} initialSetOfPackagesToBuild
+ * @param {import('@bilt/types').Package[]} uptoPackages
+ * @returns {import('@bilt/types').Package[]}
+ */
+function mergePackages(initialSetOfPackagesToBuild, uptoPackages) {
+  return [
+    ...new Set([
+      ...initialSetOfPackagesToBuild.map(({directory}) => directory),
+      ...uptoPackages.map(({directory}) => directory),
+    ]),
+  ].map((directory) => ({
+    directory: /**@type {import('@bilt/types').RelativeDirectoryPath} */ (directory),
+  }))
 }
 
 module.exports = buildCommand
