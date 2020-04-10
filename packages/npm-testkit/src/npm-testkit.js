@@ -71,6 +71,11 @@ const makeConfig = (storage, logLevel) => ({
       level: logLevel,
     },
   ],
+  middlewares: {
+    audit: {
+      enabled: true,
+    },
+  },
   self_path: '/foo/bar',
 })
 

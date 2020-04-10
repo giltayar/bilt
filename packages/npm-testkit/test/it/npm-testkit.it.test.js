@@ -22,4 +22,15 @@ describe('startNpmRegistry', function () {
 
     expect(await shWithOutput('npm view foo-package version', {cwd}), 'to equal', '6.6.6\n')
   })
+
+  it('should support npm audit', async () => {
+    const cwd = await makeTemporaryDirectory()
+    await writeFile('package.json', {name: 'foo-package', version: '6.6.6'}, {cwd})
+    await writeFile('.npmrc', `registry=${registry}`, {cwd})
+    await sh('npm install', {cwd})
+
+    await sh('npm audit', {cwd})
+
+    expect(await shWithOutput('npm view foo-package version', {cwd}), 'to equal', '6.6.6\n')
+  })
 })
