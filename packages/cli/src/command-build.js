@@ -12,6 +12,7 @@ const {
 } = require('@bilt/git-packages')
 const applitoolsBuild = require('./package-build')
 const {sh, shWithOutput} = require('@bilt/scripting-commons')
+const o = require('./outputting')
 
 /**@param {{
  * rootDirectory: import('@bilt/types').Directory
@@ -56,7 +57,13 @@ async function buildCommand({
         basePackagesToBuild: packagesToBuild,
         buildUpTo: force ? undefined : uptoPackages,
       })
-  debug(`determined final list of packages to build`, Object.keys(finalPackagesToBuild))
+
+  o.globalHeader(`building ${Object.keys(finalPackagesToBuild).join(', ')}`)
+
+  if (!dryRun) {
+    o.globalOperation(`pulling commits from remote`)
+    await sh('git pull --rebase --autostash', {cwd: rootDirectory})
+  }
 
   const packagesBuildOrder = []
   const aPackageWasBuilt = await buildPackages(
@@ -77,11 +84,13 @@ async function buildCommand({
   }
 
   if (aPackageWasBuilt) {
-    debug('commiting packages')
+    o.globalOperation('commiting packages')
     await sh(`git commit -m '${message}\n\n\n[bilt-artifacts]\n'`, {cwd: rootDirectory})
 
-    debug('pushing')
+    o.globalOperation('pushing commits to remote')
     await sh('git push', {cwd: rootDirectory})
+  } else if (Object.keys(finalPackagesToBuild).length === 0) {
+    o.globalFooter('nothing to build')
   }
 }
 
@@ -144,15 +153,18 @@ async function buildPackages(
     )
     const packageDirectory = path.join(rootDirectory, buildPackageResult.package.directory)
     if (buildPackageResult.buildResult === 'failure') {
-      const error = buildPackageResult.error
-
-      console.error(
-        `************** Building package ${buildPackageResult.package.directory} failed: `,
-        error.stack || error.toString(),
+      o.packageErrorFooter(
+        'build package failed',
+        packageInfosToBuild[buildPackageResult.package.directory],
+        buildPackageResult.error,
       )
     } else if (buildPackageResult.buildResult === 'success') {
       aPackageWasBuilt = true
       if (!dryRun) {
+        o.packageFooter(
+          'build package succeeded',
+          packageInfosToBuild[buildPackageResult.package.directory],
+        )
         debug('adding', packageDirectory, 'to git')
         await sh(`git add .`, {cwd: packageDirectory})
       }
@@ -191,6 +203,7 @@ async function filterOutPackagesThatWereAlreadyBuilt(changedPackages, rootDirect
  *
  * @param {import('@bilt/types').PackageInfos} packageInfos
  * @param {import('@bilt/types').Package[]} initialSetOfPackagesToBuild
+ * @returns {import('@bilt/types').PackageInfos}
  */
 function filterPackageInfos(packageInfos, initialSetOfPackagesToBuild) {
   //@ts-ignore
