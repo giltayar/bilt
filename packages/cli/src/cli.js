@@ -78,7 +78,7 @@ async function main(argv, {shouldExitOnError = false} = {}) {
     .help()
 
   const {_: [command = 'build'] = [], config, ...args} = commandLineOptions.parse(argv)
-  debug('final options', {...args, config}) //@@@GIL
+  debug('final options', {...args, config})
 
   await require(`./command-${command}`)({
     //@ts-ignore
