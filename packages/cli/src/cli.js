@@ -58,18 +58,16 @@ async function main(argv, {shouldExitOnError = false} = {}) {
         .middleware(determineConfig)
         .middleware(setupPackages('packages'))
         .middleware(setupPackages('upto'))
+        .middleware(supportDashUpto)
     })
     .exitProcess(shouldExitOnError)
     .strict()
     .help()
 
-  const {_: [command = 'build'] = [], config, upto, ...args} = commandLineOptions.parse(argv)
-
-  const finalUpto = upto && /**@type {string[]}*/ (upto).length === 1 && upto[0] === '-' ? [] : upto
+  const {_: [command = 'build'] = [], config, ...args} = commandLineOptions.parse(argv)
 
   await require(`./command-${command}`)({
     rootDirectory: path.dirname(/**@type {string}*/ (config)),
-    upto: finalUpto,
     ...args,
   })
 }
@@ -126,6 +124,14 @@ function setupPackages(option) {
 
     return argv
   }
+}
+
+function supportDashUpto(argv) {
+  const {upto} = argv
+
+  argv.upto = upto && upto.length === 1 && upto[0] === '-' ? [] : upto
+
+  return argv
 }
 
 /**

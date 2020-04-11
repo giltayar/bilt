@@ -54,8 +54,9 @@ async function buildCommand({
   test,
   publish,
 }) {
-  const buildOptions = {pull, push, commit, install, update, audit, build, test, publish}
   debug(`starting build of ${rootDirectory}`)
+  const buildOptions = {pull, push, commit, install, update, audit, build, test, publish}
+
   const initialSetOfPackagesToBuild = (packageDirectories || []).map((pd) => ({
     directory: /**@type {import('@bilt/types').RelativeDirectoryPath}*/ (pd),
   }))
