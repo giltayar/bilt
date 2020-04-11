@@ -7,7 +7,6 @@
 
 ## Rewrite CLI
 
-1. `.biltrc` should allow defaults for all CLI options.
 1. `--packages` and `--upto` should be either paths, globs, package names, or `*` to designate
    all package names, searched. The check and conversion should stop being done as part of yargs
    validation.

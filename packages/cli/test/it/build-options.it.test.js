@@ -56,6 +56,39 @@ describe('build-options (it)', function () {
     expect(await packageScriptCount(cwd, 'a', 'test')).to.equal(1)
     expect(await packageScriptCount(cwd, 'a', 'build')).to.equal(1)
   })
+
+  it('should override using the values in .biltrc', async () => {
+    const {registry, cwd, pushTarget} = await prepareGitAndNpm()
+
+    const beforeBuildHistory = Object.entries(await commitHistory(cwd))
+    const beforeBuildPushedHistory = Object.entries(await commitHistory(pushTarget))
+
+    await createPackage(cwd, registry, 'a', '2.0.0', {})
+    await sh('npm publish', {cwd: path.join(cwd, 'a')})
+    expect(await packageScriptCount(cwd, 'a', 'publish')).to.equal(1)
+
+    await writeFile('.biltrc.json', {build: false, publish: false, git: false}, {cwd})
+
+    await runBuild(cwd, 'a build with biltrc defaults', ['a'], undefined)
+
+    expect(Object.entries(await commitHistory(cwd)).length).to.equal(beforeBuildHistory.length)
+    expect(Object.entries(await commitHistory(pushTarget)).length).to.equal(
+      beforeBuildPushedHistory.length,
+    )
+
+    expect(await packageScriptCount(cwd, 'a', 'install')).to.equal(1)
+    expect(await packageScriptCount(cwd, 'a', 'test')).to.equal(1)
+    expect(await packageScriptCount(cwd, 'a', 'build')).to.equal(0)
+    expect(await packageScriptCount(cwd, 'a', 'publish')).to.equal(1)
+
+    await runBuild(cwd, 'a build with biltrc defaults and an override', ['a'], undefined, [
+      '--publish',
+    ])
+    expect(await packageScriptCount(cwd, 'a', 'install')).to.equal(2)
+    expect(await packageScriptCount(cwd, 'a', 'test')).to.equal(2)
+    expect(await packageScriptCount(cwd, 'a', 'build')).to.equal(0)
+    expect(await packageScriptCount(cwd, 'a', 'publish')).to.equal(2)
+  })
 })
 
 /**

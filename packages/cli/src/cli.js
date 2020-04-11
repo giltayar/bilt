@@ -2,6 +2,7 @@
 const path = require('path')
 const fs = require('fs')
 const yargs = require('yargs')
+const debug = require('debug')('bilt:cli:cli')
 const {cosmiconfigSync} = require('cosmiconfig')
 
 const BUILD_OPTIONS = [
@@ -17,12 +18,25 @@ const BUILD_OPTIONS = [
 ]
 
 async function main(argv, {shouldExitOnError = false} = {}) {
+  const explorer = cosmiconfigSync('bilt')
+
   const commandLineOptions = yargs
-    .option('config', {
-      alias: 'c',
-      describe: 'config that shows where root dir is',
-      type: 'string',
+    .config('config', function (filepath) {
+      if (filepath.includes('<no-biltrc-found>')) {
+        throw new Error('no ".biltrc" found')
+      }
+
+      return explorer.load(filepath).config
     })
+    .default('config', function () {
+      const config = explorer.search()
+      if (config) {
+        return config.filepath
+      } else {
+        return '<no-biltrc-found>'
+      }
+    })
+    .alias('c', 'config')
     .command(['build [packages...]', '* [packages...]'], 'build the packages', (yargs) => {
       let yargsAfterOptions = yargs
         .option('dry-run', {
@@ -53,44 +67,24 @@ async function main(argv, {shouldExitOnError = false} = {}) {
         yargsAfterOptions = yargsAfterOptions.option(...buildOption(specificBuildOption))
       }
       return yargsAfterOptions
-        .option(...buildOption('git', 'no-git disables push/pull/commit all at once'))
+        .option(...buildOption('git', 'no-git disables push/pull/commit'))
         .middleware(applyGitOption)
-        .middleware(determineConfig)
+        .middleware(supportDashUpto)
         .middleware(setupPackages('packages'))
         .middleware(setupPackages('upto'))
-        .middleware(supportDashUpto)
     })
     .exitProcess(shouldExitOnError)
     .strict()
     .help()
 
   const {_: [command = 'build'] = [], config, ...args} = commandLineOptions.parse(argv)
+  debug('final options', {...args, config}) //@@@GIL
 
   await require(`./command-${command}`)({
-    rootDirectory: path.dirname(/**@type {string}*/ (config)),
+    //@ts-ignore
+    rootDirectory: path.dirname(config),
     ...args,
   })
-}
-
-/**
- * @param {{ config: string }} argv
- */
-function determineConfig(argv) {
-  const {config} = argv
-  if (config) {
-    if (!fs.existsSync(argv.config)) {
-      throw new Error(`Configuration file ${argv.config} does not exist`)
-    }
-  } else {
-    const explorer = cosmiconfigSync('bilt')
-
-    const result = config ? explorer.load(config) : explorer.search()
-    if (result == null) throw new Error('could not find `.biltrc` config file')
-
-    argv.config = result.filepath
-  }
-
-  return argv
 }
 
 function applyGitOption(argv) {
