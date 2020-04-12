@@ -61,6 +61,27 @@ describe('git-packages (it)', function () {
       expect([...changedFiles.values()][0]).to.have.members(['b', 'c'])
       expect([...changedFiles.values()][1]).to.have.members(['a', 'b', 'c'])
     })
+
+    it('should be able to find changed files that have not yet been tracked, in a subdir', async () => {
+      const gitDir = await makeTemporaryDirectory()
+      await init(gitDir)
+
+      await writeFile(gitDir, 'a', '1')
+      await writeFile(gitDir, 'b', '1')
+      await writeFile(gitDir, 'c', '1')
+      await commitAll(gitDir)
+
+      await writeFile(gitDir, 'b', '2')
+      await writeFile(gitDir, 'c', '2')
+      await writeFile(gitDir, 'd/a', '3')
+      await writeFile(gitDir, 'd/b', '3')
+      await promisify(exec)('git add b', {cwd: gitDir})
+
+      const changedFiles = await findChangedFiles({rootDirectory: gitDir as Directory})
+
+      expect([...changedFiles.values()][0]).to.have.members(['b', 'c', 'd/a', 'd/b'])
+      expect([...changedFiles.values()][1]).to.have.members(['a', 'b', 'c'])
+    })
   })
 
   describe('findChangedPackagesUsingLastSuccesfulBuild', () => {

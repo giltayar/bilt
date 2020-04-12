@@ -1,6 +1,6 @@
 {
   "name": "@bilt/git-packages",
-  "version": "7.1.0",
+  "version": "7.1.1",
   "description": "",
   "main": "lib/src/git-packages.js",
   "types": "lib/src/git-packages.d.ts",

@@ -25,7 +25,7 @@ export async function findChangedFiles({
   rootDirectory?: Directory
   includeWorkspaceFiles?: boolean
 }): Promise<ChangedFilesInGit> {
-  const [diffTreeResult, statusResult] = await Promise.all([
+  const [diffTreeResult, statusResult, lsFilesResult] = await Promise.all([
     promisify(execFile)(
       'git',
       [
@@ -42,12 +42,16 @@ export async function findChangedFiles({
     promisify(execFile)('git', ['status', `--porcelain`, '--no-renames'], {
       cwd: rootDirectory as string,
     }),
+    promisify(execFile)('git', ['ls-files', `--others`], {
+      cwd: rootDirectory as string,
+    }),
   ])
 
   const ret = new Map<Commitish, RelativeFilePath[]>()
 
   if (includeWorkspaceFiles) {
     addChangedFilesFromGitStatus(ret, statusResult)
+    addUntrackedFiles(ret, lsFilesResult)
   }
   addChangedFilesFromDiffTree(ret, diffTreeResult)
 
@@ -183,7 +187,10 @@ function addChangedFilesFromGitStatus(
   changedFiles: ChangedFilesInGit,
   statusResult: {stdout: string},
 ) {
-  const statusLines = statusResult.stdout.split('\n').filter((l) => !!l)
+  const statusLines = statusResult.stdout
+    .split('\n')
+    .filter((l) => !!l)
+    .filter((l) => !l.startsWith('?'))
   for (const statusLine of statusLines) {
     const stagingStatus = statusLine[0]
     const workspaceStatus = statusLine[1]
@@ -195,6 +202,19 @@ function addChangedFilesFromGitStatus(
       changedFiles.get(FAKE_COMMITISH_FOR_UNCOMMITED_FILES)?.push(fileName as RelativeFilePath)
     } else {
       changedFiles.set(FAKE_COMMITISH_FOR_UNCOMMITED_FILES, [fileName as RelativeFilePath])
+    }
+  }
+}
+
+function addUntrackedFiles(changedFiles: ChangedFilesInGit, lsFilesResult: {stdout: string}) {
+  const statusLines = lsFilesResult.stdout.split('\n').filter((l) => !!l)
+  for (const statusLine of statusLines) {
+    if (changedFiles.has(FAKE_COMMITISH_FOR_UNCOMMITED_FILES)) {
+      changedFiles
+        .get(FAKE_COMMITISH_FOR_UNCOMMITED_FILES)
+        ?.push(statusLine.trim() as RelativeFilePath)
+    } else {
+      changedFiles.set(FAKE_COMMITISH_FOR_UNCOMMITED_FILES, [statusLine.trim() as RelativeFilePath])
     }
   }
 }
