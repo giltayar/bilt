@@ -11,7 +11,6 @@
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [
         "--no-timeouts",
-        "--trace-warnings",
         "'test/unit/*.test.js'",
         "'test/it/*.test.js'",
         "'test/e2e/*.test.js'"
@@ -22,7 +21,8 @@
       "cwd": "${workspaceRoot}",
       "protocol": "inspector",
       "console": "integratedTerminal",
-      "showAsyncStacks": true
+      "showAsyncStacks": true,
+      "autoAttachChildProcesses": true
     }
   ]
 }

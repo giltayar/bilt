@@ -20,7 +20,7 @@ describe('applitools build (e2e)', function () {
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('0')
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
 
-    await runBuildCli(cwd, 'build all', undefined, ['a'])
+    await runBuildCli(cwd, 'build all', undefined, ['./a'])
 
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')

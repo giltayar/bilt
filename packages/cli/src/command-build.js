@@ -2,7 +2,7 @@
 'use strict'
 const path = require('path')
 const debug = require('debug')('bilt:cli:build')
-const {findNpmPackageInfos, findNpmPackages} = require('@bilt/npm-packages')
+const {findNpmPackages, findNpmPackageInfos} = require('@bilt/npm-packages')
 const {calculateBuildOrder, build} = require('@bilt/build')
 const {calculatePackagesToBuild} = require('@bilt/packages-to-build')
 const {
@@ -39,7 +39,7 @@ const o = require('./outputting')
  */
 async function buildCommand({
   rootDirectory,
-  packages: packageDirectories,
+  packages,
   upto,
   force,
   dryRun,
@@ -57,18 +57,15 @@ async function buildCommand({
   debug(`starting build of ${rootDirectory}`)
   const buildOptions = {pull, push, commit, install, update, audit, build, test, publish}
 
-  const initialSetOfPackagesToBuild = (packageDirectories || []).map((pd) => ({
-    directory: /**@type {import('@bilt/types').RelativeDirectoryPath}*/ (pd),
-  }))
-  const uptoPackages =
-    upto &&
-    upto.map((pd) => ({
-      directory: /**@type {import('@bilt/types').RelativeDirectoryPath}*/ (pd),
-    }))
-  const {packagesToBuild, packageInfos} = await determineBuildInformation(
-    rootDirectory,
+  const {
     initialSetOfPackagesToBuild,
     uptoPackages,
+    packageInfos,
+  } = await findInitialSetOfPackagesToBuild(rootDirectory, packages, upto)
+  const {packagesToBuild} = await determineBuildInformation(
+    rootDirectory,
+    initialSetOfPackagesToBuild,
+    packageInfos,
     force,
   )
   debug(
@@ -136,15 +133,9 @@ async function buildCommand({
 async function determineBuildInformation(
   /**@type {import('@bilt/types').Directory} */ rootDirectory,
   /**@type {import('@bilt/types').Package[]} */ initialSetOfPackagesToBuild,
-  /**@type {import('@bilt/types').Package[]} */ uptoPackages,
+  /**@type {import('@bilt/types').PackageInfos} */ packageInfos,
   /**@type {boolean} */ force,
 ) {
-  const packages =
-    initialSetOfPackagesToBuild && initialSetOfPackagesToBuild.length > 0
-      ? mergePackages(initialSetOfPackagesToBuild, uptoPackages || [])
-      : await findNpmPackages({rootDirectory})
-  const packageInfos = await findNpmPackageInfos({rootDirectory, packages})
-
   if (force) {
     return {packageInfos, packagesToBuild: initialSetOfPackagesToBuild}
   }
@@ -152,7 +143,7 @@ async function determineBuildInformation(
   const changedFilesInGit = await findChangedFiles({rootDirectory})
   const tentativeChangedPackages = findLatestPackageChanges({
     changedFilesInGit,
-    packages,
+    packages: initialSetOfPackagesToBuild,
   })
   const changedPackages = await filterOutPackagesThatWereAlreadyBuilt(
     tentativeChangedPackages,
@@ -253,20 +244,94 @@ function filterPackageInfos(packageInfos, initialSetOfPackagesToBuild) {
 }
 
 /**
- *
- * @param {import('@bilt/types').Package[]} initialSetOfPackagesToBuild
- * @param {import('@bilt/types').Package[]} uptoPackages
+ * @param {string[]} packagesDirectories
+ * @param {string[]} uptoDirectoriesOrPackageNames
+ * @returns {Promise<{
+ * initialSetOfPackagesToBuild: import('@bilt/types').Package[]
+ * uptoPackages: import('@bilt/types').Package[] | undefined
+ * packageInfos: import('@bilt/types').PackageInfos
+ * }>}
+ */
+async function findInitialSetOfPackagesToBuild(
+  rootDirectory,
+  packagesDirectories,
+  uptoDirectoriesOrPackageNames,
+) {
+  const findAllPackages =
+    !packagesDirectories ||
+    packagesDirectories.length === 0 ||
+    packagesDirectories.some((d) => d === '*')
+  const hasPackageNames =
+    packagesDirectories && packagesDirectories.some(directoryIsActuallyPackageName)
+
+  const allPackagesInRoot =
+    findAllPackages || hasPackageNames ? await findNpmPackages({rootDirectory}) : undefined
+
+  if (findAllPackages || hasPackageNames) {
+    const packageInfos = await findNpmPackageInfos({
+      rootDirectory,
+      packages: allPackagesInRoot,
+    })
+
+    const packages = findAllPackages
+      ? allPackagesInRoot
+      : convertUserPackagesToPackages(packagesDirectories, packageInfos, rootDirectory)
+
+    const uptoPackages = convertUserPackagesToPackages(
+      uptoDirectoriesOrPackageNames,
+      packageInfos,
+      rootDirectory,
+    )
+
+    return {initialSetOfPackagesToBuild: packages, uptoPackages, packageInfos}
+  } else {
+    const packages = packagesDirectories.map((
+      /**@type{import('@bilt/types').RelativeDirectoryPath}*/ directory,
+    ) => ({directory}))
+
+    const packageInfos = await findNpmPackageInfos({
+      rootDirectory,
+      packages,
+    })
+
+    const uptoPackages = convertUserPackagesToPackages(
+      packagesDirectories,
+      packageInfos,
+      rootDirectory,
+    )
+
+    return {initialSetOfPackagesToBuild: packages, uptoPackages, packageInfos}
+  }
+}
+
+/**
+ * @param {string[]} directoriesOrPackageNames
+ * @param {import('@bilt/types').PackageInfos} packageInfos
+ * @param {string} rootDirectory
  * @returns {import('@bilt/types').Package[]}
  */
-function mergePackages(initialSetOfPackagesToBuild, uptoPackages) {
-  return [
-    ...new Set([
-      ...initialSetOfPackagesToBuild.map(({directory}) => directory),
-      ...uptoPackages.map(({directory}) => directory),
-    ]),
-  ].map((directory) => ({
-    directory: /**@type {import('@bilt/types').RelativeDirectoryPath} */ (directory),
-  }))
+function convertUserPackagesToPackages(directoriesOrPackageNames, packageInfos, rootDirectory) {
+  return directoriesOrPackageNames == null
+    ? undefined
+    : directoriesOrPackageNames.map((d) => {
+        if (directoryIsActuallyPackageName(d)) {
+          const packageInfo = packageInfos[d]
+          if (!packageInfo)
+            throw new Error(
+              `cannot find a package with the name ${d} in any packages in ${rootDirectory}`,
+            )
+          return {directory: packageInfo.directory}
+        } else {
+          return {directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (d)}
+        }
+      })
+}
+
+/**
+ * @param {string} directory
+ */
+function directoryIsActuallyPackageName(directory) {
+  return !directory.startsWith('.') && !directory.startsWith('/')
 }
 
 module.exports = buildCommand

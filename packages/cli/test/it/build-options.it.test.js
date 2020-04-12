@@ -23,7 +23,7 @@ describe('build-options (it)', function () {
     await sh('npm publish', {cwd: path.join(cwd, 'b')})
     await createPackage(cwd, registry, 'a', '2.0.0', {}, {'b-package': '^1.0.0'})
 
-    await runBuild(cwd, 'a build without git', ['a'], undefined, ['--no-git'])
+    await runBuild(cwd, 'a build without git', ['./a'], undefined, ['--no-git'])
 
     expect(Object.entries(await commitHistory(cwd)).length).to.equal(beforeBuildHistory.length)
     expect(Object.entries(await commitHistory(pushTarget)).length).to.equal(
@@ -37,10 +37,10 @@ describe('build-options (it)', function () {
     expect(await packageScriptCount(cwd, 'a', 'publish')).to.equal(1)
 
     // now publish package b to 1.0.1
-    await runBuild(cwd, 'b build', ['b'], undefined, ['--no-git'])
+    await runBuild(cwd, 'b build', ['./b'], undefined, ['--no-git'])
 
     // now remove all steps but update
-    await runBuild(cwd, 'a build wihtout anything except update', ['a'], undefined, [
+    await runBuild(cwd, 'a build wihtout anything except update', ['./a'], undefined, [
       '--no-git',
       '--no-test',
       '--no-audit',
@@ -69,7 +69,7 @@ describe('build-options (it)', function () {
 
     await writeFile('.biltrc.json', {build: false, publish: false, git: false}, {cwd})
 
-    await runBuild(cwd, 'a build with biltrc defaults', ['a'], undefined)
+    await runBuild(cwd, 'a build with biltrc defaults', ['./a'], undefined)
 
     expect(Object.entries(await commitHistory(cwd)).length).to.equal(beforeBuildHistory.length)
     expect(Object.entries(await commitHistory(pushTarget)).length).to.equal(
@@ -81,7 +81,7 @@ describe('build-options (it)', function () {
     expect(await packageScriptCount(cwd, 'a', 'build')).to.equal(0)
     expect(await packageScriptCount(cwd, 'a', 'publish')).to.equal(1)
 
-    await runBuild(cwd, 'a build with biltrc defaults and an override', ['a'], undefined, [
+    await runBuild(cwd, 'a build with biltrc defaults and an override', ['./a'], undefined, [
       '--publish',
     ])
     expect(await packageScriptCount(cwd, 'a', 'install')).to.equal(2)

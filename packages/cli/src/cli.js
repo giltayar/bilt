@@ -4,6 +4,7 @@ const fs = require('fs')
 const yargs = require('yargs')
 const debug = require('debug')('bilt:cli:cli')
 const {cosmiconfigSync} = require('cosmiconfig')
+const globby = require('globby')
 
 const BUILD_OPTIONS = [
   'pull',
@@ -20,7 +21,7 @@ const BUILD_OPTIONS = [
 async function main(argv, {shouldExitOnError = false} = {}) {
   const explorer = cosmiconfigSync('bilt')
 
-  const commandLineOptions = yargs
+  const commandLineOptions = yargs(argv)
     .config('config', function (filepath) {
       if (filepath.includes('<no-biltrc-found>')) {
         throw new Error('no ".biltrc" found')
@@ -37,8 +38,14 @@ async function main(argv, {shouldExitOnError = false} = {}) {
       }
     })
     .alias('c', 'config')
-    .command(['build [packages...]', '* [packages...]'], 'build the packages', (yargs) => {
+    .command(['build [packages..]', '* [packages..]'], 'build the packages', (yargs) => {
       let yargsAfterOptions = yargs
+        .positional('packages', {
+          describe:
+            'list of base packages to build. Use "*" or leave empty to autofind packages in cwd',
+          type: 'string',
+          array: true,
+        })
         .option('dry-run', {
           describe: 'just show what packages will be built and in what order',
           type: 'boolean',
@@ -60,7 +67,6 @@ async function main(argv, {shouldExitOnError = false} = {}) {
           describe: 'packages to build up to. Use "-" for no upto-s',
           type: 'string',
           array: true,
-          normalize: true,
         })
 
       for (const specificBuildOption of BUILD_OPTIONS) {
@@ -70,14 +76,14 @@ async function main(argv, {shouldExitOnError = false} = {}) {
         .option(...buildOption('git', 'no-git disables push/pull/commit'))
         .middleware(applyGitOption)
         .middleware(supportDashUpto)
-        .middleware(setupPackages('packages'))
-        .middleware(setupPackages('upto'))
+        .middleware(setupPackages('packages', {atLeastOneDirectory: true}))
+        .middleware(setupPackages('upto', {atLeastOneDirectory: false}))
     })
     .exitProcess(shouldExitOnError)
     .strict()
     .help()
 
-  const {_: [command = 'build'] = [], config, ...args} = commandLineOptions.parse(argv)
+  const {_: [command = 'build'] = [], config, ...args} = await commandLineOptions.parse()
   debug('final options', {...args, config})
 
   await require(`./command-${command}`)({
@@ -98,22 +104,50 @@ function applyGitOption(argv) {
 
 /**
  * @param {string} option
+ * @param {{atLeastOneDirectory: boolean}} options
  */
-function setupPackages(option) {
-  return (argv) => {
+function setupPackages(option, {atLeastOneDirectory}) {
+  /**
+   * @param {string} v
+   */
+  const isGlob = (v) => v.startsWith('.') || v.startsWith('/')
+  return async (argv) => {
     const rootDirectory = path.dirname(argv.config)
 
-    if (argv[option]) {
-      argv[option] = argv[option].map((filepath) => {
-        if (!fs.existsSync(path.join(filepath, 'package.json'))) {
+    if (argv[option] && argv[option].length > 0) {
+      const values = argv[option].filter(isGlob)
+      if (values.length === 0) {
+        if (atLeastOneDirectory) {
           throw new Error(
-            `${filepath} is not a valid package path, because package.json was not found in ${path.resolve(
-              filepath,
-            )}.`,
+            `none of the ${option} (${argv[option].join(
+              ',',
+            )}) was a directory. There must be at least one directory.
+Maybe you forgot to prefix directories with "." or "/"?\n`,
           )
         }
-        return path.relative(rootDirectory, filepath)
+        return argv
+      }
+      const paths = await globby(values, {
+        cwd: process.cwd(),
+        onlyDirectories: true,
+        expandDirectories: false,
+        markDirectories: true,
       })
+      if (paths.length === 0) {
+        throw new Error(`could not find any package in any of ${argv[option].join(',')}`)
+      }
+      argv[option] = paths
+        .map((filepath) => {
+          if (!fs.existsSync(path.join(filepath, 'package.json'))) {
+            throw new Error(
+              `${filepath} is not a valid package path, because package.json was not found in ${path.resolve(
+                filepath,
+              )}.`,
+            )
+          }
+          return path.relative(rootDirectory, filepath)
+        })
+        .concat(argv[option].filter((v) => !isGlob(v)))
     }
 
     return argv

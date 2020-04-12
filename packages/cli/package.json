@@ -1,6 +1,6 @@
 {
   "name": "@bilt/cli",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "",
   "main": "src/cli.js",
   "engines": {
@@ -42,6 +42,7 @@
     "chalk": "^4.0.0",
     "cosmiconfig": "^6.0.0",
     "debug": "^4.1.1",
+    "globby": "^11.0.0",
     "yargs": "^15.3.1"
   },
   "devDependencies": {
