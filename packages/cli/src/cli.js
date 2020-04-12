@@ -76,8 +76,8 @@ async function main(argv, {shouldExitOnError = false} = {}) {
         .option(...buildOption('git', 'no-git disables push/pull/commit'))
         .middleware(applyGitOption)
         .middleware(supportDashUpto)
-        .middleware(setupPackages('packages', {atLeastOneDirectory: true}))
-        .middleware(setupPackages('upto', {atLeastOneDirectory: false}))
+        .middleware(setupPackages('packages'))
+        .middleware(setupPackages('upto'))
     })
     .exitProcess(shouldExitOnError)
     .strict()
@@ -104,50 +104,38 @@ function applyGitOption(argv) {
 
 /**
  * @param {string} option
- * @param {{atLeastOneDirectory: boolean}} options
  */
-function setupPackages(option, {atLeastOneDirectory}) {
+function setupPackages(option) {
   /**
    * @param {string} v
    */
   const isGlob = (v) => v.startsWith('.') || v.startsWith('/')
   return async (argv) => {
-    const rootDirectory = path.dirname(argv.config)
-
     if (argv[option] && argv[option].length > 0) {
       const values = argv[option].filter(isGlob)
       if (values.length === 0) {
-        if (atLeastOneDirectory) {
-          throw new Error(
-            `none of the ${option} (${argv[option].join(
-              ',',
-            )}) was a directory. There must be at least one directory.
-Maybe you forgot to prefix directories with "." or "/"?\n`,
-          )
-        }
         return argv
       }
       const paths = await globby(values, {
         cwd: process.cwd(),
         onlyDirectories: true,
         expandDirectories: false,
-        markDirectories: true,
       })
       if (paths.length === 0) {
         throw new Error(`could not find any package in any of ${argv[option].join(',')}`)
       }
-      argv[option] = paths
-        .map((filepath) => {
-          if (!fs.existsSync(path.join(filepath, 'package.json'))) {
-            throw new Error(
-              `${filepath} is not a valid package path, because package.json was not found in ${path.resolve(
-                filepath,
-              )}.`,
-            )
-          }
-          return path.relative(rootDirectory, filepath)
-        })
-        .concat(argv[option].filter((v) => !isGlob(v)))
+
+      for (const filepath of paths) {
+        if (!fs.existsSync(path.join(filepath, 'package.json'))) {
+          throw new Error(
+            `${filepath} is not a valid package path, because package.json was not found in ${path.resolve(
+              filepath,
+            )}.`,
+          )
+        }
+      }
+
+      argv[option] = paths.concat(argv[option].filter((v) => !isGlob(v)))
     }
 
     return argv

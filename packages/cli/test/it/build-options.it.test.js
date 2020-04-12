@@ -10,7 +10,7 @@ const {
   sh,
   shWithOutput,
 } = require('@bilt/scripting-commons')
-const {prepareGitAndNpm, runBuild} = require('../commons/setup-and-run')
+const {prepareGitAndNpm, runBuild, createAdepsBdepsCPackages} = require('../commons/setup-and-run')
 
 describe('build-options (it)', function () {
   it('should disable all git stuff when --no-git, and test all build options', async () => {
@@ -88,6 +88,44 @@ describe('build-options (it)', function () {
     expect(await packageScriptCount(cwd, 'a', 'test')).to.equal(2)
     expect(await packageScriptCount(cwd, 'a', 'build')).to.equal(0)
     expect(await packageScriptCount(cwd, 'a', 'publish')).to.equal(2)
+  })
+
+  it('should build using package names', async () => {
+    const {registry, cwd} = await prepareGitAndNpm()
+    const {cPackageJson, bPackageJson} = await createAdepsBdepsCPackages(cwd, registry)
+
+    await runBuild(cwd, 'first build', undefined, ['a-package'])
+    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsJson(['b', 'c-package.json'], {cwd})).to.containSubset({
+      ...cPackageJson,
+      version: '3.0.1',
+    })
+    expect(await readFileAsJson(['a', 'b-package.json'], {cwd})).to.containSubset({
+      ...bPackageJson,
+      version: '2.0.1',
+    })
+
+    await writeFile(['b', 'build-this'], 'yes!', {cwd})
+    await runBuild(cwd, 'second build', ['b-package', 'c-package'], ['a-package'])
+
+    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('2\n')
+    expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('2\n')
+    expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsJson(['b', 'c-package.json'], {cwd})).to.containSubset({
+      ...cPackageJson,
+      version: '3.0.1',
+    })
+    expect(await readFileAsJson(['a', 'b-package.json'], {cwd})).to.containSubset({
+      ...bPackageJson,
+      version: '2.0.2',
+    })
+
+    await runBuild(cwd, 'third build', ['*'], ['./a'])
+    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('2\n')
+    expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('2\n')
+    expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
   })
 })
 

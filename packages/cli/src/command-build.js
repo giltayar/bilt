@@ -260,7 +260,7 @@ async function findInitialSetOfPackagesToBuild(
   const findAllPackages =
     !packagesDirectories ||
     packagesDirectories.length === 0 ||
-    packagesDirectories.some((d) => d === '*')
+    (packagesDirectories.length === 1 && packagesDirectories[0] === '*')
   const hasPackageNames =
     packagesDirectories && packagesDirectories.some(directoryIsActuallyPackageName)
 
@@ -285,9 +285,7 @@ async function findInitialSetOfPackagesToBuild(
 
     return {initialSetOfPackagesToBuild: packages, uptoPackages, packageInfos}
   } else {
-    const packages = packagesDirectories.map((
-      /**@type{import('@bilt/types').RelativeDirectoryPath}*/ directory,
-    ) => ({directory}))
+    const packages = convertUserPackagesToPackages(packagesDirectories, {}, rootDirectory)
 
     const packageInfos = await findNpmPackageInfos({
       rootDirectory,
@@ -315,14 +313,23 @@ function convertUserPackagesToPackages(directoriesOrPackageNames, packageInfos, 
     ? undefined
     : directoriesOrPackageNames.map((d) => {
         if (directoryIsActuallyPackageName(d)) {
-          const packageInfo = packageInfos[d]
-          if (!packageInfo)
+          const packageInfoEntry = Object.entries(packageInfos).find(
+            ([, packageInfo]) => d === packageInfo.name,
+          )
+          if (!packageInfoEntry)
             throw new Error(
               `cannot find a package with the name ${d} in any packages in ${rootDirectory}`,
             )
-          return {directory: packageInfo.directory}
+          return {
+            directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (packageInfoEntry[0]),
+          }
         } else {
-          return {directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (d)}
+          return {
+            directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (path.relative(
+              rootDirectory,
+              d,
+            )),
+          }
         }
       })
 }

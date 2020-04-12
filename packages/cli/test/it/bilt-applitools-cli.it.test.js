@@ -168,7 +168,7 @@ describe('applitools build (it)', function () {
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
   })
 
-  it('should ignore packages not in [packages]', async () => {
+  it('should ignore packages not in "packages"', async () => {
     const {registry, cwd} = await prepareGitAndNpm()
     await createAdepsBdepsCPackages(cwd, registry)
 
@@ -178,9 +178,9 @@ describe('applitools build (it)', function () {
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('0')
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
 
-    await runBuild(cwd, 'first build', ['./b'], ['./a'])
+    await runBuild(cwd, 'second build', ['./b'], ['./a'])
 
-    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('0')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
   })
