@@ -37,13 +37,16 @@ export async function findChangedFiles({
       ],
       {
         cwd: rootDirectory as string,
+        maxBuffer: 1024 * 1024 * 1024,
       },
     ),
     promisify(execFile)('git', ['status', `--porcelain`, '--no-renames'], {
       cwd: rootDirectory as string,
+      maxBuffer: 1024 * 1024 * 1024,
     }),
-    promisify(execFile)('git', ['ls-files', `--others`], {
+    promisify(execFile)('git', ['ls-files', `--others`, '--exclude-standard'], {
       cwd: rootDirectory as string,
+      maxBuffer: 1024 * 1024 * 1024,
     }),
   ])
 
