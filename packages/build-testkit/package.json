@@ -1,6 +1,6 @@
 {
   "name": "@bilt/build-testkit",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "main": "src/build-testkit.js",
   "engines": {
@@ -32,14 +32,14 @@
     "debug": "^4.1.1"
   },
   "devDependencies": {
-    "@bilt/build": "^2.0.4",
-    "@bilt/types": "^2.0.0",
+    "@bilt/build": "^2.0.8",
+    "@bilt/types": "^2.0.1",
     "chai": "^4.2.0",
     "eslint": "^6.8.0",
     "eslint-plugin-mocha-no-only": "^1.1.0",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-plugin-prettier": "^3.1.3",
     "mocha": "^7.1.1",
-    "prettier": "^2.0.2"
+    "prettier": "^2.0.4"
   }
 }
