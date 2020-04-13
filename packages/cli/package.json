@@ -1,6 +1,6 @@
 {
   "name": "@bilt/cli",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "",
   "main": "src/cli.js",
   "engines": {
@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@bilt/build": "^2.0.7",
-    "@bilt/git-packages": "^7.1.0",
+    "@bilt/git-packages": "^7.1.2",
     "@bilt/npm-next-version": "^2.2.0",
     "@bilt/npm-packages": "^1.1.4",
     "@bilt/packages-to-build": "^2.0.3",
@@ -55,7 +55,7 @@
     "eslint": "^6.8.0",
     "eslint-plugin-mocha-no-only": "^1.1.0",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-plugin-prettier": "^3.1.3",
     "mocha": "^7.1.1",
     "prettier": "^2.0.4",
     "typescript": "^3.8.3"

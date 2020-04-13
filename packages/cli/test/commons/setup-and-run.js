@@ -6,16 +6,25 @@ const {startNpmRegistry} = require('@bilt/npm-testkit')
 const {makeTemporaryDirectory, writeFile, sh} = require('@bilt/scripting-commons')
 const cli = require('../../src/cli')
 
-async function createAdepsBdepsCPackages(cwd, registry) {
+async function createAdepsBdepsCPackages(cwd, registry, base = '.') {
   await writeFile('.npmrc', `registry=${registry}\n`, {cwd})
-  const {cPackageJson, bPackageJson} = await createPackages(cwd, registry, 'a', 'b', 'c')
+  const {cPackageJson, bPackageJson} = await createPackages(
+    cwd,
+    registry,
+    `${base}/a`,
+    `${base}/b`,
+    `${base}/c`,
+  )
   return {cPackageJson, bPackageJson}
 }
 
-async function createPackages(cwd, registry, aPackage, bPackage, cPackage) {
+async function createPackages(cwd, registry, aPackageDir, bPackageDir, cPackageDir) {
+  const aPackage = path.basename(aPackageDir)
+  const bPackage = path.basename(bPackageDir)
+  const cPackage = path.basename(cPackageDir)
   const build = `echo $(expr $(cat build-count) + 1) >build-count`
   await writeFile(
-    [aPackage, 'package.json'],
+    [aPackageDir, 'package.json'],
     {
       name: `${aPackage}-package`,
       version: '1.0.0',
@@ -27,8 +36,8 @@ async function createPackages(cwd, registry, aPackage, bPackage, cPackage) {
     },
     {cwd},
   )
-  await writeFile([aPackage, 'build-count'], '0', {cwd})
-  await writeFile([aPackage, '.npmrc'], `registry=${registry}\n`, {cwd})
+  await writeFile([aPackageDir, 'build-count'], '0', {cwd})
+  await writeFile([aPackageDir, '.npmrc'], `registry=${registry}\n`, {cwd})
   const bPackageJson = {
     name: `${bPackage}-package`,
     version: '2.0.0',
@@ -38,15 +47,16 @@ async function createPackages(cwd, registry, aPackage, bPackage, cPackage) {
       build,
     },
   }
-  await writeFile([bPackage, 'package.json'], bPackageJson, {cwd})
-  await writeFile([bPackage, '.npmrc'], `registry=${registry}\n`, {cwd})
-  await writeFile([bPackage, 'build-count'], '0', {cwd})
-  await sh('npm publish', {cwd: path.join(cwd, bPackage)})
+  await writeFile([bPackageDir, 'package.json'], bPackageJson, {cwd})
+  await writeFile([bPackageDir, '.npmrc'], `registry=${registry}\n`, {cwd})
+  await writeFile([bPackageDir, 'build-count'], '0', {cwd})
+  await sh('npm publish', {cwd: path.join(cwd, bPackageDir)})
+
   const cPackageJson = {name: `${cPackage}-package`, version: '3.0.0', scripts: {build}}
-  await writeFile([cPackage, 'package.json'], cPackageJson, {cwd})
-  await writeFile([cPackage, '.npmrc'], `registry=${registry}\n`, {cwd})
-  await writeFile([cPackage, 'build-count'], '0', {cwd})
-  await sh('npm publish', {cwd: path.join(cwd, cPackage)})
+  await writeFile([cPackageDir, 'package.json'], cPackageJson, {cwd})
+  await writeFile([cPackageDir, '.npmrc'], `registry=${registry}\n`, {cwd})
+  await writeFile([cPackageDir, 'build-count'], '0', {cwd})
+  await sh('npm publish', {cwd: path.join(cwd, cPackageDir)})
   return {cPackageJson, bPackageJson}
 }
 

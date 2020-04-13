@@ -72,7 +72,7 @@ describe('applitools build (it)', function () {
       'a/package-lock.json',
     ])
 
-    await runBuild(cwd, 'third build')
+    await runBuild(cwd, 'third build', ['*'])
     const noBuildHistory = Object.entries(await commitHistory(cwd))
     expect(noBuildHistory).to.have.length(history.length)
   })
@@ -81,7 +81,7 @@ describe('applitools build (it)', function () {
     const {registry, cwd} = await prepareGitAndNpm()
     const {cPackageJson, bPackageJson} = await createAdepsBdepsCPackages(cwd, registry)
 
-    await runBuild(cwd, 'first build', undefined, ['./a'])
+    await runBuild(cwd, 'first build', ['*'], ['./a'])
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
@@ -95,7 +95,7 @@ describe('applitools build (it)', function () {
     })
 
     await writeFile(['b', 'build-this'], 'yes!', {cwd})
-    await runBuild(cwd, 'second build', undefined, ['./a'])
+    await runBuild(cwd, 'second build', ['*'], ['./a'])
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('2\n')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('2\n')
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
@@ -108,7 +108,7 @@ describe('applitools build (it)', function () {
       version: '2.0.2',
     })
 
-    await runBuild(cwd, 'second build', undefined, ['./a'])
+    await runBuild(cwd, 'second build', ['*'], ['./a'])
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('2\n')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('2\n')
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
@@ -135,7 +135,7 @@ describe('applitools build (it)', function () {
     )
 
     // first build - b fails, a isnt run at all
-    await runBuild(cwd)
+    await runBuild(cwd, 'failed build', ['*'])
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('0')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
@@ -162,17 +162,17 @@ describe('applitools build (it)', function () {
       {cwd},
     )
 
-    await runBuild(cwd, 'last build', undefined, ['./a'])
+    await runBuild(cwd, 'last build', ['*'], ['./a'])
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('2\n')
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
   })
 
-  it('should ignore packages not in "packages"', async () => {
+  it('should ignore packages not in "packages" and add upto packages to packages to build', async () => {
     const {registry, cwd} = await prepareGitAndNpm()
     await createAdepsBdepsCPackages(cwd, registry)
 
-    await runBuild(cwd, 'first build', ['./c'], [])
+    await runBuild(cwd, 'first build', ['./c'])
 
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('0')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('0')
@@ -180,7 +180,7 @@ describe('applitools build (it)', function () {
 
     await runBuild(cwd, 'second build', ['./b'], ['./a'])
 
-    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('0')
+    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
   })
@@ -190,7 +190,7 @@ describe('applitools build (it)', function () {
     await createAdepsBdepsCPackages(cwd, registry)
     await createPackages(cwd, registry, 'd', 'e', 'f')
 
-    await runBuild(cwd, 'build abc project', undefined, ['./a'])
+    await runBuild(cwd, 'build abc project', ['*'], ['./a'])
 
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')
@@ -199,7 +199,7 @@ describe('applitools build (it)', function () {
     expect(await readFileAsString(['e', 'build-count'], {cwd})).to.equal('0')
     expect(await readFileAsString(['f', 'build-count'], {cwd})).to.equal('0')
 
-    await runBuild(cwd, 'build def project', undefined, ['./d'])
+    await runBuild(cwd, 'build def project', ['*'], ['./d'])
 
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')

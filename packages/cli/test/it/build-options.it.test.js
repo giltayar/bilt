@@ -94,6 +94,8 @@ describe('build-options (it)', function () {
     const {registry, cwd} = await prepareGitAndNpm()
     const {cPackageJson, bPackageJson} = await createAdepsBdepsCPackages(cwd, registry)
 
+    await writeFile('.biltrc.json', {packages: ['*']}, {cwd})
+
     await runBuild(cwd, 'first build', undefined, ['a-package'])
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')
@@ -122,10 +124,37 @@ describe('build-options (it)', function () {
       version: '2.0.2',
     })
 
-    await runBuild(cwd, 'third build', ['*'], ['./a'])
+    await runBuild(cwd, 'third build', undefined, ['./a'])
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('2\n')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('2\n')
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
+  })
+
+  it('should use packages and uptos from biltrc', async () => {
+    const {registry, cwd} = await prepareGitAndNpm()
+
+    await createAdepsBdepsCPackages(cwd, registry, 'packages')
+
+    await writeFile('.biltrc.json', {packages: ['./packages/*'], upto: ['b-package']}, {cwd})
+
+    await runBuild(path.join(cwd, 'packages/c'), 'first build', ['.'])
+    expect(await readFileAsString(['packages/a', 'build-count'], {cwd})).to.equal('0')
+    expect(await readFileAsString(['packages/b', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsString(['packages/c', 'build-count'], {cwd})).to.equal('1\n')
+
+    await writeFile(['packages/a', 'build-now'], 'yes!', {cwd})
+    await writeFile(['packages/b', 'build-now'], 'yes!', {cwd})
+    await writeFile(['packages/c', 'build-now'], 'yes!', {cwd})
+
+    await runBuild(path.join(cwd, 'packages/c'), 'second build', ['.'], ['x'])
+    expect(await readFileAsString(['packages/a', 'build-count'], {cwd})).to.equal('0')
+    expect(await readFileAsString(['packages/b', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await readFileAsString(['packages/c', 'build-count'], {cwd})).to.equal('2\n')
+
+    await runBuild(path.join(cwd, 'packages/c'), 'third build')
+    expect(await readFileAsString(['packages/a', 'build-count'], {cwd})).to.equal('0')
+    expect(await readFileAsString(['packages/b', 'build-count'], {cwd})).to.equal('2\n')
+    expect(await readFileAsString(['packages/c', 'build-count'], {cwd})).to.equal('2\n')
   })
 })
 

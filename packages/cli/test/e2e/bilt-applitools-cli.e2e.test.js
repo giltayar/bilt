@@ -2,7 +2,7 @@
 const path = require('path')
 const {describe, it} = require('mocha')
 const {expect} = require('chai')
-const {readFileAsString} = require('@bilt/scripting-commons')
+const {readFileAsString, writeFile} = require('@bilt/scripting-commons')
 const {
   prepareGitAndNpm,
   runBuildCli,
@@ -13,6 +13,7 @@ describe('applitools build (e2e)', function () {
   it(`build package in current directory, then build the rest`, async () => {
     const {registry, cwd} = await prepareGitAndNpm()
     await createAdepsBdepsCPackages(cwd, registry)
+    await writeFile('.biltrc.json', {packages: ['*']}, {cwd})
 
     await runBuildCli(path.join(cwd, 'c'), 'build c in its own directory', ['.'], [])
 

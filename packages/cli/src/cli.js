@@ -22,12 +22,19 @@ async function main(argv, {shouldExitOnError = false} = {}) {
   const explorer = cosmiconfigSync('bilt')
 
   const commandLineOptions = yargs(argv)
-    .config('config', function (filepath) {
-      if (filepath.includes('<no-biltrc-found>')) {
+    .config('config', function (configpath) {
+      if (configpath.includes('<no-biltrc-found>')) {
         throw new Error('no ".biltrc" found')
       }
 
-      return explorer.load(filepath).config
+      const {config} = explorer.load(configpath)
+
+      if (!config.configUpto && config.upto) {
+        config.configUpto = config.upto
+      }
+      delete config.upto
+
+      return config
     })
     .default('config', function () {
       const config = explorer.search()
@@ -38,52 +45,74 @@ async function main(argv, {shouldExitOnError = false} = {}) {
       }
     })
     .alias('c', 'config')
-    .command(['build [packages..]', '* [packages..]'], 'build the packages', (yargs) => {
-      let yargsAfterOptions = yargs
-        .positional('packages', {
-          describe:
-            'list of base packages to build. Use "*" or leave empty to autofind packages in cwd',
-          type: 'string',
-          array: true,
-        })
-        .option('dry-run', {
-          describe: 'just show what packages will be built and in what order',
-          type: 'boolean',
-          default: false,
-        })
-        .option('force', {
-          alias: 'f',
-          describe: 'force build of packages',
-          type: 'boolean',
-          default: false,
-        })
-        .option('message', {
-          alias: 'm',
-          describe: 'commit message for the build',
-          type: 'string',
-        })
-        .option('upto', {
-          alias: 'u',
-          describe: 'packages to build up to. Use "-" for no upto-s',
-          type: 'string',
-          array: true,
-        })
+    .command(
+      ['build [packagesToBuild..]', '* [packagesToBuild..]'],
+      'build the packages',
+      (yargs) => {
+        let yargsAfterOptions = yargs
+          .positional('packagesToBuild', {
+            describe:
+              'list of packages to build. Use "*" or leave empty to autofind packages in cwd',
+            type: 'string',
+            array: true,
+          })
+          .option('dry-run', {
+            describe: 'just show what packages will be built and in what order',
+            type: 'boolean',
+            default: false,
+          })
+          .option('force', {
+            alias: 'f',
+            describe: 'force build of packages',
+            type: 'boolean',
+            default: false,
+          })
+          .option('message', {
+            alias: 'm',
+            describe: 'commit message for the build',
+            type: 'string',
+          })
+          .option('upto', {
+            alias: 'u',
+            describe: 'packages to build up to. Use "-" for no upto-s',
+            type: 'string',
+            array: true,
+          })
+          .option('packages', {
+            describe: 'the set of all packages to take into consideration',
+            type: 'string',
+            array: true,
+            hidden: true,
+          })
+          .option('configUpto', {
+            type: 'string',
+            array: true,
+            hidden: true,
+          })
 
-      for (const specificBuildOption of BUILD_OPTIONS) {
-        yargsAfterOptions = yargsAfterOptions.option(...buildOption(specificBuildOption))
-      }
-      return yargsAfterOptions
-        .option(...buildOption('git', 'no-git disables push/pull/commit'))
-        .middleware(applyGitOption)
-        .middleware(supportDashUpto)
-        .middleware(setupPackages('packages'))
-        .middleware(setupPackages('upto'))
-    })
+        for (const specificBuildOption of BUILD_OPTIONS) {
+          yargsAfterOptions = yargsAfterOptions.option(...buildOption(specificBuildOption))
+        }
+        return yargsAfterOptions
+          .option(...buildOption('git', 'no-git disables push/pull/commit'))
+          .middleware(applyGitOption)
+          .middleware(supportDashUpto)
+          .middleware(setupPackages('packagesToBuild', 'cwd'))
+          .middleware(setupPackages('packages', 'configpath'))
+          .middleware(setupPackages('upto', 'cwd'))
+          .middleware(setupPackages('configUpto', 'configpath'))
+      },
+    )
     .exitProcess(shouldExitOnError)
     .strict()
     .help()
 
   const {_: [command = 'build'] = [], config, ...args} = await commandLineOptions.parse()
+  if (args.configUpto) {
+    args.upto = args.configUpto
+    delete args.configUpto
+  }
+
   debug('final options', {...args, config})
 
   await require(`./command-${command}`)({
@@ -104,21 +133,25 @@ function applyGitOption(argv) {
 
 /**
  * @param {string} option
+ * @param {'cwd'|'configpath'} cwd
  */
-function setupPackages(option) {
+function setupPackages(option, cwd) {
   /**
    * @param {string} v
    */
   const isGlob = (v) => v.startsWith('.') || v.startsWith('/')
   return async (argv) => {
     if (argv[option] && argv[option].length > 0) {
+      if (argv[option].length === 1 && argv[option][0] === 'x') return argv
+
       const values = argv[option].filter(isGlob)
       if (values.length === 0) {
         return argv
       }
       const paths = await globby(values, {
-        cwd: process.cwd(),
+        cwd: cwd === 'cwd' ? process.cwd() : path.dirname(argv.config),
         onlyDirectories: true,
+        absolute: true,
         expandDirectories: false,
       })
       if (paths.length === 0) {
@@ -145,7 +178,10 @@ function setupPackages(option) {
 function supportDashUpto(argv) {
   const {upto} = argv
 
-  argv.upto = upto && upto.length === 1 && upto[0] === '-' ? [] : upto
+  if (upto && upto.length === 1 && upto[0] === 'x') {
+    argv.upto = undefined
+    delete argv.configUpto
+  }
 
   return argv
 }
