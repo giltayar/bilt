@@ -9,5 +9,4 @@
 
 1. More biltrc tests
 1. Write documentation in readme.
-1. parallel testing
 1. Build steps come from biltrc.

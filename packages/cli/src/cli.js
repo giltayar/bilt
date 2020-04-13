@@ -78,6 +78,12 @@ async function main(argv, {shouldExitOnError = false} = {}) {
             type: 'string',
             array: true,
           })
+          .option('no-upto', {
+            alias: 'n',
+            type: 'string',
+            boolean: true,
+            describe: 'disable upto, even if configured in .biltrc',
+          })
           .option('packages', {
             describe: 'the set of all packages to take into consideration',
             type: 'string',
@@ -142,7 +148,7 @@ function setupPackages(option, cwd) {
   const isGlob = (v) => v.startsWith('.') || v.startsWith('/')
   return async (argv) => {
     if (argv[option] && argv[option].length > 0) {
-      if (argv[option].length === 1 && argv[option][0] === 'x') return argv
+      if (argv[option].length === 1 && argv[option][0] === false) return argv
 
       const values = argv[option].filter(isGlob)
       if (values.length === 0) {
@@ -178,7 +184,7 @@ function setupPackages(option, cwd) {
 function supportDashUpto(argv) {
   const {upto} = argv
 
-  if (upto && upto.length === 1 && upto[0] === 'x') {
+  if (upto && upto.length === 1 && upto[0] === false) {
     argv.upto = undefined
     delete argv.configUpto
   }

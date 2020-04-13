@@ -146,7 +146,7 @@ describe('build-options (it)', function () {
     await writeFile(['packages/b', 'build-now'], 'yes!', {cwd})
     await writeFile(['packages/c', 'build-now'], 'yes!', {cwd})
 
-    await runBuild(path.join(cwd, 'packages/c'), 'second build', ['.'], ['x'])
+    await runBuild(path.join(cwd, 'packages/c'), 'second build', ['.'], undefined, ['--no-upto'])
     expect(await readFileAsString(['packages/a', 'build-count'], {cwd})).to.equal('0')
     expect(await readFileAsString(['packages/b', 'build-count'], {cwd})).to.equal('1\n')
     expect(await readFileAsString(['packages/c', 'build-count'], {cwd})).to.equal('2\n')
