@@ -1,7 +1,8 @@
 <!-- markdownlint-disable MD033 -->
 # bilt
 
-<style>
+<style
+  type="text/css">
   .bilt {
     color: orange
   }
@@ -290,7 +291,7 @@ from Lerna, then your monorepo is probably already ready for <span class="bilt">
 
 Then create a `.biltrc.json` file in the root of the monorepo, with the information below:
 
-```json
+```js
 {
   // list of packages. You can use globs, or you can even let bilt auto-discover your
   // packages by just using "*". Don't worry, it works incredibly fast.
