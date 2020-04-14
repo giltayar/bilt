@@ -21,6 +21,10 @@
 			"path": "packages/cli"
 		},
 		{
+			"name": "docs",
+			"path": "docs"
+		},
+		{
 			"name": "e2e-build",
 			"path": "packages/e2e-build"
 		},
