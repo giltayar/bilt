@@ -1,20 +1,13 @@
 <!-- markdownlint-disable MD033 -->
 # bilt
 
-<style
-  type="text/css">
-  .bilt {
-    color: orange
-  }
-</style>
-
 A build tool for NPM monorepos
 
 (if you want to skip the intro, you can go directly to [usage](#usage))
 
-## Why <span class="bilt">Bilt</span>
+## Why <span style="color:orange">Bilt</span>
 
-(if you want to skip the motivation for <span class="bilt">Bilt</span>
+(if you want to skip the motivation for <span style="color:orange">Bilt</span>
 and just want to understand how to use it, go to the [Usage](#usage)) section.
 
 Monorepos are a wonderful concept! They enable us to structure our code as a large set of
@@ -46,10 +39,10 @@ There are many problems with monolithic codebases:
 
 Monorepos solve the main problem that monolithic code bases have: tightly-coupled code.
 How they do that is simple: your git repo holds not one codebase, but many (a couple, tens,
-hundreds, even thousands!). Since <span class="bilt">Bilt</span> is used for NPM monorepos,
+hundreds, even thousands!). Since <span style="color:orange">Bilt</span> is used for NPM monorepos,
 each codebase in the monorepo is an NPM package.
 
-So a <span class="bilt">Bilt</span> monorepo is just one git repo with lots of
+So a <span style="color:orange">Bilt</span> monorepo is just one git repo with lots of
 independent NPM packages. That is all.
 
 How does that solve the above problems in monolithic codebases? They actually don't! It's up to
@@ -80,11 +73,11 @@ enjoy less friction in your development. Why?
   only for that package (and its dependents). No need to run all the tests in the monorepo.
 * Separating code into packages is very easy, and there is no hassle in managing all
   of them, except for one problem: building and publishing them.
-  This is why <span class="bilt">Bilt</span> exists.
+  This is why <span style="color:orange">Bilt</span> exists.
 
 Monorepos can also hold more than one project. Typically, today, monorepo git repositories
 are uni-project (see, for example, [babel](https://babeljs.io/))—they hold multiple packages
-of _one_ project only. But for <span class="bilt">Bilt</span>'s purpose, a monorepo can (and should)
+of _one_ project only. But for <span style="color:orange">Bilt</span>'s purpose, a monorepo can (and should)
 hold all the code of multiple projects of a company, thus allowing them to share some of the
 packages between them. This approach was made popular by companies such as Google and Facebook.
 
@@ -112,18 +105,18 @@ But even if you had that build order, then building _all_ the packages anytime j
 is built negates a lot of the usefulness of monorepos. We want to build _only_ that package,
 and all the packages that depend on it (recursively).
 
-### What is <span class="bilt">Bilt</span>
+### What is <span style="color:orange">Bilt</span>
 
-<span class="bilt">Bilt</span> is a CLI that you use to build, test, and publish the packages
+<span style="color:orange">Bilt</span> is a CLI that you use to build, test, and publish the packages
 in your monorepos, and knows how to do that in the correct dependency, guaranteeing that only
 those packages that were not built (and their dependents) get built, and get built in the correct
 order.
 
-You can run <span class="bilt">Bilt</span> locally on your computer, or run it in your CI.
+You can run <span style="color:orange">Bilt</span> locally on your computer, or run it in your CI.
 
 ### Alternative solutions
 
-Why does <span class="bilt">Bilt</span> exist? Aren't there any other solutions out there? It
+Why does <span style="color:orange">Bilt</span> exist? Aren't there any other solutions out there? It
 seems that there are, given that monorepos have gained in popularity in the last several years.
 
 > Note: I have tried these tools a bit, but not extensively, so I may be totally off on their
@@ -144,9 +137,9 @@ Lerna is great for a small set of packages that are deeply connected with one an
 all packages in the [babel](https://babeljs.io/) project), but only if you are OK with building
 and testing _all_ packages at once.
 
-<span class="bilt">Bilt</span> was built (aaah!) to treat each package as a totally independent
+<span style="color:orange">Bilt</span> was built (aaah!) to treat each package as a totally independent
 entity, while understanding the relationships between the packaedeges. This enables
-<span class="bilt">Bilt</span> to scale to hundreds of packages in repo, spanning
+<span style="color:orange">Bilt</span> to scale to hundreds of packages in repo, spanning
 multiple projects.
 
 #### Nx
@@ -165,7 +158,7 @@ While this sounds perfect, the cost of this is that Nx deeply understands your c
 needs to understand whether your codebase is Angular, React, Vue, Node, or whatever, as it has
 plugins for each and every one of them.
 
-<span class="bilt">Bilt</span> doesn't care what is in your package, as long as you defined
+<span style="color:orange">Bilt</span> doesn't care what is in your package, as long as you defined
 a build step for each and every one of them.
 
 #### Bazel
@@ -179,7 +172,7 @@ But configuring your project to use Bazel is a complicated thing. Seriously, I c
 heads or tails on how to do it. The reason for this is it's multi-language approach, and its
 extreme flexibility, which comes at the cost of configuration and understanding.
 
-<span class="bilt">Bilt</span> gives similar capabilities, but relies on NPM's `package.json` and
+<span style="color:orange">Bilt</span> gives similar capabilities, but relies on NPM's `package.json` and
 appraoch to publishing NPM packages, to give it the capabilities it has to handle repos
 of hundreds of packages.
 
@@ -191,9 +184,9 @@ of hundreds of packages.
 * Dependency graph
 * Top-level packages and bottom-level packages
 
-## <a name="bilt-style-monorepo"></a>How to build a monorepo, <span class="bilt">Bilt</span>-style
+## <a name="bilt-style-monorepo"></a>How to build a monorepo, <span style="color:orange">Bilt</span>-style
 
-A monorepo in <span class="bilt">Bilt</span> is structured in a simple manner:
+A monorepo in <span style="color:orange">Bilt</span> is structured in a simple manner:
 
 1. Have NPM packages in any folder structure you want. I've found that putting all
    packages in a `packages` folder, in a flat way, is a good way to structure it, but you can
@@ -215,7 +208,7 @@ the default build steps work pretty nicely for most projects:
 
 1. `npm install` to ensure all dependencies are installed
 1. `npm update` to update all the dependencies.
-    This is especially important in <span class="bilt">Bilt</span>, as it updates
+    This is especially important in <span style="color:orange">Bilt</span>, as it updates
     the dependencies of the other packages in the monorepo. Without `npm update`, you will
     be depending on an older version of your packages.
 1. _Increment_ version: the patch level version of the package will be updated to the next
@@ -269,15 +262,15 @@ well will be something like this:
 
 ## Usage
 
-This section outlines how to use <span class="bilt">Bilt</span> in a typical usage fashion.
-If you want more precise information on every <span class="bilt">Bilt</span> option, go to the
+This section outlines how to use <span style="color:orange">Bilt</span> in a typical usage fashion.
+If you want more precise information on every <span style="color:orange">Bilt</span> option, go to the
 [reference](#reference) section.
 
-## Installing <span class="bilt">Bilt</span> in your monorepo
+## Installing <span style="color:orange">Bilt</span> in your monorepo
 
-The simplest way to use <span class="bilt">Bilt</span> is this way:
+The simplest way to use <span style="color:orange">Bilt</span> is this way:
 
-First, install <span class="bilt">Bilt</span>:
+First, install <span style="color:orange">Bilt</span>:
 
 ```sh
 npm install --global @bilt/cli
@@ -287,7 +280,7 @@ This will install the `bilt` CLI.
 
 Now ensure the packages you have are independent,
 as outlined in the [above-section](#bilt-style-monorepo). If you are switching
-from Lerna, then your monorepo is probably already ready for <span class="bilt">Bilt</span>.
+from Lerna, then your monorepo is probably already ready for <span style="color:orange">Bilt</span>.
 
 Then create a `.biltrc.json` file in the root of the monorepo, with the information below:
 
@@ -310,13 +303,13 @@ You can run `bilt` in any folder of the monorepo, and it will look upwards for t
 to determine what the root of the monorepo is.
 
 If you have multiple projects in your monorepo, just have separate `.biltrc-<project>.json`
-and reference them in <span class="bilt">Bilt</span> using `bilt --config ,biltrc-<project>.json`.
+and reference them in <span style="color:orange">Bilt</span> using `bilt --config ,biltrc-<project>.json`.
 
 You're done!
 
 ## Running a build on your monorepo
 
-Your first project build will be slow, as <span class="bilt">Bilt</span> finds out that no build
+Your first project build will be slow, as <span style="color:orange">Bilt</span> finds out that no build
 has ever been done by it, and so will build _all_ the packages that are in the dependency
 graph that leads to the packages you defined in `upto`, which is usually _all_ the packages in
 the monorepo for your project.
@@ -336,7 +329,7 @@ packages and slowly working its way up to the top-level packages you defined in 
 `.biltrc.json`. It will ignore and not build any packages that don't lead to your `upto` packages,
 which means that in a multi-project monorepo it will only build pacakges that are in your project.
 
-> Note: currently, <span class="bilt">Bilt</span> builds each package serially. In the future,
+> Note: currently, <span style="color:orange">Bilt</span> builds each package serially. In the future,
 > It will be able to build the packages in parallel, using the dependency graph to determine
 > what _can_ be built in parallel.
 
@@ -349,7 +342,7 @@ For each package, after that package is built, `git add .` is executed on the pa
 to stage all the packages changed in that build (usually, `package.json` and `package-lock.json`,
 but it may also be files that you changed locally).
 
-After all the packages have been built, <span class="bilt">Bilt</span> commits all the staged
+After all the packages have been built, <span style="color:orange">Bilt</span> commits all the staged
 files (note that if you have any files in your monorepo that are in packages that were not built,
 they will _not_ be commited, which is a good thing), and `git push`-s them to the remote repository.
 
@@ -363,7 +356,7 @@ it understood that all the packages that need to be built were already built.
 Let's continue with another use case. You've changed two packages in your monorepo,
 `npm link`-ing them to see that both work together. What happens when you run `bilt -m ...` again?
 
-<span class="bilt">Bilt</span> will:
+<span style="color:orange">Bilt</span> will:
 
 1. Analyze the dependency graph
 1. Determine that the two packages were changed (see [this section](#packages-built-how)) to
@@ -406,7 +399,7 @@ that do _not_ depend on the failed package, but will not build the packages that
 on it.
 
 If you now fix the bug in the build that failed, only that package, and the packages it depends
-on will now be built, which gives the feeling that <span class="bilt">Bilt</span> "continues"
+on will now be built, which gives the feeling that <span style="color:orange">Bilt</span> "continues"
 the previous build.
 
 ## Reference
@@ -419,10 +412,10 @@ the previous build.
 
 ### <a name="configuring-build">Configuring the build
 
-## How <span class="bilt">Bilt</span> works
+## How <span style="color:orange">Bilt</span> works
 
-### How <span class="bilt">Bilt</span> determines the dependency graph
+### How <span style="color:orange">Bilt</span> determines the dependency graph
 
-### <a name="version-increment-how"></a>How <span class="bilt">Bilt</span> increments the package version
+### <a name="version-increment-how"></a>How <span style="color:orange">Bilt</span> increments the package version
 
-### <a name="packages-built-how"></a>How <span class="bilt">Bilt</span> knows which packages were already built
+### <a name="packages-built-how"></a>How <span style="color:orange">Bilt</span> knows which packages were already built
