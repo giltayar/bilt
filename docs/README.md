@@ -12,8 +12,9 @@ order.
 
 ## Why Bilt
 
-(if you want to skip the motivation for Bilt
-and just want to understand how to use it, go to the [Usage](./usage.md)) section.
+(if you want to go directly to the meat of Bilt, read
+[Structure of a Bilt monorepo](./docs/monorepo-structure.md) and then
+go to the [Usage](./docs/usage.md)) chapter)
 
 Monorepos are a wonderful concept! They enable us to structure our code as a large set of
 loosely-coupled packages, instead of one big monolithic codebase, which is usually very
