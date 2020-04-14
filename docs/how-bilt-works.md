@@ -1,4 +1,7 @@
+<!-- markdownlint-disable MD033 -->
 # How Bilt works
+
+In which we get a deeper understanding of how Bilt works to build a monorepo.
 
 ## How Bilt determines the dependency graph
 

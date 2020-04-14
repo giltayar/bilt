@@ -1,7 +1,7 @@
 # Bilt Alternatives
 
-Why does Bilt exist? Aren't there any other solutions out there? It
-seems that there are, given that monorepos have gained in popularity in the last several years.
+In which Bilt alternatives are named, and an exploration of why Bilt is different than the others
+is done.
 
 > Note: I have tried these tools a bit, but not extensively, so I may be totally off on their
 > capabilities. I'd love if somebody that used these tools can correct me.

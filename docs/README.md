@@ -22,7 +22,7 @@ tightly coupled.
 
 But the current build tools we have for monorepos are lacking. They are either very difficult
 to work with (Bazel), not powerful enough for big monorepos (Lerna), or can work only with
-specific codebases (Nx). See the [Alternatives](./docs/what-is-bilt.md#alternatives) section on why.
+specific codebases (Nx). See the [Alternatives](./docs/alternatives.md) chapter on why.
 
 Bilt is designed for small and large repos, and is very simple to use, assuming your
 monorepo is built as a series of NPM packages linked together by an NPM dependency graph.

@@ -1,5 +1,10 @@
 # Structure of a Bilt monorepo
 
+In which we understand how Bilt monorepos are structured, and how to structure each
+NPM package in it.
+
+## Bilt Monorepos are a set of NPM packages
+
 A monorepo in Bilt is structured in a simple manner:
 
 1. Have NPM packages in any folder structure you want. I've found that putting all
