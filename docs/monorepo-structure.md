@@ -25,7 +25,7 @@ A monorepo in Bilt is structured in a simple manner:
 
 Each package needs to be able to be built separately. While you can configure
 different build steps if you want
-(see [Configuring the build](./docs/reference.md#configuring-build)),
+(see [Configuring the build](./reference.md#configuring-build)),
 the default build steps work pretty nicely for most projects:
 
 1. `npm install` to ensure all dependencies are installed
