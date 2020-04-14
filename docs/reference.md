@@ -3,16 +3,16 @@
 
 In which each part of Bilt is broken down to its components and explained thoroughly.
 
-## `biltrc.json`
+## `.biltrc.json`
 
-A file that the `bilt` CLI looks for to:
+A configuration file that the `bilt` CLI looks for to:
 
 1. Determine where the root of the monorepo is (where the file resides)
 1. To determine what packages are in the project.
 1. To determine default values for the CLI command line arguments.
 
 If you do not specify a configuration file, the `bilt` CLI will look in the current
-directory and upwards for this configuration, using the usual standards for JS configuration
+directory and upwards for the configuration file, using the usual standards for JS configuration
 files (using the [`cosmiconfig`](https://github.com/davidtheclark/cosmiconfig)) package, which
 searchs for: `.biltrc`, `.biltrc.json`, `.biltrc.yaml`, `biltrc.config.js`
 (for the precise algorithm, see the documenation
