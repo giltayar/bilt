@@ -7,7 +7,6 @@
 
 ## Rewrite CLI
 
-1. Write documentation in readme.
 1. Build steps come from biltrc.
 1. Ensure (and test that)`--force` should build dependent packages
 1. Add `--assume-changed` that assumes a package was changed (but does not build it), so that
