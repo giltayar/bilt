@@ -8,6 +8,7 @@
 ## Rewrite CLI
 
 1. Build steps come from biltrc.
+1. In footer, write all the failed builds (in red)
 1. Ensure (and test that)`--force` should build dependent packages
 1. Add `--assume-changed` that assumes a package was changed (but does not build it), so that
    other pacakges that depend on it will be built. This is good for a scenario where you
