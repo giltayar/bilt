@@ -6,7 +6,7 @@
  * @returns {T[]|undefined}
  */
 function arrayify(possibleArray) {
-  if (possibleArray == null) return undefined
+  if (possibleArray == null) return []
   if (Array.isArray(possibleArray)) return possibleArray
   return [possibleArray]
 }

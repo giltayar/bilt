@@ -17,6 +17,10 @@
 			"path": "packages/build-testkit"
 		},
 		{
+			"name": "build-with-configuration",
+			"path": "packages/build-with-configuration"
+		},
+		{
 			"name": "cli",
 			"path": "packages/cli"
 		},

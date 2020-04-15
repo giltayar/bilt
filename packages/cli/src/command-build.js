@@ -5,28 +5,15 @@ const debug = require('debug')('bilt:cli:build')
 const {findNpmPackages, findNpmPackageInfos} = require('@bilt/npm-packages')
 const {calculateBuildOrder, build} = require('@bilt/build')
 const {calculatePackagesToBuild} = require('@bilt/packages-to-build')
+const {executeJob} = require('@bilt/build-with-configuration')
 const {
   findChangedFiles,
   findLatestPackageChanges,
   FAKE_COMMITISH_FOR_UNCOMMITED_FILES,
 } = require('@bilt/git-packages')
-const buildPackage = require('./package-build')
-const {sh, shWithOutput} = require('@bilt/scripting-commons')
+const makePackageBuild = require('./package-build')
+const {shWithOutput} = require('@bilt/scripting-commons')
 const o = require('./outputting')
-
-/**
- * @typedef {{
- * pull: boolean
- * push: boolean
- * commit: boolean
- * install: boolean
- * update: boolean
- * audit: boolean
- * build: boolean
- * test: boolean
- * publish: boolean
- * }} BuildOptions
- */
 
 /**@param {{
  * rootDirectory: import('@bilt/types').Directory
@@ -35,8 +22,8 @@ const o = require('./outputting')
  * upto: string[]
  * force: boolean
  * dryRun: boolean
- * message: string
- * } & BuildOptions} options
+ * buildConfiguration: object
+ * } & {[x: string]: string|boolean}} options
  */
 async function buildCommand({
   rootDirectory,
@@ -45,19 +32,10 @@ async function buildCommand({
   upto,
   force,
   dryRun,
-  message,
-  pull,
-  push,
-  commit,
-  install,
-  update,
-  audit,
-  build,
-  test,
-  publish,
+  buildConfiguration,
+  ...buildOptions
 }) {
   debug(`starting build of ${rootDirectory}`)
-  const buildOptions = {pull, push, commit, install, update, audit, build, test, publish}
 
   const {
     initialSetOfPackagesToBuild,
@@ -86,8 +64,14 @@ async function buildCommand({
   o.globalHeader(`building ${Object.keys(finalPackagesToBuild).join(', ')}`)
 
   if (!dryRun && buildOptions.pull) {
-    o.globalOperation(`pulling commits from remote`)
-    await sh('git pull --rebase --autostash', {cwd: rootDirectory})
+    for await (const stepInfo of executeJob(
+      buildConfiguration['build'],
+      'before',
+      rootDirectory,
+      buildOptions,
+    )) {
+      o.globalOperation(stepInfo.name)
+    }
   }
 
   const packagesBuildOrder = []
@@ -98,10 +82,8 @@ async function buildCommand({
           packagesBuildOrder.push(packageInfo.directory)
           return 'success'
         }
-      : buildPackage(rootDirectory, buildOptions),
-    rootDirectory,
+      : makePackageBuild(buildConfiguration, rootDirectory, buildOptions),
     dryRun,
-    buildOptions,
   )
 
   if (dryRun) {
@@ -110,18 +92,13 @@ async function buildCommand({
   }
 
   if (aPackageWasBuilt) {
-    if (buildOptions.commit) {
-      o.globalOperation('commiting packages')
-      await sh(`git commit --allow-empty -m '${message}\n\n\n[bilt-artifacts]\n'`, {
-        cwd: rootDirectory,
-      })
-    }
-
-    if (buildOptions.push) {
-      o.globalOperation('pulling again to push')
-      await sh('git pull --rebase --autostash', {cwd: rootDirectory})
-      o.globalOperation('pushing commits to remote')
-      await sh('git push', {cwd: rootDirectory})
+    for await (const stepInfo of executeJob(
+      buildConfiguration['build'],
+      'after',
+      rootDirectory,
+      buildOptions,
+    )) {
+      o.globalOperation(stepInfo.name)
     }
   } else if (Object.keys(finalPackagesToBuild).length === 0) {
     o.globalFooter('nothing to build')
@@ -162,9 +139,7 @@ async function determineBuildInformation(
 async function buildPackages(
   /**@type {import('@bilt/types').PackageInfos} */ packageInfosToBuild,
   /**@type {import('@bilt/build').BuildPackageFunction} */ buildPackageFunc,
-  /**@type {import('@bilt/types').Directory} */ rootDirectory,
   /**@type {boolean}*/ dryRun,
-  /**@type {BuildOptions} */ buildOptions,
 ) {
   const buildOrder = calculateBuildOrder({packageInfos: packageInfosToBuild})
 
@@ -180,7 +155,6 @@ async function buildPackages(
         buildPackageResult.buildResult
       }.${buildPackageResult.error ? 'Error: ' + buildPackageResult.error : ''}`,
     )
-    const packageDirectory = path.join(rootDirectory, buildPackageResult.package.directory)
     if (buildPackageResult.buildResult === 'failure') {
       o.packageErrorFooter(
         'build package failed',
@@ -194,10 +168,6 @@ async function buildPackages(
           'build package succeeded',
           packageInfosToBuild[buildPackageResult.package.directory],
         )
-        if (buildOptions.commit) {
-          debug('adding', packageDirectory, 'to git')
-          await sh(`git add .`, {cwd: packageDirectory})
-        }
       }
     }
   }

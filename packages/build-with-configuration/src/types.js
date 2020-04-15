@@ -23,17 +23,20 @@
 
 /**@typedef {{
  * name: string
- * run: string
- * condition?: string
- * env?: EnvVars
  * enableOption?: string|string[]
  * parameterOption?: string|string[]
+ * run: string
+ * condition?: BooleanValueOrFunctionText
+ * env?: EnvVars
  * }} Step
  */
 
 /**@typedef {{
- * [varName: string]: boolean|number|string
+ * [varName: string]: StringValueOrFunctionText
  * }} EnvVars
  */
+
+/**@typedef {string|{function: string}} StringValueOrFunctionText */
+/**@typedef {boolean|{function: string}} BooleanValueOrFunctionText */
 
 module.exports = 'this module contains only type definitions'

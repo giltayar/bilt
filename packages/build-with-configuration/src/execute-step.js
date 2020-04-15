@@ -1,6 +1,6 @@
 'use strict'
 const {compileFunction} = require('vm')
-const camelcase = require('camelcase')
+const {constantCase} = require('constant-case')
 const {sh} = require('@bilt/scripting-commons')
 const {arrayify} = require('./arrayify')
 
@@ -27,7 +27,7 @@ function stepInfo(step) {
 /**
  * @param {import('./types').Step} step
  * @param {string} cwd
- * @param {{[x: string]: boolean|string}}
+ * @param {{[x: string]: boolean|string}} buildOptions
  * @returns {Promise<void>}
  */
 async function executeStep(step, cwd, buildOptions) {
@@ -42,8 +42,9 @@ async function executeStep(step, cwd, buildOptions) {
 }
 
 /**
- * @param {string} condition
+ * @param {import('./types').BooleanValueOrFunctionText} condition
  * @param {string} cwd
+ * @returns {Promise<boolean>}
  */
 async function executeCondition(condition, cwd) {
   if (!condition) {
@@ -55,7 +56,7 @@ async function executeCondition(condition, cwd) {
 /**
  * @param {string} name
  * @param {string} command
- * @param {{ [s: string]: any; } | ArrayLike<any>} env
+ * @param {import('./types').EnvVars} env
  * @param {string} cwd
  * @param {any} buildOptions
  */
@@ -72,17 +73,23 @@ async function executeCommand(name, command, env, cwd, buildOptions) {
     }
   }
 
-  await sh(command, {env: envVars, cwd})
+  await sh(command, {env: {...process.env, ...envVars}, cwd})
 }
 
 /**
- * @param {string} functionAsText
+ * @param {any|{function: string}} functionAsText
  * @param {{ directory: string; }} optionsParameter
  */
 async function executeFunction(functionAsText, optionsParameter) {
-  return await compileFunction(`
-    return (${functionAsText})(options)
-  `)(optionsParameter)
+  if (typeof functionAsText === 'object')
+    return await compileFunction(
+      `
+    return (${functionAsText.function})(options)
+  `,
+      ['options'],
+    )(optionsParameter)
+
+  return functionAsText
 }
 
 /**
@@ -93,7 +100,7 @@ function envVarsFromBuildOptions(buildOptions) {
 
   for (const [option, value] of Object.entries(buildOptions)) {
     if (value !== false) {
-      ret[`BILT_OPTION_${camelcase(option).toUpperCase()}`] = value.toString()
+      ret[`BILT_OPTION_${constantCase(option)}`] = value.toString()
     }
   }
 
@@ -119,16 +126,35 @@ function validateStep(step, i, phaseName, jobId, configPath) {
     )
   }
 
-  if (step.condition != null && typeof step.condition !== 'string') {
+  if (
+    step.condition != null &&
+    typeof step.condition !== 'string' &&
+    (typeof step.condition !== 'object' || typeof step.condition.function !== 'string')
+  ) {
     throw new Error(
-      `"name" property of step #${i} in phase ${phaseName} of job ${jobId} must to be a string in ${configPath}`,
+      `"condition" property of step #${i} in phase ${phaseName} of job ${jobId} must to be a boolean or a function text in ${configPath}`,
     )
   }
 
-  if (step.env != null && typeof step.env !== 'string') {
+  if (step.env != null && typeof step.env !== 'object') {
     throw new Error(
       `"env" property of step #${i} in phase ${phaseName} of job ${jobId} must to be an object in ${configPath}`,
     )
+  }
+  for (const [envVar, value] of Object.entries(step.env || {})) {
+    if (typeof envVar !== 'string') {
+      throw new Error(
+        `"env" name ${envVar} of step #${i} in phase ${phaseName} of job ${jobId} must be a string in ${configPath}`,
+      )
+    }
+    if (
+      typeof value !== 'string' &&
+      (typeof value !== 'object' || typeof value.function !== 'string')
+    ) {
+      throw new Error(
+        `"env" value ${envVar} of step #${i} in phase ${phaseName} of job ${jobId} must be a string or a function text in ${configPath}`,
+      )
+    }
   }
 
   if (

@@ -5,6 +5,7 @@ const yargs = require('yargs')
 const debug = require('debug')('bilt:cli:cli')
 const {cosmiconfigSync} = require('cosmiconfig')
 const globby = require('globby')
+const YAML = require('yaml')
 
 const BUILD_OPTIONS = [
   'pull',
@@ -118,6 +119,9 @@ async function main(argv, {shouldExitOnError = false} = {}) {
     args.upto = args.configUpto
     delete args.configUpto
   }
+  args.buildConfiguration =
+    args.buildConfiguration ||
+    YAML.parse(await fs.promises.readFile(path.join(__dirname, 'default-build.yaml'), 'utf8'))
 
   debug('final options', {...args, config})
 
