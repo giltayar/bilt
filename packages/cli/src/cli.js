@@ -46,6 +46,17 @@ async function main(argv, {shouldExitOnError = false} = {}) {
       }
     })
     .alias('c', 'config')
+    .option('packages', {
+      describe: 'the set of all packages to take into consideration',
+      type: 'string',
+      array: true,
+      hidden: true,
+    })
+    .option('configUpto', {
+      type: 'string',
+      array: true,
+      hidden: true,
+    })
     .command(
       ['build [packagesToBuild..]', '* [packagesToBuild..]'],
       'build the packages',
@@ -85,17 +96,6 @@ async function main(argv, {shouldExitOnError = false} = {}) {
             boolean: true,
             describe: 'disable upto, even if configured in .biltrc',
           })
-          .option('packages', {
-            describe: 'the set of all packages to take into consideration',
-            type: 'string',
-            array: true,
-            hidden: true,
-          })
-          .option('configUpto', {
-            type: 'string',
-            array: true,
-            hidden: true,
-          })
 
         for (const specificBuildOption of BUILD_OPTIONS) {
           yargsAfterOptions = yargsAfterOptions.option(...buildOption(specificBuildOption))
@@ -110,6 +110,7 @@ async function main(argv, {shouldExitOnError = false} = {}) {
           .middleware(setupPackages('configUpto', 'configpath'))
       },
     )
+    .command('next-version packageDir', 'find next version of package')
     .exitProcess(shouldExitOnError)
     .strict()
     .help()
@@ -121,7 +122,10 @@ async function main(argv, {shouldExitOnError = false} = {}) {
   }
   args.buildConfiguration =
     args.buildConfiguration ||
-    YAML.parse(await fs.promises.readFile(path.join(__dirname, 'default-build.yaml'), 'utf8'))
+    YAML.parse(await fs.promises.readFile(path.join(__dirname, 'default-build.yaml'), 'utf8'), {
+      //@ts-ignore
+      prettyErrors: true,
+    })
 
   debug('final options', {...args, config})
 

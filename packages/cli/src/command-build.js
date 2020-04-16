@@ -11,9 +11,9 @@ const {
   findLatestPackageChanges,
   FAKE_COMMITISH_FOR_UNCOMMITED_FILES,
 } = require('@bilt/git-packages')
-const makePackageBuild = require('./package-build')
 const {shWithOutput} = require('@bilt/scripting-commons')
 const o = require('./outputting')
+const npmBiltin = require('./npm-biltin')
 
 /**@param {{
  * rootDirectory: import('@bilt/types').Directory
@@ -33,9 +33,14 @@ async function buildCommand({
   force,
   dryRun,
   buildConfiguration,
-  ...buildOptions
+  ...userBuildOptions
 }) {
   debug(`starting build of ${rootDirectory}`)
+  /**@type {typeof userBuildOptions} */
+  const buildOptions = {
+    ...userBuildOptions,
+    message: userBuildOptions.message + '\n\n\n[bilt-artifacts]',
+  }
 
   const {
     initialSetOfPackagesToBuild,
@@ -65,10 +70,11 @@ async function buildCommand({
 
   if (!dryRun && buildOptions.pull) {
     for await (const stepInfo of executeJob(
-      buildConfiguration['build'],
+      buildConfiguration.jobs['build'],
       'before',
       rootDirectory,
       buildOptions,
+      {directory: rootDirectory, biltin: {...npmBiltin}},
     )) {
       o.globalOperation(stepInfo.name)
     }
@@ -93,10 +99,11 @@ async function buildCommand({
 
   if (aPackageWasBuilt) {
     for await (const stepInfo of executeJob(
-      buildConfiguration['build'],
+      buildConfiguration.jobs['build'],
       'after',
       rootDirectory,
       buildOptions,
+      {directory: rootDirectory, biltin: {...npmBiltin}},
     )) {
       o.globalOperation(stepInfo.name)
     }
@@ -330,6 +337,30 @@ async function convertDirectoriesToPackages(rootDirectory, ...directoryPackages)
       d,
     )),
   }))
+}
+
+/**@return {import('@bilt/build').BuildPackageFunction} */
+function makePackageBuild(
+  /**@type {import('@bilt/build-with-configuration/src/types').BuildConfiguration} */ buildConfiguration,
+  /**@type {import('@bilt/types').Directory}*/ rootDirectory,
+  /**@type {{[x: string]: string|boolean}} */ buildOptions,
+) {
+  /**@type import('@bilt/build').BuildPackageFunction */
+  return async function ({packageInfo}) {
+    const packageDirectory = path.join(rootDirectory, packageInfo.directory)
+
+    for await (const stepInfo of executeJob(
+      buildConfiguration.jobs['build'],
+      'during',
+      packageDirectory,
+      buildOptions,
+      {directory: packageDirectory, biltin: {...npmBiltin}},
+    )) {
+      o.packageOperation(stepInfo.name, packageInfo)
+    }
+
+    return 'success'
+  }
 }
 
 module.exports = buildCommand

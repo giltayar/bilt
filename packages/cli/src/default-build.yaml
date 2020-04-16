@@ -1,0 +1,82 @@
+jobs:
+  build:
+    steps:
+      before:
+        - name: 'git pull'
+          enableOption: ['pull', 'git']
+          run: 'git pull --rebase --autostash'
+
+      after:
+        - name: 'git commit'
+          enableOption: ['commit', 'git']
+          parameterOption: 'message'
+          run: 'git commit --allow-empty -m "$BILT_OPTION_MESSAGE"'
+        - name: 'git pull (again)'
+          enableOption: ['pull', 'git']
+          run: 'git pull --rebase --autostash'
+        - name: 'git push'
+          enableOption: ['push', 'git']
+          run: 'git push'
+
+      during:
+        - name: 'npm install'
+          enableOption: 'install'
+          run: 'npm install'
+        - name: 'npm update'
+          enableOption: 'update'
+          run: 'npm update'
+        - name: 'npm audit fix'
+          enableOption: 'audit'
+          run: 'npm audit fix'
+        - name: 'increment version'
+          enableOption: 'publish'
+          run: "npm version $NEXT_VERSION --allow-same-version --no-git-tag-version"
+          env:
+            NEXT_VERSION:
+              function: |
+                async ({directory, biltin}) => {
+                  return await biltin.npm.nextVersion(directory)
+                }
+        - name: 'npm run build'
+          enableOption: 'build'
+          run: 'npm run build'
+          condition:
+            function: |
+              async ({directory}) => {
+                const packageJson = JSON.parse(await require('fs').promises.readFile(directory + "/package.json"))
+
+                return (packageJson.scripts || {}).build
+              }
+        - name: 'test'
+          run: 'npm run test'
+          enableOption: 'test'
+          condition:
+            function: |
+              async ({directory}) => {
+                const packageJson = JSON.parse(await require('fs').promises.readFile(directory + "/package.json"))
+
+                return (packageJson.scripts || {}).test
+              }
+        - name: 'npm publish'
+          enableOption: 'publish'
+          run: 'npm publish --access=$ACCESS'
+          condition:
+            function: |
+              async ({directory}) => {
+                const packageJson = JSON.parse(await require('fs').promises.readFile(directory + "/package.json"))
+
+                return !packageJson.private
+              }
+          env:
+            ACCESS:
+              function: |
+                async ({directory}) => {
+                  const packageJson = JSON.parse(await require('fs').promises.readFile(directory + "/package.json"))
+
+                  const isPublic = (packageJson.publishConfig || {}).access !== 'restricted'
+
+                  return isPublic ? 'public' : 'restricted'
+                }
+        - name: 'stage files'
+          enableOption: ['git']
+          run: 'git add .'
