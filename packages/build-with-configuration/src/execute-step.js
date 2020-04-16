@@ -1,5 +1,5 @@
 'use strict'
-const {compileFunction} = require('vm')
+const vm = require('vm')
 const {constantCase} = require('constant-case')
 const {sh} = require('@bilt/scripting-commons')
 const {arrayify} = require('./arrayify')
@@ -28,29 +28,30 @@ function stepInfo(step) {
  * @param {import('./types').Step} step
  * @param {string} cwd
  * @param {{[x: string]: boolean|string}} buildOptions
+ * @param {{[x: string]: any}} javascriptOptionsParameter
  * @returns {Promise<void>}
  */
-async function executeStep(step, cwd, buildOptions) {
+async function executeStep(step, cwd, buildOptions, javascriptOptionsParameter) {
   const name = step.name
   const runCommand = step.run
   const runCondition = step.condition
   const runEnv = step.env
 
-  if (await executeCondition(runCondition, cwd)) {
-    await executeCommand(name, runCommand, runEnv, cwd, buildOptions)
+  if (await executeCondition(runCondition, javascriptOptionsParameter)) {
+    await executeCommand(name, runCommand, runEnv, cwd, buildOptions, javascriptOptionsParameter)
   }
 }
 
 /**
  * @param {import('./types').BooleanValueOrFunctionText} condition
- * @param {string} cwd
+ * @param {{[x: string]: any}} javascriptOptionsParameter
  * @returns {Promise<boolean>}
  */
-async function executeCondition(condition, cwd) {
+async function executeCondition(condition, javascriptOptionsParameter) {
   if (!condition) {
     return true
   }
-  return await executeFunction(condition, {directory: cwd})
+  return await executeFunction(condition, javascriptOptionsParameter)
 }
 
 /**
@@ -58,9 +59,10 @@ async function executeCondition(condition, cwd) {
  * @param {string} command
  * @param {import('./types').EnvVars} env
  * @param {string} cwd
+ * @param {{[x: string]: any}} javascriptOptionsParameter
  * @param {any} buildOptions
  */
-async function executeCommand(name, command, env, cwd, buildOptions) {
+async function executeCommand(name, command, env, cwd, buildOptions, javascriptOptionsParameter) {
   if (!command) throw new Error(`Step ${name} must have a command`)
 
   const envVars = envVarsFromBuildOptions(buildOptions)
@@ -69,25 +71,28 @@ async function executeCommand(name, command, env, cwd, buildOptions) {
       throw new Error(`Step ${name} has an "env", but it is not an object`)
 
     for (const [envVar, value] of Object.entries(env)) {
-      envVars[envVar] = await executeFunction(value, {directory: cwd})
+      envVars[envVar] = await executeFunction(value, javascriptOptionsParameter)
     }
   }
 
   await sh(command, {env: {...process.env, ...envVars}, cwd})
 }
 
+const contextWithRequire = vm.createContext({require})
+
 /**
  * @param {any|{function: string}} functionAsText
- * @param {{ directory: string; }} optionsParameter
+ * @param {{[x: string]: any}} javascriptOptionsParameter
  */
-async function executeFunction(functionAsText, optionsParameter) {
+async function executeFunction(functionAsText, javascriptOptionsParameter) {
   if (typeof functionAsText === 'object')
-    return await compileFunction(
+    return await vm.compileFunction(
       `
     return (${functionAsText.function})(options)
   `,
       ['options'],
-    )(optionsParameter)
+      {parsingContext: contextWithRequire},
+    )(javascriptOptionsParameter)
 
   return functionAsText
 }

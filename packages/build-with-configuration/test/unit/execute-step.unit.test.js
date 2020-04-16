@@ -19,7 +19,7 @@ describe('execute-step (unit)', function () {
       const step = {name: 'step1', run: 'run1'}
 
       es.validateStep(step)
-      await es.executeStep(step, 'currdir1', {})
+      await es.executeStep(step, 'currdir1', {}, {})
 
       td.verify(sh('run1', {cwd: 'currdir1', env: {...process.env}}), {times: 1})
     })
@@ -29,11 +29,11 @@ describe('execute-step (unit)', function () {
       const step = {
         name: 'step1',
         run: 'run1',
-        condition: {function: 'async ({directory}) => directory === "currdir1"'},
+        condition: {function: 'async ({directory}) => directory === "lalala"'},
       }
 
       es.validateStep(step)
-      await es.executeStep(step, 'currdir1', {})
+      await es.executeStep(step, 'currdir1', {}, {directory: 'lalala'})
       td.verify(sh('run1', {cwd: 'currdir1', env: {...process.env}}), {times: 1})
     })
 
@@ -42,18 +42,18 @@ describe('execute-step (unit)', function () {
       const step = {
         name: 'step1',
         run: 'run1',
-        condition: {function: 'async ({directory}) => directory === "currdir1"'},
+        condition: {function: 'async ({directory}) => directory === "wrong-dir!"'},
       }
 
       es.validateStep(step)
-      await es.executeStep(step, 'currdir2', {})
+      await es.executeStep(step, 'currdir2', {}, {directory: 'lalala'})
       td.verify(sh(), {times: 0, ignoreExtraArgs: true})
     })
 
     it('should execute a step with the appropriate env vars', async () => {
       const env = {
         'an-env-var': '123',
-        anotherOne: {function: 'function({directory}) {return directory}'},
+        anotherOne: {function: 'function({directory}) {return directory()}'},
       }
       /**@type {import('../../src/types').Step} */
       const step = {
@@ -63,12 +63,12 @@ describe('execute-step (unit)', function () {
       }
 
       es.validateStep(step)
-      await es.executeStep(step, 'currdir1', {})
+      await es.executeStep(step, 'currdir1', {}, {directory: () => 'yes!'})
 
       td.verify(
         sh('run1', {
           cwd: 'currdir1',
-          env: {...process.env, 'an-env-var': '123', anotherOne: 'currdir1'},
+          env: {...process.env, 'an-env-var': '123', anotherOne: 'yes!'},
         }),
         {times: 1},
       )
@@ -89,7 +89,7 @@ describe('execute-step (unit)', function () {
       }
 
       es.validateStep(step)
-      await es.executeStep(step, 'currdir1', buildOptions)
+      await es.executeStep(step, 'currdir1', buildOptions, {})
 
       td.verify(
         sh('run1', {

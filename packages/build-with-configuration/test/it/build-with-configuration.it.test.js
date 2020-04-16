@@ -38,10 +38,16 @@ describe('build-with-configuration (it)', function () {
 
     await writeFile('buildname2', '', {cwd})
 
-    for await (const _ of bwc.executeJob(buildConfiguration.jobs.build, 'during', cwd, {
-      message: 'yay',
-      name1opt: true,
-    })) {
+    for await (const _ of bwc.executeJob(
+      buildConfiguration.jobs.build,
+      'during',
+      cwd,
+      {
+        message: 'yay',
+        name1opt: true,
+      },
+      {},
+    )) {
     }
 
     expect(await readFileAsString('buildname1', {cwd})).to.equal('')

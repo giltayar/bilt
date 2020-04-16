@@ -12,7 +12,12 @@ describe('build-with-configuration (unit)', function () {
           during: [
             {name: 'name1', run: 'run1', enableOption: ['name1opt']},
             {name: 'name15', run: 'run', enableOption: ['name15opt', 'git']},
-            {name: 'name2', run: 'run2', env: {a: 'b'}, parameterOption: ['message']},
+            {
+              name: 'name2',
+              run: 'run2',
+              env: {a: 'b', c: {function: '({foo}) => (require("util"),foo + " found")'}},
+              parameterOption: ['message'],
+            },
           ],
         },
       },
@@ -34,11 +39,17 @@ describe('build-with-configuration (unit)', function () {
       bwc.validateBuildConfiguration(buildConfiguration, '/')
 
       let i = 0
-      for await (const stepInfo of bwc.executeJob(buildConfiguration.jobs.build, 'during', 'dir1', {
-        name1opt: true,
-        name15opt: false,
-        message: 'message1',
-      })) {
+      for await (const stepInfo of bwc.executeJob(
+        buildConfiguration.jobs.build,
+        'during',
+        'dir1',
+        {
+          name1opt: true,
+          name15opt: false,
+          message: 'message1',
+        },
+        {foo: 'foobar'},
+      )) {
         if (i++ === 0) {
           expect(stepInfo).to.eql({
             name: 'name1',
@@ -59,7 +70,9 @@ describe('build-with-configuration (unit)', function () {
         }),
         {times: 1},
       )
-      td.verify(sh('run2', {cwd: 'dir1', env: td.matchers.contains({a: 'b'})}), {times: 1})
+      td.verify(sh('run2', {cwd: 'dir1', env: td.matchers.contains({a: 'b', c: 'foobar found'})}), {
+        times: 1,
+      })
     })
   })
 

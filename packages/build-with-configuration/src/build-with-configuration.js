@@ -6,10 +6,22 @@ const {executeStep, stepInfo, validateStep} = require('./execute-step')
  * @param {'before'|'during'|'after'} phase
  * @param {string} directoryToExecuteIn
  * @param {{[x: string]: boolean|string}} buildOptions
+ * @param {{[x: string]: any}} javascriptOptionsParameter
  * @returns {AsyncGenerator<import('./execute-step').StepInfo, void, void>}
  */
-async function* executeJob(jobConfiguration, phase, directoryToExecuteIn, buildOptions) {
-  yield* executePhase(jobConfiguration.steps[phase], directoryToExecuteIn, buildOptions)
+async function* executeJob(
+  jobConfiguration,
+  phase,
+  directoryToExecuteIn,
+  buildOptions,
+  javascriptOptionsParameter,
+) {
+  yield* executePhase(
+    jobConfiguration.steps[phase],
+    directoryToExecuteIn,
+    buildOptions,
+    javascriptOptionsParameter,
+  )
 }
 
 /**
@@ -41,13 +53,19 @@ function jobInfo(buildConfiguration, jobId) {
  * @param {import('./types').Steps} steps
  * @param {string} directoryToExecuteIn
  * @param {{[x: string]: boolean|string}} buildOptions
+ * @param {{[x: string]: any}} javascriptOptionsParameter
  * @returns {AsyncGenerator<import('./execute-step').StepInfo>}
  */
-async function* executePhase(steps, directoryToExecuteIn, buildOptions) {
+async function* executePhase(
+  steps,
+  directoryToExecuteIn,
+  buildOptions,
+  javascriptOptionsParameter,
+) {
   for (const step of steps) {
     if (isStepEnabled(stepInfo(step).enableOptions, buildOptions)) {
       yield stepInfo(step)
-      await executeStep(step, directoryToExecuteIn, buildOptions)
+      await executeStep(step, directoryToExecuteIn, buildOptions, javascriptOptionsParameter)
     }
   }
 }
