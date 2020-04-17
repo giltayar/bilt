@@ -10,7 +10,12 @@ const {
   sh,
   shWithOutput,
 } = require('@bilt/scripting-commons')
-const {prepareGitAndNpm, runBuild, createAdepsBdepsCPackages} = require('../commons/setup-and-run')
+const {
+  prepareGitAndNpm,
+  runBuild,
+  createAdepsBdepsCPackages,
+  packageScriptCount,
+} = require('../commons/setup-and-run')
 
 describe('build-options (it)', function () {
   it('should disable all git stuff when --no-git, and test all build options', async () => {
@@ -157,16 +162,6 @@ describe('build-options (it)', function () {
     expect(await readFileAsString(['packages/c', 'build-count'], {cwd})).to.equal('2\n')
   })
 })
-
-/**
- * @param {string} cwd
- * @param {string} pkg
- * @param {string} scriptName
- * @returns {Promise<number>}
- */
-async function packageScriptCount(cwd, pkg, scriptName) {
-  return parseInt(await readFileAsString([pkg, `${scriptName}-count`], {cwd}), 10)
-}
 
 /**
  * @param {string} cwd

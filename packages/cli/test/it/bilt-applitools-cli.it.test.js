@@ -16,6 +16,7 @@ const {
   runBuild,
   createAdepsBdepsCPackages,
   createPackages,
+  packageScriptCount,
 } = require('../commons/setup-and-run')
 
 describe('applitools build (it)', function () {
@@ -166,6 +167,29 @@ describe('applitools build (it)', function () {
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('2\n')
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
+  })
+
+  it('--force should work and also build dependencies', async () => {
+    const {registry, cwd} = await prepareGitAndNpm()
+    await createAdepsBdepsCPackages(cwd, registry)
+
+    await runBuild(cwd, 'build all', ['./a', './b', './c'])
+
+    expect(await packageScriptCount(cwd, 'a', 'build')).to.equal(1)
+    expect(await packageScriptCount(cwd, 'b', 'build')).to.equal(1)
+    expect(await packageScriptCount(cwd, 'c', 'build')).to.equal(1)
+
+    await runBuild(cwd, 'build nothing because nothing changed', ['./b'], ['./a'])
+
+    expect(await packageScriptCount(cwd, 'a', 'build')).to.equal(1)
+    expect(await packageScriptCount(cwd, 'b', 'build')).to.equal(1)
+    expect(await packageScriptCount(cwd, 'c', 'build')).to.equal(1)
+
+    await runBuild(cwd, 'build b and a because force', ['./b'], ['./a'], ['--force'])
+
+    expect(await packageScriptCount(cwd, 'a', 'build')).to.equal(2)
+    expect(await packageScriptCount(cwd, 'b', 'build')).to.equal(2)
+    expect(await packageScriptCount(cwd, 'c', 'build')).to.equal(1)
   })
 
   it('should ignore packages not in "packages" and add upto packages to packages to build', async () => {

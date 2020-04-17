@@ -58,13 +58,11 @@ async function buildCommand({
     basePackagesToBuild.map((pkg) => pkg.directory),
   )
 
-  const finalPackagesToBuild = force
-    ? filterPackageInfos(packageInfos, initialSetOfPackagesToBuild)
-    : calculatePackagesToBuild({
-        packageInfos,
-        basePackagesToBuild,
-        buildUpTo: force ? undefined : uptoPackages,
-      })
+  const finalPackagesToBuild = calculatePackagesToBuild({
+    packageInfos,
+    basePackagesToBuild,
+    buildUpTo: uptoPackages,
+  })
 
   if (Object.keys(finalPackagesToBuild).length === 0) {
     o.globalFooter('nothing to build')
@@ -142,10 +140,9 @@ async function determineBuildInformation(
     changedFilesInGit,
     packages: initialSetOfPackagesToBuild,
   })
-  const changedPackages = await filterOutPackagesThatWereAlreadyBuilt(
-    tentativeChangedPackages,
-    rootDirectory,
-  )
+  const changedPackages = force
+    ? tentativeChangedPackages
+    : await filterOutPackagesThatWereAlreadyBuilt(tentativeChangedPackages, rootDirectory)
 
   return {
     packageInfos,
@@ -220,21 +217,6 @@ async function filterOutPackagesThatWereAlreadyBuilt(changedPackages, rootDirect
       }),
     )
   ).filter((x) => !x.isBuild)
-}
-
-/**
- *
- * @param {import('@bilt/types').PackageInfos} packageInfos
- * @param {import('@bilt/types').Package[]} initialSetOfPackagesToBuild
- * @returns {import('@bilt/types').PackageInfos}
- */
-function filterPackageInfos(packageInfos, initialSetOfPackagesToBuild) {
-  //@ts-ignore
-  return Object.fromEntries(
-    Object.entries(packageInfos).filter(([directory]) =>
-      initialSetOfPackagesToBuild.some(({directory: d2}) => d2 === directory),
-    ),
-  )
 }
 
 /**

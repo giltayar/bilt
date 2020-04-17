@@ -3,7 +3,7 @@ const path = require('path')
 const {execFile} = require('child_process')
 const {init} = require('@bilt/git-testkit')
 const {startNpmRegistry} = require('@bilt/npm-testkit')
-const {makeTemporaryDirectory, writeFile, sh} = require('@bilt/scripting-commons')
+const {makeTemporaryDirectory, readFileAsString, writeFile, sh} = require('@bilt/scripting-commons')
 const cli = require('../../src/cli')
 
 async function createAdepsBdepsCPackages(cwd, registry, base = '.') {
@@ -116,10 +116,21 @@ async function runBuildCli(cwd, message, packages = undefined, uptos = undefined
   return stdout
 }
 
+/**
+ * @param {string} cwd
+ * @param {string} pkg
+ * @param {string} scriptName
+ * @returns {Promise<number>}
+ */
+async function packageScriptCount(cwd, pkg, scriptName) {
+  return parseInt(await readFileAsString([pkg, `${scriptName}-count`], {cwd}), 10)
+}
+
 module.exports = {
   prepareGitAndNpm,
   createAdepsBdepsCPackages,
   runBuild,
   runBuildCli,
   createPackages,
+  packageScriptCount,
 }

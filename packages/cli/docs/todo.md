@@ -1,6 +1,5 @@
 # TODO
 
-1. Ensure (and test that) `--force` also builds dependent packages
 1. Build steps come from biltrc.
 1. Options come from build steps
 1. Enable defining which job to run
