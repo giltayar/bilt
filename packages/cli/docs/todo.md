@@ -1,8 +1,8 @@
 # TODO
 
-1. Build steps come from biltrc.
-1. Options come from build steps
-1. Enable defining which job to run
+1. Test build steps come from biltrc.
+1. Test options come from build steps
+1. Test running different jobs
 1. `--no-envelope`, `--no-before`, `--no-after`
 1. Define and implement semantics of the likes of `--no-git` (and `--no-envelope`)
 1. Deal with the scenarion where you `bilt . --no-upto`

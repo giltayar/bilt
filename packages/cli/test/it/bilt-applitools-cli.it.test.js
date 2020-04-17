@@ -19,7 +19,7 @@ const {
   packageScriptCount,
 } = require('../commons/setup-and-run')
 
-describe('applitools build (it)', function () {
+describe('cli (it)', function () {
   it(`should build two packages, first time, no dependencies,
       then build one if it changed,
       then not build because nothing changed`, async () => {

@@ -16,13 +16,14 @@ const o = require('./outputting')
 const npmBiltin = require('./npm-biltin')
 
 /**@param {{
+ * jobId: string,
  * rootDirectory: import('@bilt/types').Directory
  * packagesToBuild: string[]
  * packages: string[]
  * upto: string[]
  * force: boolean
  * dryRun: boolean
- * buildConfiguration: object
+ * jobConfiguration: import('@bilt/build-with-configuration/src/types').Job
  * } & {[x: string]: string|boolean}} options
  */
 async function buildCommand({
@@ -32,7 +33,7 @@ async function buildCommand({
   upto,
   force,
   dryRun,
-  buildConfiguration,
+  jobConfiguration,
   ...userBuildOptions
 }) {
   debug(`starting build of ${rootDirectory}`)
@@ -72,7 +73,7 @@ async function buildCommand({
   if (!dryRun && buildOptions.pull) {
     o.globalHeader(`building ${Object.keys(finalPackagesToBuild).join(', ')}`)
     for await (const stepInfo of executeJob(
-      buildConfiguration.jobs['build'],
+      jobConfiguration,
       'before',
       rootDirectory,
       buildOptions,
@@ -90,7 +91,7 @@ async function buildCommand({
           packagesBuildOrder.push(packageInfo.directory)
           return 'success'
         }
-      : makePackageBuild(buildConfiguration, rootDirectory, buildOptions),
+      : makePackageBuild(jobConfiguration, rootDirectory, buildOptions),
     dryRun,
   )
 
@@ -102,7 +103,7 @@ async function buildCommand({
   try {
     if (succesful.length > 0) {
       for await (const stepInfo of executeJob(
-        buildConfiguration.jobs['build'],
+        jobConfiguration,
         'after',
         rootDirectory,
         buildOptions,
@@ -338,7 +339,7 @@ async function convertDirectoriesToPackages(rootDirectory, ...directoryPackages)
 
 /**@return {import('@bilt/build').BuildPackageFunction} */
 function makePackageBuild(
-  /**@type {import('@bilt/build-with-configuration/src/types').BuildConfiguration} */ buildConfiguration,
+  /**@type {import('@bilt/build-with-configuration/src/types').Job} */ jobConfiguration,
   /**@type {import('@bilt/types').Directory}*/ rootDirectory,
   /**@type {{[x: string]: string|boolean}} */ buildOptions,
 ) {
@@ -349,7 +350,7 @@ function makePackageBuild(
     o.packageHeader('building', packageInfo)
 
     for await (const stepInfo of executeJob(
-      buildConfiguration.jobs['build'],
+      jobConfiguration,
       'during',
       packageDirectory,
       buildOptions,

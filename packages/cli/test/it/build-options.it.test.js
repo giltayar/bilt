@@ -18,7 +18,7 @@ const {
 } = require('../commons/setup-and-run')
 
 describe('build-options (it)', function () {
-  it('should disable all git stuff when --no-git, and test all build options', async () => {
+  it.skip('should disable all git stuff when --no-git, and test all build options', async () => {
     const {registry, cwd, pushTarget} = await prepareGitAndNpm()
 
     const beforeBuildHistory = Object.entries(await commitHistory(cwd))
@@ -72,7 +72,11 @@ describe('build-options (it)', function () {
     await sh('npm publish', {cwd: path.join(cwd, 'a')})
     expect(await packageScriptCount(cwd, 'a', 'publish')).to.equal(1)
 
-    await writeFile('.biltrc.json', {build: false, publish: false, git: false}, {cwd})
+    await writeFile(
+      '.biltrc.json',
+      {build: false, publish: false, push: false, pull: false, git: false, commit: false},
+      {cwd},
+    )
 
     await runBuild(cwd, 'a build with biltrc defaults', ['./a'], undefined)
 

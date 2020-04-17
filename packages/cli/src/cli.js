@@ -3,153 +3,129 @@ const path = require('path')
 const fs = require('fs')
 const yargs = require('yargs')
 const debug = require('debug')('bilt:cli:cli')
-const {cosmiconfigSync} = require('cosmiconfig')
 const globby = require('globby')
-const YAML = require('yaml')
+const {jobInfo} = require('@bilt/build-with-configuration')
+const findConfig = require('./find-config')
+const findBuildConfiguration = require('./find-build-configuration')
 
-const BUILD_OPTIONS = [
-  'pull',
-  'push',
-  'commit',
-  'install',
-  'update',
-  'audit',
-  'build',
-  'test',
-  'publish',
-]
+async function main(argv) {
+  const {config, rootDirectory} = await findConfig(argv)
 
-async function main(argv, {shouldExitOnError = false} = {}) {
-  const explorer = cosmiconfigSync('bilt')
+  setupPackages('upto', 'cwd', rootDirectory)(config)
 
-  const commandLineOptions = yargs(argv)
-    .config('config', function (configpath) {
-      if (configpath.includes('<no-biltrc-found>')) {
-        throw new Error('no ".biltrc" found')
-      }
+  const buildConfigurationChain = await findBuildConfiguration(config, rootDirectory)
 
-      const {config} = explorer.load(configpath)
+  const yargsOptions = generateYargsCommandsAndOptions(
+    argv,
+    config,
+    buildConfigurationChain,
+    rootDirectory,
+  )
 
-      if (!config.configUpto && config.upto) {
-        config.configUpto = config.upto
-      }
-      delete config.upto
+  const {
+    _: [jobId = 'build'],
+    ...args
+  } = await yargsOptions.parse()
+  debug('final options', {rootDirectory, config, jobId, args})
 
-      return config
+  // @ts-ignore
+  await require(`./command-build`)({
+    jobId: /**@type{string}*/ (jobId),
+    rootDirectory: /**@type{import('@bilt/types').Directory}*/ (rootDirectory),
+    jobConfiguration: findJobConfigurationInChain(buildConfigurationChain, jobId),
+    ...args,
+  })
+}
+
+/**
+ * @param {string[]} argv
+ * @param {any} config
+ * @param {any[]} buildConfigurationChain
+ * @param {string} rootDirectory
+ * @returns {import('yargs').Argv}
+ */
+function generateYargsCommandsAndOptions(argv, config, buildConfigurationChain, rootDirectory) {
+  let y = yargs(argv)
+    .config(config)
+    .option('config', {
+      alias: 'c',
+      describe: 'the bilt configuration file',
+      type: 'string',
     })
-    .default('config', function () {
-      const config = explorer.search()
-      if (config) {
-        return config.filepath
-      } else {
-        return '<no-biltrc-found>'
-      }
-    })
-    .alias('c', 'config')
     .option('packages', {
       describe: 'the set of all packages to take into consideration',
       type: 'string',
       array: true,
       hidden: true,
     })
-    .option('configUpto', {
-      type: 'string',
-      array: true,
-      hidden: true,
-    })
-    .command(
-      ['build [packagesToBuild..]', '* [packagesToBuild..]'],
-      'build the packages',
-      (yargs) => {
-        let yargsAfterOptions = yargs
-          .positional('packagesToBuild', {
-            describe:
-              'list of packages to build. Use "*" or leave empty to autofind packages in cwd',
-            type: 'string',
-            array: true,
-          })
-          .option('dry-run', {
-            describe: 'just show what packages will be built and in what order',
-            type: 'boolean',
-            default: false,
-          })
-          .option('force', {
-            alias: 'f',
-            describe: 'force build of packages',
-            type: 'boolean',
-            default: false,
-          })
-          .option('message', {
-            alias: 'm',
-            describe: 'commit message for the build',
-            type: 'string',
-          })
-          .option('upto', {
-            alias: 'u',
-            describe: 'packages to build up to. Use "-" for no upto-s',
-            type: 'string',
-            array: true,
-          })
-          .option('no-upto', {
-            alias: 'n',
-            type: 'string',
-            boolean: true,
-            describe: 'disable upto, even if configured in .biltrc',
-          })
 
-        for (const specificBuildOption of BUILD_OPTIONS) {
-          yargsAfterOptions = yargsAfterOptions.option(...buildOption(specificBuildOption))
-        }
-        return yargsAfterOptions
-          .option(...buildOption('git', 'no-git disables push/pull/commit'))
-          .middleware(applyGitOption)
-          .middleware(supportDashUpto)
-          .middleware(setupPackages('packagesToBuild', 'cwd'))
-          .middleware(setupPackages('packages', 'configpath'))
-          .middleware(setupPackages('upto', 'cwd'))
-          .middleware(setupPackages('configUpto', 'configpath'))
-      },
-    )
-    .command('next-version packageDir', 'find next version of package')
-    .exitProcess(shouldExitOnError)
-    .strict()
-    .help()
+  for (const buildConfiguration of buildConfigurationChain) {
+    for (const jobId of Object.keys(buildConfiguration.jobs)) {
+      y = y.command(
+        jobId === 'build'
+          ? ['build [packagesToBuild..]', '* [packagesToBuild..]']
+          : [`${jobId} [packageToBuild...]`],
+        `${jobId} packages`,
+        (yargs) => {
+          yargs
+            .positional('packagesToBuild', {
+              describe:
+                'list of packages to build. Use "*" or leave empty to autofind packages in cwd',
+              type: 'string',
+              array: true,
+            })
+            .option('dry-run', {
+              describe: 'just show what packages will be built and in what order',
+              type: 'boolean',
+              default: false,
+            })
+            .option('force', {
+              alias: 'f',
+              describe: 'force build of packages',
+              type: 'boolean',
+              default: false,
+            })
+            .option('upto', {
+              alias: 'u',
+              describe: 'packages to build up to. Use "-" for no upto-s',
+              type: 'string',
+              array: true,
+            })
+            .option('no-upto', {
+              alias: 'n',
+              type: 'string',
+              boolean: true,
+              describe: 'disable upto, even if configured in .biltrc',
+            })
+            .middleware(supportDashUpto)
+            .middleware(setupPackages('packagesToBuild', 'cwd', rootDirectory))
+            .middleware(setupPackages('packages', 'configpath', rootDirectory))
+            .middleware(setupPackages('upto', 'cwd', rootDirectory))
+            .middleware(setupPackages('configUpto', 'configpath', rootDirectory))
 
-  const {_: [command = 'build'] = [], config, ...args} = await commandLineOptions.parse()
-  if (args.configUpto) {
-    args.upto = args.configUpto
-    delete args.configUpto
+          const {enableOptions, parameterOptions} = jobInfo(buildConfiguration, jobId)
+
+          for (const enableOption of enableOptions) {
+            yargs = yargs.option(...makeEnableOption(enableOption))
+          }
+          for (const parameterOption of parameterOptions) {
+            yargs = yargs.option(...makeParameterOption(parameterOption))
+          }
+
+          return yargs
+        },
+      )
+    }
   }
-  args.buildConfiguration =
-    args.buildConfiguration ||
-    YAML.parse(await fs.promises.readFile(path.join(__dirname, 'default-build.yaml'), 'utf8'), {
-      //@ts-ignore
-      prettyErrors: true,
-    })
 
-  debug('final options', {...args, config})
-
-  await require(`./command-${command}`)({
-    //@ts-ignore
-    rootDirectory: path.dirname(config),
-    ...args,
-  })
-}
-
-function applyGitOption(argv) {
-  if (argv.git === false) {
-    argv.pull = false
-    argv.commit = false
-    argv.push = false
-  }
-  return argv
+  return y
 }
 
 /**
  * @param {string} option
  * @param {'cwd'|'configpath'} cwd
  */
-function setupPackages(option, cwd) {
+function setupPackages(option, cwd, rootDirectory) {
   /**
    * @param {string} v
    */
@@ -163,7 +139,7 @@ function setupPackages(option, cwd) {
         return argv
       }
       const paths = await globby(values, {
-        cwd: cwd === 'cwd' ? process.cwd() : path.dirname(argv.config),
+        cwd: cwd === 'cwd' ? process.cwd() : rootDirectory,
         onlyDirectories: true,
         absolute: true,
         expandDirectories: false,
@@ -205,7 +181,7 @@ function supportDashUpto(argv) {
  * @param {string} [describe]
  * @returns {[string, import('yargs').Options]}
  */
-function buildOption(option, describe) {
+function makeEnableOption(option, describe) {
   return [
     option,
     {
@@ -215,6 +191,36 @@ function buildOption(option, describe) {
       default: true,
     },
   ]
+}
+
+/**
+ * @param {string} option
+ * @returns {[string, import('yargs').Options]}
+ */
+function makeParameterOption(option) {
+  return [
+    option,
+    {
+      group: 'Build options:',
+      type: 'string',
+    },
+  ]
+}
+
+/**
+ * @param {import('@bilt/build-with-configuration/src/types').BuildConfiguration[]} buildConfigurationChain
+ * @param {string} requestedJobId
+ * @returns {import('@bilt/build-with-configuration/src/types').Job}
+ */
+function findJobConfigurationInChain(buildConfigurationChain, requestedJobId) {
+  for (const buildConfiguration of buildConfigurationChain) {
+    for (const [jobId, jobConfiguration] of Object.entries(buildConfiguration.jobs)) {
+      if (jobId === requestedJobId) {
+        return jobConfiguration
+      }
+    }
+  }
+  throw new Error(`could not find job ${requestedJobId}`)
 }
 
 module.exports = main
