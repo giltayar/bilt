@@ -10,7 +10,7 @@ describe('build-with-configuration (unit)', function () {
       build: {
         steps: {
           during: [
-            {name: 'name1', run: 'run1', enableOption: ['name1opt']},
+            {name: 'name1', run: 'run1', enableOption: ['name1opt', 'git']},
             {name: 'name15', run: 'run', enableOption: ['name15opt', 'git']},
             {
               name: 'name2',
@@ -53,7 +53,7 @@ describe('build-with-configuration (unit)', function () {
         if (i++ === 0) {
           expect(stepInfo).to.eql({
             name: 'name1',
-            enableOptions: ['name1opt'],
+            enableOptions: ['name1opt', 'git'],
             parameterOptions: [],
           })
         } else {
@@ -85,7 +85,7 @@ describe('build-with-configuration (unit)', function () {
 
     it('jobInfo should work', () => {
       expect(bwc.jobInfo(buildConfiguration, 'build')).to.eql({
-        enableOptions: ['name1opt', 'name15opt', 'git'],
+        enableOptions: ['name1opt', 'git', 'name15opt'],
         parameterOptions: ['message'],
       })
     })

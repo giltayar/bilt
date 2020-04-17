@@ -1,6 +1,6 @@
 {
   "name": "@bilt/build-with-configuration",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "",
   "main": "src/build-with-configuration.js",
   "engines": {

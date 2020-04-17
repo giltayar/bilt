@@ -46,7 +46,10 @@ function jobInfo(buildConfiguration, jobId) {
     }
   }
 
-  return {enableOptions, parameterOptions}
+  return {
+    enableOptions: [...new Set(enableOptions)],
+    parameterOptions: [...new Set(parameterOptions)],
+  }
 }
 
 /**
