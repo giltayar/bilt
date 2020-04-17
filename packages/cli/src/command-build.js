@@ -66,9 +66,13 @@ async function buildCommand({
         buildUpTo: force ? undefined : uptoPackages,
       })
 
-  o.globalHeader(`building ${Object.keys(finalPackagesToBuild).join(', ')}`)
+  if (Object.keys(finalPackagesToBuild).length === 0) {
+    o.globalFooter('nothing to build')
+    return
+  }
 
   if (!dryRun && buildOptions.pull) {
+    o.globalHeader(`building ${Object.keys(finalPackagesToBuild).join(', ')}`)
     for await (const stepInfo of executeJob(
       buildConfiguration.jobs['build'],
       'before',
@@ -81,7 +85,7 @@ async function buildCommand({
   }
 
   const packagesBuildOrder = []
-  const aPackageWasBuilt = await buildPackages(
+  const {succesful, failed} = await buildPackages(
     finalPackagesToBuild,
     dryRun
       ? async ({packageInfo}) => {
@@ -97,18 +101,25 @@ async function buildCommand({
     return
   }
 
-  if (aPackageWasBuilt) {
-    for await (const stepInfo of executeJob(
-      buildConfiguration.jobs['build'],
-      'after',
-      rootDirectory,
-      buildOptions,
-      {directory: rootDirectory, biltin: {...npmBiltin}},
-    )) {
-      o.globalOperation(stepInfo.name)
+  try {
+    if (succesful.length > 0) {
+      for await (const stepInfo of executeJob(
+        buildConfiguration.jobs['build'],
+        'after',
+        rootDirectory,
+        buildOptions,
+        {directory: rootDirectory, biltin: {...npmBiltin}},
+      )) {
+        o.globalOperation(stepInfo.name)
+      }
     }
-  } else if (Object.keys(finalPackagesToBuild).length === 0) {
-    o.globalFooter('nothing to build')
+  } finally {
+    if (failed.length > 0) {
+      o.globalFailureFooter(
+        `Some packages have failed to build`,
+        failed.map((p) => packageInfos[p.directory]),
+      )
+    }
   }
 }
 
@@ -142,7 +153,10 @@ async function determineBuildInformation(
   }
 }
 
-/**@returns {Promise<boolean>} */
+/**@returns {Promise<{
+ * succesful: import('@bilt/types').Package[],
+ * failed: import('@bilt/types').Package[],
+ * }>} */
 async function buildPackages(
   /**@type {import('@bilt/types').PackageInfos} */ packageInfosToBuild,
   /**@type {import('@bilt/build').BuildPackageFunction} */ buildPackageFunc,
@@ -150,8 +164,8 @@ async function buildPackages(
 ) {
   const buildOrder = calculateBuildOrder({packageInfos: packageInfosToBuild})
 
+  const ret = {succesful: [], failed: [], built: []}
   debug('starting build')
-  let aPackageWasBuilt = false
   for await (const buildPackageResult of build({
     packageInfos: packageInfosToBuild,
     buildOrder,
@@ -163,13 +177,14 @@ async function buildPackages(
       }.${buildPackageResult.error ? 'Error: ' + buildPackageResult.error : ''}`,
     )
     if (buildPackageResult.buildResult === 'failure') {
+      ret.failed.push(buildPackageResult.package)
       o.packageErrorFooter(
         'build package failed',
         packageInfosToBuild[buildPackageResult.package.directory],
         buildPackageResult.error,
       )
     } else if (buildPackageResult.buildResult === 'success') {
-      aPackageWasBuilt = true
+      ret.succesful.push(buildPackageResult.package)
       if (!dryRun) {
         o.packageFooter(
           'build package succeeded',
@@ -179,7 +194,7 @@ async function buildPackages(
     }
   }
 
-  return aPackageWasBuilt
+  return ret
 }
 
 /**
@@ -348,6 +363,8 @@ function makePackageBuild(
   /**@type import('@bilt/build').BuildPackageFunction */
   return async function ({packageInfo}) {
     const packageDirectory = path.join(rootDirectory, packageInfo.directory)
+
+    o.packageHeader('building', packageInfo)
 
     for await (const stepInfo of executeJob(
       buildConfiguration.jobs['build'],

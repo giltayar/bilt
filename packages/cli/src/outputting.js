@@ -19,9 +19,21 @@ function globalFooter(msg) {
 
 /**
  * @param {string} msg
+ * @param {import('@bilt/types').PackageInfo[]} packageInfos
+ */
+function globalFailureFooter(msg, packageInfos) {
+  console.log('\n')
+  outputFunction(
+    chalk.redBright.underline(`* ${msg}:`),
+    packageInfos.map((pi) => pi.directory).join(','),
+  )
+}
+
+/**
+ * @param {string} msg
  */
 function globalOperation(msg) {
-  outputFunction(chalk.green(`* ${msg}`))
+  outputFunction(chalk.grey.underline(`** ${msg}`))
 }
 
 /**
@@ -47,7 +59,8 @@ function packageFooter(msg, packageInfo) {
  * @param {any} _error
  */
 function packageErrorFooter(msg, packageInfo, _error) {
-  outputFunction(chalk.redBright.underline(`**** [${packageInfo.directory}] ${msg}`))
+  console.log()
+  outputFunction(chalk.red(`**** [${packageInfo.directory}] ${msg}`))
 }
 
 /**
@@ -61,6 +74,7 @@ function packageOperation(msg, packageInfo) {
 module.exports = {
   globalHeader,
   globalFooter,
+  globalFailureFooter,
   globalOperation,
   packageHeader,
   packageFooter,
