@@ -104,6 +104,21 @@ function generateYargsCommandsAndOptions(argv, config, buildConfigurationChain, 
               boolean: true,
               describe: 'disable upto, even if configured in .biltrc',
             })
+            .option('before', {
+              type: 'boolean',
+              describe: 'execute the steps before building the packages',
+              defaultDescription: 'true',
+            })
+            .option('after', {
+              type: 'boolean',
+              describe: 'execute the steps after building the packages',
+              defaultDescription: 'true',
+            })
+            .option('envelope', {
+              type: 'boolean',
+              describe: 'execute the steps before and after building the packages',
+              defaultDescription: 'true',
+            })
             .middleware(supportDashUpto)
             .middleware(setupPackages('packagesToBuild', 'cwd', rootDirectory))
             .middleware(setupPackages('packages', 'configpath', rootDirectory))

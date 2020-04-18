@@ -23,6 +23,9 @@ const npmBiltin = require('./npm-biltin')
  * upto: string[]
  * force: boolean
  * dryRun: boolean
+ * before: boolean|undefined
+ * after: boolean|undefined
+ * envelop: boolean|undefined
  * jobConfiguration: import('@bilt/build-with-configuration/src/types').Job
  * } & {[x: string]: string|boolean}} options
  */
@@ -33,6 +36,9 @@ async function buildCommand({
   upto,
   force,
   dryRun,
+  before: beforeOption,
+  after: afterOption,
+  envelope: envelopeOption,
   jobConfiguration,
   ...userBuildOptions
 }) {
@@ -42,6 +48,9 @@ async function buildCommand({
     ...userBuildOptions,
     message: userBuildOptions.message + '\n\n\n[bilt-artifacts]',
   }
+  const envelope = envelopeOption === undefined ? true : envelopeOption
+  const before = beforeOption === undefined ? envelope : beforeOption
+  const after = afterOption === undefined ? envelope : afterOption
 
   const {
     initialSetOfPackagesToBuild,
@@ -72,15 +81,16 @@ async function buildCommand({
 
   if (!dryRun) {
     o.globalHeader(`building ${Object.keys(finalPackagesToBuild).join(', ')}`)
-    for await (const stepInfo of executeJob(
-      jobConfiguration,
-      'before',
-      rootDirectory,
-      buildOptions,
-      {directory: rootDirectory, biltin: {...npmBiltin}},
-    )) {
-      o.globalOperation(stepInfo.name)
-    }
+    if (before)
+      for await (const stepInfo of executeJob(
+        jobConfiguration,
+        'before',
+        rootDirectory,
+        buildOptions,
+        {directory: rootDirectory, biltin: {...npmBiltin}},
+      )) {
+        o.globalOperation(stepInfo.name)
+      }
   }
 
   const packagesBuildOrder = []
@@ -101,7 +111,7 @@ async function buildCommand({
   }
 
   try {
-    if (succesful.length > 0) {
+    if (succesful.length > 0 && after) {
       for await (const stepInfo of executeJob(
         jobConfiguration,
         'after',

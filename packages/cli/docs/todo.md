@@ -1,8 +1,6 @@
 # TODO
 
-1. `--no-envelope`, `--no-before`, `--no-after`
-
-1. Define and implement semantics of the likes of `--no-git` (and `--no-envelope`)
+1. Define and implement semantics of the likes of `--no-git`
 
 1. Move commit/add to be part of common logic and not a build step, maybe with a default
    for the commit/add run. It can be phases with defaults.
