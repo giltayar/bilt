@@ -114,12 +114,21 @@ async function prepareForSimpleBuild(buildConfigurationName, moreBuiltRc) {
  * @param {string[]} [packages]
  * @param {string[]} [uptos]
  * @param {string[]} [moreArgs]
+ * @param {string} [jobId]
  */
-async function runBuild(cwd, message, packages = undefined, uptos = undefined, moreArgs = []) {
+async function runBuild(
+  cwd,
+  message,
+  packages = undefined,
+  uptos = undefined,
+  moreArgs = [],
+  jobId,
+) {
   const currentDir = process.cwd()
   try {
     process.chdir(cwd)
     await cli([
+      ...(jobId === undefined ? [] : [jobId]),
       ...(packages && packages.length > 0 ? packages : []),
       '-m',
       message,

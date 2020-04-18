@@ -4,7 +4,7 @@ const fs = require('fs')
 const yargs = require('yargs')
 const debug = require('debug')('bilt:cli:cli')
 const globby = require('globby')
-const {jobInfo} = require('@bilt/build-with-configuration')
+const {jobInfo, validateBuildConfiguration} = require('@bilt/build-with-configuration')
 const findConfig = require('./find-config')
 const findBuildConfiguration = require('./find-build-configuration')
 
@@ -60,11 +60,12 @@ function generateYargsCommandsAndOptions(argv, config, buildConfigurationChain, 
     })
 
   for (const buildConfiguration of buildConfigurationChain) {
+    validateBuildConfiguration(buildConfiguration, rootDirectory)
     for (const jobId of Object.keys(buildConfiguration.jobs)) {
       y = y.command(
         jobId === 'build'
           ? ['build [packagesToBuild..]', '* [packagesToBuild..]']
-          : [`${jobId} [packageToBuild...]`],
+          : [`${jobId} [packagesToBuild...]`],
         `${jobId} packages`,
         (yargs) => {
           yargs
@@ -206,6 +207,7 @@ function makeParameterOption(option, optionDefaults) {
       group: 'Build options:',
       type: 'string',
       default: optionDefaults[option] === undefined ? true : optionDefaults[option],
+      demandOption: option === 'message' ? true : false,
     },
   ]
 }

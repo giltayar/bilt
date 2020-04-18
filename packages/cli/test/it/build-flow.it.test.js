@@ -240,4 +240,25 @@ describe('build-flow (it)', function () {
     expect(await packageScriptCount(cwd, 'packages/b', 'during2')).to.equal(2)
     expect(await packageScriptCount(cwd, 'packages/c', 'during2')).to.equal(2)
   })
+
+  it('should run with non-default jobId (and one of the phases is missing)', async () => {
+    const cwd = await prepareForSimpleBuild('simple-build.yaml')
+
+    await writeFile(['a', 'package.json'], {name: 'a-package', version: '1.0.0'}, {cwd})
+
+    await runBuild(cwd, 'first build', ['./a'], undefined, [], 'another-build')
+    expect(await packageScriptCount(cwd, 'a', 'another-during1')).to.equal(1)
+    expect(await repoScriptCount(cwd, 'another-after1')).to.equal(1)
+
+    await runBuild(
+      cwd,
+      'first build',
+      ['./a'],
+      undefined,
+      ['--force', '--no-anotherDuring1'],
+      'another-build',
+    )
+    expect(await packageScriptCount(cwd, 'a', 'another-during1')).to.equal(1)
+    expect(await repoScriptCount(cwd, 'another-after1')).to.equal(2)
+  })
 })
