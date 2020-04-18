@@ -35,3 +35,4 @@ monorepo is built as a series of NPM packages linked together by an NPM dependen
 1. [Usage](./docs/usage.md)
 1. [How Bilt works](./docs/how-bilt-works.md)
 1. [Reference](./docs/reference.md)
+1. [Build configurations](./docs/build-configurations.md)

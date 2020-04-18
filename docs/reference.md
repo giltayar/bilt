@@ -18,7 +18,7 @@ searchs for: `.biltrc`, `.biltrc.json`, `.biltrc.yaml`, `biltrc.config.js`
 (for the precise algorithm, see the documenation
 for [`cosmiconfig`](https://github.com/davidtheclark/cosmiconfig)).
 
-### Fields
+### Properties
 
 * `packages`: an array that includes a set of directories. All directories MUST
    start with `.` or `/` and are relative to the configuration file.
@@ -31,11 +31,21 @@ for [`cosmiconfig`](https://github.com/davidtheclark/cosmiconfig)).
    it does not look inside that package for another package, so nested packages
    are not supported in auto-discovery
    (although they are supported by specifying packages explicitly).
+* `buildConfiguration`: either the JSON of the build configuration (that builds the `packages`), or
+  a string containing the path to the build configuration. If empty, will default to [the default
+  build configuration built into Bilt](./build-configurations.md#the-default-build-configuration).
+* `jobs`: an object whose keys are `jobIds` (see [build
+   configuration](./build-configurations.md)), and values are objects that define
+   the default command line arguments for that job.
+* Other fields: any other field here is a default for the command line arguments that
+  are common to all the build configurations (see [this section](#command-line-argument-defaults))
+  for more information.
 
 ### Command line argument defaults
 
-All command line arguments can be given defaults in this file. So if, for example,
-you do not want to run `npm audit fix`, include `"audit": false` in your `.biltrc.json`.
+All command line arguments can be given defaults in this file. If they are specific
+to a build configuration, they will be under the `jobs` property, as specified above,
+otherwise they will be at the top-level, as defined in "Other fields" above.
 
 If the command line argument has dashes in it (e.g. `dry-run`), convert it to camel case
 (e.g. `dryRun`) to use it for defaults in the `.biltrc.json`.
@@ -48,12 +58,16 @@ specify all the top-level packages in each run of the `bilt` CLI.
 ### Usage
 
 ```sh
-bilt [packagesToBuild...] [options...]
+bilt [job] [packagesToBuild...] [options...]
 ```
 
 ### What it does
 
 1. Bilt first finds the `.biltrc.json` configuration file as explained above.
+1. The configuration file's `buildConfiguration` field determines what the [build
+   configuration](./build-configurations.md) is. The build configuration determines
+   what jobs are available, and what the build options are for those jobs.
+1. If `job` is not specified in the command line, `build` is used.
 1. It reads the configuration file to determine the full set of packages that can be built.
    The build always builds just a subset of those packages.
 1. It determines which packages to build from that list using the `packagesToBuild` command line
@@ -68,11 +82,11 @@ bilt [packagesToBuild...] [options...]
 1. Once it has the full set of packages to build, it calculates the dependency graph,
    and from there determine the build order of the packages
    (using [topological sorting](https://en.wikipedia.org/wiki/Topological_sorting)).
-1. `bilt` builds each package according to the build configuration
-   (see below for the default configuration). The build configuration also includes
-   steps that are done _before_ all the package build
-   (usually pulling from the remote repository), and steps that are done _after_ all
-   the packages are built (usually commiting the changes and pushing to the remote repository).
+1. `bilt` builds each package according to the [build
+   configuration](./docs/build-configurations.md). The build configuration also includes steps that
+   are executed _before_ all the package build (usually pulling from the remote repository), and
+   steps that are executed _after_ all the packages are built (usually commiting the changes and
+   pushing to the remote repository).
 1. As described [elsewhere](./how-bilt-works.md#packages-built-how),
    when commiting a commit, Bilt adds the text `[bilt-artifacts]` to
    the commit message in order to remember that this commit is a formal build of those packages.
@@ -83,8 +97,10 @@ bilt [packagesToBuild...] [options...]
 
 ### Options
 
-Most options below have shortcut aliases, which you can find using `--help`.
+Most options below have shortcut aliases, which you can find using `--help`. These options
+are relevant for _all_ build job configurations.
 
+* `job`: the job to execute from the build configuration. If not specified, the job will be `build`.
 * `--config`: the config file to read. Optional, and if does not exist, will search
   for it, as described [above](#configuration-file).
 * `packagesToBuild`: a set of package directories or package names. If a directory, it MUST
@@ -101,7 +117,7 @@ Most options below have shortcut aliases, which you can find using `--help`.
   come from the from the packages determined by the config file's `packages` field.
 * `--dry-run`: don't run the build, just show what packages _would_ be built, and in what order.
 * `--message`: the commit message when committing
-  (note that `bilt` will add a small `[bilt-artifacts]` text to it, as described above).
+  (note that `bilt` will add a `[bilt-artifacts]` text to it, as described above).
 * `--force`: force the `packagesToBuild` packages (and their dependencies) to be built,
   even if they haven't changed.
 * <a name="assume-changed"></a>`--assume-changed`:
@@ -112,49 +128,15 @@ Most options below have shortcut aliases, which you can find using `--help`.
 
 #### Build Option
 
-All of these build options have a default of `true`.
+Each build configuration comes with its own build options.  All of these build options have a
+default of `true`, and are the options specified in the build configuration, as defined above.
 
-* `--pull`: enables disables "pull" when building
-* `--push`: enables disables "push" when building
-* `--commit`: enables disables "commit" when building
-* `--install`: enables disables "install" when building
-* `--update`: enables disables "update" when building
-* `--audit`: enables disables "audit" when building
-* `--build`: enables disables "build" when building
-* `--test`: enables disables "test" when building
-* `--publish`: enables disables "publish" when building
-* `--git`: no-git disables push/pull/commit together
+### <a name="configuring-build">Configuring the build
 
-## Default build steps
+See [here](./build-configurations.md).
 
-Before all of the package builds:
+### Default build steps
 
-1. `git pull --rebase --autostash`: to pull all changes from the remote repository before building.
-
-For each package:
-
-1. `npm install` ensures all dependencies are installed
-1. `npm update` updates all the dependencies.
-    This is especially important in Bilt moonorepos, as it updates
-    the dependencies to the other packages in the monorepo. Without `npm update`, packages
-    will have outdated dependencies on the other packages in a monorepo.
-1. _Increment_ version: to update the version of the package so it can be published.
-   See [this](./how-bilt-works.md#version-increment-how) for more information.
-1. `npm audit fix`. Because we're security conscious!
-   (See [Snyk](https://snyk.io) for a more powerful alternative.)
-1. `npm run build`: build the source code. For example transpile the code, bundle it,
-   or build a docker image. This runs only if a `build` script exists in the `package.json`.
-1. `npm test`: because we have tests, right? 😉 Will skip if no `test` script exists
-1. `npm publish`: publishes the package
-
-After this, Bilt also runs `git add .` to add all the files to be commited.
-
-After all of the package builds:
-
-1. `git commit -m "commit message"`: commit all the added files (with the addition of the
-   `[bilt artifacts]` text to the commit message, as described above).
-2. `git push`: pushes changes to the remote repository.
-
-## <a name="configuring-build">Configuring the build
-
-Not yet implemented!
+You can find the build configuration for the default build configuration
+[here](./packages/build-with-configuration/src/types.js). For a human discussion
+of this build configuration, look [here](./build-configurations#the-default-build-configuration).
