@@ -1,7 +1,8 @@
 'use strict'
 const {describe, it, before, beforeEach, afterEach} = require('mocha')
-const {expect} = require('chai')
+const {expect, use} = require('chai')
 const td = require('testdouble')
+use(require('chai-subset'))
 
 describe('build-with-configuration (unit)', function () {
   /**@type {import('../../src/types').BuildConfiguration} */
@@ -84,10 +85,14 @@ describe('build-with-configuration (unit)', function () {
     })
 
     it('jobInfo should work', () => {
-      expect(bwc.jobInfo(buildConfiguration, 'build')).to.eql({
-        enableOptions: ['name1opt', 'git', 'name15opt'],
+      const jobInfo = bwc.jobInfo(buildConfiguration, 'build')
+      expect(jobInfo).to.containSubset({
+        enableOptions: ['name1opt', 'git'],
         parameterOptions: ['message'],
       })
+      expect(jobInfo.dependentEnableOptions.get('name1opt')).to.eql('git')
+      expect(jobInfo.dependentEnableOptions.get('name15opt')).to.eql('git')
+      expect(jobInfo.dependentEnableOptions.size).to.eql(2)
     })
   })
 })

@@ -27,17 +27,40 @@ async function* executeJob(
 /**
  * @param {import('./types').BuildConfiguration} buildConfiguration
  * @param {string} jobId
- * @returns {{enableOptions: string[], parameterOptions: string[]}}
+ * @returns {{
+ * enableOptions: string[]
+ * dependentEnableOptions: Map<string, string>
+ * parameterOptions: string[]
+ * }}
  */
 function jobInfo(buildConfiguration, jobId) {
   const jobConfiguration = buildConfiguration.jobs[jobId]
 
   const enableOptions = []
   const parameterOptions = []
+  /**@type {Map<string, string>} */
+  const dependentOptions = new Map()
   for (const phase of Object.values(jobConfiguration.steps)) {
     for (const step of phase) {
-      for (const enableOption of stepInfo(step).enableOptions) {
+      const stepEnableOptions = stepInfo(step).enableOptions
+      for (const enableOption of stepEnableOptions) {
         enableOptions.push(enableOption)
+      }
+
+      if (stepEnableOptions.length === 2) {
+        const strongOption = stepEnableOptions[0]
+        const weakOption = stepEnableOptions[1]
+        if (
+          dependentOptions.has(strongOption) &&
+          dependentOptions.get(strongOption) !== weakOption
+        ) {
+          throw new Error(
+            `${strongOption} cannot depend on both ${weakOption} && ${dependentOptions.get(
+              strongOption,
+            )} in job ${jobId}`,
+          )
+        }
+        dependentOptions.set(strongOption, weakOption)
       }
 
       for (const parameterOption of stepInfo(step).parameterOptions) {
@@ -49,6 +72,7 @@ function jobInfo(buildConfiguration, jobId) {
   return {
     enableOptions: [...new Set(enableOptions)],
     parameterOptions: [...new Set(parameterOptions)],
+    dependentEnableOptions: dependentOptions,
   }
 }
 

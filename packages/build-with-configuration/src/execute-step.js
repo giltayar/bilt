@@ -174,6 +174,16 @@ function validateStep(step, i, phaseName, jobId, configPath) {
   }
 
   if (
+    step.enableOption !== null &&
+    Array.isArray(step.enableOption) &&
+    step.enableOption.length > 2
+  ) {
+    throw new Error(
+      `"enableOption" property of step #${i} in phase ${phaseName} of job ${jobId} must be a string or an array of strings of length <=2 in ${configPath}`,
+    )
+  }
+
+  if (
     step.parameterOption != null &&
     typeof step.parameterOption !== 'string' &&
     !Array.isArray(step.parameterOption) &&
