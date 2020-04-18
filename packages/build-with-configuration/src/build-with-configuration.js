@@ -16,12 +16,14 @@ async function* executeJob(
   buildOptions,
   javascriptOptionsParameter,
 ) {
-  yield* executePhase(
-    jobConfiguration.steps[phase],
-    directoryToExecuteIn,
-    buildOptions,
-    javascriptOptionsParameter,
-  )
+  if (jobConfiguration.steps[phase]) {
+    yield* executePhase(
+      jobConfiguration.steps[phase],
+      directoryToExecuteIn,
+      buildOptions,
+      javascriptOptionsParameter,
+    )
+  }
 }
 
 /**

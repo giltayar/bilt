@@ -75,6 +75,25 @@ describe('build-with-configuration (unit)', function () {
         times: 1,
       })
     })
+
+    it('should not fail when executing empty phase', async () => {
+      let i = 0
+      for await (const _ of bwc.executeJob(
+        buildConfiguration.jobs.build,
+        'phase-does-not-exist',
+        'dir1',
+        {
+          name1opt: true,
+          name15opt: false,
+          message: 'message1',
+        },
+        {foo: 'foobar'},
+      )) {
+        ++i
+      }
+
+      expect(i).to.eql(0)
+    })
   })
 
   describe('jobInfo', () => {
