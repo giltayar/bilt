@@ -25,7 +25,7 @@ async function main(argv) {
   const {
     _: [jobId = 'build'],
     ...args
-  } = await yargsOptions.parse()
+  } = await yargsOptions.strict().help().parse()
   debug('final options', {rootDirectory, config, jobId, args})
 
   // @ts-ignore
@@ -56,6 +56,12 @@ function generateYargsCommandsAndOptions(argv, config, buildConfigurationChain, 
       describe: 'the set of all packages to take into consideration',
       type: 'string',
       array: true,
+      hidden: true,
+    })
+    .option('buildConfiguration', {
+      hidden: true,
+    })
+    .option('jobs', {
       hidden: true,
     })
 
@@ -206,8 +212,9 @@ function makeParameterOption(option, optionDefaults) {
     {
       group: 'Build options:',
       type: 'string',
-      default: optionDefaults[option] === undefined ? true : optionDefaults[option],
+      default: optionDefaults[option] === undefined ? undefined : optionDefaults[option],
       demandOption: option === 'message' ? true : false,
+      alias: option === 'message' ? 'm' : undefined,
     },
   ]
 }

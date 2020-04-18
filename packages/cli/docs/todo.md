@@ -1,6 +1,5 @@
 # TODO
 
-
 1. `--no-envelope`, `--no-before`, `--no-after`
 
 1. Define and implement semantics of the likes of `--no-git` (and `--no-envelope`)

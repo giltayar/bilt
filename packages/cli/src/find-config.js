@@ -4,12 +4,14 @@ const yargs = require('yargs')
 const {cosmiconfig} = require('cosmiconfig')
 
 async function findConfig(argv) {
-  const {config: configPath} = yargs
+  const {config: configPath} = yargs(argv)
     .option('config', {
       alias: 'c',
       type: 'string',
     })
-    .parse(argv)
+    .help(false)
+    .strict(false)
+    .parse()
 
   const {filepath, config} = configPath
     ? await cosmiconfig('bilt').load(configPath)
