@@ -70,7 +70,7 @@ async function buildCommand({
     return
   }
 
-  if (!dryRun && buildOptions.pull) {
+  if (!dryRun) {
     o.globalHeader(`building ${Object.keys(finalPackagesToBuild).join(', ')}`)
     for await (const stepInfo of executeJob(
       jobConfiguration,

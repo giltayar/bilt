@@ -104,12 +104,13 @@ function generateYargsCommandsAndOptions(argv, config, buildConfigurationChain, 
             .middleware(setupPackages('configUpto', 'configpath', rootDirectory))
 
           const {enableOptions, parameterOptions} = jobInfo(buildConfiguration, jobId)
+          const optionDefaults = (config.jobs || {})[jobId] || {} || {}
 
           for (const enableOption of enableOptions) {
-            yargs = yargs.option(...makeEnableOption(enableOption))
+            yargs = yargs.option(...makeEnableOption(enableOption, optionDefaults))
           }
           for (const parameterOption of parameterOptions) {
-            yargs = yargs.option(...makeParameterOption(parameterOption))
+            yargs = yargs.option(...makeParameterOption(parameterOption, optionDefaults))
           }
 
           return yargs
@@ -178,31 +179,33 @@ function supportDashUpto(argv) {
 
 /**
  * @param {string} option
- * @param {string} [describe]
+ * @param {object} optionDefaults
  * @returns {[string, import('yargs').Options]}
  */
-function makeEnableOption(option, describe) {
+function makeEnableOption(option, optionDefaults) {
   return [
     option,
     {
-      describe: describe || `enables disables "${option}" when building`,
+      describe: `enables disables "${option}" when building`,
       group: 'Build options:',
       type: 'boolean',
-      default: true,
+      default: optionDefaults[option] === undefined ? true : optionDefaults[option],
     },
   ]
 }
 
 /**
  * @param {string} option
+ * @param {object} optionDefaults
  * @returns {[string, import('yargs').Options]}
  */
-function makeParameterOption(option) {
+function makeParameterOption(option, optionDefaults) {
   return [
     option,
     {
       group: 'Build options:',
       type: 'string',
+      default: optionDefaults[option] === undefined ? true : optionDefaults[option],
     },
   ]
 }

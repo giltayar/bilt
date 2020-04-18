@@ -15,11 +15,10 @@ const {
   prepareGitAndNpm,
   runBuild,
   createAdepsBdepsCPackages,
-  createPackages,
   packageScriptCount,
 } = require('../commons/setup-and-run')
 
-describe('cli (it)', function () {
+describe('default-build (it)', function () {
   it(`should build two packages, first time, no dependencies,
       then build one if it changed,
       then not build because nothing changed`, async () => {
@@ -115,121 +114,91 @@ describe('cli (it)', function () {
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
   })
 
-  it('should not commit failed packages and packages not built', async () => {
-    const {registry, cwd} = await prepareGitAndNpm()
-    const {bPackageJson} = await createAdepsBdepsCPackages(cwd, registry)
+  it.skip('should disable all git stuff when --no-git, and test all build options', async () => {
+    const {registry, cwd, pushTarget} = await prepareGitAndNpm()
 
-    await writeFile(['a', 'build-this'], 'yes!', {cwd})
-    await writeFile(['b', 'build-this'], 'yes!', {cwd})
-    await writeFile(['c', 'build-this'], 'yes!', {cwd})
+    const beforeBuildHistory = Object.entries(await commitHistory(cwd))
+    const beforeBuildPushedHistory = Object.entries(await commitHistory(pushTarget))
 
-    const numberOfCommitsBeforeBuild = Object.keys(await commitHistory(cwd)).length
+    await createPackage(cwd, registry, 'b', '1.0.0')
+    await sh('npm publish', {cwd: path.join(cwd, 'b')})
+    await createPackage(cwd, registry, 'a', '2.0.0', {}, {'b-package': '^1.0.0'})
 
-    // make b fail
-    await writeFile(
-      ['b', 'package.json'],
-      {
-        ...bPackageJson,
-        scripts: {...bPackageJson.scripts, build: `${bPackageJson.scripts.build} && false`},
-      },
-      {cwd},
+    await runBuild(cwd, 'a build without git', ['./a'], undefined, ['--no-git'])
+
+    expect(Object.entries(await commitHistory(cwd)).length).to.equal(beforeBuildHistory.length)
+    expect(Object.entries(await commitHistory(pushTarget)).length).to.equal(
+      beforeBuildPushedHistory.length,
     )
 
-    // first build - b fails, a isnt run at all
-    await runBuild(cwd, 'failed build', ['*'])
-    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('0')
-    expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')
-    expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
+    expect(await packageScriptCount(cwd, 'a', 'install')).to.equal(1)
+    expect(await packageDependency(cwd, 'a', 'b-package')).to.equal('1.0.0')
+    expect(await packageScriptCount(cwd, 'a', 'test')).to.equal(1)
+    expect(await packageScriptCount(cwd, 'a', 'build')).to.equal(1)
+    expect(await packageScriptCount(cwd, 'a', 'publish')).to.equal(1)
 
-    const historyAfterBuild = Object.entries(await commitHistory(cwd))
-    const numberOfCommitsAfterBuild = historyAfterBuild.length
+    // now publish package b to 1.0.1
+    await runBuild(cwd, 'b build', ['./b'], undefined, ['--no-git'])
 
-    expect(numberOfCommitsAfterBuild).to.equal(numberOfCommitsBeforeBuild + 1)
-    expect(historyAfterBuild[0][1]).eql([
-      'c/.npmrc',
-      'c/build-count',
-      'c/build-this',
-      'c/package-lock.json',
-      'c/package.json',
+    // now remove all steps but update
+    await runBuild(cwd, 'a build wihtout anything except update', ['./a'], undefined, [
+      '--no-git',
+      '--no-test',
+      '--no-audit',
+      '--no-install',
+      '--no-publish',
+      '--no-build',
     ])
 
-    // make b succeed
-    await writeFile(
-      ['b', 'package.json'],
-      {
-        ...bPackageJson,
-        scripts: {...bPackageJson.scripts, build: bPackageJson.scripts.build},
-      },
-      {cwd},
-    )
-
-    await runBuild(cwd, 'last build', ['*'], ['./a'])
-    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
-    expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('2\n')
-    expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
-  })
-
-  it('--force should work and also build dependencies', async () => {
-    const {registry, cwd} = await prepareGitAndNpm()
-    await createAdepsBdepsCPackages(cwd, registry)
-
-    await runBuild(cwd, 'build all', ['./a', './b', './c'])
-
+    expect(await packageScriptCount(cwd, 'a', 'install')).to.equal(1)
+    expect(await packageDependency(cwd, 'a', 'b-package')).to.equal('1.0.1')
+    expect(await shWithOutput('npm view a-package version', {cwd})).to.equal('2.0.0\n')
+    expect(await packageScriptCount(cwd, 'a', 'test')).to.equal(1)
     expect(await packageScriptCount(cwd, 'a', 'build')).to.equal(1)
-    expect(await packageScriptCount(cwd, 'b', 'build')).to.equal(1)
-    expect(await packageScriptCount(cwd, 'c', 'build')).to.equal(1)
-
-    await runBuild(cwd, 'build nothing because nothing changed', ['./b'], ['./a'])
-
-    expect(await packageScriptCount(cwd, 'a', 'build')).to.equal(1)
-    expect(await packageScriptCount(cwd, 'b', 'build')).to.equal(1)
-    expect(await packageScriptCount(cwd, 'c', 'build')).to.equal(1)
-
-    await runBuild(cwd, 'build b and a because force', ['./b'], ['./a'], ['--force'])
-
-    expect(await packageScriptCount(cwd, 'a', 'build')).to.equal(2)
-    expect(await packageScriptCount(cwd, 'b', 'build')).to.equal(2)
-    expect(await packageScriptCount(cwd, 'c', 'build')).to.equal(1)
-  })
-
-  it('should ignore packages not in "packages" and add upto packages to packages to build', async () => {
-    const {registry, cwd} = await prepareGitAndNpm()
-    await createAdepsBdepsCPackages(cwd, registry)
-
-    await runBuild(cwd, 'first build', ['./c'])
-
-    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('0')
-    expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('0')
-    expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
-
-    await runBuild(cwd, 'second build', ['./b'], ['./a'])
-
-    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
-    expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')
-    expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
-  })
-
-  it('should ignore packages not in the "project (i.e. not leading to the uptos)', async () => {
-    const {registry, cwd} = await prepareGitAndNpm()
-    await createAdepsBdepsCPackages(cwd, registry)
-    await createPackages(cwd, registry, 'd', 'e', 'f')
-
-    await runBuild(cwd, 'build abc project', ['*'], ['./a'])
-
-    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
-    expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')
-    expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
-    expect(await readFileAsString(['d', 'build-count'], {cwd})).to.equal('0')
-    expect(await readFileAsString(['e', 'build-count'], {cwd})).to.equal('0')
-    expect(await readFileAsString(['f', 'build-count'], {cwd})).to.equal('0')
-
-    await runBuild(cwd, 'build def project', ['*'], ['./d'])
-
-    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
-    expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')
-    expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
-    expect(await readFileAsString(['d', 'build-count'], {cwd})).to.equal('1\n')
-    expect(await readFileAsString(['e', 'build-count'], {cwd})).to.equal('1\n')
-    expect(await readFileAsString(['f', 'build-count'], {cwd})).to.equal('1\n')
   })
 })
+
+/**
+ * @param {string} cwd
+ * @param {string} pkg
+ * @param {string} dependency
+ * @returns {Promise<string>}
+ */
+async function packageDependency(cwd, pkg, dependency) {
+  return (await readFileAsJson([pkg, 'package-lock.json'], {cwd})).dependencies[dependency].version
+}
+
+async function createPackage(
+  cwd,
+  registry,
+  pkg,
+  version = '1.0.0',
+  scripts = {},
+  dependencies = {},
+) {
+  const scriptScript = async (name) => {
+    await writeFile([pkg, `${name}-count`], '0', {cwd})
+
+    return `echo $(expr $(cat ${name}-count) + 1) >${name}-count`
+  }
+
+  await writeFile(
+    [pkg, 'package.json'],
+    {
+      name: `${pkg}-package`,
+      version,
+      scripts: {
+        postinstall: await scriptScript('install'),
+        postupdate: await scriptScript('update'),
+        // postaudit: await scriptScript('audit'), // unfortunately, postaudit doesn't work
+        build: await scriptScript('build'),
+        test: await scriptScript('test'),
+        postpublish: await scriptScript('publish'),
+        ...scripts,
+      },
+      dependencies,
+    },
+    {cwd},
+  )
+  await writeFile([pkg, '.npmrc'], `registry=${registry}\n`, {cwd})
+}

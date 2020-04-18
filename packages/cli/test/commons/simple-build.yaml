@@ -1,0 +1,34 @@
+jobs:
+  build:
+    steps:
+      before:
+        - name: 'before1'
+          enableOption: ['before1']
+          run: |
+            echo $(expr $(cat before1-count || '0') + 1) >before1-count
+            cat before1-count
+
+      after:
+        - name: 'after1'
+          enableOption: ['after1']
+          run: 'echo $(expr $(cat after1-count || echo 0) + 1) >after1-count && cat after1-count'
+        - name: 'git commit'
+          enableOption: ['commit', 'git']
+          parameterOption: 'message'
+          run: 'git commit --allow-empty -m "$BILT_OPTION_MESSAGE"'
+
+      during:
+        - name: 'wait a bit'
+          run: 'sleep 0.1'
+        - name: 'during1'
+          enableOption: 'during1'
+          run: 'echo $(expr $(cat during1-count || echo 0) + 1) >during1-count && cat during1-count'
+        - name: "maybe fail"
+          run: '[ ! -e fail ]'
+          enableOption: fail
+        - name: 'during2'
+          enableOption: 'during2'
+          run: 'echo $(expr $(cat during2-count || echo 0) + 1) >during2-count && cat during2-count'
+        - name: 'stage files'
+          enableOption: ['git']
+          run: 'git add .'
