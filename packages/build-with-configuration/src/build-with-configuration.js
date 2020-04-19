@@ -31,7 +31,8 @@ async function* executeJob(
  * @param {string} jobId
  * @returns {{
  * enableOptions: string[]
- * dependentEnableOptions: Map<string, string>
+ * aggregateOptions: Map<string, string[]>
+ * inAggregateOptions: Map<string, string>
  * parameterOptions: string[]
  * }}
  */
@@ -41,7 +42,9 @@ function jobInfo(buildConfiguration, jobId) {
   const enableOptions = []
   const parameterOptions = []
   /**@type {Map<string, string>} */
-  const dependentOptions = new Map()
+  const inAggregateOptions = new Map()
+  /**@type {Map<string, string[]>} */
+  const aggregateOptions = new Map()
   for (const phase of Object.values(jobConfiguration.steps)) {
     for (const step of phase) {
       const stepEnableOptions = stepInfo(step).enableOptions
@@ -50,19 +53,23 @@ function jobInfo(buildConfiguration, jobId) {
       }
 
       if (stepEnableOptions.length === 2) {
-        const strongOption = stepEnableOptions[0]
-        const weakOption = stepEnableOptions[1]
+        const inAggregateOption = stepEnableOptions[0]
+        const aggregateOption = stepEnableOptions[1]
         if (
-          dependentOptions.has(strongOption) &&
-          dependentOptions.get(strongOption) !== weakOption
+          inAggregateOptions.has(inAggregateOption) &&
+          inAggregateOptions.get(inAggregateOption) !== aggregateOption
         ) {
           throw new Error(
-            `${strongOption} cannot depend on both ${weakOption} && ${dependentOptions.get(
-              strongOption,
+            `${inAggregateOption} cannot depend on both ${aggregateOption} && ${inAggregateOptions.get(
+              inAggregateOption,
             )} in job ${jobId}`,
           )
         }
-        dependentOptions.set(strongOption, weakOption)
+        inAggregateOptions.set(inAggregateOption, aggregateOption)
+        aggregateOptions.set(
+          aggregateOption,
+          (aggregateOptions.get(aggregateOption) || []).concat(inAggregateOption),
+        )
       }
 
       for (const parameterOption of stepInfo(step).parameterOptions) {
@@ -74,7 +81,8 @@ function jobInfo(buildConfiguration, jobId) {
   return {
     enableOptions: [...new Set(enableOptions)],
     parameterOptions: [...new Set(parameterOptions)],
-    dependentEnableOptions: dependentOptions,
+    aggregateOptions,
+    inAggregateOptions,
   }
 }
 

@@ -109,9 +109,10 @@ describe('build-with-configuration (unit)', function () {
         enableOptions: ['name1opt', 'git'],
         parameterOptions: ['message'],
       })
-      expect(jobInfo.dependentEnableOptions.get('name1opt')).to.eql('git')
-      expect(jobInfo.dependentEnableOptions.get('name15opt')).to.eql('git')
-      expect(jobInfo.dependentEnableOptions.size).to.eql(2)
+      expect(jobInfo.inAggregateOptions.get('name1opt')).to.eql('git')
+      expect(jobInfo.inAggregateOptions.get('name15opt')).to.eql('git')
+      expect(jobInfo.inAggregateOptions.size).to.eql(2)
+      expect(jobInfo.aggregateOptions.get('git')).to.have.deep.members(['name1opt', 'name15opt'])
     })
   })
 })
