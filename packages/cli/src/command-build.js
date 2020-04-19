@@ -36,9 +36,8 @@ async function buildCommand({
   upto,
   force,
   dryRun,
-  before: beforeOption,
-  after: afterOption,
-  envelope: envelopeOption,
+  before,
+  after,
   jobConfiguration,
   ...userBuildOptions
 }) {
@@ -48,9 +47,6 @@ async function buildCommand({
     ...userBuildOptions,
     message: userBuildOptions.message + '\n\n\n[bilt-artifacts]',
   }
-  const envelope = envelopeOption === undefined ? true : envelopeOption
-  const before = beforeOption === undefined ? envelope : beforeOption
-  const after = afterOption === undefined ? envelope : afterOption
 
   const {
     initialSetOfPackagesToBuild,

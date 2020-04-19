@@ -125,12 +125,24 @@ function generateYargsCommandsAndOptions(argv, config, buildConfigurationChain, 
             .middleware(setupPackages('upto', 'cwd', rootDirectory))
             .middleware(setupPackages('configUpto', 'configpath', rootDirectory))
 
-          const {enableOptions, parameterOptions} = jobInfo(buildConfiguration, jobId)
+          const {enableOptions, parameterOptions, aggregateOptions, inAggregateOptions} = jobInfo(
+            buildConfiguration,
+            jobId,
+          )
           const optionDefaults = (config.jobs || {})[jobId] || {} || {}
 
           for (const enableOption of enableOptions) {
-            yargs = yargs.option(...makeEnableOption(enableOption, optionDefaults))
+            yargs = yargs.option(
+              ...makeEnableOption(
+                enableOption,
+                optionDefaults,
+                aggregateOptions,
+                inAggregateOptions,
+              ),
+            )
           }
+
+          yargs = yargs.middleware(dealWithAggregateOptions(aggregateOptions, inAggregateOptions))
           for (const parameterOption of parameterOptions) {
             yargs = yargs.option(...makeParameterOption(parameterOption, optionDefaults))
           }
@@ -142,6 +154,28 @@ function generateYargsCommandsAndOptions(argv, config, buildConfigurationChain, 
   }
 
   return y
+}
+
+/**
+ * @param {Map<string, string[]>} aggregateOptions
+ * @param {Map<string, string>} inAggregateOptions
+ */
+function dealWithAggregateOptions(aggregateOptions, inAggregateOptions) {
+  return (argv) => {
+    for (const aggregateOption of [...aggregateOptions.keys()].concat('envelope')) {
+      argv[aggregateOption] = argv[aggregateOption] === undefined ? true : argv[aggregateOption]
+    }
+
+    for (const [inAggregateOption, aggregateOption] of [...inAggregateOptions.entries()].concat([
+      ['before', 'envelope'],
+      ['after', 'envelope'],
+    ])) {
+      argv[inAggregateOption] =
+        argv[inAggregateOption] === undefined ? argv[aggregateOption] : argv[inAggregateOption]
+    }
+
+    return argv
+  }
 }
 
 /**
@@ -202,16 +236,27 @@ function supportDashUpto(argv) {
 /**
  * @param {string} option
  * @param {object} optionDefaults
+ * @param {Map<string, string[]>} aggregateOptions
+ * @param {Map<string, string>} inAggregateOptions
  * @returns {[string, import('yargs').Options]}
  */
-function makeEnableOption(option, optionDefaults) {
+function makeEnableOption(option, optionDefaults, aggregateOptions, inAggregateOptions) {
   return [
     option,
     {
-      describe: `enables disables "${option}" when building`,
+      describe: aggregateOptions.has(option)
+        ? `aggregages the ${aggregateOptions.get(option).join(',')} options`
+        : `enables disables "${option}" when building`,
       group: 'Build options:',
       type: 'boolean',
-      default: optionDefaults[option] === undefined ? true : optionDefaults[option],
+      default: inAggregateOptions.has(option)
+        ? undefined
+        : optionDefaults[option] === undefined
+        ? true
+        : optionDefaults[option],
+      defaultDescription: String(
+        optionDefaults[option] === undefined ? true : optionDefaults[option],
+      ),
     },
   ]
 }

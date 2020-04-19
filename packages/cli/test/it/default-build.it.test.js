@@ -114,7 +114,7 @@ describe('default-build (it)', function () {
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
   })
 
-  it.skip('should disable all git stuff when --no-git, and test all build options', async () => {
+  it('should disable all git stuff when --no-git, and test all build options', async () => {
     const {registry, cwd, pushTarget} = await prepareGitAndNpm()
 
     const beforeBuildHistory = Object.entries(await commitHistory(cwd))
