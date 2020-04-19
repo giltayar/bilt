@@ -74,9 +74,16 @@ An object with the following properties:
 
 * `name`: the name of the step (will be shown in the CLI before running the step)
 * `run`: the shell command to execute for the step
-* `enableOption`: a string, or an array of strings that defines the CLI options that
-  enable or disable this step (the default is `true`: to enable). The step will not execute
-  if all of the options that are set are explicitly set to `false`, or if no options are set at all.
+* `enableOption`: a string, or an array of two strings that defines the CLI options that
+  enable or disable this step (the default is `true`: to enable). The first option (or only one) is
+  the option itself, and the second one is the aggregate option. The first option overrides the
+  aggregate option, if it is set, and has the aggregate option if it is not set. If none are set,
+  the default is `true`. The final run command will receive the option as environment variables
+  in the form of `BILT_OPTION_${constantCase(option)}` with a value of `true` (as a string), but
+  if the final value of the option is false, the environment variable will not be set at all.
+
+  It is illegal for an option to appear in two steps with different aggregate options.
+
 * `parameterOption`: a string, or an array of strings, that define parameters to be passed to the
   `run` command. The `run` command will receive them in the form of
   `BILT_OPTION_${constantCase(option)}`, e.g. a parameter option `foo-bar` will be passed as

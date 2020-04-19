@@ -120,9 +120,8 @@ are relevant for _all_ build job configurations.
   (note that `bilt` will add a `[bilt-artifacts]` text to it, as described above).
 * `--force`: force the `packagesToBuild` packages (and their dependencies) to be built,
   even if they haven't changed.
-* <a name="assume-changed"></a>`--assume-changed`:
-  force the packages dependent on the `packagesToBuild` package to be built,
-  even if `packagesToBuild` or their dependents haven't changed. (Not yet implemented!)
+* `--before`, `--after`: whether to execute the `before` and `after` steps. The default is `true`.
+* `--envelope`: the aggregate option that aggregates `--before` and `--after`.
 * `--version`: show the version number of `bilt`.
 * `--help`: show the help that summarizes all these options.
 
