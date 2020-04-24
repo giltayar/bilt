@@ -1,15 +1,10 @@
 import {promisify} from 'util'
 import {execFile} from 'child_process'
-import {
-  Package,
-  Commitish,
-  RelativeFilePath,
-  Directory,
-  RelativeDirectoryPath,
-  LastSuccesfulBuildOfPackage,
-} from '@bilt/types'
+import {Package, Commitish, RelativeFilePath, Directory, RelativeDirectoryPath} from '@bilt/types'
 
-export type ChangedFilesInGit = Map<Commitish, RelativeFilePath[]>
+export type CommitInfo = {commitTime: Date; files: RelativeFilePath[]}
+
+export type ChangedFilesInGit = Map<Commitish, CommitInfo>
 
 export const FAKE_COMMITISH_FOR_UNCOMMITED_FILES = '' as Commitish
 const COMMIT_PREFIX_IN_LOG = '----'
@@ -30,7 +25,8 @@ export async function findChangedFiles({
       'git',
       [
         'log',
-        `--format=format:${COMMIT_PREFIX_IN_LOG}%H`,
+        `--format=format:${COMMIT_PREFIX_IN_LOG}%cd$%H`,
+        '--date=iso',
         '--name-only',
         `--since="${fromGitDate}"`,
         toCommit as string,
@@ -50,7 +46,7 @@ export async function findChangedFiles({
     }),
   ])
 
-  const ret = new Map<Commitish, RelativeFilePath[]>()
+  const ret = new Map<Commitish, CommitInfo>()
 
   if (includeWorkspaceFiles) {
     addChangedFilesFromGitStatus(ret, statusResult)
@@ -64,56 +60,7 @@ export async function findChangedFiles({
 export type PackageChange = {
   package: Package
   commit: Commitish
-}
-
-export function findChangedPackagesUsingLastSuccesfulBuild({
-  changedFilesInGit,
-  lastSuccesfulBuildOfPackages,
-}: {
-  changedFilesInGit: ChangedFilesInGit
-  lastSuccesfulBuildOfPackages: LastSuccesfulBuildOfPackage[]
-}): PackageChange[] {
-  const packageChangeCounts = new Map<RelativeDirectoryPath, number>()
-  const lastCommitOfPackages = new Map<RelativeDirectoryPath, Commitish>()
-  const lastSuccesfulBuildCommitToPackages: Map<Commitish, Package[]> = makeCommitsToPackages(
-    lastSuccesfulBuildOfPackages,
-  )
-
-  const packages = lastSuccesfulBuildOfPackages.map(({package: pkg}) => pkg)
-
-  const packagesWhosLastSuccesfulBuildWasFound = new Set<RelativeDirectoryPath>()
-  let packageWithSuccefulBuildWasFound = false
-  for (const [commit, changedFiles] of [...changedFilesInGit.entries()].reverse()) {
-    packageWithSuccefulBuildWasFound =
-      packageWithSuccefulBuildWasFound || lastSuccesfulBuildCommitToPackages.has(commit)
-    if (!packageWithSuccefulBuildWasFound) continue
-
-    const packagesInCommit = packages.filter((pkg) =>
-      changedFiles.some((changedFile) => changedFile.startsWith(pkg.directory + '/')),
-    )
-    const packagesThatWereLastSuccesfullyBuiltInThisCommit = lastSuccesfulBuildCommitToPackages.get(
-      commit,
-    )
-
-    for (const packageInCommit of packagesInCommit) {
-      lastCommitOfPackages.set(packageInCommit.directory, commit)
-      if (packagesThatWereLastSuccesfullyBuiltInThisCommit?.includes(packageInCommit)) {
-        packagesWhosLastSuccesfulBuildWasFound.add(packageInCommit.directory)
-      }
-      if (packagesWhosLastSuccesfulBuildWasFound.has(packageInCommit.directory))
-        packageChangeCounts.set(
-          packageInCommit.directory,
-          (packageChangeCounts.get(packageInCommit.directory) || 0) + 1,
-        )
-    }
-  }
-
-  return [...packageChangeCounts.entries()]
-    .filter(([, count]) => count > 1)
-    .map(([packageDirectory]) => ({
-      package: {directory: packageDirectory},
-      commit: nonNullable(lastCommitOfPackages.get(packageDirectory)),
-    }))
+  commitTime: Date
 }
 
 export function findLatestPackageChanges({
@@ -123,46 +70,25 @@ export function findLatestPackageChanges({
   changedFilesInGit: ChangedFilesInGit
   packages: Package[]
 }): PackageChange[] {
-  const lastCommitOfPackages = new Map<RelativeDirectoryPath, Commitish>()
+  const lastCommitOfPackages = new Map<RelativeDirectoryPath, [Commitish, CommitInfo]>()
 
-  for (const [commit, changedFiles] of [...changedFilesInGit.entries()]) {
+  for (const [commit, commitInfo] of [...changedFilesInGit.entries()]) {
     const packagesInCommit = packages.filter((pkg) =>
-      changedFiles.some((changedFile) => changedFile.startsWith(pkg.directory + '/')),
+      commitInfo.files.some((changedFile) => changedFile.startsWith(pkg.directory + '/')),
     )
     for (const packageInCommit of packagesInCommit) {
       if (!lastCommitOfPackages.has(packageInCommit.directory))
-        lastCommitOfPackages.set(packageInCommit.directory, commit)
+        lastCommitOfPackages.set(packageInCommit.directory, [commit, commitInfo])
     }
     if (lastCommitOfPackages.size === packages.length) {
       break
     }
   }
-  return [...lastCommitOfPackages.entries()].map(([packageDirectory, commitOfLastChange]) => ({
+  return [...lastCommitOfPackages.entries()].map(([packageDirectory, [commit, commitInfo]]) => ({
     package: {directory: packageDirectory},
-    commit: commitOfLastChange,
+    commit,
+    commitTime: commitInfo.commitTime,
   }))
-}
-
-function nonNullable<T>(t: T) {
-  return t as NonNullable<T>
-}
-
-function makeCommitsToPackages(
-  lastSuccesfulBuildOfPackages: LastSuccesfulBuildOfPackage[],
-): Map<Commitish, Package[]> {
-  const ret = new Map<Commitish, Package[]>()
-
-  for (const {package: pkg, lastSuccesfulBuild: commit} of lastSuccesfulBuildOfPackages) {
-    const packages = ret.get(commit)
-
-    if (packages) {
-      packages.push(pkg)
-    } else {
-      ret.set(commit, [pkg])
-    }
-  }
-
-  return ret
 }
 
 function addChangedFilesFromDiffTree(
@@ -173,13 +99,16 @@ function addChangedFilesFromDiffTree(
     .split('\n')
     .map((l) => l.trim())
     .filter((l) => !!l)
+  let currentCommit
   for (const gitLogLine of gitDiffTreeLogLines) {
-        var currentCommit //eslint-disable-line
     if (gitLogLine.startsWith(COMMIT_PREFIX_IN_LOG)) {
-      currentCommit = gitLogLine.trim().slice(COMMIT_PREFIX_IN_LOG.length) as Commitish
-      changedFiles.set(currentCommit, [])
+      const currentCommitWithTime = gitLogLine.trim().slice(COMMIT_PREFIX_IN_LOG.length).split('$')
+      const commitTime = new Date(currentCommitWithTime[0])
+      currentCommit = currentCommitWithTime[1] as Commitish
+
+      changedFiles.set(currentCommit, {commitTime: commitTime, files: []})
     } else if (currentCommit) {
-      changedFiles.get(currentCommit)?.push(gitLogLine as RelativeFilePath)
+      changedFiles.get(currentCommit)?.files.push(gitLogLine as RelativeFilePath)
     } else {
       throw new Error(`something is wrong here: ${gitLogLine}`)
     }
@@ -202,9 +131,14 @@ function addChangedFilesFromGitStatus(
     if (stagingStatus === ' ' && workspaceStatus === ' ') continue
 
     if (changedFiles.has(FAKE_COMMITISH_FOR_UNCOMMITED_FILES)) {
-      changedFiles.get(FAKE_COMMITISH_FOR_UNCOMMITED_FILES)?.push(fileName as RelativeFilePath)
+      changedFiles
+        .get(FAKE_COMMITISH_FOR_UNCOMMITED_FILES)
+        ?.files.push(fileName as RelativeFilePath)
     } else {
-      changedFiles.set(FAKE_COMMITISH_FOR_UNCOMMITED_FILES, [fileName as RelativeFilePath])
+      changedFiles.set(FAKE_COMMITISH_FOR_UNCOMMITED_FILES, {
+        commitTime: new Date(),
+        files: [fileName as RelativeFilePath],
+      })
     }
   }
 }
@@ -215,9 +149,12 @@ function addUntrackedFiles(changedFiles: ChangedFilesInGit, lsFilesResult: {stdo
     if (changedFiles.has(FAKE_COMMITISH_FOR_UNCOMMITED_FILES)) {
       changedFiles
         .get(FAKE_COMMITISH_FOR_UNCOMMITED_FILES)
-        ?.push(statusLine.trim() as RelativeFilePath)
+        ?.files.push(statusLine.trim() as RelativeFilePath)
     } else {
-      changedFiles.set(FAKE_COMMITISH_FOR_UNCOMMITED_FILES, [statusLine.trim() as RelativeFilePath])
+      changedFiles.set(FAKE_COMMITISH_FOR_UNCOMMITED_FILES, {
+        commitTime: new Date(),
+        files: [statusLine.trim() as RelativeFilePath],
+      })
     }
   }
 }
