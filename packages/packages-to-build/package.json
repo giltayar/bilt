@@ -37,7 +37,8 @@
   "dependencies": {
     "@bilt/artifact-dependency-graph": "^3.0.33",
     "@bilt/types": "^2.0.1",
-    "debug": "^4.1.1"
+    "debug": "^4.1.1",
+    "graphlib": "^2.1.8"
   },
   "devDependencies": {
     "@types/chai": "^4.2.11",
