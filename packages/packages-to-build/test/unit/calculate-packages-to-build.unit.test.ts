@@ -1,36 +1,45 @@
 import {describe, it} from 'mocha'
 import {expect} from 'chai'
-import {PackageInfo, PackageInfos, RelativeDirectoryPath} from '@bilt/types'
+import {RelativeDirectoryPath} from '@bilt/types'
 
-import {calculatePackagesToBuild} from '../../src/packages-to-build'
+import {
+  calculatePackagesToBuild,
+  PackageInfoWithBuildTimes,
+  PackageInfosWithBuildTimes,
+} from '../../src/packages-to-build'
 
 describe('calculatePackagesToBuild (unit)', function () {
-  const ePackage: PackageInfo = {
+  const ePackage: PackageInfoWithBuildTimes = {
     directory: 'edir' as RelativeDirectoryPath,
     name: 'epackage',
     dependencies: [],
+    lastBuildTime: undefined,
   }
-  const dPackage: PackageInfo = {
+  const dPackage: PackageInfoWithBuildTimes = {
     directory: 'ddir' as RelativeDirectoryPath,
     name: 'dpackage',
     dependencies: [ePackage],
+    lastBuildTime: undefined,
   }
-  const bPackage: PackageInfo = {
+  const bPackage: PackageInfoWithBuildTimes = {
     directory: 'packages/bdir' as RelativeDirectoryPath,
     name: 'bpackage',
     dependencies: [dPackage],
+    lastBuildTime: undefined,
   }
-  const cPackage: PackageInfo = {
+  const cPackage: PackageInfoWithBuildTimes = {
     directory: 'cdir' as RelativeDirectoryPath,
     name: 'cpackage',
     dependencies: [dPackage],
+    lastBuildTime: undefined,
   }
-  const aPackage: PackageInfo = {
+  const aPackage: PackageInfoWithBuildTimes = {
     directory: 'adir' as RelativeDirectoryPath,
     name: 'apackage',
     dependencies: [bPackage, cPackage],
+    lastBuildTime: undefined,
   }
-  const packageInfos: PackageInfos = {
+  const packageInfos: PackageInfosWithBuildTimes = {
     [aPackage.directory as string]: aPackage,
     [bPackage.directory as string]: bPackage,
     [cPackage.directory as string]: cPackage,
@@ -38,10 +47,10 @@ describe('calculatePackagesToBuild (unit)', function () {
     [ePackage.directory as string]: ePackage,
   }
 
-  it('if buildUpTo is undefined, only base pacakges are build', () => {
+  it('if buildUpTo is same as basePackages, only base pacakges are build', () => {
     const packagesToBuild = calculatePackagesToBuild({
       packageInfos,
-      buildUpTo: undefined,
+      buildUpTo: [dPackage, ePackage],
       basePackagesToBuild: [dPackage, ePackage],
     })
 
@@ -72,15 +81,17 @@ describe('calculatePackagesToBuild (unit)', function () {
   })
 
   it('if basePackages include packages that do not "lead" to buildUpTo packages, they will not be built', () => {
-    const gPackage: PackageInfo = {
+    const gPackage: PackageInfoWithBuildTimes = {
       directory: 'gdir' as RelativeDirectoryPath,
       name: 'gpackage',
       dependencies: [],
+      lastBuildTime: undefined,
     }
-    const fPackage: PackageInfo = {
+    const fPackage: PackageInfoWithBuildTimes = {
       directory: 'fdir' as RelativeDirectoryPath,
       name: 'fpackage',
       dependencies: [gPackage],
+      lastBuildTime: undefined,
     }
 
     const packagesToBuild = calculatePackagesToBuild({

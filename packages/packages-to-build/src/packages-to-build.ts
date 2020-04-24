@@ -1,57 +1,51 @@
-import {Package, PackageInfos, PackageInfo} from '@bilt/types'
-import {dependencyGraphSubsetToBuild, createDependencyGraph} from '@bilt/artifact-dependency-graph'
+import {Package} from '@bilt/types'
+
+import {PackageInfoWithBuildTimes as PIWBT, PackageInfosWithBuildTimes as PIWBTs} from './types'
+import {
+  createDependencyGraph,
+  buildLinkedDependencyGraphSubset,
+  addPackagesThatAreDirty,
+  addPackagesWhosDependenciesHaveLaterBuildTimes,
+  addPackagesThatIndirectlyNeedToBeBuilt,
+} from './dependency-graph'
+
+export type PackageInfoWithBuildTimes = PIWBT
+export type PackageInfosWithBuildTimes = PIWBTs
 
 export function calculatePackagesToBuild({
   packageInfos,
   basePackagesToBuild,
   buildUpTo,
 }: {
-  packageInfos: PackageInfos
+  packageInfos: PackageInfosWithBuildTimes
   basePackagesToBuild: Package[]
-  buildUpTo: Package[] | undefined
-}): PackageInfos {
-  const dependencyGraph = createDependencyGraph(
-    Object.values(packageInfos).map(packageInfoToArtifact),
-  ) as DependencyGraphArtifacts
+  buildUpTo: Package[]
+}): PackageInfosWithBuildTimes {
+  const dependencyGraph = createDependencyGraph(packageInfos)
 
-  const changedArtifacts = packagesToArtifactNames(basePackagesToBuild, packageInfos)
-  const artifactsToBuild = dependencyGraphSubsetToBuild({
+  buildLinkedDependencyGraphSubset(dependencyGraph, basePackagesToBuild, buildUpTo)
+
+  const packagesThatNeedToBeBuilt = new Set<string>()
+
+  addPackagesThatAreDirty(dependencyGraph, packageInfos, packagesThatNeedToBeBuilt)
+  addPackagesWhosDependenciesHaveLaterBuildTimes(
     dependencyGraph,
-    changedArtifacts: changedArtifacts,
-    uptoArtifacts: buildUpTo ? packagesToArtifactNames(buildUpTo, packageInfos) : [],
-    fromArtifacts: undefined,
-    justBuildArtifacts: buildUpTo == null ? changedArtifacts : undefined,
-  }) as DependencyGraphArtifacts
+    packageInfos,
+    packagesThatNeedToBeBuilt,
+  )
 
-  return artifactsToPackageInfos(artifactsToBuild, packageInfos)
+  addPackagesThatIndirectlyNeedToBeBuilt(dependencyGraph, packagesThatNeedToBeBuilt)
+
+  return filterPackageInfos(packageInfos, packagesThatNeedToBeBuilt)
 }
 
-function packageInfoToArtifact(packageInfo: PackageInfo) {
-  return {
-    name: packageInfo.directory as string,
-    dependencies: packageInfo.dependencies.map((dep) => dep.directory as string),
-  }
-}
-
-function packageInfoToArtifactName(packageInfo: PackageInfo) {
-  return packageInfo.directory as string
-}
-
-type DependencyGraphArtifacts = {[moduleName: string]: {dependencies: string[]}}
-
-function packagesToArtifactNames(packages: Package[], packageInfos: PackageInfos): string[] {
-  return packages.map((pkg) => packageInfoToArtifactName(packageInfos[pkg.directory as string]))
-}
-
-function artifactsToPackageInfos(
-  artifactsToBuild: DependencyGraphArtifacts,
-  packageInfos: PackageInfos,
+function filterPackageInfos(
+  packageInfos: PackageInfosWithBuildTimes,
+  packagesThatNeedToBeBuilt: Set<string>,
 ) {
-  const ret: PackageInfos = {}
-
-  for (const name of Object.keys(artifactsToBuild)) {
-    ret[name] = packageInfos[name]
-  }
-
-  return ret
+  return Object.fromEntries(
+    Object.entries(packageInfos).filter(([pkgDirectory]) =>
+      packagesThatNeedToBeBuilt.has(pkgDirectory),
+    ),
+  )
 }
