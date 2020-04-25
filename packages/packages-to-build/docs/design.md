@@ -35,16 +35,6 @@ all packages that can be built, given the froms and the uptos.
 
 This takes care of the 1st invariant.
 
-1. Using DFS, find the packages that link from all the uptos.
-1. Remove all nodes not in that list (this includes the from nodes not in that list).
-1. For each upto:
-   1. Find the packages that link from that upto (using DFS).
-   1. If none of the froms are in that list of packages, remove that upto.
-1. Using DFS, again find the packages that link from all the uptos.
-1. Remove all nodes not in that list.
-
-Alternatively:
-
 1. Using Djikstra, calculate the length of the path from each node to each other node
 1. For each node N:
    * If one of the from nodes has some finite length from N, and...

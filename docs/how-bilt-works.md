@@ -13,6 +13,23 @@ Once it determined the list of packages, it reads the `package.json`-s of all th
 out the dependencies from the `dependencies` and `devDependencies` in them,
 and creates the dependency graph of the packages based on those relationships.
 
+Once it has this information, including when each commit was built last (see [How Bilt knows which
+packages were already built](#how-bilt-knows-which-packages-were-already-built)), it builds a subset
+of the dependency graph, including only those packages it needs to build, while keeping the
+following invariants:
+
+1. A package will be built iff it is in the graph subset that links all the uptos to the froms in the
+  dependency graph. In other words, one of its predecessors (recursive) MUST be one of the uptos,
+  and one of its descendants (recursive) MUST be one of the froms.
+2. A package will be built if it is dirty
+3. A package will be built if its last build is smaller than one of the last builds of its
+  dependencies or if one of its packages is dirty.
+4. A package will be built if a package that it depends will be built.
+
+For more information on the design of how Bilt determines which packages to build, see
+[the design document for
+`@bilt/packages-to-build`](./packages/packages-to-build/docs/design.md#calculating-set-of-packages-to-build).
+
 ## <a name="version-increment-how"></a>How Bilt increments the package version
 
 Bilt cannot rely on the developer to increment the package version (although the developer can)
