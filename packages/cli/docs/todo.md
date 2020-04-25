@@ -1,10 +1,5 @@
 # TODO
 
-1. Deal with the scenarion where you `bilt . --no-upto`
-   and then that the next build (with `upto`) will continue where the previous left off.
-
-   Idea: using commit times, implement a "make like" check of whether a package needs to be built.
-
 1. Support deploy:
    1. Are builtin options (i.e. `--dry-run`) available as `BILT_OPTION_DRY_RUN`? They should be
    1. Send biltin.cli.options() exposes the cli options, to enable us to condition based on
@@ -18,4 +13,3 @@
    for the commit/add run (so `deploy` can override the commit message).
 
 1. Output as github actions workflow
-
