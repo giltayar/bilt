@@ -1,4 +1,4 @@
-# Usage
+# Getting started
 
 In which we understand how to use Bilt in a typical fashion, for regular use cases.
 For more information on every Bilt option, go to the [Reference](./reference.md) chapter.
@@ -106,17 +106,19 @@ What if you just want to build those two packages, without all the dependents? U
 bilt package-a package-b --no-upto -m "...."
 ```
 
-This builds the two packages (in the correct order), and only those two packages.
+This builds the two packages (in the correct order), and only those two packages. Another build,
+this time without `--no-upto` will notice that `package-a` and `package-b` were built and so
+build up from those packages.
 
 If you want to build only one of the `upto`-s (for example, you changed a lower-level package
-used by all microservices, but want to build upto only one microservice), you can override
-the `.biltrc.json`:
+used by all microservices, but want to build upto only one microservice), you can use
+`--upto`, which will override the `upto` you defined in `.biltrc.json`:
 
 ```sh
 bilt package-a package-b --upto microservice-a -m "...."
 ```
 
-Instead of specifying package names, you can specify the package diredtory. So if you're
+Instead of specifying package names, you can specify the package directory. So if you're
 currently in the `package-a` directory, you can do this:
 
 ```sh
@@ -124,11 +126,6 @@ bilt . ../<package-b-folder> -m "..."
 ```
 
 (or any combination of folders and package names you want)
-
-> Note that if `bilt` is run again, with no packages, it does _not_ build the dependent
-> packages again, since it notes that no packages were changed since their last build. If you want
-> to force it to do so, use [`--assume-changed`](./reference.md#assume-changed)
-> to force bilt to build all the packages that depend on the two packages.
 
 ## Dealing with build failures
 
