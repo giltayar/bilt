@@ -88,7 +88,7 @@ bilt [job] [packagesToBuild...] [options...]
    steps that are executed _after_ all the packages are built (usually commiting the changes and
    pushing to the remote repository).
 1. As described [elsewhere](./how-bilt-works.md#packages-built-how),
-   when commiting a commit, Bilt adds the text `[bilt-artifacts]` to
+   when commiting a commit, Bilt adds the text `[bilt-with-bilt]` to
    the commit message in order to remember that this commit is a formal build of those packages.
 1. If a package build fails, the build itself will continue, but only for packages that
    do not depend on that package (recursively). This is a partial build, but note that the
@@ -117,7 +117,7 @@ are relevant for _all_ build job configurations.
   come from the from the packages determined by the config file's `packages` field.
 * `--dry-run`: don't run the build, just show what packages _would_ be built, and in what order.
 * `--message`: the commit message when committing
-  (note that `bilt` will add a `[bilt-artifacts]` text to it, as described above).
+  (note that `bilt` will add a `[bilt-with-bilt]` text to it, as described above).
 * `--force`: force the `packagesToBuild` packages (and their dependencies) to be built,
   even if they haven't changed.
 * `--before`, `--after`: whether to execute the `before` and `after` steps. The default is `true`.
