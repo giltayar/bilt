@@ -1,10 +1,6 @@
 {
 	"folders": [
 		{
-			"name": "artifact-dependency-graph",
-			"path": "packages/artifact-dependency-graph"
-		},
-		{
 			"name": "artifact-finder",
 			"path": "packages/artifact-finder"
 		},
@@ -27,10 +23,6 @@
 		{
 			"name": "docs",
 			"path": "docs"
-		},
-		{
-			"name": "e2e-build",
-			"path": "packages/e2e-build"
 		},
 		{
 			"name": "git-packages",
