@@ -4,42 +4,42 @@ import {RelativeDirectoryPath} from '@bilt/types'
 
 import {
   calculatePackagesToBuild,
-  PackageInfoWithBuildTimes,
-  PackageInfosWithBuildTimes,
+  PackageInfoWithBuildTime,
+  PackageInfosWithBuildTime,
 } from '../../src/packages-to-build'
 
 describe('calculatePackagesToBuild (unit)', function () {
-  const ePackage: PackageInfoWithBuildTimes = {
+  const ePackage: PackageInfoWithBuildTime = {
     directory: 'edir' as RelativeDirectoryPath,
     name: 'epackage',
     dependencies: [],
     lastBuildTime: undefined,
   }
-  const dPackage: PackageInfoWithBuildTimes = {
+  const dPackage: PackageInfoWithBuildTime = {
     directory: 'ddir' as RelativeDirectoryPath,
     name: 'dpackage',
     dependencies: [ePackage],
     lastBuildTime: undefined,
   }
-  const bPackage: PackageInfoWithBuildTimes = {
+  const bPackage: PackageInfoWithBuildTime = {
     directory: 'packages/bdir' as RelativeDirectoryPath,
     name: 'bpackage',
     dependencies: [dPackage],
     lastBuildTime: undefined,
   }
-  const cPackage: PackageInfoWithBuildTimes = {
+  const cPackage: PackageInfoWithBuildTime = {
     directory: 'cdir' as RelativeDirectoryPath,
     name: 'cpackage',
     dependencies: [dPackage],
     lastBuildTime: undefined,
   }
-  const aPackage: PackageInfoWithBuildTimes = {
+  const aPackage: PackageInfoWithBuildTime = {
     directory: 'adir' as RelativeDirectoryPath,
     name: 'apackage',
     dependencies: [bPackage, cPackage],
     lastBuildTime: undefined,
   }
-  const packageInfosAllDirty: PackageInfosWithBuildTimes = {
+  const packageInfosAllDirty: PackageInfosWithBuildTime = {
     [aPackage.directory as string]: aPackage,
     [bPackage.directory as string]: bPackage,
     [cPackage.directory as string]: cPackage,
@@ -47,20 +47,20 @@ describe('calculatePackagesToBuild (unit)', function () {
     [ePackage.directory as string]: ePackage,
   }
 
-  const gPackage: PackageInfoWithBuildTimes = {
+  const gPackage: PackageInfoWithBuildTime = {
     directory: 'gdir' as RelativeDirectoryPath,
     name: 'gpackage',
     dependencies: [],
     lastBuildTime: undefined,
   }
-  const fPackage: PackageInfoWithBuildTimes = {
+  const fPackage: PackageInfoWithBuildTime = {
     directory: 'fdir' as RelativeDirectoryPath,
     name: 'fpackage',
     dependencies: [gPackage],
     lastBuildTime: undefined,
   }
 
-  function build(pkg: PackageInfoWithBuildTimes, lastBuildTime: number): PackageInfoWithBuildTimes {
+  function build(pkg: PackageInfoWithBuildTime, lastBuildTime: number): PackageInfoWithBuildTime {
     return {...pkg, lastBuildTime}
   }
 
@@ -159,7 +159,7 @@ describe('calculatePackagesToBuild (unit)', function () {
 
   describe('with build times', () => {
     it('should not build anything if all packages have the same build time', async () => {
-      const packageInfos: PackageInfosWithBuildTimes = {
+      const packageInfos: PackageInfosWithBuildTime = {
         [aPackage.directory as string]: build(aPackage, 1),
         [bPackage.directory as string]: build(bPackage, 1),
         [cPackage.directory as string]: build(cPackage, 1),
@@ -177,7 +177,7 @@ describe('calculatePackagesToBuild (unit)', function () {
     })
 
     it('should build up when mid level package is dirty', async () => {
-      const packageInfos: PackageInfosWithBuildTimes = {
+      const packageInfos: PackageInfosWithBuildTime = {
         [aPackage.directory as string]: build(aPackage, 1),
         [bPackage.directory as string]: build(bPackage, 1),
         [cPackage.directory as string]: cPackage,
@@ -215,7 +215,7 @@ describe('calculatePackagesToBuild (unit)', function () {
     })
 
     it('should build everything when low package is dirty', async () => {
-      const packageInfos: PackageInfosWithBuildTimes = {
+      const packageInfos: PackageInfosWithBuildTime = {
         [aPackage.directory as string]: build(aPackage, 1),
         [bPackage.directory as string]: build(bPackage, 1),
         [cPackage.directory as string]: build(bPackage, 1),
@@ -249,7 +249,7 @@ describe('calculatePackagesToBuild (unit)', function () {
     })
 
     it('should build up when mid level package is newer', async () => {
-      const packageInfos: PackageInfosWithBuildTimes = {
+      const packageInfos: PackageInfosWithBuildTime = {
         [aPackage.directory as string]: build(aPackage, 1),
         [bPackage.directory as string]: build(bPackage, 1),
         [cPackage.directory as string]: build(cPackage, 2),

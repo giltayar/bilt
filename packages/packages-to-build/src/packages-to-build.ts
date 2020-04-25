@@ -1,6 +1,6 @@
 import {Package} from '@bilt/types'
 
-import {PackageInfoWithBuildTimes as PIWBT, PackageInfosWithBuildTimes as PIWBTs} from './types'
+import {PackageInfoWithBuildTime as PIWBT, PackageInfosWithBuildTime as PIWBTs} from './types'
 import {
   createDependencyGraph,
   buildLinkedDependencyGraphSubset,
@@ -9,18 +9,18 @@ import {
   addPackagesThatIndirectlyNeedToBeBuilt,
 } from './dependency-graph'
 
-export type PackageInfoWithBuildTimes = PIWBT
-export type PackageInfosWithBuildTimes = PIWBTs
+export type PackageInfoWithBuildTime = PIWBT
+export type PackageInfosWithBuildTime = PIWBTs
 
 export function calculatePackagesToBuild({
   packageInfos,
   basePackagesToBuild,
   buildUpTo,
 }: {
-  packageInfos: PackageInfosWithBuildTimes
+  packageInfos: PackageInfosWithBuildTime
   basePackagesToBuild: Package[]
   buildUpTo: Package[]
-}): PackageInfosWithBuildTimes {
+}): PackageInfosWithBuildTime {
   const dependencyGraph = createDependencyGraph(packageInfos)
 
   buildLinkedDependencyGraphSubset(dependencyGraph, basePackagesToBuild, buildUpTo)
@@ -40,7 +40,7 @@ export function calculatePackagesToBuild({
 }
 
 function filterPackageInfos(
-  packageInfos: PackageInfosWithBuildTimes,
+  packageInfos: PackageInfosWithBuildTime,
   packagesThatNeedToBeBuilt: Set<string>,
 ) {
   return Object.fromEntries(

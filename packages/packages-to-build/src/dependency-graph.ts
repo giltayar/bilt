@@ -1,8 +1,8 @@
 import gl, {Graph} from 'graphlib'
-import {PackageInfosWithBuildTimes} from './types'
+import {PackageInfosWithBuildTime} from './types'
 import {Package} from '@bilt/types'
 
-export function createDependencyGraph(packageInfos: PackageInfosWithBuildTimes) {
+export function createDependencyGraph(packageInfos: PackageInfosWithBuildTime) {
   const graph = new gl.Graph()
 
   for (const [pkgId, pkgInfo] of Object.entries(packageInfos)) {
@@ -53,7 +53,7 @@ export function addPackagesThatIndirectlyNeedToBeBuilt(
 
 export function addPackagesThatAreDirty(
   dependencyGraph: Graph,
-  packageInfos: PackageInfosWithBuildTimes,
+  packageInfos: PackageInfosWithBuildTime,
   packagesThatNeedToBeBuilt: Set<string>,
 ) {
   for (const pkg of dependencyGraph.nodes()) {
@@ -66,7 +66,7 @@ export function addPackagesThatAreDirty(
 
 export function addPackagesWhosDependenciesHaveLaterBuildTimes(
   dependencyGraph: Graph,
-  packageInfos: PackageInfosWithBuildTimes,
+  packageInfos: PackageInfosWithBuildTime,
   packagesThatNeedToBeBuilt: Set<string>,
 ) {
   for (const pkg of dependencyGraph.nodes()) {
