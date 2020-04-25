@@ -1,4 +1,5 @@
 'use strict'
+const {promisify: p} = require('util')
 const path = require('path')
 const {describe, it} = require('mocha')
 const {expect, use} = require('chai')
@@ -129,26 +130,52 @@ describe('build-flow (it)', function () {
   })
 
   it('--force should work and also build dependencies', async () => {
-    const cwd = await prepareForSimpleBuild('simple-build.yaml')
+    const cwd = await prepareForSimpleBuild('simple-build.yaml', {packages: ['./a', './b', './c']})
     await createAdepsBdepsCPackages(cwd)
 
-    await runBuild(cwd, 'build all', ['./a', './b', './c'])
+    await runBuild(cwd, 'build all')
 
     expect(await packageScriptCount(cwd, 'a', 'during2')).to.equal(1)
     expect(await packageScriptCount(cwd, 'b', 'during2')).to.equal(1)
     expect(await packageScriptCount(cwd, 'c', 'during2')).to.equal(1)
 
-    await runBuild(cwd, 'build nothing because nothing changed', ['./b'], ['./a'])
+    await runBuild(cwd, 'build nothing because nothing changed')
 
     expect(await packageScriptCount(cwd, 'a', 'during2')).to.equal(1)
     expect(await packageScriptCount(cwd, 'b', 'during2')).to.equal(1)
     expect(await packageScriptCount(cwd, 'c', 'during2')).to.equal(1)
 
-    await runBuild(cwd, 'build b and a because force', ['./b'], ['./a'], ['--force'])
+    await runBuild(cwd, 'build c, b, and a because force', ['./c'], ['./a'], ['--force'])
 
     expect(await packageScriptCount(cwd, 'a', 'during2')).to.equal(2)
     expect(await packageScriptCount(cwd, 'b', 'during2')).to.equal(2)
+    expect(await packageScriptCount(cwd, 'c', 'during2')).to.equal(2)
+  })
+
+  it('should build dependencies even if not dirty because lower package was built', async () => {
+    const cwd = await prepareForSimpleBuild('simple-build.yaml', {packages: ['./a', './b', './c']})
+    await createAdepsBdepsCPackages(cwd)
+
+    await runBuild(cwd, 'build all')
+
+    expect(await packageScriptCount(cwd, 'a', 'during2')).to.equal(1)
+    expect(await packageScriptCount(cwd, 'b', 'during2')).to.equal(1)
     expect(await packageScriptCount(cwd, 'c', 'during2')).to.equal(1)
+
+    // we have to wait one second for the time of the commit of c to be different than the others
+    await p(setTimeout)(1000)
+
+    await runBuild(cwd, 'build c, forced', ['./c'], undefined, ['--force', '--no-upto'])
+
+    expect(await packageScriptCount(cwd, 'a', 'during2')).to.equal(1)
+    expect(await packageScriptCount(cwd, 'b', 'during2')).to.equal(1)
+    expect(await packageScriptCount(cwd, 'c', 'during2')).to.equal(2)
+
+    await runBuild(cwd, 'build b,a because c changed in previous build')
+
+    expect(await packageScriptCount(cwd, 'a', 'during2')).to.equal(2)
+    expect(await packageScriptCount(cwd, 'b', 'during2')).to.equal(2)
+    expect(await packageScriptCount(cwd, 'c', 'during2')).to.equal(2)
   })
 
   it('should ignore packages not in "packages" and add upto packages to packages to build', async () => {
