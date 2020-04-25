@@ -10,6 +10,7 @@ The configuration file that the `bilt` looks for to:
 1. Determine where the root of the monorepo is (the same directory the `.biltrc.json` resides in)
 1. Determine what packages are in the project
 1. Determine default values for the `bilt`command line arguments.
+1. Determine the build configuration for the project.
 
 If you do not specify a configuration file, `bilt` CLI looks in the current
 directory and upwards for the configuration file, using the usual standards for JS configuration
@@ -31,10 +32,12 @@ for [`cosmiconfig`](https://github.com/davidtheclark/cosmiconfig)).
    it does not look inside that package for another package, so nested packages
    are not supported in auto-discovery
    (although they are supported by specifying packages explicitly).
-* `buildConfiguration`: either the JSON of the build configuration (that builds the `packages`), or
-  a string containing the path to the build configuration. If empty, will default to [the default
-  build configuration built into Bilt](./build-configurations.md#the-default-build-configuration).
-* `jobs`: an object whose keys are `jobIds` (see [build
+* `jobs`: either the JSON of a build configuration (that builds the `packages`), or a string
+  containing the path to the build configuration (which will be loaded using
+  [`cosmiconfig`](https://github.com/davidtheclark/cosmiconfig)). If empty, will default to [the
+  default build configuration built into
+  Bilt](./build-configurations.md#the-default-build-configuration).
+* `jobDefaults`: an object whose keys are `jobIds` (see [build
    configuration](./build-configurations.md)), and values are objects that define
    the default command line arguments for that job.
 * Other fields: any other field here is a default for the command line arguments that

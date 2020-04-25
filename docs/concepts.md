@@ -80,3 +80,20 @@ is referred to as a "package build".
 
 But a build is also the set of package builds needed to build all the packages in a repo due to
 a code change.
+
+## Build configurations
+
+A build configuration defines the different jobs that can be executed on a monorepo. For example,
+"build" jobs, and "deploy" jobs. If not specified in the Bilt cli, the "build" job is executed.
+
+Each job defines the steps needed to execute job on the packages. For example, the (simplified)
+steps a package needs to be built are `npm install`, `npm run build`, and `npm test`.
+
+The build configuration includes three phases:
+
+* before: the steps to do before all the packages are built. For example, pulling changes from the
+  remote repository
+* during: the steps to do for each package built. For example, `npm install`, `npm run build`, and
+  `npm test`.
+* after: the steps to do after all the packages are built. For example, pushing changes to the
+  remote repository.

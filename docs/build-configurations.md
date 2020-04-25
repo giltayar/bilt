@@ -1,30 +1,23 @@
 # Build configurations
 
-In which we define precisely what build configurations are, and how to use them.
+In which we define precisely what [build configurations](./docs/concepts.md#build-configurations)
+are, and how to use them.
 
 ## What are build configurations
 
-Build configurations are a JSON where you can define how your build looks like: how
-you build each package and what should be done before all packages are built, and after them.
-While there is a default build configuration, which should be OK for most monorepo, some
-projects have some special needs that make them write their own build configurations.
+A build configuration defines the different jobs that can be executed on a monorepo. For example,
+"build" jobs, and "deploy" jobs. If not specified in the Bilt cli, the "build" job is executed.
 
-For example, a project may have a special npm script that you want to run for each package, or
-maybe send an HTTP request to a web service that keeps track of all published packages.
-
-Or maybe you want to have two different kind of jobs: a `build` job and a `deployment` job.
+See [build configurations](./docs/concepts.md#build-configurations) for a more precise definition of
+build configurations.
 
 ## Using build configurations
 
-Build configurations are defined in the `.biltrc.json`, in the property
-[`buildConfiguration`](./reference.md#build-configuration). It can either be
-the JSON of the build configuration, or a string containing the path to the build configuration.
+The build configuration is defined in the `.biltrc.json`, in the property
+[`jobs`](./reference.md#configuration-file).
 
-If it is a path, the file can either be a JSON, a JS module, or a YAML file
-(loaded using [cosmiconfig](https://www.npmjs.com/package/cosmiconfig)).
-
-When using the CLI, it will look for the job `build` when building the packages, unless
-you use another command, like:
+When using the CLI, it will by default use the job `build` from the build configuration, unless you
+use another command, like:
 
 ```sh
 bilt deploy ./ms-a
@@ -41,11 +34,14 @@ in Typescript (as embedded in JSDoc) [here](./packages/build-with-configuration/
 
 * A build configuration is a JSON object with the following properties:
 
-* `jobs`: the only property in the object. It is a `Jobs` object.
-* `extends`: a path to a file that is another build configuration. The CLI will look
-  for a job in the `extends` build configuration if it is not found in the main one.
+* `jobs`: a `Jobs` object.
+* `extends`: a path to a file that is another build configuration. The CLI will look for a job in
+  the `extends` build configuration if it is not found in the main one (the file will be loaded
+  using [`cosmiconfig`](https://github.com/davidtheclark/cosmiconfig), just like all configuration
+  files).
 
-  The special string value `#default` means that this build configuration extends the default one.
+  The special string value `#default` means that this build configuration extends the
+  [default](#the-default-build-configuration) one.
 
 ### The `Jobs` object
 
@@ -189,6 +185,9 @@ jobs:
 
 ## The default build configuration
 
+This describes what the default build configuration does. For the exact build configuratin
+file, see [here](./packages/build-with-configuration/src/default-build.yaml).
+
 Before all of the package builds:
 
 1. `git pull --rebase --autostash`: to pull all changes from the remote repository before building.
@@ -231,5 +230,5 @@ default build configuration
 * `--build`: enables disables "build" when building
 * `--test`: enables disables "test" when building
 * `--publish`: enables disables "publish" when building
-* `--git`: no-git disables push/pull/commit together (even if they are defaults in the
-  `.biltrc.json`), unless they are explicitly specified in the command line
+* `--git`: no-git disables push/pull/commit together, unless they are explicitly specified in the
+  command line
