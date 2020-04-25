@@ -32,20 +32,4 @@ jobs:
         - name: 'stage files'
           enableOption: ['git']
           run: 'git add .'
-
-  another-build:
-    steps:
-      during:
-        - name: 'another-during1'
-          enableOption: ['another-during1']
-          run: |
-            echo $(expr $(cat another-during1-count || echo 0) + 1) >another-during1-count
-            cat another-during1-count
-      after:
-        - name: 'another-after1'
-          enableOption: ['another-after1']
-          run: 'echo $(expr $(cat another-after1-count || echo 0) + 1) >another-after1-count && cat another-after1-count'
-        - name: 'git commit'
-          enableOption: ['commit', 'git']
-          parameterOption: 'message'
-          run: 'git commit --allow-empty -m "$BILT_OPTION_MESSAGE"'
+extends: './another-build.yaml'

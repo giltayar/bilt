@@ -58,7 +58,7 @@ function generateYargsCommandsAndOptions(argv, config, buildConfigurationChain, 
       array: true,
       hidden: true,
     })
-    .option('buildConfiguration', {
+    .option('jobDefaults', {
       hidden: true,
     })
     .option('jobs', {
@@ -129,7 +129,7 @@ function generateYargsCommandsAndOptions(argv, config, buildConfigurationChain, 
             buildConfiguration,
             jobId,
           )
-          const optionDefaults = (config.jobs || {})[jobId] || {} || {}
+          const optionDefaults = (config.jobDefaults || {})[jobId] || {} || {}
 
           for (const enableOption of enableOptions) {
             yargs = yargs.option(

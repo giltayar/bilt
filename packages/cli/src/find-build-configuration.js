@@ -1,35 +1,45 @@
 'use strict'
-const fs = require('fs')
 const path = require('path')
-const YAML = require('yaml')
+const cosmiconfig = require('cosmiconfig')
 
 /**
  *
- * @param {{buildConfiguration: string|undefined}} config
+ * @param {{jobs: string|object |undefined}} config
  * @param {string} rootDirectory
  * @returns {Promise<object[]>}
  */
 async function findBuildConfiguration(config, rootDirectory) {
   const buildConfigurationChain = []
-  let buildConfigurationPath = config.buildConfiguration
+  let jobsConfigurationOrBuildConfigurationPath = config.jobs
+  let buildConfigurationRootPath = rootDirectory
   for (;;) {
-    const buildConfiguration = YAML.parse(
-      await fs.promises.readFile(
-        buildConfigurationPath
-          ? path.resolve(rootDirectory, buildConfigurationPath)
-          : path.join(__dirname, 'default-build.yaml'),
-        'utf8',
-      ),
-      {
-        //@ts-ignore
-        prettyErrors: true,
-      },
-    )
+    const buildConfiguration =
+      jobsConfigurationOrBuildConfigurationPath &&
+      typeof jobsConfigurationOrBuildConfigurationPath === 'object'
+        ? {jobs: config.jobs}
+        : (
+            await cosmiconfig
+              .cosmiconfig('bilt')
+              .load(
+                jobsConfigurationOrBuildConfigurationPath
+                  ? path.resolve(
+                      buildConfigurationRootPath,
+                      jobsConfigurationOrBuildConfigurationPath,
+                    )
+                  : path.join(__dirname, 'default-build.yaml'),
+              )
+          ).config
 
     buildConfigurationChain.push(buildConfiguration)
 
+    if (typeof jobsConfigurationOrBuildConfigurationPath === 'string') {
+      buildConfigurationRootPath = path.dirname(
+        path.resolve(buildConfigurationRootPath, jobsConfigurationOrBuildConfigurationPath),
+      )
+    }
+
     if (buildConfiguration.extends) {
-      buildConfigurationPath =
+      jobsConfigurationOrBuildConfigurationPath =
         buildConfiguration.extends === '#default' ? undefined : buildConfiguration.extends
     } else {
       break

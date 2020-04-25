@@ -77,9 +77,12 @@ describe('default-build (it)', function () {
     expect(noBuildHistory).to.have.length(history.length)
   })
 
-  it('should build packages with dependencies correctly', async () => {
+  it('should build packages with dependencies correctly (and check extends: #default', async () => {
     const {registry, cwd} = await prepareGitAndNpm()
     const {cPackageJson, bPackageJson} = await createAdepsBdepsCPackages(cwd, registry)
+
+    await writeFile('.biltrc.json', {jobs: './extends-default.json'}, {cwd})
+    await writeFile('extends-default.json', {extends: '#default', jobs: {}}, {cwd})
 
     await runBuild(cwd, 'first build', ['*'], ['./a'])
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')

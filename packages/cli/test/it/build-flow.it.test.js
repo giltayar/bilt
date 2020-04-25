@@ -268,7 +268,7 @@ describe('build-flow (it)', function () {
     expect(await packageScriptCount(cwd, 'packages/c', 'during2')).to.equal(2)
   })
 
-  it('should run with non-default jobId (and one of the phases is missing)', async () => {
+  it('should run with non-default jobId in an extends folder (and one of the phases is missing)', async () => {
     const cwd = await prepareForSimpleBuild('simple-build.yaml')
 
     await writeFile(['a', 'package.json'], {name: 'a-package', version: '1.0.0'}, {cwd})

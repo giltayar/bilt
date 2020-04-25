@@ -96,7 +96,7 @@ async function prepareForSimpleBuild(buildConfigurationName, moreBuiltRc) {
 
   await writeFile(
     '.biltrc.json',
-    {buildConfiguration: path.resolve(__dirname, buildConfigurationName), ...moreBuiltRc},
+    {jobs: path.resolve(__dirname, buildConfigurationName), ...moreBuiltRc},
     {cwd},
   )
 

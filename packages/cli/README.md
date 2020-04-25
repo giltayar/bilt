@@ -1,2 +1,3 @@
-<!-- markdownlint-disable MD033 -->
-# bilt CLI
+# Bilt CLI
+
+The CLI for Bilt. For the documenation, read the Bilt documentation: <../../README.md>.
