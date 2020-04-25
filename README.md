@@ -11,7 +11,7 @@ while guaranteeing that only those packages that were not built (and their depen
 
 ## Why Bilt
 
-(T go directly to the meat of Bilt, read
+(To go directly to the meat of Bilt, read
 [Structure of a Bilt monorepo](./docs/monorepo-structure.md) and then
 go to the [Usage](./docs/usage.md) chapter.)
 
