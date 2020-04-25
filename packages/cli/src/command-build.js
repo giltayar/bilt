@@ -1,7 +1,7 @@
-//@ts-check
 'use strict'
 const path = require('path')
 const debug = require('debug')('bilt:cli:build')
+const throat = require('throat')
 const {findNpmPackages, findNpmPackageInfos} = require('@bilt/npm-packages')
 const {calculateBuildOrder, build} = require('@bilt/build')
 const {calculatePackagesToBuild} = require('@bilt/packages-to-build')
@@ -45,7 +45,7 @@ async function buildCommand({
   /**@type {typeof userBuildOptions} */
   const buildOptions = {
     ...userBuildOptions,
-    message: userBuildOptions.message + '\n\n\n[bilt-artifacts]',
+    message: userBuildOptions.message + '\n\n\n[bilt-with-bilt]',
   }
 
   const {
@@ -53,20 +53,22 @@ async function buildCommand({
     uptoPackages,
     packageInfos,
   } = await findInitialSetOfPackagesToBuild(rootDirectory, packages, packagesToBuild, upto)
-  const {basePackagesToBuild} = await determineBuildInformation(
-    rootDirectory,
-    initialSetOfPackagesToBuild,
-    packageInfos,
-    force,
-  )
   debug(
     `determined packages to build`,
-    basePackagesToBuild.map((pkg) => pkg.directory),
+    initialSetOfPackagesToBuild.map((pkg) => pkg.directory),
+  )
+  const changedPackageInfos = await determineChangedPackagesBuildInformation(
+    rootDirectory,
+    packageInfos,
+    samePackages(uptoPackages, initialSetOfPackagesToBuild)
+      ? initialSetOfPackagesToBuild
+      : undefined,
+    force,
   )
 
   const finalPackagesToBuild = calculatePackagesToBuild({
-    packageInfos,
-    basePackagesToBuild,
+    packageInfos: changedPackageInfos,
+    basePackagesToBuild: initialSetOfPackagesToBuild,
     buildUpTo: uptoPackages,
   })
 
@@ -128,33 +130,49 @@ async function buildCommand({
   }
 }
 
-/**@returns {Promise<{
- * packageInfos: import('@bilt/types').PackageInfos,
- * basePackagesToBuild: import('@bilt/types').Package[],
- * }>} */
-async function determineBuildInformation(
+function samePackages(packages1, packages2) {
+  if (packages1.length !== packages2.length) {
+    return false
+  }
+
+  const packages1Set = new Set(packages1.map((p) => p.directory))
+  const packages2Set = new Set(packages2.map((p) => p.directory))
+
+  return [...packages1Set.values()].every((p) => packages2Set.has(p))
+}
+
+/**@returns {Promise<import('@bilt/packages-to-build').PackageInfosWithBuildTime>} */
+async function determineChangedPackagesBuildInformation(
   /**@type {import('@bilt/types').Directory} */ rootDirectory,
-  /**@type {import('@bilt/types').Package[]} */ initialSetOfPackagesToBuild,
   /**@type {import('@bilt/types').PackageInfos} */ packageInfos,
+  /**@type {import('@bilt/types').Package[]} */ checkOnlyThesePackages,
   /**@type {boolean} */ force,
 ) {
-  if (force) {
-    return {packageInfos, basePackagesToBuild: initialSetOfPackagesToBuild}
-  }
-
   const changedFilesInGit = await findChangedFiles({rootDirectory})
-  const tentativeChangedPackages = findLatestPackageChanges({
+  const packageChanges = findLatestPackageChanges({
     changedFilesInGit,
-    packages: initialSetOfPackagesToBuild,
+    packages: checkOnlyThesePackages ? checkOnlyThesePackages : Object.values(packageInfos),
   })
-  const changedPackages = force
-    ? tentativeChangedPackages
-    : await filterOutPackagesThatWereAlreadyBuilt(tentativeChangedPackages, rootDirectory)
+  const changedPackageInfos = force
+    ? makeAllPackagesDirty(packageInfos)
+    : await addLastBuildTimeToPackageInfos(packageInfos, packageChanges, rootDirectory)
 
-  return {
-    packageInfos,
-    basePackagesToBuild: changedPackages.map(({package: pkg}) => pkg),
-  }
+  return changedPackageInfos
+}
+
+/**
+ *
+ * @param {import('@bilt/types').PackageInfos} packageInfos
+ * @returns {import('@bilt/packages-to-build').PackageInfosWithBuildTime}
+ */
+function makeAllPackagesDirty(packageInfos) {
+  // @ts-ignore
+  return Object.fromEntries(
+    Object.entries(packageInfos).map(([directory, pkgInfo]) => [
+      directory,
+      {...pkgInfo, lastBuildTime: undefined},
+    ]),
+  )
 }
 
 /**@returns {Promise<{
@@ -203,27 +221,53 @@ async function buildPackages(
 
 /**
  *
- * @param {import('@bilt/git-packages').PackageChange[]} changedPackages
+ * @param {import('@bilt/types').PackageInfos} packageInfos,
+ * @param {import('@bilt/git-packages').PackageChange[]} packageChanges
  * @param {import('@bilt/types').Directory} rootDirectory
- * @returns {Promise<import('@bilt/git-packages').PackageChange[]>}
+ * @returns {Promise<import('@bilt/packages-to-build').PackageInfosWithBuildTime>}
  */
-async function filterOutPackagesThatWereAlreadyBuilt(changedPackages, rootDirectory) {
-  return (
+async function addLastBuildTimeToPackageInfos(packageInfos, packageChanges, rootDirectory) {
+  const dirtyInfo = new Map(
+    //@ts-ignore
     await Promise.all(
-      changedPackages.map(async ({package: pkg, commit}) => {
-        if (commit === FAKE_COMMITISH_FOR_UNCOMMITED_FILES) {
-          return {package: pkg, commit, isBuild: false}
-        }
-        const stdout = await shWithOutput(`git show --format=%B -s ${commit}`, {cwd: rootDirectory})
+      packageChanges.map(
+        //@ts-ignore
+        throat(20, async (packageChange) => {
+          if (packageChange.commit === FAKE_COMMITISH_FOR_UNCOMMITED_FILES) {
+            return [packageChange.package.directory, {...packageChange, isDirty: true}]
+          }
+          const stdout = await shWithOutput(`git show --format=%B -s ${packageChange.commit}`, {
+            cwd: rootDirectory,
+          })
 
-        if (stdout.includes('[bilt-artifacts]')) {
-          return {package: pkg, commit, isBuild: true}
-        } else {
-          return {package: pkg, commit, isBuild: false}
-        }
-      }),
-    )
-  ).filter((x) => !x.isBuild)
+          if (stdout.includes('[bilt-with-bilt]')) {
+            return [packageChange.package.directory, {...packageChange, isDirty: false}]
+          } else {
+            return [packageChange.package.directory, {...packageChange, isDirty: true}]
+          }
+        }),
+      ),
+    ),
+  )
+
+  //@ts-ignore
+  return Object.fromEntries(
+    Object.entries(packageInfos).map(([directory, packageInfo]) => {
+      const packageDirtyInfo = dirtyInfo.get(directory)
+
+      if (packageDirtyInfo) {
+        return [
+          directory,
+          {
+            ...packageInfo,
+            lastBuildTime: packageDirtyInfo.isDirty ? undefined : packageDirtyInfo.commitTime,
+          },
+        ]
+      } else {
+        return [directory, {...packageInfo, lastBuildTime: new Date()}]
+      }
+    }),
+  )
 }
 
 /**
@@ -272,7 +316,11 @@ async function findInitialSetOfPackagesToBuild(
     rootDirectory,
   )
 
-  return {initialSetOfPackagesToBuild, uptoPackages, packageInfos}
+  return {
+    initialSetOfPackagesToBuild,
+    uptoPackages: uptoPackages === undefined ? initialSetOfPackagesToBuild : uptoPackages,
+    packageInfos,
+  }
 }
 
 /**
