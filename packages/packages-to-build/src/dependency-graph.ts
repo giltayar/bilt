@@ -6,6 +6,7 @@ export function createDependencyGraph(packageInfos: PackageInfosWithBuildTime) {
   const graph = new gl.Graph()
 
   for (const [pkgId, pkgInfo] of Object.entries(packageInfos)) {
+    graph.setNode(pkgId)
     for (const dependency of pkgInfo.dependencies) {
       graph.setEdge(pkgId, dependency.directory)
     }

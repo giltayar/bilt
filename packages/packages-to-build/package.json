@@ -1,6 +1,6 @@
 {
   "name": "@bilt/packages-to-build",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "",
   "main": "lib/src/packages-to-build.js",
   "types": "lib/src/packages-to-build.d.ts",

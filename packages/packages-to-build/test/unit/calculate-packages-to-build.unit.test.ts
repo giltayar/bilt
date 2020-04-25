@@ -65,6 +65,19 @@ describe('calculatePackagesToBuild (unit)', function () {
   }
 
   describe('all dirty packages', () => {
+    it('should support edgeless packages', () => {
+      const twoPackagesWithNoDependencies = {
+        [ePackage.directory as string]: ePackage,
+        [gPackage.directory as string]: gPackage,
+      }
+      const packagesToBuild = calculatePackagesToBuild({
+        packageInfos: twoPackagesWithNoDependencies,
+        buildUpTo: [ePackage, gPackage],
+        basePackagesToBuild: [ePackage, gPackage],
+      })
+
+      expect(packagesToBuild).to.eql(twoPackagesWithNoDependencies)
+    })
     it('if buildUpTo is same as basePackages, only base pacakges are build', () => {
       const packagesToBuild = calculatePackagesToBuild({
         packageInfos: packageInfosAllDirty,
