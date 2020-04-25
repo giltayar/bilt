@@ -1,6 +1,6 @@
 {
   "name": "@bilt/git-packages",
-  "version": "8.0.0",
+  "version": "8.0.2",
   "description": "",
   "main": "lib/src/git-packages.js",
   "types": "lib/src/git-packages.d.ts",
@@ -32,7 +32,7 @@
     "directory": "packages/git-packages"
   },
   "dependencies": {
-    "@bilt/types": "^2.0.1",
+    "@bilt/types": "^2.0.3",
     "debug": "^4.1.1"
   },
   "devDependencies": {

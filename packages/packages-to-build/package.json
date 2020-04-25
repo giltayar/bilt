@@ -1,6 +1,6 @@
 {
   "name": "@bilt/packages-to-build",
-  "version": "3.0.3",
+  "version": "3.0.5",
   "description": "",
   "main": "lib/src/packages-to-build.js",
   "types": "lib/src/packages-to-build.d.ts",
@@ -35,7 +35,7 @@
     "directory": "packages/packages-to-build"
   },
   "dependencies": {
-    "@bilt/types": "^2.0.1",
+    "@bilt/types": "^2.0.3",
     "@types/graphlib": "^2.1.5",
     "debug": "^4.1.1",
     "graphlib": "^2.1.8"

@@ -1,6 +1,6 @@
 {
   "name": "@bilt/artifact-finder",
-  "version": "2.0.30",
+  "version": "2.0.32",
   "description": "",
   "main": "src/artifact-finder.js",
   "bin": {
@@ -35,7 +35,7 @@
     "eslint": "^6.8.0",
     "eslint-plugin-prettier": "^3.1.3",
     "mocha": "^7.1.1",
-    "prettier": "^2.0.4",
+    "prettier": "^2.0.5",
     "sinon": "^9.0.2"
   }
 }
