@@ -48,7 +48,7 @@ async function executeStep(step, cwd, buildOptions, javascriptOptionsParameter) 
  * @returns {Promise<boolean>}
  */
 async function executeCondition(condition, javascriptOptionsParameter) {
-  if (!condition) {
+  if (condition == null) {
     return true
   }
   return await executeFunction(condition, javascriptOptionsParameter)
@@ -78,7 +78,7 @@ async function executeCommand(name, command, env, cwd, buildOptions, javascriptO
   await sh(command, {env: {...process.env, ...envVars}, cwd})
 }
 
-const contextWithRequire = vm.createContext({require})
+const contextWithRequire = vm.createContext({require, console})
 
 /**
  * @param {any|{function: string}} functionAsText
@@ -104,7 +104,7 @@ function envVarsFromBuildOptions(buildOptions) {
   const ret = {}
 
   for (const [option, value] of Object.entries(buildOptions)) {
-    if (value !== false) {
+    if (value !== false && value != null) {
       ret[`BILT_OPTION_${constantCase(option)}`] = value.toString()
     }
   }
@@ -134,6 +134,7 @@ function validateStep(step, i, phaseName, jobId, configPath) {
   if (
     step.condition != null &&
     typeof step.condition !== 'string' &&
+    typeof step.condition !== 'boolean' &&
     (typeof step.condition !== 'object' || typeof step.condition.function !== 'string')
   ) {
     throw new Error(
