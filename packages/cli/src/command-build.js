@@ -14,6 +14,7 @@ const {
 const {shWithOutput} = require('@bilt/scripting-commons')
 const o = require('./outputting')
 const npmBiltin = require('./npm-biltin')
+const makeOptionsBiltin = require('./options-biltin')
 
 /**@param {{
  * jobId: string,
@@ -46,7 +47,9 @@ async function buildCommand({
   const buildOptions = {
     ...userBuildOptions,
     message: userBuildOptions.message + '\n\n\n[bilt-with-bilt]',
+    force,
   }
+  const biltin = {...npmBiltin, ...makeOptionsBiltin(buildOptions)}
 
   const {
     initialSetOfPackagesToBuild,
@@ -85,7 +88,7 @@ async function buildCommand({
         'before',
         rootDirectory,
         buildOptions,
-        {directory: rootDirectory, biltin: {...npmBiltin}},
+        {directory: rootDirectory, biltin},
       )) {
         o.globalOperation(stepInfo.name)
       }
@@ -99,7 +102,7 @@ async function buildCommand({
           packagesBuildOrder.push(packageInfo.directory)
           return 'success'
         }
-      : makePackageBuild(jobConfiguration, rootDirectory, buildOptions),
+      : makePackageBuild(jobConfiguration, rootDirectory, buildOptions, biltin),
     dryRun,
   )
 
@@ -115,7 +118,7 @@ async function buildCommand({
         'after',
         rootDirectory,
         buildOptions,
-        {directory: rootDirectory, biltin: {...npmBiltin}},
+        {directory: rootDirectory, biltin},
       )) {
         o.globalOperation(stepInfo.name)
       }
@@ -396,6 +399,7 @@ function makePackageBuild(
   /**@type {import('@bilt/build-with-configuration/src/types').Job} */ jobConfiguration,
   /**@type {import('@bilt/types').Directory}*/ rootDirectory,
   /**@type {{[x: string]: string|boolean}} */ buildOptions,
+  /**@type {object} */ biltin,
 ) {
   /**@type import('@bilt/build').BuildPackageFunction */
   return async function ({packageInfo}) {
@@ -408,7 +412,7 @@ function makePackageBuild(
       'during',
       packageDirectory,
       buildOptions,
-      {directory: packageDirectory, biltin: {...npmBiltin}},
+      {directory: packageDirectory, biltin},
     )) {
       o.packageOperation(stepInfo.name, packageInfo)
     }

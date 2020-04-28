@@ -130,8 +130,7 @@ async function runBuild(
     await cli([
       ...(jobId === undefined ? [] : [jobId]),
       ...(packages && packages.length > 0 ? packages : []),
-      '-m',
-      message,
+      ...(message ? ['-m', message] : []),
       ...(uptos && uptos.length > 0 ? ['--upto', ...uptos] : []),
       ...moreArgs,
     ])

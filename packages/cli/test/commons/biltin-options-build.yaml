@@ -1,0 +1,24 @@
+jobs:
+  build-that-checks-biltin-options:
+    steps:
+      during:
+        - name: 'check-biltin-options-exist'
+          parameterOption: 'bar-option'
+          run: 'echo $(expr $(cat check-exist-count|| echo 0) + 1) >check-exist-count && cat check-exist-count'
+          condition:
+            function: |
+              ({biltin: {options}}) => {
+                return options.getOption('fooOption') === true && options.getOption('barOption') === 'bar'
+              }
+        - name: 'check-biltin-options-dont-exist'
+          parameterOption: 'bar-option'
+          run: 'echo $(expr $(cat check-not-exist-count || echo 0) + 1) >check-not-exist-count && cat check-not-exist-count'
+          condition:
+            function: |
+              ({biltin: {options}}) => {
+                return options.getOption('fooOption') === false && options.getOption('barOption') == null
+              }
+        - name: step-that-exists-only-for-foo-option
+          condition: false
+          enableOption: 'foo-option'
+          run: 'ls'

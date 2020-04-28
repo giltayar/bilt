@@ -89,4 +89,43 @@ describe('build-options (it)', function () {
     await runBuild(cwd, 'a build with no before', ['./a'])
     expect(await repoScriptCount(cwd, 'beforex')).to.equal(1)
   })
+
+  it('should enable biltin.options.getOptions', async () => {
+    const cwd = await prepareForSimpleBuild('biltin-options-build.yaml')
+
+    await writeFile(['a', 'package.json'], {name: 'a-package', version: '1.0.0'}, {cwd})
+
+    await runBuild(
+      cwd,
+      'a build with options on' && undefined,
+      ['./a'],
+      undefined,
+      ['--foo-option', '--bar-option=bar'],
+      'build-that-checks-biltin-options',
+    )
+    expect(await packageScriptCount(cwd, 'a', 'check-exist')).to.equal(1)
+    expect(await packageScriptCount(cwd, 'a', 'check-not-exist')).to.equal(0)
+
+    await runBuild(
+      cwd,
+      'a build with options on' && undefined,
+      ['./a'],
+      undefined,
+      ['--no-foo-option'],
+      'build-that-checks-biltin-options',
+    )
+    expect(await packageScriptCount(cwd, 'a', 'check-exist')).to.equal(1)
+    expect(await packageScriptCount(cwd, 'a', 'check-not-exist')).to.equal(1)
+
+    await runBuild(
+      cwd,
+      'a build with options on' && undefined,
+      ['./a'],
+      undefined,
+      ['--force'],
+      'build-that-checks-biltin-options',
+    )
+    expect(await packageScriptCount(cwd, 'a', 'check-exist')).to.equal(1)
+    expect(await packageScriptCount(cwd, 'a', 'check-not-exist')).to.equal(1)
+  })
 })
