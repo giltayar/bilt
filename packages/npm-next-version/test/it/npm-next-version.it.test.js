@@ -2,13 +2,7 @@
 const {describe, it} = require('mocha')
 const {expect} = require('chai')
 const {startNpmRegistry} = require('@bilt/npm-testkit')
-const {
-  makeTemporaryDirectory,
-  writeFile,
-  sh,
-  readFileAsString,
-  shWithOutput,
-} = require('@bilt/scripting-commons')
+const {makeTemporaryDirectory, writeFile, sh} = require('@bilt/scripting-commons')
 
 const {npmNextVersion} = require('../..')
 
@@ -25,7 +19,7 @@ describe('npmNextVersion (it)', function () {
   it("should use packageDirectory so that the package's .npmrc will prevail", async () => {
     const packageDirectory = await makeTemporaryDirectory()
     const {registry, close} = await startNpmRegistry()
-    console.log(`*********** `, {packageDirectory, registry}) //@@@GIL
+
     try {
       await writeFile(
         'package.json',
