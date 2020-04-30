@@ -60,9 +60,10 @@
   "main": "n/a",
   "scripts": {
     "start": "gatsby develop",
-    "start:production": "gatsby serve",
     "build": "npm run format && gatsby build --prefix-paths",
     "test": "npm run lint && npm run test:cypress",
+    "deploy": "netlify --prod",
+    "start:production": "gatsby serve",
     "test:cypress": "start-server-and-test start:production http://localhost:9000 'cypress run'",
     "format": "prettier --write \"src/**/*.{js,jsx,css,json}\"",
     "lint": "eslint --fix \"src/**/*.{js,jsx}\""
@@ -79,6 +80,7 @@
     "eslint-plugin-react": "^7.19.0",
     "gatsby-plugin-remove-trailing-slashes": "^2.3.0",
     "ink": "^2.7.1",
+    "netlify-cli": "^2.48.0",
     "prettier": "^1.19.1",
     "prism-react-renderer": "^1.1.0",
     "start-server-and-test": "^1.11.0"
