@@ -55,11 +55,14 @@ const MaxWidth = styled('div')`
 `;
 
 const LeftSideBarWidth = styled('div')`
-  width: 298px;
+  width: 200px;
+  flex-shrink: 0;
 `;
 
 const RightSideBarWidth = styled('div')`
+  zmin-width: 224px;
   width: 224px;
+  flex-shrink: 0;
 `;
 
 const Layout = ({ children, location }) => (

@@ -8,8 +8,7 @@ const config = {
   header: {
     logo: '/images/logo.svg',
     logoLink: 'https://bilt.io/',
-    title:
-      "Bilt",
+    title: 'Bilt',
     githubUrl: 'https://github.com/giltayar/bilt',
     helpUrl: '',
     tweetText: '',
@@ -40,8 +39,7 @@ const config = {
     links: [{ text: 'Github Repo', link: 'https://github.com/giltayar/bilt' }],
     frontline: false,
     ignoreIndex: true,
-    title:
-      "<a href='https://bilt.io/'>Bilt: Your monorepo is already bilt!</a>",
+    title: "<a href='/'>Monorepo? Bilt!</a>",
   },
   siteMetadata: {
     title: 'Bilt',

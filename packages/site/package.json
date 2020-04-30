@@ -22,7 +22,7 @@
     "emotion": "^10.0.27",
     "emotion-server": "^10.0.27",
     "emotion-theming": "^10.0.27",
-    "gatsby": "^2.21.5",
+    "gatsby": "^2.21.6",
     "gatsby-cli": "^2.12.5",
     "gatsby-link": "^2.4.0",
     "gatsby-plugin-algolia": "^0.5.0",
@@ -60,13 +60,17 @@
   "main": "n/a",
   "scripts": {
     "start": "gatsby develop",
+    "start:production": "gatsby serve",
     "build": "npm run format && gatsby build --prefix-paths",
-    "test": "npm run lint",
+    "test": "npm run lint && npm run test:cypress",
+    "test:cypress": "start-server-and-test start:production http://localhost:9000 'cypress run'",
     "format": "prettier --write \"src/**/*.{js,jsx,css,json}\"",
     "lint": "eslint --fix \"src/**/*.{js,jsx}\""
   },
   "devDependencies": {
+    "@applitools/eyes-cypress": "^3.10.3",
     "babel-eslint": "^10.1.0",
+    "cypress": "^4.5.0",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-import": "^2.20.2",
@@ -76,6 +80,7 @@
     "gatsby-plugin-remove-trailing-slashes": "^2.3.0",
     "ink": "^2.7.1",
     "prettier": "^1.19.1",
-    "prism-react-renderer": "^1.1.0"
+    "prism-react-renderer": "^1.1.0",
+    "start-server-and-test": "^1.11.0"
   }
 }

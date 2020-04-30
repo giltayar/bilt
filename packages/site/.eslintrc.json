@@ -7,13 +7,14 @@
     "prettier",
     "prettier/react"
   ],
-  "plugins": ["react", "import", "jsx-a11y"],
+  "plugins": ["react", "import", "jsx-a11y", "prettier"],
   "settings": {
     "react": {
       "version": "detect"
     }
   },
   "rules": {
+    "prettier/prettier": ["error"],
     "react/prop-types": 0,
     "react/react-in-jsx-scope": "off",
     "lines-between-class-members": ["error", "always"],

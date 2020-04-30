@@ -6,7 +6,6 @@ export const Sidebar = styled('aside')`
   height: 100vh;
   overflow: auto;
   position: fixed;
-  padding-left: 24px;
   position: -webkit-sticky;
   position: -moz-sticky;
   position: sticky;
