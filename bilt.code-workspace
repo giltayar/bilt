@@ -53,6 +53,10 @@
 			"path": "packages/scripting-commons"
 		},
 		{
+			"name": "site",
+			"path": "packages/site"
+		},
+		{
 			"name": "types",
 			"path": "packages/types"
 		},
