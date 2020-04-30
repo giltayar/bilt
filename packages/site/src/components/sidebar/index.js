@@ -90,7 +90,7 @@ const Divider = styled(props => (
   }
 `;
 
-const SidebarLayout = ({ location }) => (
+const SidebarLayout = () => (
   <StaticQuery
     query={graphql`
       query {
