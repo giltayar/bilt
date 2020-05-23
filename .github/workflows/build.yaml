@@ -8,6 +8,8 @@ jobs:
         with:
           ref: master
           fetch-depth: 0
+      - name: Re-attach HEAD
+        run: git checkout "${GITHUB_REF:11}"
       - name: Use Node.js
         uses: actions/setup-node@v1
         with:
