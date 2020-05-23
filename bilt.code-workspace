@@ -55,10 +55,6 @@
 		{
 			"name": "types",
 			"path": "packages/types"
-		},
-		{
-			"name": ".circleci",
-			"path": ".circleci"
 		}
 	],
 	"settings": {
