@@ -9,7 +9,10 @@ jobs:
           ref: master
           fetch-depth: 0
       - name: Re-attach HEAD
-        run: git checkout "${GITHUB_REF:11}"
+        run: |
+          git checkout "${GITHUB_REF:11}"
+          git config --global user.email "bilt-ci@tayar.org"
+          git config --global user.name "Bilt CI"
       - name: Use Node.js
         uses: actions/setup-node@v1
         with:
