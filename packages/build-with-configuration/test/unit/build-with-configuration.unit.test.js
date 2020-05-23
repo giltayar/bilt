@@ -80,6 +80,7 @@ describe('build-with-configuration (unit)', function () {
       let i = 0
       for await (const _ of bwc.executeJob(
         buildConfiguration.jobs.build,
+        //@ts-ignore
         'phase-does-not-exist',
         'dir1',
         {
