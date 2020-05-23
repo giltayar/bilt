@@ -5,6 +5,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+        with:
+          ref: master
+          fetch-depth: 0
       - name: Use Node.js
         uses: actions/setup-node@v1
         with:
@@ -12,7 +15,7 @@ jobs:
       - name: Bilt
         run: |
           npm install -g @bilt/cli
-          bilt -m "build from CI"
+          bilt -m "build from CI" --no-before
         env:
           # This is necessary in order to push a commit to the repo
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
