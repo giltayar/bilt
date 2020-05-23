@@ -28,7 +28,6 @@ async function main(argv) {
   } = await yargsOptions.strict().help().parse()
   debug('final options', {rootDirectory, config, jobId, args})
 
-  // @ts-ignore
   await require(`./command-build`)({
     jobId: /**@type{string}*/ (jobId),
     rootDirectory: /**@type{import('@bilt/types').Directory}*/ (rootDirectory),
