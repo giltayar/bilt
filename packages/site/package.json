@@ -62,7 +62,7 @@
     "start": "gatsby develop",
     "build": "npm run format && gatsby build --prefix-paths",
     "test": "npm run lint && npm run test:cypress",
-    "deploy": "netlify --prod",
+    "deploy": "netlify deploy --prod",
     "start:production": "gatsby serve",
     "test:cypress": "start-server-and-test start:production http://localhost:9000 'cypress run'",
     "format": "prettier --write \"src/**/*.{js,jsx,css,json}\"",
