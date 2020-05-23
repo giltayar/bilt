@@ -1,0 +1,17 @@
+name: Build bilt
+on: [push]
+jobs:
+  build:
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: Bilt
+        run: |
+          npm install -g @bilt/cli
+          bilt -m "build from CI"
+        env:
+          # This is necessary in order to push a commit to the repo
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

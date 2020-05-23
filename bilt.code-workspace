@@ -55,6 +55,9 @@
 		{
 			"name": "types",
 			"path": "packages/types"
+		},
+		{
+			"path": "packages/cli/.github"
 		}
 	],
 	"settings": {
