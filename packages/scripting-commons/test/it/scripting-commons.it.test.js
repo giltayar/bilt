@@ -35,12 +35,12 @@ describe('scripting-commons', function () {
     await expect(
       sh('this-executable-should-not-exist', {cwd: process.cwd()}),
       'to be rejected with error satisfying',
-      {message: /command not found/, code: 127},
+      {message: /not found/, code: 127},
     )
     await expect(
       shWithOutput('this-executable-should-not-exist', {cwd: process.cwd()}),
       'to be rejected with error satisfying',
-      {message: /command not found/, code: 127},
+      {message: /not found/, code: 127},
     )
   })
 
@@ -48,12 +48,12 @@ describe('scripting-commons', function () {
     await expect(
       sh('ls this-file-should-not-exist', {cwd: process.cwd()}),
       'to be rejected with error satisfying',
-      {message: /Command failed/, code: 1},
+      {message: /Command failed/},
     )
     await expect(
       shWithOutput('ls this-file-should-not-exist', {cwd: process.cwd()}),
       'to be rejected with error satisfying',
-      {message: /No such file or directory/, code: 1},
+      {message: /No such file or directory/},
     )
   })
 

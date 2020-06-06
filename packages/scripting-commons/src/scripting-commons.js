@@ -18,9 +18,7 @@ async function sh(command, {cwd, env}) {
   const [result] = await Promise.race([once(childProcess, 'error'), once(childProcess, 'exit')])
   if (typeof result === 'number') {
     if (result !== 0) {
-      const error = new Error(
-        `Command failed: ${command} ${result === 127 ? 'command not found' : ''}\n`,
-      )
+      const error = new Error(`Command failed: ${command} ${result === 127 ? '(not found)' : ''}\n`)
       //@ts-ignore
       error.code = result
 
