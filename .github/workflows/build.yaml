@@ -19,8 +19,8 @@ jobs:
           node-version: 12
       - name: Bilt
         run: |
-          cat .npmrc
           cat ~/.npmrc
+          cat .npmrc
           npm install -g @bilt/cli
           bilt -m "build from CI" --no-before
         env:
