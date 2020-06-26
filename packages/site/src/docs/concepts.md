@@ -1,4 +1,7 @@
-# Bilt Concepts
+---
+layout: docs-layout
+title: Bilt Concepts
+---
 
 In which Bilt concepts are enumerated and elucidated.
 

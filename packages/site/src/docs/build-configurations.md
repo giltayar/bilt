@@ -1,4 +1,7 @@
-# Build configurations
+---
+layout: docs-layout
+title: Build configurations
+---
 
 In which we define precisely what [build configurations](../concepts#build-configurations)
 are, and how to use them.

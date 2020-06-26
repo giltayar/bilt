@@ -5,7 +5,7 @@ module.exports = function (eleventyConfig) {
     markdownTemplateEngine: 'ejs',
     htmlTemplateEngine: 'ejs',
     dir: {
-      input: "public",
+      input: "src",
       output: "dist"
     }
   }

@@ -1,4 +1,7 @@
-# Structure of a Bilt monorepo
+---
+layout: docs-layout
+title: Structure of a Bilt monorepo
+---
 
 In which we understand how Bilt monorepos are structured, and how to structure the
 NPM packages in it.

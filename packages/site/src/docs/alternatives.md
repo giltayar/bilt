@@ -1,4 +1,7 @@
-# Bilt Alternatives
+---
+layout: docs-layout
+title: Bilt Alternatives
+---
 
 In which Bilt alternatives are named, and an exploration of why Bilt is different than the others
 is done.

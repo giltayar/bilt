@@ -1,5 +1,8 @@
+---
+layout: docs-layout
+title: Reference
+---
 <!-- markdownlint-disable MD033 -->
-# Reference
 
 In which each part of Bilt is broken down to its components and explained thoroughly.
 

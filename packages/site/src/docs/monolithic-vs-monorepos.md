@@ -1,4 +1,7 @@
-# Monolithic codebases vs monorepos
+---
+layout: docs-layout
+title: Monolithic codebases vs monorepos
+---
 
 In which it is explained what monolithic codebases are, what monorepos are, and how
 monorepos solve the problems monolithic codebases have.

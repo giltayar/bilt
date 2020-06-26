@@ -1,4 +1,7 @@
-# Getting started
+---
+layout: docs-layout
+title: Getting started
+---
 
 In which we understand how to use Bilt in a typical fashion, for regular use cases.
 For more information on every Bilt option, go to the [Reference](../reference) chapter.
