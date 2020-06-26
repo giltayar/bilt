@@ -16,6 +16,7 @@
     "build": "npx @11ty/eleventy",
     "start": "npx @11ty/eleventy --serve",
     "test": "npm run eslint && npm run test:mocha",
+    "deploy": "netlify --prod"
     "test:mocha": "mocha --no-timeouts --exit 'test/unit/*.test.js' 'test/it/*.test.js'",
     "eslint": "eslint '**/*.js'"
   },
@@ -44,6 +45,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.1.4",
     "mocha": "^8.0.1",
+    "netlify-cli": "^2.54.0",
     "prettier": "^2.0.5"
   }
 }
