@@ -1,49 +1,31 @@
 {
-  "extends": [
-    "eslint:recommended",
-    "plugin:import/errors",
-    "plugin:react/recommended",
-    "plugin:jsx-a11y/recommended",
-    "prettier",
-    "prettier/react"
-  ],
-  "plugins": ["react", "import", "jsx-a11y", "prettier"],
-  "settings": {
-    "react": {
-      "version": "detect"
-    }
-  },
-  "rules": {
-    "prettier/prettier": ["error"],
-    "react/prop-types": 0,
-    "react/react-in-jsx-scope": "off",
-    "lines-between-class-members": ["error", "always"],
-    "padding-line-between-statements": [
-      "error",
-      { "blankLine": "always", "prev": ["const", "let", "var"], "next": "*" },
-      {
-        "blankLine": "always",
-        "prev": ["const", "let", "var"],
-        "next": ["const", "let", "var"]
-      },
-      { "blankLine": "always", "prev": "directive", "next": "*" },
-      { "blankLine": "any", "prev": "directive", "next": "directive" }
-    ]
-  },
-  "parser": "babel-eslint",
-  "parserOptions": {
-    "ecmaVersion": 10,
-    "sourceType": "module",
-    "ecmaFeatures": {
-      "jsx": true
-    }
-  },
   "env": {
+    "commonjs": true,
     "es6": true,
-    "browser": true,
     "node": true
   },
-  "globals": {
-    "graphql": false
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "extends": ["plugin:node/recommended"],
+  "plugins": ["prettier", "mocha-no-only", "node"],
+  "rules": {
+    "prettier/prettier": ["error"],
+    "no-warning-comments": ["warn", {"terms": ["fixme", "removeme", "xxx", "@@@"], "location": "anywhere"}],
+    "no-process-exit": "off",
+    "no-const-assign": "error",
+    "no-this-before-super": "error",
+    "no-undef": "warn",
+    "no-unreachable": "warn",
+    "no-unused-vars": [
+      "error",
+      {"varsIgnorePattern": "^_", "args": "all", "argsIgnorePattern": "^_"}
+    ],
+    "constructor-super": "warn",
+    "valid-typeof": "warn",
+    "mocha-no-only/mocha-no-only": "error",
+    "no-debugger": "error",
+    "node/exports-style": ["error", "module.exports"]
   }
 }
