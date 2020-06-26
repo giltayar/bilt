@@ -1,5 +1,5 @@
 {
-  "name": "@applitools/site",
+  "name": "@bilt/site",
   "version": "1.0.0",
   "description": "",
   "main": "src/site.js",
@@ -11,7 +11,7 @@
     "_includes"
   ],
   "publishConfig": {
-    "access": "restricted"
+    "access": "public"
   },
   "scripts": {
     "build": "npx @11ty/eleventy",
@@ -22,18 +22,16 @@
     "eslint": "eslint '**/*.js'"
   },
   "keywords": [
-    "applitools",
-    "testing",
-    "browser",
-    "grid",
-    "visual-testing",
-    "nodejs",
-    "javascript"
+    "ci",
+    "build",
+    "bilt",
+    "tool",
+    "monorepo"
   ],
-  "author": "Gil Tayar <gil.tayar@applitools.com>",
+  "author": "Gil Tayar <gil@tayar.org>",
   "license": "UNLICENSED",
   "repository": {
-    "url": "https://github.com/applitools/rendering-grid",
+    "url": "https://github.com/giltayar/bilt",
     "type": "git",
     "directory": "packages/site"
   },
