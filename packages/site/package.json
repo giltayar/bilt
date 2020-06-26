@@ -7,7 +7,8 @@
     "node": ">=10.3.0"
   },
   "files": [
-    "src"
+    "src",
+    "_includes"
   ],
   "publishConfig": {
     "access": "restricted"
