@@ -2,7 +2,7 @@ import gl, {Graph} from 'graphlib'
 import {PackageInfosWithBuildTime} from './types'
 import {Package} from '@bilt/types'
 
-export function createDependencyGraph(packageInfos: PackageInfosWithBuildTime) {
+export function createDependencyGraph(packageInfos: PackageInfosWithBuildTime): gl.Graph {
   const graph = new gl.Graph()
 
   for (const [pkgId, pkgInfo] of Object.entries(packageInfos)) {
@@ -15,11 +15,15 @@ export function createDependencyGraph(packageInfos: PackageInfosWithBuildTime) {
   return graph
 }
 
+export function isEmptyGraph(dependencyGraph: Graph): boolean {
+  return dependencyGraph.nodeCount() === 0
+}
+
 export function buildLinkedDependencyGraphSubset(
   dependencyGraph: Graph,
   basePackagesToBuild: Package[],
   buildUpTo: Package[],
-) {
+): void {
   const packageDistances = gl.alg.dijkstraAll(dependencyGraph)
 
   for (const [pkg, distancesFromPkg] of Object.entries(packageDistances)) {
@@ -37,7 +41,7 @@ export function buildLinkedDependencyGraphSubset(
 export function addPackagesThatIndirectlyNeedToBeBuilt(
   dependencyGraph: Graph,
   packagesThatNeedToBeBuilt: Set<string>,
-) {
+): void {
   const packageDistances = gl.alg.dijkstraAll(dependencyGraph)
 
   for (const [pkg, distancesFromPkg] of Object.entries(packageDistances)) {
@@ -56,7 +60,7 @@ export function addPackagesThatAreDirty(
   dependencyGraph: Graph,
   packageInfos: PackageInfosWithBuildTime,
   packagesThatNeedToBeBuilt: Set<string>,
-) {
+): void {
   for (const pkg of dependencyGraph.nodes()) {
     const packageInfo = packageInfos[pkg]
     if (packageInfo.lastBuildTime === undefined) {
@@ -69,7 +73,7 @@ export function addPackagesWhosDependenciesHaveLaterBuildTimes(
   dependencyGraph: Graph,
   packageInfos: PackageInfosWithBuildTime,
   packagesThatNeedToBeBuilt: Set<string>,
-) {
+): void {
   for (const pkg of dependencyGraph.nodes()) {
     const packageInfo = packageInfos[pkg]
     if (packageInfo.lastBuildTime === undefined) continue

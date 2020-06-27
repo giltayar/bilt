@@ -3,6 +3,7 @@ import {Package} from '@bilt/types'
 import {PackageInfoWithBuildTime as PIWBT, PackageInfosWithBuildTime as PIWBTs} from './types'
 import {
   createDependencyGraph,
+  isEmptyGraph,
   buildLinkedDependencyGraphSubset,
   addPackagesThatAreDirty,
   addPackagesWhosDependenciesHaveLaterBuildTimes,
@@ -12,6 +13,8 @@ import {
 export type PackageInfoWithBuildTime = PIWBT
 export type PackageInfosWithBuildTime = PIWBTs
 
+type CalculatePackagesToBuildWarning = 'NO_LINKED_UPTO'
+
 export function calculatePackagesToBuild({
   packageInfos,
   basePackagesToBuild,
@@ -20,10 +23,17 @@ export function calculatePackagesToBuild({
   packageInfos: PackageInfosWithBuildTime
   basePackagesToBuild: Package[]
   buildUpTo: Package[]
-}): PackageInfosWithBuildTime {
+}): {
+  packageInfosWithBuildTime: PackageInfosWithBuildTime
+  warnings?: CalculatePackagesToBuildWarning[]
+} {
   const dependencyGraph = createDependencyGraph(packageInfos)
 
   buildLinkedDependencyGraphSubset(dependencyGraph, basePackagesToBuild, buildUpTo)
+
+  if (Object.keys(packageInfos).length > 0 && isEmptyGraph(dependencyGraph)) {
+    return {packageInfosWithBuildTime: {}, warnings: ['NO_LINKED_UPTO']}
+  }
 
   const packagesThatNeedToBeBuilt = new Set<string>()
 
@@ -36,7 +46,9 @@ export function calculatePackagesToBuild({
 
   addPackagesThatIndirectlyNeedToBeBuilt(dependencyGraph, packagesThatNeedToBeBuilt)
 
-  return filterPackageInfos(packageInfos, packagesThatNeedToBeBuilt)
+  return {
+    packageInfosWithBuildTime: filterPackageInfos(packageInfos, packagesThatNeedToBeBuilt),
+  }
 }
 
 function filterPackageInfos(

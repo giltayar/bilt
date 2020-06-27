@@ -76,7 +76,7 @@ describe('calculatePackagesToBuild (unit)', function () {
         basePackagesToBuild: [ePackage, gPackage],
       })
 
-      expect(packagesToBuild).to.eql(twoPackagesWithNoDependencies)
+      expect(packagesToBuild).to.eql({packageInfosWithBuildTime: twoPackagesWithNoDependencies})
     })
     it('if buildUpTo is same as basePackages, only base pacakges are build', () => {
       const packagesToBuild = calculatePackagesToBuild({
@@ -86,8 +86,10 @@ describe('calculatePackagesToBuild (unit)', function () {
       })
 
       expect(packagesToBuild).to.eql({
-        [dPackage.directory as string]: dPackage,
-        [ePackage.directory as string]: ePackage,
+        packageInfosWithBuildTime: {
+          [dPackage.directory as string]: dPackage,
+          [ePackage.directory as string]: ePackage,
+        },
       })
     })
 
@@ -98,7 +100,9 @@ describe('calculatePackagesToBuild (unit)', function () {
         basePackagesToBuild: [aPackage],
       })
 
-      expect(packagesToBuild).to.eql({[aPackage.directory as string]: aPackage})
+      expect(packagesToBuild).to.eql({
+        packageInfosWithBuildTime: {[aPackage.directory as string]: aPackage},
+      })
     })
 
     it('if a low package asked to be built, with an upTo that points to it, all the chain between them will be built', () => {
@@ -108,7 +112,7 @@ describe('calculatePackagesToBuild (unit)', function () {
         basePackagesToBuild: [ePackage],
       })
 
-      expect(packagesToBuild).to.eql(packageInfosAllDirty)
+      expect(packagesToBuild).to.eql({packageInfosWithBuildTime: packageInfosAllDirty})
     })
 
     it('if basePackages include packages that do not "lead" to buildUpTo packages, they will not be built', () => {
@@ -122,7 +126,7 @@ describe('calculatePackagesToBuild (unit)', function () {
         basePackagesToBuild: [ePackage, gPackage],
       })
 
-      expect(packagesToBuild).to.eql(packageInfosAllDirty)
+      expect(packagesToBuild).to.eql({packageInfosWithBuildTime: packageInfosAllDirty})
     })
 
     it('if a medium package asked to be built, with an upTo that points to it, all the chain between them will be built', () => {
@@ -133,10 +137,12 @@ describe('calculatePackagesToBuild (unit)', function () {
       })
 
       expect(packagesToBuild).to.eql({
-        [aPackage.directory as string]: aPackage,
-        [cPackage.directory as string]: cPackage,
-        [bPackage.directory as string]: bPackage,
-        [dPackage.directory as string]: dPackage,
+        packageInfosWithBuildTime: {
+          [aPackage.directory as string]: aPackage,
+          [cPackage.directory as string]: cPackage,
+          [bPackage.directory as string]: bPackage,
+          [dPackage.directory as string]: dPackage,
+        },
       })
     })
 
@@ -148,9 +154,11 @@ describe('calculatePackagesToBuild (unit)', function () {
       })
 
       expect(packagesToBuild).to.eql({
-        [aPackage.directory as string]: aPackage,
-        [cPackage.directory as string]: cPackage,
-        [bPackage.directory as string]: bPackage,
+        packageInfosWithBuildTime: {
+          [aPackage.directory as string]: aPackage,
+          [cPackage.directory as string]: cPackage,
+          [bPackage.directory as string]: bPackage,
+        },
       })
     })
 
@@ -162,10 +170,12 @@ describe('calculatePackagesToBuild (unit)', function () {
       })
 
       expect(packagesToBuild).to.eql({
-        [ePackage.directory as string]: ePackage,
-        [dPackage.directory as string]: dPackage,
-        [cPackage.directory as string]: cPackage,
-        [bPackage.directory as string]: bPackage,
+        packageInfosWithBuildTime: {
+          [ePackage.directory as string]: ePackage,
+          [dPackage.directory as string]: dPackage,
+          [cPackage.directory as string]: cPackage,
+          [bPackage.directory as string]: bPackage,
+        },
       })
     })
   })
@@ -186,7 +196,7 @@ describe('calculatePackagesToBuild (unit)', function () {
           basePackagesToBuild: [aPackage, bPackage, cPackage, dPackage, ePackage],
           buildUpTo: [aPackage, bPackage, cPackage, dPackage, ePackage],
         }),
-      ).to.eql({})
+      ).to.eql({packageInfosWithBuildTime: {}})
     })
 
     it('should build up when mid level package is dirty', async () => {
@@ -208,7 +218,7 @@ describe('calculatePackagesToBuild (unit)', function () {
           basePackagesToBuild: [aPackage, bPackage, cPackage, dPackage, ePackage],
           buildUpTo: [aPackage, bPackage, cPackage, dPackage, ePackage],
         }),
-      ).to.eql(expectedResult)
+      ).to.eql({packageInfosWithBuildTime: expectedResult})
 
       expect(
         calculatePackagesToBuild({
@@ -216,7 +226,7 @@ describe('calculatePackagesToBuild (unit)', function () {
           basePackagesToBuild: [aPackage, bPackage, cPackage, dPackage, ePackage],
           buildUpTo: [aPackage],
         }),
-      ).to.eql(expectedResult)
+      ).to.eql({packageInfosWithBuildTime: expectedResult})
 
       expect(
         calculatePackagesToBuild({
@@ -224,7 +234,7 @@ describe('calculatePackagesToBuild (unit)', function () {
           basePackagesToBuild: [ePackage],
           buildUpTo: [aPackage],
         }),
-      ).to.eql(expectedResult)
+      ).to.eql({packageInfosWithBuildTime: expectedResult})
     })
 
     it('should build everything when low package is dirty', async () => {
@@ -242,7 +252,7 @@ describe('calculatePackagesToBuild (unit)', function () {
           basePackagesToBuild: [aPackage, bPackage, cPackage, dPackage, ePackage],
           buildUpTo: [aPackage, bPackage, cPackage, dPackage, ePackage],
         }),
-      ).to.eql(packageInfos)
+      ).to.eql({packageInfosWithBuildTime: packageInfos})
 
       expect(
         calculatePackagesToBuild({
@@ -250,7 +260,7 @@ describe('calculatePackagesToBuild (unit)', function () {
           basePackagesToBuild: [aPackage, bPackage, cPackage, dPackage, ePackage],
           buildUpTo: [aPackage],
         }),
-      ).to.eql(packageInfos)
+      ).to.eql({packageInfosWithBuildTime: packageInfos})
 
       expect(
         calculatePackagesToBuild({
@@ -258,7 +268,7 @@ describe('calculatePackagesToBuild (unit)', function () {
           basePackagesToBuild: [ePackage],
           buildUpTo: [aPackage],
         }),
-      ).to.eql(packageInfos)
+      ).to.eql({packageInfosWithBuildTime: packageInfos})
     })
 
     it('should build up when mid level package is newer', async () => {
@@ -279,7 +289,7 @@ describe('calculatePackagesToBuild (unit)', function () {
           basePackagesToBuild: [aPackage, bPackage, cPackage, dPackage, ePackage],
           buildUpTo: [aPackage, bPackage, cPackage, dPackage, ePackage],
         }),
-      ).to.eql(expectedResult)
+      ).to.eql({packageInfosWithBuildTime: expectedResult})
 
       expect(
         calculatePackagesToBuild({
@@ -287,7 +297,7 @@ describe('calculatePackagesToBuild (unit)', function () {
           basePackagesToBuild: [aPackage, bPackage, cPackage, dPackage, ePackage],
           buildUpTo: [aPackage],
         }),
-      ).to.eql(expectedResult)
+      ).to.eql({packageInfosWithBuildTime: expectedResult})
 
       expect(
         calculatePackagesToBuild({
@@ -295,7 +305,7 @@ describe('calculatePackagesToBuild (unit)', function () {
           basePackagesToBuild: [bPackage, cPackage],
           buildUpTo: [aPackage],
         }),
-      ).to.eql(expectedResult)
+      ).to.eql({packageInfosWithBuildTime: expectedResult})
     })
 
     it('should build separate trees as intended', () => {
@@ -316,10 +326,29 @@ describe('calculatePackagesToBuild (unit)', function () {
       })
 
       expect(expectedResult).to.eql({
-        [aPackage.directory as string]: build(aPackage, 1),
-        [cPackage.directory as string]: cPackage,
-        [fPackage.directory as string]: build(fPackage, 1),
+        packageInfosWithBuildTime: {
+          [aPackage.directory as string]: build(aPackage, 1),
+          [cPackage.directory as string]: cPackage,
+          [fPackage.directory as string]: build(fPackage, 1),
+        },
       })
+    })
+  })
+
+  describe('warnings', () => {
+    it('should warn when calculated packages is empty because none of the base packages builds up to the upto packages', () => {
+      const twoPackagesWithNoDependencies = {
+        [ePackage.directory as string]: ePackage,
+        [gPackage.directory as string]: gPackage,
+        [cPackage.directory as string]: cPackage,
+      }
+      const packagesToBuild = calculatePackagesToBuild({
+        packageInfos: twoPackagesWithNoDependencies,
+        buildUpTo: [ePackage, gPackage],
+        basePackagesToBuild: [cPackage],
+      })
+
+      expect(packagesToBuild).to.eql({packageInfosWithBuildTime: {}, warnings: ['NO_LINKED_UPTO']})
     })
   })
 })
