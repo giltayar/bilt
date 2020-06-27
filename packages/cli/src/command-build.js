@@ -69,11 +69,21 @@ async function buildCommand({
     force,
   )
 
-  const finalPackagesToBuild = calculatePackagesToBuild({
+  const {packageInfosWithBuildTime: finalPackagesToBuild, warnings} = calculatePackagesToBuild({
     packageInfos: changedPackageInfos,
     basePackagesToBuild: initialSetOfPackagesToBuild,
     buildUpTo: uptoPackages,
   })
+
+  if (warnings && warnings.length > 0) {
+    if (warnings.includes('NO_LINKED_UPTO')) {
+      o.globalFooter(
+        `Mothing to build because the none of the uptos is linked to any of the packages to build.
+Maybe you forgot to add an upto package?`,
+      )
+      return
+    }
+  }
 
   if (Object.keys(finalPackagesToBuild).length === 0) {
     o.globalFooter('nothing to build')

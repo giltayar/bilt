@@ -146,7 +146,7 @@ async function runBuild(
  * @param {string[]} [uptos]
  */
 async function runBuildCli(cwd, message, packages = undefined, uptos = undefined) {
-  const {stdout} = await promisify(execFile)(
+  return await promisify(execFile)(
     path.resolve(__dirname, '../../scripts/bilt.js'),
     [
       ...(packages && packages.length > 0 ? packages : []),
@@ -156,8 +156,6 @@ async function runBuildCli(cwd, message, packages = undefined, uptos = undefined
     ],
     {cwd},
   )
-
-  return stdout
 }
 
 /**

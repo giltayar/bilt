@@ -27,4 +27,14 @@ describe('applitools build (e2e)', function () {
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
   })
+
+  it('should show a warning on NO_LinkeD_UPTO', async () => {
+    const {registry, cwd} = await prepareGitAndNpm()
+    await createAdepsBdepsCPackages(cwd, registry)
+    await writeFile('.biltrc.json', {packages: ['*'], upto: ['./c']}, {cwd})
+
+    const {stderr} = await runBuildCli(cwd, 'build all', ['./a'])
+
+    expect(stderr).to.include('none of the uptos is linked')
+  })
 })
