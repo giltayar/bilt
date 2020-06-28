@@ -1,6 +1,6 @@
 'use strict'
 module.exports = function (eleventyConfig) {
-  eleventyConfig.addPassthroughCopy("public/resources");
+  eleventyConfig.addPassthroughCopy("src/resources");
   return {
     markdownTemplateEngine: 'ejs',
     htmlTemplateEngine: 'ejs',

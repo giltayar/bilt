@@ -1,13 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%=title%></title>
   <link rel="stylesheet" href="/resources/styles.css">
 </head>
+
 <body>
+  <header>
+    <nav>
+      <ol>
+        <li class="home"><a href="/">Bilt</a></li>
+        <li class="<%=page.url.startsWith('/docs') ? 'current' : ''%>"><a href="/docs">Docs</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/contributing">Contributing</a></li>
+        <li><a href="http://github.com/giltayar/bilt">Github</a></li>
+      </ol>
+    </nav>
+  </header>
   <h1><%=title%></h1>
-  <%-content%>
+  <main>
+    <%-content%>
+  </main>
 </body>
+
 </html>
