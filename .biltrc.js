@@ -1,4 +1,4 @@
 module.exports = {
   packages: ['./packages/*'],
-  upto: ['@bilt/cli']
+  upto: ['@bilt/cli', '@bilt/site']
 }
