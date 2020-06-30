@@ -13,22 +13,22 @@ header {
   justify-content: center;
 }
 
-nav {
+header nav {
   width: 100%;
 }
 
-nav ol {
+header nav ol {
   display: flex;
   justify-content: space-evenly;
 }
 
-nav li {
+header nav li {
   list-style-type: none;
   flex-wrap: nowrap;
   font-weight: 600;
 }
 
-nav li.home {
+header nav li.home {
   font-weight: 900;
   font-size: larger;
   font-style: italic;
@@ -36,18 +36,27 @@ nav li.home {
   text-shadow: 2px 2px 2px darkgoldenrod;
 }
 
-nav li a {
+header nav li a {
   text-decoration: none;
 }
 
-nav li.current a {
+header nav li.current a {
   text-decoration: underline;
   font-weight: 700;
 }
 
+header + * {
+  display: flex;
+  flex-direction: row;
+}
 
+header + * nav {
+  display: flex;
+  flex-direction: column;
+  background-color: goldenrod;
+}
 
-/** H1/H2 **/
+/** Main **/
 
 main, h1 {
   padding-left: 30px;

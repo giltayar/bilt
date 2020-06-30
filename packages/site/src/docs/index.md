@@ -1,4 +1,5 @@
 ---
+tags: toc
 layout: docs-layout
 title: Bilt
 ---
@@ -31,11 +32,6 @@ monorepo is built as a series of NPM packages linked together by an NPM dependen
 
 ## Table of Contents
 
-1. [Monolithic codebases vs monorepos](./monolithic-vs-monorepos)
-1. [Alternatives to Bilt](./alternatives)
-1. [Bilt concepts](./concepts)
-1. [Structure of a Bilt monorepo](./monorepo-structure)
-1. [Getting started](./getting-started)
-1. [How Bilt works](./how-bilt-works)
-1. [Reference](./reference)
-1. [Build configurations](./build-configurations)
+<% for (const t of [...collections.toc].sort((a, b) => parseInt(a.url.split('/')[2].split('-')[0], 10) <  parseInt(b.url.split('/')[2].split('-')[0], 10))) { _%>
+1. [<%=t.data.title%>](<%=t.url%>)
+<%_ } _%>

@@ -1,4 +1,5 @@
 ---
+tags: toc
 layout: docs-layout
 title: How Bilt works
 ---

@@ -1,4 +1,6 @@
 ---
+tags: toc
+data: {tocOrder: 3}
 layout: docs-layout
 title: Bilt Concepts
 ---

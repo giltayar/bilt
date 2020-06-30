@@ -20,10 +20,19 @@
       </ol>
     </nav>
   </header>
-  <h1><%=title%></h1>
-  <main>
-    <%-content%>
-  </main>
+  <div>
+    <nav>
+      <ol>
+        <% for (const t of [...collections.toc].sort((a, b) => parseInt(a.url.split('/')[2].split('-')[0], 10) <  parseInt(b.url.split('/')[2].split('-')[0], 10))) { %>
+          <li><a href="<%=t.url%>"><%=t.data.title%></a></li>
+        <% }%>
+      </ol>
+    </nav>
+    <main>
+      <h1><%=title%></h1>
+      <%-content%>
+    </main>
+  </div>
 </body>
 
 </html>
