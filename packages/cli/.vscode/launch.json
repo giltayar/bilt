@@ -11,9 +11,8 @@
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [
         "--no-timeouts",
-        "'test/unit/*.test.js'",
-        "'test/it/*.test.js'",
-        "'test/e2e/*.test.js'"
+        "test/it/*.test.js",
+        "test/e2e/*.test.js"
       ],
       "env": {
         "DEBUG": "bilt:${workspaceFolderBasename}*"
