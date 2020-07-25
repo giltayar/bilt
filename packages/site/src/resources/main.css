@@ -1,0 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Muli:wght@400;600;650;900&display=swap');
+@import url('./header.css');
+@import url('./docs.css');
+
+body.docs {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  grid-template-columns: minmax(150px, auto) minmax(400px, 1fr);
+}
+
+header {
+  grid-column: 1 / 3;
+}
+
+body.docs {
+  font-family: 'Muli', sans-serif;
+}

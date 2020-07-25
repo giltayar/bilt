@@ -1,0 +1,54 @@
+header {
+  background-color: gold;
+  min-height: 0px;
+}
+
+header nav {
+  width: 100%;
+  padding: 10px 0px;
+}
+
+header nav ol {
+  margin: 0;
+  padding: 0 10px;
+  display: grid;
+  grid-template-columns: minmax(auto, 1fr) repeat(4, auto);
+  column-gap: 30px;
+}
+
+
+header nav li {
+  list-style-type: none;
+  font-weight: 600;
+  align-self: baseline;
+  justify-self: center;
+}
+
+header nav li.home {
+  justify-self: start;
+  font-weight: 900;
+  font-size: 30px;
+  font-style: italic;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 2px darkgoldenrod;
+}
+
+header nav li a {
+  text-decoration: none;
+}
+
+header nav li.current a {
+  text-decoration: underline;
+  font-weight: 700;
+}
+
+header + * {
+  display: flex;
+  flex-direction: row;
+}
+
+header + * nav {
+  display: flex;
+  flex-direction: column;
+  background-color: goldenrod;
+}

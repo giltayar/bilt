@@ -1,0 +1,38 @@
+
+.docs main {
+  grid-column: 2 / 3;
+  padding-left: 30px;
+  padding-right: 30px;
+  max-width: 800px;
+}
+
+nav.docs-nav {
+  grid-column: 1 / 2;
+}
+
+.docs h1 {
+  font-weight: 900;
+}
+
+.docs h2 {
+  font-weight: 650;
+}
+
+.docs h2::first-letter {
+  font-weight: 900;
+  color: darkgoldenrod;
+}
+
+.docs h1 {
+  color: darkorange;
+}
+
+.docs h2 {
+  border-top: 1px solid darkgoldenrod;
+  margin-top: 30px;
+  padding-top: 10px;
+}
+
+.docs main li {
+  margin-top: 5px;
+}
