@@ -351,4 +351,49 @@ describe('calculatePackagesToBuild (unit)', function () {
       expect(packagesToBuild).to.eql({packageInfosWithBuildTime: {}, warnings: ['NO_LINKED_UPTO']})
     })
   })
+
+  describe('circular dependencies', () => {
+    it('should support circular dependencies', () => {
+      const aPackage: PackageInfoWithBuildTime = {
+        directory: 'adir' as RelativeDirectoryPath,
+        name: 'apackage',
+        dependencies: [],
+        lastBuildTime: undefined,
+      }
+      const bPackage: PackageInfoWithBuildTime = {
+        directory: 'bdir' as RelativeDirectoryPath,
+        name: 'bpackage',
+        dependencies: [],
+        lastBuildTime: undefined,
+      }
+      const cPackage: PackageInfoWithBuildTime = {
+        directory: 'cdir' as RelativeDirectoryPath,
+        name: 'cpackage',
+        dependencies: [],
+        lastBuildTime: undefined,
+      }
+      aPackage.dependencies.push(bPackage)
+      aPackage.dependencies.push(cPackage)
+      bPackage.dependencies.push(cPackage)
+      cPackage.dependencies.push(aPackage)
+
+      const packageInfos: PackageInfosWithBuildTime = {
+        [aPackage.directory as string]: aPackage,
+        [bPackage.directory as string]: bPackage,
+        [cPackage.directory as string]: cPackage,
+      }
+
+      const packagesToBuild = calculatePackagesToBuild({
+        packageInfos,
+        basePackagesToBuild: [cPackage],
+        buildUpTo: [cPackage],
+      })
+      const expectedResult: PackageInfosWithBuildTime = {
+        [aPackage.directory as string]: aPackage,
+        [cPackage.directory as string]: cPackage,
+      }
+
+      expect(packagesToBuild).to.eql({packageInfosWithBuildTime: expectedResult})
+    })
+  })
 })

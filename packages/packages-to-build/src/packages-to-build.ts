@@ -1,4 +1,7 @@
+import debugMaker from 'debug'
 import {Package} from '@bilt/types'
+
+const debug = debugMaker('bilt:packages-to-build:main')
 
 import {PackageInfoWithBuildTime as PIWBT, PackageInfosWithBuildTime as PIWBTs} from './types'
 import {
@@ -27,6 +30,7 @@ export function calculatePackagesToBuild({
   packageInfosWithBuildTime: PackageInfosWithBuildTime
   warnings?: CalculatePackagesToBuildWarning[]
 } {
+  debug('base packages:', basePackagesToBuild.map((p) => p.directory).join(' '))
   const dependencyGraph = createDependencyGraph(packageInfos)
 
   buildLinkedDependencyGraphSubset(dependencyGraph, basePackagesToBuild, buildUpTo)

@@ -14,9 +14,7 @@
         "ts-node/register",
         "--no-timeouts",
         "--trace-warnings",
-        "'test/unit/*.test.?s'",
-        "'test/it/*.test.?s'",
-        "'test/e2e/*.test.?s'"
+        "test/unit/*.test.?s"
       ],
       "env": {
         "DEBUG": "applitools:${workspaceFolderBasename}*"
