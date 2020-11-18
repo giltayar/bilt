@@ -9,18 +9,28 @@ const getPort = require('get-port')
  * options: {
  *  logLevel?: 'http' | 'trace' | 'warn' | 'error' | 'info',
  *  shouldDeleteNpmRegistryEnvVars?: boolean
+ *  shouldProxyToNpmJs?: boolean
  * }) =>
  * Promise<{
  * registry: string
  * close: () => Promise<void>
  * }>} */
-async function startNpmRegistry({logLevel = 'error', shouldDeleteNpmRegistryEnvVars = true} = {}) {
+async function startNpmRegistry({
+  logLevel = 'error',
+  shouldDeleteNpmRegistryEnvVars = true,
+  shouldProxyToNpmJs = false,
+} = {}) {
   const storageDir = await fs.promises.mkdtemp(os.tmpdir() + '/')
   const port = await getPort()
 
   const webserver = await new Promise((resolve) =>
-    startVerdaccio(makeConfig(storageDir, logLevel), port, '', '', '', (webserver) =>
-      resolve(webserver),
+    startVerdaccio(
+      makeConfig(storageDir, logLevel, shouldProxyToNpmJs),
+      port,
+      '',
+      '',
+      '',
+      (webserver) => resolve(webserver),
     ),
   )
   await new Promise((resolve, reject) =>
@@ -42,7 +52,7 @@ async function startNpmRegistry({logLevel = 'error', shouldDeleteNpmRegistryEnvV
   }
 }
 
-const makeConfig = (storage, logLevel) => ({
+const makeConfig = (storage, logLevel, shouldProxyToNpmJs) => ({
   storage,
   uplinks: {
     npmjs: {
@@ -58,10 +68,12 @@ const makeConfig = (storage, logLevel) => ({
     '@*/*': {
       access: '$anonymous',
       publish: '$anonymous',
+      proxy: shouldProxyToNpmJs ? ['npmjs'] : [],
     },
     '**': {
       access: '$anonymous',
       publish: '$anonymous',
+      proxy: shouldProxyToNpmJs ? ['npmjs'] : [],
     },
   },
   logs: [

@@ -1,6 +1,6 @@
 {
   "name": "@bilt/cli",
-  "version": "3.2.9",
+  "version": "3.2.10",
   "description": "",
   "main": "src/cli.js",
   "engines": {
@@ -37,14 +37,14 @@
     "@bilt/build": "^2.0.10",
     "@bilt/build-with-configuration": "^2.2.5",
     "@bilt/git-packages": "^8.0.2",
-    "@bilt/npm-next-version": "^2.2.7",
+    "@bilt/npm-next-version": "^2.2.8",
     "@bilt/npm-packages": "^1.1.7",
     "@bilt/packages-to-build": "^4.0.1",
     "@bilt/scripting-commons": "^1.2.5",
-    "camelcase": "^6.0.0",
+    "camelcase": "^6.2.0",
     "chalk": "^4.1.0",
     "cosmiconfig": "^6.0.0",
-    "debug": "^4.1.1",
+    "debug": "^4.2.0",
     "globby": "^11.0.1",
     "throat": "^5.0.0",
     "yaml": "^1.10.0",
@@ -52,17 +52,17 @@
   },
   "devDependencies": {
     "@bilt/git-testkit": "^1.1.7",
-    "@bilt/npm-testkit": "^1.3.6",
+    "@bilt/npm-testkit": "^1.4.0",
     "@bilt/types": "^2.0.3",
-    "@types/node": "^14.0.26",
+    "@types/node": "^14.14.8",
     "chai": "^4.2.0",
     "chai-subset": "^1.6.0",
-    "eslint": "^7.5.0",
+    "eslint": "^7.13.0",
     "eslint-plugin-mocha-no-only": "^1.1.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.1.4",
-    "mocha": "^8.0.1",
-    "prettier": "^2.0.5",
+    "mocha": "^8.2.1",
+    "prettier": "^2.1.2",
     "typescript": "^3.9.7"
   }
 }
