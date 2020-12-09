@@ -1,6 +1,6 @@
 {
   "name": "@bilt/npm-next-version",
-  "version": "2.2.9",
+  "version": "2.2.11",
   "description": "",
   "main": "src/npm-next-version.js",
   "engines": {
@@ -38,7 +38,7 @@
     "debug": "^4.2.0"
   },
   "devDependencies": {
-    "@bilt/npm-testkit": "^1.4.0",
+    "@bilt/npm-testkit": "^1.4.2",
     "@types/node": "^14.14.8",
     "chai": "^4.2.0",
     "eslint": "^7.13.0",
