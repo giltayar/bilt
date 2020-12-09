@@ -25,9 +25,10 @@ jobs:
         - name: 'npm update'
           enableOption: 'update'
           run: 'npm update'
+        # NPM 7 has a problem with npm audit fix in some of the tests, so...
         - name: 'npm audit fix'
           enableOption: 'audit'
-          run: 'npm audit fix'
+          run: 'npm audit fix || true'
         - name: 'increment version'
           enableOption: 'publish'
           run: "npm version $NEXT_VERSION --allow-same-version --no-git-tag-version"
