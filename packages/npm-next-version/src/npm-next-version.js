@@ -29,7 +29,7 @@ async function getRegistryPackageInfo(packageName, packageDirectory) {
 
     return JSON.parse(stdout)
   } catch (err) {
-    if (JSON.parse(err.stdout).error.code === 'E404') {
+    if ((err.stdout || err.stderr).includes('E404')) {
       return undefined
     }
 

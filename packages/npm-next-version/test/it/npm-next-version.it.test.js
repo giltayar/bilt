@@ -16,6 +16,15 @@ describe('npmNextVersion (it)', function () {
     ).to.equal('1.4.7')
   })
 
+  it('should work with non-existing  package', async () => {
+    expect(
+      await npmNextVersion({
+        name: '@bilt/package-that-does-not-exist',
+        version: '1.0.0',
+      }),
+    ).to.equal('1.0.0')
+  })
+
   it("should use packageDirectory so that the package's .npmrc will prevail", async () => {
     const packageDirectory = await makeTemporaryDirectory()
     const {registry, close} = await startNpmRegistry()
