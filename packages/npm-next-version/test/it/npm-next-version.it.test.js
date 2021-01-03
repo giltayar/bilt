@@ -1,7 +1,7 @@
 'use strict'
 const {describe, it} = require('mocha')
 const {expect} = require('chai')
-const {startNpmRegistry} = require('@bilt/npm-testkit')
+const {startNpmRegistry, enablePackageToPublishToRegistry} = require('@bilt/npm-testkit')
 const {makeTemporaryDirectory, writeFile, sh} = require('@bilt/scripting-commons')
 
 const {npmNextVersion} = require('../..')
@@ -37,6 +37,7 @@ describe('npmNextVersion (it)', function () {
       )
 
       await writeFile('.npmrc', `registry=${registry}/\n`, {cwd: packageDirectory})
+      await enablePackageToPublishToRegistry(packageDirectory, registry)
 
       await sh('npm publish', {cwd: packageDirectory})
 
