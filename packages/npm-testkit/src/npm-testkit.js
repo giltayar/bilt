@@ -76,8 +76,8 @@ async function enablePackageToPublishToRegistry(packageDir, registry) {
   })
   await writeFile(
     '.npmrc',
-    (fs.existsSync(path.join(packageDir, 'package.json'))
-      ? await readFileAsString('package.json', {cwd: packageDir})
+    (fs.existsSync(path.join(packageDir, '.npmrc'))
+      ? await readFileAsString('.npmrc', {cwd: packageDir})
       : '') +
       `
   registry=${registry}
