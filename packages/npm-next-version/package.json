@@ -1,6 +1,6 @@
 {
   "name": "@bilt/npm-next-version",
-  "version": "2.2.11",
+  "version": "2.2.12",
   "description": "",
   "main": "src/npm-next-version.js",
   "engines": {
@@ -38,13 +38,13 @@
     "debug": "^4.2.0"
   },
   "devDependencies": {
-    "@bilt/npm-testkit": "^1.4.2",
-    "@types/node": "^14.14.8",
+    "@bilt/npm-testkit": "^1.5.1",
+    "@types/node": "^14.14.19",
     "chai": "^4.2.0",
-    "eslint": "^7.13.0",
+    "eslint": "^7.17.0",
     "eslint-plugin-mocha-no-only": "^1.1.1",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-plugin-prettier": "^3.3.0",
     "mocha": "^7.2.0",
     "mocha-parallel-tests": "^2.3.0",
     "prettier": "^2.1.2",
