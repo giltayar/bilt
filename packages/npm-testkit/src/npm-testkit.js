@@ -59,8 +59,9 @@ async function startNpmRegistry({
  *
  * @param {string} packageDir
  * @param {string} registry
+ * @param {string} [scope]
  */
-async function enablePackageToPublishToRegistry(packageDir, registry) {
+async function enablePackageToPublishToRegistry(packageDir, registry, scope) {
   const x = await new Promise((resolve, reject) => {
     new NpmRegistryClient().adduser(
       registry,
@@ -80,8 +81,9 @@ async function enablePackageToPublishToRegistry(packageDir, registry) {
       ? await readFileAsString('.npmrc', {cwd: packageDir})
       : '') +
       `
-  registry=${registry}
   //${new URL(registry).host}/:_authToken=${JSON.parse(x).token}
+  registry=${registry}
+  ${scope ? `@${scope}:registry=${registry}` : ''}
   `,
     {cwd: packageDir},
   )
