@@ -1,6 +1,6 @@
 {
   "name": "@bilt/cli",
-  "version": "3.2.15",
+  "version": "3.2.16",
   "description": "",
   "main": "src/cli.js",
   "engines": {
@@ -52,7 +52,7 @@
   },
   "devDependencies": {
     "@bilt/git-testkit": "^1.1.7",
-    "@bilt/npm-testkit": "^1.5.1",
+    "@bilt/npm-testkit": "^1.5.2",
     "@bilt/types": "^2.0.3",
     "@types/node": "^14.14.19",
     "@types/yargs": "^15.0.12",
