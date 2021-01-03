@@ -3,7 +3,7 @@ const {describe, it, afterEach} = require('mocha')
 const expect = require('unexpected')
 const {sh, shWithOutput, makeTemporaryDirectory, writeFile} = require('@bilt/scripting-commons')
 
-const {startNpmRegistry} = require('../../src/npm-testkit')
+const {startNpmRegistry, enablePackageToPublishToRegistry} = require('../../src/npm-testkit')
 
 describe('startNpmRegistry', function () {
   /**@type {string}*/
@@ -17,6 +17,8 @@ describe('startNpmRegistry', function () {
     const cwd = await makeTemporaryDirectory()
     await writeFile('package.json', {name: 'foo-package', version: '6.6.6'}, {cwd})
     await writeFile('.npmrc', `registry=${registry}`, {cwd})
+
+    await enablePackageToPublishToRegistry(cwd, registry)
 
     await sh('npm publish', {cwd})
 

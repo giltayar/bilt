@@ -1,9 +1,12 @@
 'use strict'
 const os = require('os')
 const fs = require('fs')
+const path = require('path')
 const {promisify} = require('util')
 const {default: startVerdaccio} = require('verdaccio')
 const getPort = require('get-port')
+const NpmRegistryClient = require('npm-registry-client')
+const {writeFile, readFileAsString} = require('@bilt/scripting-commons')
 
 /**@type {(
  * options: {
@@ -52,6 +55,38 @@ async function startNpmRegistry({
   }
 }
 
+/**
+ *
+ * @param {string} packageDir
+ * @param {string} registry
+ */
+async function enablePackageToPublishToRegistry(packageDir, registry) {
+  const x = await new Promise((resolve, reject) => {
+    new NpmRegistryClient().adduser(
+      registry,
+      {
+        auth: {
+          username: 'whatever',
+          password: 'whatever',
+          email: 'whatever@example.com',
+        },
+      },
+      /**@param {Error | null} err*/ (err, _data, raw) => (err ? reject(err) : resolve(raw)),
+    )
+  })
+  await writeFile(
+    '.npmrc',
+    (fs.existsSync(path.join(packageDir, 'package.json'))
+      ? await readFileAsString('package.json', {cwd: packageDir})
+      : '') +
+      `
+  registry=${registry}
+  //${new URL(registry).host}/:_authToken=${JSON.parse(x).token}
+  `,
+    {cwd: packageDir},
+  )
+}
+
 const makeConfig = (storage, logLevel, shouldProxyToNpmJs) => ({
   storage,
   uplinks: {
@@ -66,13 +101,13 @@ const makeConfig = (storage, logLevel, shouldProxyToNpmJs) => ({
   },
   packages: {
     '@*/*': {
-      access: '$anonymous',
-      publish: '$anonymous',
+      access: '$all',
+      publish: '$all',
       proxy: shouldProxyToNpmJs ? ['npmjs'] : [],
     },
     '**': {
-      access: '$anonymous',
-      publish: '$anonymous',
+      access: '$all',
+      publish: '$all',
       proxy: shouldProxyToNpmJs ? ['npmjs'] : [],
     },
   },
@@ -93,4 +128,5 @@ const makeConfig = (storage, logLevel, shouldProxyToNpmJs) => ({
 
 module.exports = {
   startNpmRegistry,
+  enablePackageToPublishToRegistry,
 }
