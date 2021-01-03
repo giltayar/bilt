@@ -4,6 +4,7 @@ const {describe, it} = require('mocha')
 const {expect, use} = require('chai')
 use(require('chai-subset'))
 const {commitAll, commitHistory} = require('@bilt/git-testkit')
+const {enablePackageToPublishToRegistry} = require('@bilt/npm-testkit')
 const {
   writeFile,
   shWithOutput,
@@ -25,14 +26,14 @@ describe('default-build (it)', function () {
     const {registry, cwd, pushTarget} = await prepareGitAndNpm()
 
     await writeFile(['.biltrc.json'], {}, {cwd})
-    await writeFile('.npmrc', `registry=${registry}\n`, {cwd})
+    await enablePackageToPublishToRegistry(cwd, registry)
 
     await writeFile(['a', 'package.json'], {name: 'a-package', version: '1.0.0'}, {cwd})
-    await writeFile(['a', '.npmrc'], `registry=${registry}\n`, {cwd})
+    await enablePackageToPublishToRegistry(path.join(cwd, 'a'), registry)
     await sh('npm publish', {cwd: path.join(cwd, 'a')})
 
     await writeFile(['b', 'package.json'], {name: 'b-package', version: '2.0.0'}, {cwd})
-    await writeFile(['b', '.npmrc'], `registry=${registry}\n`, {cwd})
+    await enablePackageToPublishToRegistry(path.join(cwd, 'b'), registry)
     await sh('npm publish', {cwd: path.join(cwd, 'b')})
 
     await writeFile(['not-a-package', 'foo.txt'], 'foo', {cwd})
@@ -203,5 +204,5 @@ async function createPackage(
     },
     {cwd},
   )
-  await writeFile([pkg, '.npmrc'], `registry=${registry}\n`, {cwd})
+  await enablePackageToPublishToRegistry(path.join(cwd, pkg), registry)
 }

@@ -4,13 +4,13 @@ const {promisify} = require('util')
 const path = require('path')
 const {execFile} = require('child_process')
 const {init, commitAll} = require('@bilt/git-testkit')
-const {startNpmRegistry} = require('@bilt/npm-testkit')
+const {startNpmRegistry, enablePackageToPublishToRegistry} = require('@bilt/npm-testkit')
 const {makeTemporaryDirectory, readFileAsString, writeFile, sh} = require('@bilt/scripting-commons')
 const cli = require('../../src/cli')
 
 async function createAdepsBdepsCPackages(cwd, registry, base = '.') {
   if (registry) {
-    await writeFile('.npmrc', `registry=${registry}\n`, {cwd})
+    await enablePackageToPublishToRegistry(cwd, registry)
   }
   const {cPackageJson, bPackageJson} = await createPackages(
     cwd,
@@ -42,7 +42,7 @@ async function createPackages(cwd, registry, aPackageDir, bPackageDir, cPackageD
   )
   await writeFile([aPackageDir, 'build-count'], '0', {cwd})
   if (registry) {
-    await writeFile([aPackageDir, '.npmrc'], `registry=${registry}\n`, {cwd})
+    await enablePackageToPublishToRegistry(path.join(cwd, aPackageDir), registry)
   }
   const bPackageJson = {
     name: `${bPackage}-package`,
@@ -55,7 +55,7 @@ async function createPackages(cwd, registry, aPackageDir, bPackageDir, cPackageD
   }
   await writeFile([bPackageDir, 'package.json'], bPackageJson, {cwd})
   if (registry) {
-    await writeFile([bPackageDir, '.npmrc'], `registry=${registry}\n`, {cwd})
+    await enablePackageToPublishToRegistry(path.join(cwd, bPackageDir), registry)
   }
   await writeFile([bPackageDir, 'build-count'], '0', {cwd})
   if (registry) {
@@ -65,7 +65,7 @@ async function createPackages(cwd, registry, aPackageDir, bPackageDir, cPackageD
   const cPackageJson = {name: `${cPackage}-package`, version: '3.0.0', scripts: {build}}
   await writeFile([cPackageDir, 'package.json'], cPackageJson, {cwd})
   if (registry) {
-    await writeFile([cPackageDir, '.npmrc'], `registry=${registry}\n`, {cwd})
+    await enablePackageToPublishToRegistry(path.join(cwd, cPackageDir), registry)
   }
   await writeFile([cPackageDir, 'build-count'], '0', {cwd})
   if (registry) {
@@ -81,7 +81,7 @@ async function prepareGitAndNpm() {
   await init(cwd, {origin: pushTarget})
   const {registry} = await startNpmRegistry()
 
-  await writeFile('.npmrc', `registry=${registry}\n`, {cwd})
+  await enablePackageToPublishToRegistry(cwd, registry)
   await writeFile(['.biltrc.json'], {}, {cwd})
   return {registry, cwd, pushTarget}
 }
