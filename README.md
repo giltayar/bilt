@@ -13,7 +13,7 @@ while guaranteeing that only those packages that were not built (and their depen
 
 (To go directly to the meat of Bilt, read
 [Structure of a Bilt monorepo](./docs/monorepo-structure.md) and then
-go to the [Usage](./docs/usage.md) chapter.)
+go to the [Getting Started](./docs/getting-started.md) chapter.)
 
 Monorepos are a wonderful concept! They enable us to structure our code as a large set of
 loosely-coupled packages, instead of one big monolithic codebase, which is usually
