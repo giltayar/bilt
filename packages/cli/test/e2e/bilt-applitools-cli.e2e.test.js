@@ -7,6 +7,7 @@ const {
   prepareGitAndNpm,
   runBuildCli,
   createAdepsBdepsCPackages,
+  setNpmScript,
 } = require('../commons/setup-and-run')
 
 describe('applitools build (e2e)', function () {
@@ -33,8 +34,25 @@ describe('applitools build (e2e)', function () {
     await createAdepsBdepsCPackages(cwd, registry)
     await writeFile('.biltrc.json', {packages: ['*'], upto: ['./c']}, {cwd})
 
-    const {stderr} = await runBuildCli(cwd, 'build all', ['./a'])
+    const {stderr} = await runBuildCli(cwd, 'build a', ['./a'])
 
     expect(stderr).to.include('none of the uptos is linked')
+  })
+
+  it('should fail if the build fails', async () => {
+    const {registry, cwd} = await prepareGitAndNpm()
+    await createAdepsBdepsCPackages(cwd, registry)
+
+    await writeFile('.biltrc.json', {packages: ['*']}, {cwd})
+
+    await setNpmScript(cwd, 'a', 'build', 'false')
+
+    const [err] = await runBuildCli(cwd, 'build a', ['./a'], []).then(
+      (v) => [undefined, v],
+      (err) => [err],
+    )
+
+    expect(err).to.not.be.undefined
+    expect(err.stderr).to.include('build package failed')
   })
 })

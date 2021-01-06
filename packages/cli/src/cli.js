@@ -8,7 +8,7 @@ const {jobInfo, validateBuildConfiguration} = require('@bilt/build-with-configur
 const findConfig = require('./find-config')
 const findBuildConfiguration = require('./find-build-configuration')
 
-async function main(argv) {
+async function main(argv, {exitOnError = false} = {}) {
   const {config, rootDirectory} = await findConfig(argv)
 
   setupPackages('upto', 'cwd', rootDirectory)(config)
@@ -29,12 +29,16 @@ async function main(argv) {
   debug('final options', {rootDirectory, config, jobId, args})
 
   //@ts-expect-error
-  await require(`./command-build`)({
+  const success = await require(`./command-build`)({
     jobId: /**@type{string}*/ (jobId),
     rootDirectory: /**@type{import('@bilt/types').Directory}*/ (rootDirectory),
     jobConfiguration: findJobConfigurationInChain(buildConfigurationChain, jobId),
     ...args,
   })
+
+  if (!success && exitOnError) {
+    process.exit(1)
+  }
 }
 
 /**

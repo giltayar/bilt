@@ -78,16 +78,16 @@ async function buildCommand({
   if (warnings && warnings.length > 0) {
     if (warnings.includes('NO_LINKED_UPTO')) {
       o.globalFooter(
-        `Mothing to build because the none of the uptos is linked to any of the packages to build.
+        `mothing to build because the none of the uptos is linked to any of the packages to build.
 Maybe you forgot to add an upto package?`,
       )
-      return
+      return true
     }
   }
 
   if (Object.keys(finalPackagesToBuild).length === 0) {
     o.globalFooter('nothing to build')
-    return
+    return true
   }
 
   if (!dryRun) {
@@ -118,7 +118,7 @@ Maybe you forgot to add an upto package?`,
 
   if (dryRun) {
     console.log(packagesBuildOrder.join(', '))
-    return
+    return true
   }
 
   try {
@@ -141,6 +141,7 @@ Maybe you forgot to add an upto package?`,
       )
     }
   }
+  return failed.length === 0
 }
 
 function samePackages(packages1, packages2) {

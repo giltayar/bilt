@@ -1,6 +1,6 @@
 {
   "name": "@bilt/cli",
-  "version": "3.2.18",
+  "version": "3.2.19",
   "description": "",
   "main": "src/cli.js",
   "engines": {
@@ -37,7 +37,7 @@
     "@bilt/build": "^2.0.10",
     "@bilt/build-with-configuration": "^2.2.5",
     "@bilt/git-packages": "^8.0.2",
-    "@bilt/npm-next-version": "^2.2.17",
+    "@bilt/npm-next-version": "^2.2.15",
     "@bilt/npm-packages": "^1.1.7",
     "@bilt/packages-to-build": "^4.0.1",
     "@bilt/scripting-commons": "^1.2.5",
