@@ -1,6 +1,6 @@
 {
   "name": "@bilt/cli",
-  "version": "3.2.17",
+  "version": "3.2.18",
   "description": "",
   "main": "src/cli.js",
   "engines": {
@@ -37,7 +37,7 @@
     "@bilt/build": "^2.0.10",
     "@bilt/build-with-configuration": "^2.2.5",
     "@bilt/git-packages": "^8.0.2",
-    "@bilt/npm-next-version": "^2.2.14",
+    "@bilt/npm-next-version": "^2.2.17",
     "@bilt/npm-packages": "^1.1.7",
     "@bilt/packages-to-build": "^4.0.1",
     "@bilt/scripting-commons": "^1.2.5",
@@ -54,14 +54,14 @@
     "@bilt/git-testkit": "^1.1.7",
     "@bilt/npm-testkit": "^1.5.3",
     "@bilt/types": "^2.0.3",
-    "@types/node": "^14.14.19",
+    "@types/node": "^14.14.20",
     "@types/yargs": "^15.0.12",
     "chai": "^4.2.0",
     "chai-subset": "^1.6.0",
     "eslint": "^7.17.0",
     "eslint-plugin-mocha-no-only": "^1.1.1",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^3.3.0",
+    "eslint-plugin-prettier": "^3.3.1",
     "mocha": "^8.2.1",
     "prettier": "^2.2.1",
     "typescript": "^4.1.3"
