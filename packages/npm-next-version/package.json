@@ -1,6 +1,6 @@
 {
   "name": "@bilt/npm-next-version",
-  "version": "2.2.15",
+  "version": "2.2.17",
   "description": "",
   "main": "src/npm-next-version.js",
   "engines": {
