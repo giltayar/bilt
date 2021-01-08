@@ -190,7 +190,7 @@ function setupPackages(option, cwd, rootDirectory) {
   /**
    * @param {string} v
    */
-  const isGlob = (v) => v.startsWith('.') || v.startsWith('/')
+  const isGlob = (v) => v.startsWith('.') || v.startsWith('/') || v.startsWith('!')
   return async (argv) => {
     if (argv[option] && argv[option].length > 0) {
       if (argv[option].length === 1 && argv[option][0] === false) return argv
