@@ -1,19 +1,18 @@
-'use strict'
-const {promisify} = require('util')
-const fs = require('fs')
-const os = require('os')
-const path = require('path')
-const {once} = require('events')
-const {spawn, exec} = require('child_process')
+import {promisify} from 'util'
+import {promises as fs} from 'fs'
+import {tmpdir} from 'os'
+import {join, dirname} from 'path'
+import {once} from 'events'
+import {spawn, exec} from 'child_process'
 
 /**
  * @param {string} command
  * @param {{
  * cwd: string
- * env?: object|undefined
+ * env?: Record<string, string>
  * }} params
  */
-async function sh(command, {cwd, env}) {
+export async function sh(command, {cwd, env}) {
   const childProcess = spawn(command, {cwd, stdio: 'inherit', shell: true, env})
   const [result] = await Promise.race([once(childProcess, 'error'), once(childProcess, 'exit')])
   if (typeof result === 'number') {
@@ -35,10 +34,10 @@ async function sh(command, {cwd, env}) {
  * @param {string} command
  * @param {{
  * cwd: string
- * env?: object|undefined
+ * env?: Record<string, string>
  * }} params
  */
-async function shWithOutput(command, {cwd, env}) {
+export async function shWithOutput(command, {cwd, env}) {
   const {stdout} = await promisify(exec)(command, {cwd, env})
 
   return stdout
@@ -50,14 +49,14 @@ async function shWithOutput(command, {cwd, env}) {
  * @param {{cwd: string}} options
  * @returns {Promise<void>}
  */
-async function writeFile(file, content, {cwd}) {
+export async function writeFile(file, content, {cwd}) {
   if (Array.isArray(file)) {
-    file = file.reduce((fileUpTillNow, segment) => path.join(fileUpTillNow, segment))
+    file = file.reduce((fileUpTillNow, segment) => join(fileUpTillNow, segment))
   }
-  file = path.join(cwd, file)
+  file = join(cwd, file)
 
-  await fs.promises.mkdir(path.dirname(file), {recursive: true})
-  await fs.promises.writeFile(file, typeof content === 'object' ? JSON.stringify(content) : content)
+  await fs.mkdir(dirname(file), {recursive: true})
+  await fs.writeFile(file, typeof content === 'object' ? JSON.stringify(content) : content)
 }
 
 /**
@@ -65,13 +64,13 @@ async function writeFile(file, content, {cwd}) {
  * @param {{cwd: string}} options
  * @returns {Promise<string>}
  */
-async function readFileAsString(file, {cwd}) {
+export async function readFileAsString(file, {cwd}) {
   if (Array.isArray(file)) {
-    file = file.reduce((fileUpTillNow, segment) => path.join(fileUpTillNow, segment))
+    file = file.reduce((fileUpTillNow, segment) => join(fileUpTillNow, segment))
   }
-  file = path.join(cwd, file)
+  file = join(cwd, file)
 
-  return await fs.promises.readFile(file, 'utf-8')
+  return await fs.readFile(file, 'utf-8')
 }
 
 /**
@@ -79,25 +78,16 @@ async function readFileAsString(file, {cwd}) {
  * @param {{cwd: string}} options
  * @returns {Promise<object>}
  */
-async function readFileAsJson(file, {cwd}) {
+export async function readFileAsJson(file, {cwd}) {
   if (Array.isArray(file)) {
-    file = file.reduce((fileUpTillNow, segment) => path.join(fileUpTillNow, segment))
+    file = file.reduce((fileUpTillNow, segment) => join(fileUpTillNow, segment))
   }
-  return JSON.parse(await fs.promises.readFile(path.join(cwd, file), 'utf-8'))
+  return JSON.parse(await fs.readFile(join(cwd, file), 'utf-8'))
 }
 
 /**
  * @returns {Promise<string>}
  */
-async function makeTemporaryDirectory() {
-  return await fs.promises.mkdtemp(os.tmpdir() + '/')
-}
-
-module.exports = {
-  sh,
-  shWithOutput,
-  makeTemporaryDirectory,
-  writeFile,
-  readFileAsString,
-  readFileAsJson,
+export async function makeTemporaryDirectory() {
+  return await fs.mkdtemp(tmpdir() + '/')
 }

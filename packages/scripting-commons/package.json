@@ -1,19 +1,26 @@
 {
   "name": "@bilt/scripting-commons",
-  "version": "1.2.5",
+  "version": "2.0.0",
   "description": "",
-  "main": "src/scripting-commons.js",
+  "type": "module",
+  "exports": "./src/scripting-commons.js",
+  "types": "./types/src/scripting-commons.js",
+  "main": "./src/scripting-commons.js",
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=14.0.0"
   },
   "files": [
-    "src"
+    "src",
+    "types"
   ],
   "scripts": {
-    "test": "npm run eslint && npm run test:types && npm run test:mocha",
-    "test:types": "tsc",
-    "test:mocha": "mocha --no-timeouts --exit 'test/unit/*.test.js' 'test/it/*.test.js'",
-    "eslint": "eslint '**/*.js'"
+    "build": "concurrently -r 'npm:build:*'",
+    "build:typescript": "rm -rf types && tsc && cp src/*.d.ts types/src",
+    "test": "concurrently -r 'npm:test:*'",
+    "test:mocha": "npm run mocha",
+    "test:eslint": "eslint --color --max-warnings=0 '**/*.js'",
+    "test:typescript": "tsc --noEmit --pretty --emitDeclarationOnly false",
+    "mocha": "mocha --no-timeouts --colors --exit 'test/**/*.test.js'"
   },
   "keywords": [
     "bilt",
@@ -23,24 +30,36 @@
     "javascript"
   ],
   "author": "Gil Tayar <gil@tayar.org>",
-  "license": "unlicense",
+  "license": "MIT",
   "repository": {
-    "url": "https://github.com/bilt/rendering-grid",
+    "url": "https://github.com/giltayar/bilt",
     "type": "git",
     "directory": "packages/scripting-commons"
   },
   "dependencies": {
-    "debug": "^4.1.1"
+    "@babel/core": "^7.12.16",
+    "@babel/eslint-parser": "^7.12.16",
+    "debug": "^4.3.1"
   },
   "devDependencies": {
-    "@types/node": "^14.0.11",
-    "eslint": "^7.2.0",
-    "eslint-plugin-mocha-no-only": "^1.1.0",
+    "@babel/plugin-syntax-top-level-await": "^7.12.13",
+    "@types/chai": "^4.2.15",
+    "@types/chai-as-promised": "^7.1.3",
+    "@types/mocha": "^8.2.0",
+    "@types/node": "^14.14.26",
+    "chai": "^4.3.0",
+    "chai-as-promised": "^7.1.1",
+    "concurrently": "^5.3.0",
+    "eslint": "^7.19.0",
+    "eslint-plugin-mocha-no-only": "^1.1.1",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^3.1.3",
-    "mocha": "^7.2.0",
-    "prettier": "^2.0.5",
-    "typescript": "^3.9.5",
-    "unexpected": "^11.14.0"
+    "eslint-plugin-prettier": "^3.3.1",
+    "mocha": "^8.3.0",
+    "prettier": "^2.2.1",
+    "typescript": "^4.1.5"
+  },
+  "volta": {
+    "node": "14.15.5",
+    "npm": "7.5.3"
   }
 }
