@@ -1,13 +1,13 @@
 {
   "name": "@bilt/scripting-commons",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "",
   "type": "module",
   "exports": "./src/scripting-commons.js",
   "types": "./types/src/scripting-commons.js",
   "main": "./src/scripting-commons.js",
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=12.7.0"
   },
   "files": [
     "src",

@@ -17,6 +17,6 @@
     "declarationDir": "types",
     "maxNodeModuleJsDepth": 0
   },
-  "include": ["src/**/*.js", "test/**/*.js"],
+  "include": ["src/**/*.js", "src/**/*.d.ts", "test/**/*.js", "test/**/*.d.ts"],
   "exclude": ["node_modules"]
 }
