@@ -1,3 +1,7 @@
-const path = require('path')
+import {relative, dirname} from 'path'
 
-module.exports = (filename, basedir) => path.relative(basedir, path.dirname(filename))
+export default /**
+ * @param {string} filename
+ * @param {string} basedir
+ */
+(filename, basedir) => relative(basedir, dirname(filename))

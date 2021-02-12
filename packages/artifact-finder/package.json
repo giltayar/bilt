@@ -1,41 +1,82 @@
 {
   "name": "@bilt/artifact-finder",
-  "version": "2.0.32",
+  "version": "3.0.0",
   "description": "",
-  "main": "src/artifact-finder.js",
-  "bin": {
-    "artifact-finder": "scripts/artifact-finder-cli.js"
+  "type": "module",
+  "exports": "./src/artifact-finder.js",
+  "types": "./types/src/artifact-finder.js",
+  "main": "./src/artifact-finder.js",
+  "engines": {
+    "node": ">=12.7.0"
   },
   "files": [
     "src",
-    "scripts"
+    "types"
   ],
-  "scripts": {
-    "test": "npm run eslint && mocha 'test/**/*.test.js'",
-    "eslint": "eslint '**/*.js'",
-    "debug": "mocha --inspect-brk"
+  "publishConfig": {
+    "access": "public"
   },
+  "scripts": {
+    "build": "concurrently -r 'npm:build:*'",
+    "build:typescript": "rm -rf types && tsc && cp src/*.d.ts types/src",
+    "test": "concurrently -r 'npm:test:*'",
+    "test:mocha": "npm run mocha",
+    "test:eslint": "eslint --max-warnings=0 '**/*.js'",
+    "test:typescript": "tsc --noEmit --emitDeclarationOnly false",
+    "mocha": "mocha --no-timeouts --exit 'test/**/*.test.js'"
+  },
+  "keywords": [
+    "ci",
+    "build",
+    "bilt",
+    "tool",
+    "monorepo"
+  ],
   "author": "Gil Tayar <gil@tayar.org>",
-  "license": "Unlicense",
+  "license": "MIT",
   "repository": {
     "url": "https://github.com/giltayar/bilt",
     "type": "git",
     "directory": "packages/artifact-finder"
   },
   "dependencies": {
-    "debug": "^4.1.1",
-    "ignore": "^5.1.4",
-    "js-yaml": "^3.13.1",
+    "@bilt/scripting-commons": "^2.0.2",
+    "debug": "^4.3.1",
+    "ignore": "^4.0.6",
+    "js-yaml": "^3.14.1",
     "lodash.find": "^4.6.0",
     "lodash.flatten": "^4.4.0",
     "parse-author": "^2.0.0"
   },
   "devDependencies": {
-    "chai": "^4.2.0",
-    "eslint": "^6.8.0",
-    "eslint-plugin-prettier": "^3.1.3",
-    "mocha": "^7.1.1",
-    "prettier": "^2.0.5",
-    "sinon": "^9.0.2"
+    "@babel/core": "^7.12.16",
+    "@babel/eslint-parser": "^7.12.16",
+    "@babel/plugin-syntax-top-level-await": "^7.12.13",
+    "@bilt/npm-testkit": "^2.0.0",
+    "@types/chai": "^4.2.15",
+    "@types/chai-as-promised": "^7.1.3",
+    "@types/debug": "^4.1.5",
+    "@types/js-yaml": "^4.0.0",
+    "@types/lodash.find": "^4.6.6",
+    "@types/lodash.flatten": "^4.4.6",
+    "@types/mocha": "^8.2.0",
+    "@types/node": "^14.14.26",
+    "@types/parse-author": "^2.0.0",
+    "@types/sinon": "^9.0.10",
+    "chai": "^4.3.0",
+    "chai-as-promised": "^7.1.1",
+    "concurrently": "^5.3.0",
+    "eslint": "^7.19.0",
+    "eslint-plugin-mocha-no-only": "^1.1.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "mocha": "^8.3.0",
+    "prettier": "^2.2.1",
+    "sinon": "^9.2.4",
+    "typescript": "^4.1.5"
+  },
+  "volta": {
+    "node": "14.15.5",
+    "npm": "7.5.3"
   }
 }

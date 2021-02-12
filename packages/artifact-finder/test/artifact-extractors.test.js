@@ -1,9 +1,9 @@
-'use strict'
-
-const {describe, it} = require('mocha')
-const {expect} = require('chai')
-const extractorsCreator = require('../src/artifact-extractors')
-const sinon = require('sinon')
+import mocha from 'mocha'
+const {describe, it} = mocha
+import {expect} from 'chai'
+import extractorsCreator from '../src/artifact-extractors.js'
+import sinon from 'sinon'
+const {stub} = sinon
 
 describe('extractors', function () {
   describe('npm extractor', function () {
@@ -11,8 +11,7 @@ describe('extractors', function () {
     const filename = `${basedir}/gar/package.json`
 
     it('should put relative path correctly in artifact', async function () {
-      const fileFetcher = sinon
-        .stub()
+      const fileFetcher = stub()
         .withArgs(filename)
         .returns(
           Promise.resolve(
@@ -33,8 +32,7 @@ describe('extractors', function () {
     })
 
     it('should put correct owners', async function () {
-      const fileFetcher = sinon
-        .stub()
+      const fileFetcher = stub()
         .withArgs(filename)
         .returns(
           Promise.resolve(
@@ -59,8 +57,7 @@ describe('extractors', function () {
     })
 
     it('should add dependencies and dev dependencies', async function () {
-      const fileFetcher = sinon
-        .stub()
+      const fileFetcher = stub()
         .withArgs(filename)
         .returns(
           Promise.resolve(
@@ -89,7 +86,7 @@ describe('extractors', function () {
     })
 
     it('should ignore non-npm packages', async function () {
-      const fileFetcher = sinon.stub().withArgs(filename).returns('')
+      const fileFetcher = stub().withArgs(filename).returns('')
       const extractor = extractorsCreator(fileFetcher).npmExtractor
 
       expect(await extractor(filename + '/zoo.bar', basedir)).to.be.undefined
@@ -101,8 +98,7 @@ describe('extractors', function () {
     const filename = `${basedir}/gar/.artifactrc.yml`
 
     it('should put relative path correctly in artifact and get artifact as-is in yml', async function () {
-      const fileFetcher = sinon
-        .stub()
+      const fileFetcher = stub()
         .withArgs(filename)
         .returns(
           Promise.resolve(
@@ -126,8 +122,7 @@ describe('extractors', function () {
     })
 
     it('should put relative path correctly in artifact even if there is one in yml', async function () {
-      const fileFetcher = sinon
-        .stub()
+      const fileFetcher = stub()
         .withArgs(filename)
         .returns(
           Promise.resolve(
@@ -152,8 +147,7 @@ describe('extractors', function () {
     })
 
     it('should not have a type if its not in the artifactrc.yml', async function () {
-      const fileFetcher = sinon
-        .stub()
+      const fileFetcher = stub()
         .withArgs(filename)
         .returns(
           Promise.resolve(
@@ -176,7 +170,7 @@ describe('extractors', function () {
     })
   })
   describe('extractor merger', function () {
-    const extractorMerger = extractorsCreator((s) => s).extractorMerger
+    const extractorMerger = extractorsCreator((s) => Promise.resolve(s)).extractorMerger
 
     it('should returned undefined on an empty list', function () {
       expect(extractorMerger([])).to.be.undefined

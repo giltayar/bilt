@@ -1,11 +1,12 @@
-'use strict'
-const path = require('path')
-const Module = require('module')
-const yaml = require('js-yaml')
-const find = require('lodash.find')
-const pathOf = require('./path-of')
-const parseAuthor = require('parse-author')
-const debug = require('debug')('bilt:artifact-finder')
+import {basename, extname} from 'path'
+import Module from 'module'
+import yaml from 'js-yaml'
+const {load, YAMLException} = yaml
+import find from 'lodash.find'
+import pathOf from './path-of.js'
+import parseAuthor from 'parse-author'
+import debugMaker from 'debug'
+const debug = debugMaker('bilt:artifact-finder')
 
 const ARTIFACTRC_POSSIBLE_NAMES = [
   '.artifactrc',
@@ -16,10 +17,17 @@ const ARTIFACTRC_POSSIBLE_NAMES = [
   'artifact.config.js',
 ]
 
-module.exports = (fileFetcher) => {
+/**
+ * @param {(filname: string) => Promise<string>} fileFetcher
+ */
+export default (fileFetcher) => {
   return {
+    /**
+     * @param {string} filename
+     * @param {string} basedir
+     */
     async npmExtractor(filename, basedir) {
-      if (path.basename(filename) != 'package.json') {
+      if (basename(filename) != 'package.json') {
         return undefined
       }
 
@@ -34,7 +42,11 @@ module.exports = (fileFetcher) => {
             Object.keys(packageJson.devDependencies || []),
           ),
           owners: (packageJson.contributors || [])
-            .map((c) => c.email || parseAuthor(c).email)
+            .map(
+              /**
+               * @param {any} c
+               */ (c) => c.email || parseAuthor(c).email,
+            )
             .concat(
               packageJson.author ? packageJson.author || parseAuthor(packageJson.author).email : [],
             ),
@@ -45,34 +57,50 @@ module.exports = (fileFetcher) => {
         console.error(`package.json ${filename} did not parse correctly. Error:`, e.toString())
       }
     },
+    /**
+     * @param {string} filename
+     * @param {string} basedir
+     */
     async artifactsRcExtractor(filename, basedir) {
-      if (!ARTIFACTRC_POSSIBLE_NAMES.includes(path.basename(filename))) {
+      if (!ARTIFACTRC_POSSIBLE_NAMES.includes(basename(filename))) {
         return undefined
       }
 
       const artifactsRcContents = await fileFetcher(filename)
       try {
-        if (path.extname(filename) === '.js') {
+        if (extname(filename) === '.js') {
           return loadModule(artifactsRcContents.toString(), filename)
         } else {
-          return Object.assign(yaml.safeLoad(artifactsRcContents), {
+          return Object.assign(load(artifactsRcContents), {
             path: pathOf(filename, basedir),
           })
         }
       } catch (e) {
-        if (e instanceof yaml.YAMLExtension) {
+        if (e instanceof YAMLException) {
           console.error(`artifactrc.yml ${filename} did not parse`, e)
         }
         throw e
       }
     },
+    /**
+     * @param {((filename: string, basedir: string) => Promise<any>)[]} extractors
+     */
     combinedExtractorCreator(extractors) {
-      return async (filename, basedir) => {
-        return await Promise.all(extractors.map((extractor) => extractor(filename, basedir)))
-          .then((extractorResults) => extractorResults.filter((r) => !!r))
-          .then((extractorResults) => (extractorResults.length ? extractorResults : undefined))
-      }
+      return (
+        /**
+         * @param {string} filename
+         * @param {string} basedir
+         */
+        async (filename, basedir) => {
+          return await Promise.all(extractors.map((extractor) => extractor(filename, basedir)))
+            .then((extractorResults) => extractorResults.filter((r) => !!r))
+            .then((extractorResults) => (extractorResults.length ? extractorResults : undefined))
+        }
+      )
     },
+    /**
+     * @param {any} artifacts
+     */
     extractorMerger(artifacts) {
       const npmArtifact = find(artifacts, (e) => e.type === 'npm')
       const artifactsRcYmlArtifact = find(artifacts, (e) => !e.type)
@@ -93,9 +121,14 @@ module.exports = (fileFetcher) => {
   }
 }
 
+/**
+ * @param {string} code
+ * @param {string} filepath
+ */
 function loadModule(code, filepath) {
-  const module = new Module(filepath, null)
+  const module = new Module(filepath, undefined)
 
+  // @ts-expect-error
   module._compile(code, filepath)
 
   return module.exports
