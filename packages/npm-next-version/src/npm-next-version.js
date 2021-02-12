@@ -1,13 +1,13 @@
 'use strict'
-const {promisify: p} = require('util')
-const {execFile} = require('child_process')
-const calculateNextVersion = require('./calculate-next-version')
+import {promisify as p} from 'util'
+import {execFile} from 'child_process'
+import {calculateNextVersion} from './calculate-next-version.js'
 
 /**
  * @param {{version: string, name: string, packageDirectory?: string}} options
  * @returns {Promise<string>} the version that should be published
  */
-async function npmNextVersion({version, name, packageDirectory}) {
+export async function npmNextVersion({version, name, packageDirectory}) {
   const registryPackageinfo = await getRegistryPackageInfo(name, packageDirectory)
 
   const registryVersions =
@@ -18,7 +18,7 @@ async function npmNextVersion({version, name, packageDirectory}) {
 
 /**
  * @param {string} packageName
- * @param {string} packageDirectory
+ * @param {string} [packageDirectory]
  */
 async function getRegistryPackageInfo(packageName, packageDirectory) {
   try {
@@ -38,12 +38,12 @@ async function getRegistryPackageInfo(packageName, packageDirectory) {
 }
 
 /**
- * @param {any} versions
+ * @param {string[]} versions
  */
 function normalizeVersions(versions) {
   return (versions || []).concat(versions)
 }
 
-module.exports = {
+export default {
   npmNextVersion,
 }

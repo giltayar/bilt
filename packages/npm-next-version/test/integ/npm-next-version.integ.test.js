@@ -1,10 +1,10 @@
 'use strict'
-const {describe, it} = require('mocha')
-const {expect} = require('chai')
-const {startNpmRegistry, enablePackageToPublishToRegistry} = require('@bilt/npm-testkit')
-const {makeTemporaryDirectory, writeFile, sh} = require('@bilt/scripting-commons')
+import {describe, it} from 'mocha'
+import {expect} from 'chai'
+import {startNpmRegistry, enablePackageToPublishToRegistry} from '@bilt/npm-testkit'
+import {makeTemporaryDirectory, writeFile, sh} from '@bilt/scripting-commons'
 
-const {npmNextVersion} = require('../..')
+import {npmNextVersion} from '../../src/npm-next-version.js'
 
 describe('npmNextVersion (it)', function () {
   it('should work', async () => {

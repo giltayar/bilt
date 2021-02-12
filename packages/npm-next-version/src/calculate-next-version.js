@@ -1,6 +1,8 @@
-'use strict'
-
-function calculateNextVersion(version, publishedVersions) {
+/**
+ * @param {string} version
+ * @param {string[]} publishedVersions
+ */
+export function calculateNextVersion(version, publishedVersions) {
   const publishedVersionsOfMinorBranch = findPublishedVersionsOfMinorBranch(
     publishedVersions,
     majorMinorVersionOf(version),
@@ -15,12 +17,15 @@ function calculateNextVersion(version, publishedVersions) {
 
   const versionFields = version.split(/[\.\-]/)
 
-  versionFields[1] = versionFields[1] || 0
-  versionFields[2] = Math.max(patchVersionOf(version), nextPatchVersion)
+  versionFields[1] = versionFields[1] || '0'
+  versionFields[2] = String(Math.max(patchVersionOf(version) || 0, nextPatchVersion))
 
   return fieldsToVersion(versionFields)
 }
 
+/**
+ * @param {string[]} versionFields
+ */
 function fieldsToVersion(versionFields) {
   return (
     versionFields[0] +
@@ -32,12 +37,19 @@ function fieldsToVersion(versionFields) {
   )
 }
 
+/**
+ * @param {string[]} publishedVersions
+ * @param {string | undefined} minorVersion
+ */
 function findPublishedVersionsOfMinorBranch(publishedVersions, minorVersion) {
   return publishedVersions.filter(
     (publishedVersion) => majorMinorVersionOf(publishedVersion) === minorVersion,
   )
 }
 
+/**
+ * @param {string} version
+ */
 function majorMinorVersionOf(version) {
   const versionFields = version.split(/[\.\-]/)
 
@@ -46,13 +58,24 @@ function majorMinorVersionOf(version) {
   else return undefined
 }
 
+/**
+ * @param {string} version
+ */
 function patchVersionOf(version) {
   const versionFields = version.split(/[\.\-]/)
 
-  if (versionFields.length >= 2) return parseInt(versionFields[2])
-  else return undefined
+  if (versionFields.length >= 2) {
+    return parseInt(versionFields[2])
+  } else {
+    return undefined
+  }
 }
 
+/**
+ * @template T
+ * @param {T[]} array
+ * @param {number} lengthToTake
+ */
 function take(array, lengthToTake) {
   const ret = []
 
@@ -62,5 +85,3 @@ function take(array, lengthToTake) {
 
   return ret
 }
-
-module.exports = calculateNextVersion

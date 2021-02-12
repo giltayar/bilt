@@ -1,7 +1,8 @@
 'use strict'
-const {describe, it} = require('mocha')
-const {expect} = require('chai')
-const calculateNextVersion = require('../../src/calculate-next-version')
+import mocha from 'mocha'
+const {describe, it} = mocha
+import {expect} from 'chai'
+import {calculateNextVersion} from '../../src/calculate-next-version.js'
 
 const publishedVersionsToTest = ['1.1.1', '1.1.2', '5.1.3', '5.4.0', '5.3.2', '5.4.1', '5.4.3']
 
