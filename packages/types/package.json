@@ -1,11 +1,13 @@
 {
   "name": "@bilt/types",
-  "version": "2.0.3",
+  "version": "3.0.0",
   "description": "",
+  "type": "module",
   "main": "lib/types.js",
+  "exports": "./lib/types.js",
   "types": "lib/types.d.ts",
   "engines": {
-    "node": ">=12.4.0"
+    "node": ">=12.7.0"
   },
   "files": [
     "lib",
@@ -27,23 +29,22 @@
     "monorepo"
   ],
   "author": "Gil Tayar <gil@tayar.org>",
-  "license": "Unlicense",
+  "license": "MIT",
   "repository": {
     "url": "https://github.com/giltayar/bilt",
     "type": "git",
     "directory": "packages/types"
   },
-  "dependencies": {},
   "devDependencies": {
-    "@types/node": "^13.13.2",
-    "@typescript-eslint/eslint-plugin": "^2.29.0",
-    "@typescript-eslint/parser": "^2.29.0",
-    "eslint": "^6.8.0",
-    "eslint-plugin-mocha-no-only": "^1.1.0",
+    "@types/node": "^14.14.26",
+    "@typescript-eslint/eslint-plugin": "^4.15.0",
+    "@typescript-eslint/parser": "^4.15.0",
+    "eslint": "^7.19.0",
+    "eslint-plugin-mocha-no-only": "^1.1.1",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^3.1.3",
-    "prettier": "^2.0.5",
-    "ts-node": "^8.9.0",
-    "typescript": "^3.8.3"
+    "eslint-plugin-prettier": "^3.3.1",
+    "prettier": "^2.2.1",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.1.5"
   }
 }
