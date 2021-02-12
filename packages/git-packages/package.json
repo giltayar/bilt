@@ -1,6 +1,6 @@
 {
   "name": "@bilt/git-packages",
-  "version": "9.0.0",
+  "version": "9.0.1",
   "description": "",
   "type": "module",
   "main": "lib/src/git-packages.js",
@@ -10,7 +10,7 @@
     "node": ">=12.3.0"
   },
   "files": [
-    "tupes",
+    "types",
     "src"
   ],
   "scripts": {
