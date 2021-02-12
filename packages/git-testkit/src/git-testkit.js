@@ -1,14 +1,14 @@
 'use strict'
-const {promisify} = require('util')
-const fs = require('fs')
-const path = require('path')
-const os = require('os')
-const {exec, execFile} = require('child_process')
+import {promisify} from 'util'
+import {promises} from 'fs'
+import {join, dirname} from 'path'
+import {tmpdir} from 'os'
+import {exec, execFile} from 'child_process'
 const execAsync = promisify(exec)
 
 /**@return {Promise<string>} */
-async function makeTemporaryDirectory() {
-  return await fs.promises.mkdtemp(os.tmpdir() + '/')
+export async function makeTemporaryDirectory() {
+  return await promises.mkdtemp(tmpdir() + '/')
 }
 
 /**
@@ -16,7 +16,7 @@ async function makeTemporaryDirectory() {
  * @param {{bare?: boolean, origin?: string}} options
  * @return {Promise<void>}
  */
-async function init(gitDir, {bare, origin} = {}) {
+export async function init(gitDir, {bare, origin} = {}) {
   await execAsync(`git init ${bare ? '--bare' : ''}`, {cwd: gitDir})
   if (origin) {
     await execAsync(`git remote add origin ${origin}`, {cwd: gitDir})
@@ -26,24 +26,24 @@ async function init(gitDir, {bare, origin} = {}) {
 }
 
 /**@return {Promise<void>} */
-async function writeFile(
+export async function writeFile(
   /**@type {string} */ gitDir,
   /**@type {string} */ filePath,
   /**@type {string|Buffer} */ content,
 ) {
-  await fs.promises.writeFile(path.join(gitDir, filePath), content)
+  await promises.writeFile(join(gitDir, filePath), content)
 }
 
 /**@return {Promise<void>} */
-async function writePackageJson(
+export async function writePackageJson(
   /**@type {string} */ gitDir,
   /**@type {string} */ filePath,
   /**@type {string} */ name,
   /**@type {string[]} */ ...dependencies
 ) {
-  await fs.promises.mkdir(path.dirname(path.join(gitDir, filePath)), {recursive: true})
-  await fs.promises.writeFile(
-    path.join(gitDir, filePath),
+  await promises.mkdir(dirname(join(gitDir, filePath)), {recursive: true})
+  await promises.writeFile(
+    join(gitDir, filePath),
     JSON.stringify({
       name,
       version: '1.0.0',
@@ -54,7 +54,7 @@ async function writePackageJson(
 }
 
 /**@return {Promise<void>} */
-async function commitAll(
+export async function commitAll(
   /**@type {string} */ gitDir,
   /**@type {string|undefined} */ message = undefined,
 ) {
@@ -69,7 +69,7 @@ async function commitAll(
  * options: {fromGitDate?: string, toCommit?: string}) =>
  * Promise<ChangedFilesInGit>
  * } */
-async function commitHistory(
+export async function commitHistory(
   rootDirectory,
   {fromGitDate = 'one year ago', toCommit = 'HEAD'} = {},
 ) {
@@ -108,13 +108,4 @@ async function commitHistory(
   }
 
   return ret
-}
-
-module.exports = {
-  makeTemporaryDirectory,
-  init,
-  writeFile,
-  writePackageJson,
-  commitAll,
-  commitHistory,
 }

@@ -1,9 +1,9 @@
 'use strict'
-const {describe, it} = require('mocha')
-const expect = require('unexpected')
-const {makeTemporaryDirectory, writeFile, sh} = require('@bilt/scripting-commons')
-
-const {init, commitAll, commitHistory} = require('../../src/git-testkit')
+import {makeTemporaryDirectory, sh, writeFile} from '@bilt/scripting-commons'
+import {expect} from 'chai'
+import mocha from 'mocha'
+import {commitAll, commitHistory, init} from '../../src/git-testkit.js'
+const {describe, it} = mocha
 
 describe('git-testkit (it)', function () {
   it('should be able to do all the nice operations', async () => {
@@ -18,15 +18,12 @@ describe('git-testkit (it)', function () {
     await commitAll(cwdSource, 'a commit')
 
     const history = await commitHistory(cwdSource)
-    expect(Object.keys(history), 'to have length', 2)
-
-    expect(history, 'to have a value satisfying', ['bar.txt', 'foo.txt'])
+    expect(Object.values(history)).to.have.length(2).and.deep.include(['bar.txt', 'foo.txt'])
 
     await sh(`git push`, {cwd: cwdSource})
 
     const targetHistory = await commitHistory(cwdTarget)
-    expect(Object.keys(targetHistory), 'to have length', 2)
 
-    expect(targetHistory, 'to have a value satisfying', ['bar.txt', 'foo.txt'])
+    expect(Object.values(targetHistory)).to.have.length(2).and.deep.include(['bar.txt', 'foo.txt'])
   })
 })
