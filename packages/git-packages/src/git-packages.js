@@ -1,25 +1,38 @@
 import {promisify} from 'util'
 import {execFile} from 'child_process'
-import {Package, Commitish, RelativeFilePath, Directory, RelativeDirectoryPath} from '@bilt/types'
 
-export type CommitInfo = {commitTime: Date; files: RelativeFilePath[]}
+/**
+ * @typedef {import('@bilt/types').RelativeFilePath} RelativeFilePath
+ * @typedef {import('@bilt/types').Commitish} Commitish
+ * @typedef {import('@bilt/types').Directory} Directory
+ * @typedef {import('@bilt/types').Package} Package
+ * @typedef {import('@bilt/types').RelativeDirectoryPath} RelativeDirectoryPath
+ */
 
-export type ChangedFilesInGit = Map<Commitish, CommitInfo>
+/**
+ * @typedef {{commitTime: Date; files: RelativeFilePath[]}} CommitInfo
+ * @typedef {Map<Commitish, CommitInfo>} ChangedFilesInGit
+ */
 
-export const FAKE_COMMITISH_FOR_UNCOMMITED_FILES = '' as Commitish
+export const FAKE_COMMITISH_FOR_UNCOMMITED_FILES = /**@type {Commitish} */ ('')
+
 const COMMIT_PREFIX_IN_LOG = '----'
 
+/**
+ * @param {{
+ *  fromGitDate?: string
+ *  toCommit?: Commitish
+ *  rootDirectory?: Directory
+ *  includeWorkspaceFiles?: boolean
+ * }} options
+ * @returns {Promise<ChangedFilesInGit>}
+ */
 export async function findChangedFiles({
   rootDirectory,
   fromGitDate = '1 year ago',
-  toCommit = 'HEAD' as Commitish,
+  toCommit = /**@type {Commitish}*/ ('HEAD'),
   includeWorkspaceFiles = true,
-}: {
-  fromGitDate?: string
-  toCommit?: Commitish
-  rootDirectory?: Directory
-  includeWorkspaceFiles?: boolean
-}): Promise<ChangedFilesInGit> {
+}) {
   const [diffTreeResult, statusResult, lsFilesResult] = await Promise.all([
     promisify(execFile)(
       'git',
@@ -29,24 +42,24 @@ export async function findChangedFiles({
         '--date=iso',
         '--name-only',
         `--since="${fromGitDate}"`,
-        toCommit as string,
+        toCommit,
       ],
       {
-        cwd: rootDirectory as string,
+        cwd: rootDirectory,
         maxBuffer: 1024 * 1024 * 1024,
       },
     ),
     promisify(execFile)('git', ['status', `--porcelain`, '--no-renames'], {
-      cwd: rootDirectory as string,
+      cwd: rootDirectory,
       maxBuffer: 1024 * 1024 * 1024,
     }),
     promisify(execFile)('git', ['ls-files', `--others`, '--exclude-standard'], {
-      cwd: rootDirectory as string,
+      cwd: rootDirectory,
       maxBuffer: 1024 * 1024 * 1024,
     }),
   ])
 
-  const ret = new Map<Commitish, CommitInfo>()
+  const ret = /**@type {Map<Commitish, CommitInfo>}*/ (new Map())
 
   if (includeWorkspaceFiles) {
     addChangedFilesFromGitStatus(ret, statusResult)
@@ -57,20 +70,27 @@ export async function findChangedFiles({
   return ret
 }
 
-export type PackageChange = {
-  package: Package
-  commit: Commitish
-  commitTime: Date
-}
+/**
+ */
 
-export function findLatestPackageChanges({
-  changedFilesInGit,
-  packages,
-}: {
-  changedFilesInGit: ChangedFilesInGit
-  packages: Package[]
-}): PackageChange[] {
-  const lastCommitOfPackages = new Map<RelativeDirectoryPath, [Commitish, CommitInfo]>()
+/**
+ * @typedef {{
+ *  package: Package
+ *  commit: Commitish
+ *  commitTime: Date
+ * }} PackageChange
+ */
+
+/**
+ *
+ * @param {{
+ *  changedFilesInGit: ChangedFilesInGit
+ *  packages: Package[]
+ * }} options
+ * @returns {PackageChange[]}
+ */
+export function findLatestPackageChanges({changedFilesInGit, packages}) {
+  const lastCommitOfPackages = /**@type {Map<RelativeDirectoryPath, [Commitish, CommitInfo]>} */ (new Map())
 
   for (const [commit, commitInfo] of [...changedFilesInGit.entries()]) {
     const packagesInCommit = packages.filter((pkg) =>
@@ -91,34 +111,37 @@ export function findLatestPackageChanges({
   }))
 }
 
-function addChangedFilesFromDiffTree(
-  changedFiles: ChangedFilesInGit,
-  diffTreeResult: {stdout: string},
-) {
-  const gitDiffTreeLogLines = diffTreeResult.stdout
+/**
+ * @param {ChangedFilesInGit} changedFiles
+ * @param {{stdout: string}} diffTreeResult
+ */
+function addChangedFilesFromDiffTree(changedFiles, diffTreeResult) {
+  const gitDiffTreeLogLines = /**@type {RelativeFilePath[]}*/ (diffTreeResult.stdout
     .split('\n')
     .map((l) => l.trim())
-    .filter((l) => !!l)
-  let currentCommit
+    .filter((l) => !!l))
+  /**@type {Commitish|undefined} */
+  let currentCommit = undefined
   for (const gitLogLine of gitDiffTreeLogLines) {
     if (gitLogLine.startsWith(COMMIT_PREFIX_IN_LOG)) {
       const currentCommitWithTime = gitLogLine.trim().slice(COMMIT_PREFIX_IN_LOG.length).split('$')
       const commitTime = new Date(currentCommitWithTime[0])
-      currentCommit = currentCommitWithTime[1] as Commitish
+      currentCommit = /**@type {Commitish} */ (currentCommitWithTime[1])
 
       changedFiles.set(currentCommit, {commitTime: commitTime, files: []})
     } else if (currentCommit) {
-      changedFiles.get(currentCommit)?.files.push(gitLogLine as RelativeFilePath)
+      changedFiles.get(currentCommit)?.files.push(gitLogLine)
     } else {
       throw new Error(`something is wrong here: ${gitLogLine}`)
     }
   }
 }
 
-function addChangedFilesFromGitStatus(
-  changedFiles: ChangedFilesInGit,
-  statusResult: {stdout: string},
-) {
+/**
+ * @param {ChangedFilesInGit} changedFiles
+ * @param {{stdout: string}} statusResult
+ */
+function addChangedFilesFromGitStatus(changedFiles, statusResult) {
   const statusLines = statusResult.stdout
     .split('\n')
     .filter((l) => !!l)
@@ -126,34 +149,37 @@ function addChangedFilesFromGitStatus(
   for (const statusLine of statusLines) {
     const stagingStatus = statusLine[0]
     const workspaceStatus = statusLine[1]
-    const fileName = statusLine.slice(3)
+    const fileName = /**@type {RelativeFilePath}*/ (statusLine.slice(3))
 
     if (stagingStatus === ' ' && workspaceStatus === ' ') continue
 
     if (changedFiles.has(FAKE_COMMITISH_FOR_UNCOMMITED_FILES)) {
-      changedFiles
-        .get(FAKE_COMMITISH_FOR_UNCOMMITED_FILES)
-        ?.files.push(fileName as RelativeFilePath)
+      changedFiles.get(FAKE_COMMITISH_FOR_UNCOMMITED_FILES)?.files.push(fileName)
     } else {
       changedFiles.set(FAKE_COMMITISH_FOR_UNCOMMITED_FILES, {
         commitTime: new Date(),
-        files: [fileName as RelativeFilePath],
+        files: [fileName],
       })
     }
   }
 }
 
-function addUntrackedFiles(changedFiles: ChangedFilesInGit, lsFilesResult: {stdout: string}) {
-  const statusLines = lsFilesResult.stdout.split('\n').filter((l) => !!l)
+/**
+ * @param {ChangedFilesInGit} changedFiles
+ * @param {{stdout: string}} lsFilesResult
+ */
+function addUntrackedFiles(changedFiles, lsFilesResult) {
+  const statusLines = /**@type {RelativeFilePath[]} */ (lsFilesResult.stdout
+    .split('\n')
+    .filter((l) => !!l)
+    .map((s) => s.trim()))
   for (const statusLine of statusLines) {
     if (changedFiles.has(FAKE_COMMITISH_FOR_UNCOMMITED_FILES)) {
-      changedFiles
-        .get(FAKE_COMMITISH_FOR_UNCOMMITED_FILES)
-        ?.files.push(statusLine.trim() as RelativeFilePath)
+      changedFiles.get(FAKE_COMMITISH_FOR_UNCOMMITED_FILES)?.files.push(statusLine)
     } else {
       changedFiles.set(FAKE_COMMITISH_FOR_UNCOMMITED_FILES, {
         commitTime: new Date(),
-        files: [statusLine.trim() as RelativeFilePath],
+        files: [statusLine],
       })
     }
   }
