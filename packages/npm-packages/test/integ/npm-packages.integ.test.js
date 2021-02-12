@@ -1,7 +1,8 @@
-import {describe, it} from 'mocha'
+import mocha from 'mocha'
+const {describe, it} = mocha
 import {expect} from 'chai'
 
-import * as ng from '../../src/npm-packages'
+import * as ng from '../../src/npm-packages.js'
 
 describe('npm-packages (unit)', function () {
   it('should be able to add', async () => {
