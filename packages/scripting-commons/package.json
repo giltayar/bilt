@@ -1,6 +1,6 @@
 {
   "name": "@bilt/scripting-commons",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "",
   "type": "module",
   "exports": "./src/scripting-commons.js",
@@ -37,11 +37,11 @@
     "directory": "packages/scripting-commons"
   },
   "dependencies": {
-    "@babel/core": "^7.12.16",
-    "@babel/eslint-parser": "^7.12.16",
     "debug": "^4.3.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.12.16",
+    "@babel/eslint-parser": "^7.12.16",
     "@babel/plugin-syntax-top-level-await": "^7.12.13",
     "@types/chai": "^4.2.15",
     "@types/chai-as-promised": "^7.1.3",
