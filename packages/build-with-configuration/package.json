@@ -1,6 +1,6 @@
 {
   "name": "@bilt/build-with-configuration",
-  "version": "2.2.5",
+  "version": "2.2.6",
   "description": "",
   "main": "src/build-with-configuration.js",
   "engines": {
@@ -29,21 +29,21 @@
     "directory": "packages/build-with-configuration"
   },
   "dependencies": {
-    "@bilt/scripting-commons": "^1.2.4",
-    "@types/node": "^14.0.11",
-    "constant-case": "^3.0.3",
-    "debug": "^4.1.1"
+    "@bilt/scripting-commons": "^1.2.5",
+    "@types/node": "^14.14.26",
+    "constant-case": "^3.0.4",
+    "debug": "^4.3.1"
   },
   "devDependencies": {
-    "chai": "^4.2.0",
+    "chai": "^4.3.0",
     "chai-subset": "^1.6.0",
-    "eslint": "^7.2.0",
-    "eslint-plugin-mocha-no-only": "^1.1.0",
+    "eslint": "^7.19.0",
+    "eslint-plugin-mocha-no-only": "^1.1.1",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-prettier": "^3.3.1",
     "mocha": "^7.2.0",
-    "prettier": "^2.0.5",
-    "testdouble": "^3.16.0",
-    "typescript": "^3.9.5"
+    "prettier": "^2.2.1",
+    "testdouble": "^3.16.1",
+    "typescript": "^3.9.9"
   }
 }
