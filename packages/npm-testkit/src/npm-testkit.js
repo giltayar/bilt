@@ -1,12 +1,12 @@
-'use strict'
-const os = require('os')
-const fs = require('fs')
-const path = require('path')
-const {promisify} = require('util')
-const {default: startVerdaccio} = require('verdaccio')
-const getPort = require('get-port')
-const NpmRegistryClient = require('npm-registry-client')
-const {writeFile, readFileAsString} = require('@bilt/scripting-commons')
+import {tmpdir} from 'os'
+import {promises, existsSync} from 'fs'
+import {join} from 'path'
+import {promisify} from 'util'
+import verdaccio from 'verdaccio'
+const {default: startVerdaccio} = verdaccio
+import getPort from 'get-port'
+import NpmRegistryClient from 'npm-registry-client'
+import {writeFile, readFileAsString} from '@bilt/scripting-commons'
 
 /**@type {(
  * options: {
@@ -18,12 +18,12 @@ const {writeFile, readFileAsString} = require('@bilt/scripting-commons')
  * registry: string
  * close: () => Promise<void>
  * }>} */
-async function startNpmRegistry({
+export async function startNpmRegistry({
   logLevel = 'error',
   shouldDeleteNpmRegistryEnvVars = true,
   shouldProxyToNpmJs = false,
 } = {}) {
-  const storageDir = await fs.promises.mkdtemp(os.tmpdir() + '/')
+  const storageDir = await promises.mkdtemp(tmpdir() + '/')
   const port = await getPort()
 
   const webserver = await new Promise((resolve) =>
@@ -33,11 +33,19 @@ async function startNpmRegistry({
       '',
       '',
       '',
-      (webserver) => resolve(webserver),
+      /**
+       * @param {any} webserver
+       */ (webserver) => resolve(webserver),
     ),
   )
   await new Promise((resolve, reject) =>
-    webserver.listen(port, 'localhost', (err) => (err ? reject(err) : resolve())),
+    webserver.listen(
+      port,
+      'localhost',
+      /**
+       * @param {any} err
+       */ (err) => (err ? reject(err) : resolve(undefined)),
+    ),
   )
 
   if (shouldDeleteNpmRegistryEnvVars) {
@@ -61,7 +69,7 @@ async function startNpmRegistry({
  * @param {string} registry
  * @param {string} [scope]
  */
-async function enablePackageToPublishToRegistry(packageDir, registry, scope) {
+export async function enablePackageToPublishToRegistry(packageDir, registry, scope) {
   const x = await new Promise((resolve, reject) => {
     new NpmRegistryClient().adduser(
       registry,
@@ -72,12 +80,16 @@ async function enablePackageToPublishToRegistry(packageDir, registry, scope) {
           email: 'whatever@example.com',
         },
       },
-      /**@param {Error | null} err*/ (err, _data, raw) => (err ? reject(err) : resolve(raw)),
+      /**
+       * @param {Error | null} err
+       * @param {any} _data
+       * @param {any} raw
+       */ (err, _data, raw) => (err ? reject(err) : resolve(raw)),
     )
   })
   await writeFile(
     '.npmrc',
-    (fs.existsSync(path.join(packageDir, '.npmrc'))
+    (existsSync(join(packageDir, '.npmrc'))
       ? await readFileAsString('.npmrc', {cwd: packageDir})
       : '') +
       `
@@ -89,6 +101,11 @@ async function enablePackageToPublishToRegistry(packageDir, registry, scope) {
   )
 }
 
+/**
+ * @param {string} storage
+ * @param {string} logLevel
+ * @param {boolean} shouldProxyToNpmJs
+ */
 const makeConfig = (storage, logLevel, shouldProxyToNpmJs) => ({
   storage,
   uplinks: {
@@ -98,7 +115,7 @@ const makeConfig = (storage, logLevel, shouldProxyToNpmJs) => ({
   },
   auth: {
     htpasswd: {
-      file: require('path').join(storage, './htpasswd'),
+      file: join(storage, './htpasswd'),
     },
   },
   packages: {
@@ -127,8 +144,3 @@ const makeConfig = (storage, logLevel, shouldProxyToNpmJs) => ({
   },
   self_path: '/foo/bar',
 })
-
-module.exports = {
-  startNpmRegistry,
-  enablePackageToPublishToRegistry,
-}

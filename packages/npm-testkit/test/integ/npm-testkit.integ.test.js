@@ -1,11 +1,11 @@
-'use strict'
-const {describe, it, afterEach} = require('mocha')
-const expect = require('unexpected')
-const {sh, shWithOutput, makeTemporaryDirectory, writeFile} = require('@bilt/scripting-commons')
+import mocha from 'mocha'
+const {describe, it, afterEach} = mocha
+import {expect} from 'chai'
+import {sh, shWithOutput, makeTemporaryDirectory, writeFile} from '@bilt/scripting-commons'
 
-const {startNpmRegistry, enablePackageToPublishToRegistry} = require('../../src/npm-testkit')
+import {startNpmRegistry, enablePackageToPublishToRegistry} from '../../src/npm-testkit.js'
 
-describe('startNpmRegistry', function () {
+describe('startNpmRegistry (integ)', function () {
   /**@type {string}*/
   let registry
   /**@type {() => Promise<void>}*/
@@ -24,9 +24,7 @@ describe('startNpmRegistry', function () {
 
     expect(
       await shWithOutput(`npm view foo-package version --registry=${registry}`, {cwd}),
-      'to equal',
-      '6.6.6\n',
-    )
+    ).to.equal('6.6.6\n')
   })
 
   it('should support npm audit', async () => {
@@ -46,6 +44,6 @@ describe('startNpmRegistry', function () {
     await writeFile('.npmrc', `registry=${registry}`, {cwd})
     await sh('npm install', {cwd})
 
-    expect(await shWithOutput('npm view lodash version', {cwd}), 'to equal', '4.17.20\n')
+    expect(await shWithOutput('npm view lodash version', {cwd})).to.equal('4.17.20\n')
   })
 })
