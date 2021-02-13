@@ -1,9 +1,7 @@
 import debugMaker from 'debug'
-import {Package} from '@bilt/types'
 
 const debug = debugMaker('bilt:packages-to-build:main')
 
-import {PackageInfoWithBuildTime as PIWBT, PackageInfosWithBuildTime as PIWBTs} from './types'
 import {
   createDependencyGraph,
   isEmptyGraph,
@@ -11,25 +9,30 @@ import {
   addPackagesThatAreDirty,
   addPackagesWhosDependenciesHaveLaterBuildTimes,
   addPackagesThatIndirectlyNeedToBeBuilt,
-} from './dependency-graph'
+} from './dependency-graph.js'
 
-export type PackageInfoWithBuildTime = PIWBT
-export type PackageInfosWithBuildTime = PIWBTs
+/**
+ * @typedef {import('./types').PackageInfoWithBuildTime} PackageInfoWithBuildTime
+ * @typedef {import('./types').PackageInfosWithBuildTime} PackageInfosWithBuildTime
+ */
 
-type CalculatePackagesToBuildWarning = 'NO_LINKED_UPTO'
+/**
+ * @typedef {'NO_LINKED_UPTO'} CalculatePackagesToBuildWarning
+ */
 
-export function calculatePackagesToBuild({
-  packageInfos,
-  basePackagesToBuild,
-  buildUpTo,
-}: {
-  packageInfos: PackageInfosWithBuildTime
-  basePackagesToBuild: Package[]
-  buildUpTo: Package[]
-}): {
-  packageInfosWithBuildTime: PackageInfosWithBuildTime
-  warnings?: CalculatePackagesToBuildWarning[]
-} {
+/**
+ *
+ * @param {{
+ *  packageInfos: PackageInfosWithBuildTime
+ *  basePackagesToBuild: import('@bilt/types').Package[]
+ *  buildUpTo: import('@bilt/types').Package[]
+ * }} options
+ * @returns {{
+ *  packageInfosWithBuildTime: PackageInfosWithBuildTime
+ *  warnings?: CalculatePackagesToBuildWarning[]
+ * }}
+ */
+export function calculatePackagesToBuild({packageInfos, basePackagesToBuild, buildUpTo}) {
   debug('base packages:', basePackagesToBuild.map((p) => p.directory).join(' '))
   const dependencyGraph = createDependencyGraph(packageInfos)
 
@@ -39,7 +42,8 @@ export function calculatePackagesToBuild({
     return {packageInfosWithBuildTime: {}, warnings: ['NO_LINKED_UPTO']}
   }
 
-  const packagesThatNeedToBeBuilt = new Set<string>()
+  /**@type {Set<string>} */
+  const packagesThatNeedToBeBuilt = new Set()
 
   addPackagesThatAreDirty(dependencyGraph, packageInfos, packagesThatNeedToBeBuilt)
   addPackagesWhosDependenciesHaveLaterBuildTimes(
@@ -55,10 +59,12 @@ export function calculatePackagesToBuild({
   }
 }
 
-function filterPackageInfos(
-  packageInfos: PackageInfosWithBuildTime,
-  packagesThatNeedToBeBuilt: Set<string>,
-) {
+/**
+ *
+ * @param {PackageInfosWithBuildTime} packageInfos
+ * @param {Set<string>} packagesThatNeedToBeBuilt
+ */
+function filterPackageInfos(packageInfos, packagesThatNeedToBeBuilt) {
   return Object.fromEntries(
     Object.entries(packageInfos).filter(([pkgDirectory]) =>
       packagesThatNeedToBeBuilt.has(pkgDirectory),

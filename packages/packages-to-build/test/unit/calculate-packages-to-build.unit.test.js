@@ -1,74 +1,76 @@
-import {describe, it} from 'mocha'
+import mocha from 'mocha'
+const {describe, it} = mocha
 import {expect} from 'chai'
-import {RelativeDirectoryPath} from '@bilt/types'
 
-import {
-  calculatePackagesToBuild,
-  PackageInfoWithBuildTime,
-  PackageInfosWithBuildTime,
-} from '../../src/packages-to-build'
+import {calculatePackagesToBuild} from '../../src/packages-to-build.js'
 
 describe('calculatePackagesToBuild (unit)', function () {
-  const ePackage: PackageInfoWithBuildTime = {
-    directory: 'edir' as RelativeDirectoryPath,
+  const ePackage = createPackageInfoWithBuildTime({
+    directory: 'edir',
     name: 'epackage',
     dependencies: [],
     lastBuildTime: undefined,
-  }
-  const dPackage: PackageInfoWithBuildTime = {
-    directory: 'ddir' as RelativeDirectoryPath,
+  })
+  const dPackage = createPackageInfoWithBuildTime({
+    directory: 'ddir',
     name: 'dpackage',
     dependencies: [ePackage],
     lastBuildTime: undefined,
-  }
-  const bPackage: PackageInfoWithBuildTime = {
-    directory: 'packages/bdir' as RelativeDirectoryPath,
+  })
+  const bPackage = createPackageInfoWithBuildTime({
+    directory: 'packages/bdir',
     name: 'bpackage',
     dependencies: [dPackage],
     lastBuildTime: undefined,
-  }
-  const cPackage: PackageInfoWithBuildTime = {
-    directory: 'cdir' as RelativeDirectoryPath,
+  })
+  const cPackage = createPackageInfoWithBuildTime({
+    directory: 'cdir',
     name: 'cpackage',
     dependencies: [dPackage],
     lastBuildTime: undefined,
-  }
-  const aPackage: PackageInfoWithBuildTime = {
-    directory: 'adir' as RelativeDirectoryPath,
+  })
+  const aPackage = createPackageInfoWithBuildTime({
+    directory: 'adir',
     name: 'apackage',
     dependencies: [bPackage, cPackage],
     lastBuildTime: undefined,
-  }
-  const packageInfosAllDirty: PackageInfosWithBuildTime = {
-    [aPackage.directory as string]: aPackage,
-    [bPackage.directory as string]: bPackage,
-    [cPackage.directory as string]: cPackage,
-    [dPackage.directory as string]: dPackage,
-    [ePackage.directory as string]: ePackage,
+  })
+  /**@type {import('../../src/types').PackageInfosWithBuildTime} */
+  const packageInfosAllDirty = {
+    [aPackage.directory]: aPackage,
+    [bPackage.directory]: bPackage,
+    [cPackage.directory]: cPackage,
+    [dPackage.directory]: dPackage,
+    [ePackage.directory]: ePackage,
   }
 
-  const gPackage: PackageInfoWithBuildTime = {
-    directory: 'gdir' as RelativeDirectoryPath,
+  const gPackage = createPackageInfoWithBuildTime({
+    directory: 'gdir',
     name: 'gpackage',
     dependencies: [],
     lastBuildTime: undefined,
-  }
-  const fPackage: PackageInfoWithBuildTime = {
-    directory: 'fdir' as RelativeDirectoryPath,
+  })
+  const fPackage = createPackageInfoWithBuildTime({
+    directory: 'fdir',
     name: 'fpackage',
     dependencies: [gPackage],
     lastBuildTime: undefined,
-  }
+  })
 
-  function build(pkg: PackageInfoWithBuildTime, lastBuildTime: number): PackageInfoWithBuildTime {
+  /**
+   * @param {import('../../src/types').PackageInfoWithBuildTime} pkg
+   * @param {number} lastBuildTime
+   * @returns {import('../../src/types').PackageInfoWithBuildTime}
+   */
+  function build(pkg, lastBuildTime) {
     return {...pkg, lastBuildTime}
   }
 
   describe('all dirty packages', () => {
     it('should support edgeless packages', () => {
       const twoPackagesWithNoDependencies = {
-        [ePackage.directory as string]: ePackage,
-        [gPackage.directory as string]: gPackage,
+        [ePackage.directory]: ePackage,
+        [gPackage.directory]: gPackage,
       }
       const packagesToBuild = calculatePackagesToBuild({
         packageInfos: twoPackagesWithNoDependencies,
@@ -87,8 +89,8 @@ describe('calculatePackagesToBuild (unit)', function () {
 
       expect(packagesToBuild).to.eql({
         packageInfosWithBuildTime: {
-          [dPackage.directory as string]: dPackage,
-          [ePackage.directory as string]: ePackage,
+          [dPackage.directory]: dPackage,
+          [ePackage.directory]: ePackage,
         },
       })
     })
@@ -101,7 +103,7 @@ describe('calculatePackagesToBuild (unit)', function () {
       })
 
       expect(packagesToBuild).to.eql({
-        packageInfosWithBuildTime: {[aPackage.directory as string]: aPackage},
+        packageInfosWithBuildTime: {[aPackage.directory]: aPackage},
       })
     })
 
@@ -119,8 +121,8 @@ describe('calculatePackagesToBuild (unit)', function () {
       const packagesToBuild = calculatePackagesToBuild({
         packageInfos: {
           ...packageInfosAllDirty,
-          [gPackage.directory as string]: gPackage,
-          [fPackage.directory as string]: fPackage,
+          [gPackage.directory]: gPackage,
+          [fPackage.directory]: fPackage,
         },
         buildUpTo: [aPackage],
         basePackagesToBuild: [ePackage, gPackage],
@@ -138,10 +140,10 @@ describe('calculatePackagesToBuild (unit)', function () {
 
       expect(packagesToBuild).to.eql({
         packageInfosWithBuildTime: {
-          [aPackage.directory as string]: aPackage,
-          [cPackage.directory as string]: cPackage,
-          [bPackage.directory as string]: bPackage,
-          [dPackage.directory as string]: dPackage,
+          [aPackage.directory]: aPackage,
+          [cPackage.directory]: cPackage,
+          [bPackage.directory]: bPackage,
+          [dPackage.directory]: dPackage,
         },
       })
     })
@@ -155,9 +157,9 @@ describe('calculatePackagesToBuild (unit)', function () {
 
       expect(packagesToBuild).to.eql({
         packageInfosWithBuildTime: {
-          [aPackage.directory as string]: aPackage,
-          [cPackage.directory as string]: cPackage,
-          [bPackage.directory as string]: bPackage,
+          [aPackage.directory]: aPackage,
+          [cPackage.directory]: cPackage,
+          [bPackage.directory]: bPackage,
         },
       })
     })
@@ -171,10 +173,10 @@ describe('calculatePackagesToBuild (unit)', function () {
 
       expect(packagesToBuild).to.eql({
         packageInfosWithBuildTime: {
-          [ePackage.directory as string]: ePackage,
-          [dPackage.directory as string]: dPackage,
-          [cPackage.directory as string]: cPackage,
-          [bPackage.directory as string]: bPackage,
+          [ePackage.directory]: ePackage,
+          [dPackage.directory]: dPackage,
+          [cPackage.directory]: cPackage,
+          [bPackage.directory]: bPackage,
         },
       })
     })
@@ -182,12 +184,12 @@ describe('calculatePackagesToBuild (unit)', function () {
 
   describe('with build times', () => {
     it('should not build anything if all packages have the same build time', async () => {
-      const packageInfos: PackageInfosWithBuildTime = {
-        [aPackage.directory as string]: build(aPackage, 1),
-        [bPackage.directory as string]: build(bPackage, 1),
-        [cPackage.directory as string]: build(cPackage, 1),
-        [dPackage.directory as string]: build(dPackage, 1),
-        [ePackage.directory as string]: build(ePackage, 1),
+      const packageInfos = {
+        [aPackage.directory]: build(aPackage, 1),
+        [bPackage.directory]: build(bPackage, 1),
+        [cPackage.directory]: build(cPackage, 1),
+        [dPackage.directory]: build(dPackage, 1),
+        [ePackage.directory]: build(ePackage, 1),
       }
 
       expect(
@@ -200,17 +202,17 @@ describe('calculatePackagesToBuild (unit)', function () {
     })
 
     it('should build up when mid level package is dirty', async () => {
-      const packageInfos: PackageInfosWithBuildTime = {
-        [aPackage.directory as string]: build(aPackage, 1),
-        [bPackage.directory as string]: build(bPackage, 1),
-        [cPackage.directory as string]: cPackage,
-        [dPackage.directory as string]: build(dPackage, 1),
-        [ePackage.directory as string]: build(ePackage, 1),
+      const packageInfos = {
+        [aPackage.directory]: build(aPackage, 1),
+        [bPackage.directory]: build(bPackage, 1),
+        [cPackage.directory]: cPackage,
+        [dPackage.directory]: build(dPackage, 1),
+        [ePackage.directory]: build(ePackage, 1),
       }
 
       const expectedResult = {
-        [aPackage.directory as string]: build(aPackage, 1),
-        [cPackage.directory as string]: cPackage,
+        [aPackage.directory]: build(aPackage, 1),
+        [cPackage.directory]: cPackage,
       }
       expect(
         calculatePackagesToBuild({
@@ -238,12 +240,12 @@ describe('calculatePackagesToBuild (unit)', function () {
     })
 
     it('should build everything when low package is dirty', async () => {
-      const packageInfos: PackageInfosWithBuildTime = {
-        [aPackage.directory as string]: build(aPackage, 1),
-        [bPackage.directory as string]: build(bPackage, 1),
-        [cPackage.directory as string]: build(bPackage, 1),
-        [dPackage.directory as string]: build(dPackage, 1),
-        [ePackage.directory as string]: ePackage,
+      const packageInfos = {
+        [aPackage.directory]: build(aPackage, 1),
+        [bPackage.directory]: build(bPackage, 1),
+        [cPackage.directory]: build(bPackage, 1),
+        [dPackage.directory]: build(dPackage, 1),
+        [ePackage.directory]: ePackage,
       }
 
       expect(
@@ -272,16 +274,16 @@ describe('calculatePackagesToBuild (unit)', function () {
     })
 
     it('should build up when mid level package is newer', async () => {
-      const packageInfos: PackageInfosWithBuildTime = {
-        [aPackage.directory as string]: build(aPackage, 1),
-        [bPackage.directory as string]: build(bPackage, 1),
-        [cPackage.directory as string]: build(cPackage, 2),
-        [dPackage.directory as string]: build(dPackage, 1),
-        [ePackage.directory as string]: build(ePackage, 1),
+      const packageInfos = {
+        [aPackage.directory]: build(aPackage, 1),
+        [bPackage.directory]: build(bPackage, 1),
+        [cPackage.directory]: build(cPackage, 2),
+        [dPackage.directory]: build(dPackage, 1),
+        [ePackage.directory]: build(ePackage, 1),
       }
 
       const expectedResult = {
-        [aPackage.directory as string]: build(aPackage, 1),
+        [aPackage.directory]: build(aPackage, 1),
       }
       expect(
         calculatePackagesToBuild({
@@ -310,13 +312,13 @@ describe('calculatePackagesToBuild (unit)', function () {
 
     it('should build separate trees as intended', () => {
       const packageInfosPlus = {
-        [aPackage.directory as string]: build(aPackage, 1),
-        [bPackage.directory as string]: build(bPackage, 1),
-        [cPackage.directory as string]: cPackage,
-        [dPackage.directory as string]: build(dPackage, 1),
-        [ePackage.directory as string]: build(ePackage, 1),
-        [gPackage.directory as string]: build(gPackage, 2),
-        [fPackage.directory as string]: build(fPackage, 1),
+        [aPackage.directory]: build(aPackage, 1),
+        [bPackage.directory]: build(bPackage, 1),
+        [cPackage.directory]: cPackage,
+        [dPackage.directory]: build(dPackage, 1),
+        [ePackage.directory]: build(ePackage, 1),
+        [gPackage.directory]: build(gPackage, 2),
+        [fPackage.directory]: build(fPackage, 1),
       }
 
       const expectedResult = calculatePackagesToBuild({
@@ -327,9 +329,9 @@ describe('calculatePackagesToBuild (unit)', function () {
 
       expect(expectedResult).to.eql({
         packageInfosWithBuildTime: {
-          [aPackage.directory as string]: build(aPackage, 1),
-          [cPackage.directory as string]: cPackage,
-          [fPackage.directory as string]: build(fPackage, 1),
+          [aPackage.directory]: build(aPackage, 1),
+          [cPackage.directory]: cPackage,
+          [fPackage.directory]: build(fPackage, 1),
         },
       })
     })
@@ -338,9 +340,9 @@ describe('calculatePackagesToBuild (unit)', function () {
   describe('warnings', () => {
     it('should warn when calculated packages is empty because none of the base packages builds up to the upto packages', () => {
       const twoPackagesWithNoDependencies = {
-        [ePackage.directory as string]: ePackage,
-        [gPackage.directory as string]: gPackage,
-        [cPackage.directory as string]: cPackage,
+        [ePackage.directory]: ePackage,
+        [gPackage.directory]: gPackage,
+        [cPackage.directory]: cPackage,
       }
       const packagesToBuild = calculatePackagesToBuild({
         packageInfos: twoPackagesWithNoDependencies,
@@ -354,33 +356,33 @@ describe('calculatePackagesToBuild (unit)', function () {
 
   describe('circular dependencies', () => {
     it('should support circular dependencies', () => {
-      const aPackage: PackageInfoWithBuildTime = {
-        directory: 'adir' as RelativeDirectoryPath,
+      const aPackage = createPackageInfoWithBuildTime({
+        directory: 'adir',
         name: 'apackage',
         dependencies: [],
         lastBuildTime: undefined,
-      }
-      const bPackage: PackageInfoWithBuildTime = {
-        directory: 'bdir' as RelativeDirectoryPath,
+      })
+      const bPackage = createPackageInfoWithBuildTime({
+        directory: 'bdir',
         name: 'bpackage',
         dependencies: [],
         lastBuildTime: undefined,
-      }
-      const cPackage: PackageInfoWithBuildTime = {
-        directory: 'cdir' as RelativeDirectoryPath,
+      })
+      const cPackage = createPackageInfoWithBuildTime({
+        directory: 'cdir',
         name: 'cpackage',
         dependencies: [],
         lastBuildTime: undefined,
-      }
+      })
       aPackage.dependencies.push(bPackage)
       aPackage.dependencies.push(cPackage)
       bPackage.dependencies.push(cPackage)
       cPackage.dependencies.push(aPackage)
 
-      const packageInfos: PackageInfosWithBuildTime = {
-        [aPackage.directory as string]: aPackage,
-        [bPackage.directory as string]: bPackage,
-        [cPackage.directory as string]: cPackage,
+      const packageInfos = {
+        [aPackage.directory]: aPackage,
+        [bPackage.directory]: bPackage,
+        [cPackage.directory]: cPackage,
       }
 
       const packagesToBuild = calculatePackagesToBuild({
@@ -388,12 +390,30 @@ describe('calculatePackagesToBuild (unit)', function () {
         basePackagesToBuild: [cPackage],
         buildUpTo: [cPackage],
       })
-      const expectedResult: PackageInfosWithBuildTime = {
-        [aPackage.directory as string]: aPackage,
-        [cPackage.directory as string]: cPackage,
+      const expectedResult = {
+        [aPackage.directory]: aPackage,
+        [cPackage.directory]: cPackage,
       }
 
       expect(packagesToBuild).to.eql({packageInfosWithBuildTime: expectedResult})
     })
   })
 })
+
+/**
+ * @param {{
+ *  directory: string
+ *  name: string
+ *  dependencies: import('../../src/types').PackageInfoWithBuildTime[]
+ *  lastBuildTime: undefined
+ * }} pi
+ * @returns {import('../../src/types').PackageInfoWithBuildTime}
+ */
+function createPackageInfoWithBuildTime(pi) {
+  return {
+    directory: /**@type {import('@bilt/types').RelativeDirectoryPath}*/ (pi.directory),
+    name: pi.name,
+    dependencies: pi.dependencies,
+    lastBuildTime: pi.lastBuildTime,
+  }
+}

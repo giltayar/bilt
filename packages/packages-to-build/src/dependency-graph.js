@@ -1,11 +1,20 @@
 import debugMaker from 'debug'
-import gl, {Graph, alg} from 'graphlib'
-import {PackageInfosWithBuildTime} from './types'
-import {Package} from '@bilt/types'
+import gl from 'graphlib'
+const {alg} = gl
 
 const debug = debugMaker('bilt:packages-to-build:dependency-graph')
 
-export function createDependencyGraph(packageInfos: PackageInfosWithBuildTime): gl.Graph {
+/**
+ * @typedef {import('./types').PackageInfosWithBuildTime} PackageInfosWithBuildTime
+ * @typedef {import('@bilt/types').Package} Package
+ */
+
+/**
+ *
+ * @param {PackageInfosWithBuildTime} packageInfos
+ * @returns {gl.Graph}
+ */
+export function createDependencyGraph(packageInfos) {
   const graph = new gl.Graph()
 
   for (const [pkgId, pkgInfo] of Object.entries(packageInfos)) {
@@ -24,15 +33,20 @@ export function createDependencyGraph(packageInfos: PackageInfosWithBuildTime): 
   return graph
 }
 
-export function isEmptyGraph(dependencyGraph: Graph): boolean {
+/**
+ * @param {gl.Graph} dependencyGraph
+ * @returns {boolean}
+ */
+export function isEmptyGraph(dependencyGraph) {
   return dependencyGraph.nodeCount() === 0
 }
 
-export function buildLinkedDependencyGraphSubset(
-  dependencyGraph: Graph,
-  basePackagesToBuild: Package[],
-  buildUpTo: Package[],
-): void {
+/**
+ * @param {gl.Graph} dependencyGraph
+ * @param {Package[]} basePackagesToBuild
+ * @param {Package[]} buildUpTo
+ */
+export function buildLinkedDependencyGraphSubset(dependencyGraph, basePackagesToBuild, buildUpTo) {
   const packageDistances = gl.alg.dijkstraAll(dependencyGraph)
 
   for (const [pkg, distancesFromPkg] of Object.entries(packageDistances)) {
@@ -47,10 +61,11 @@ export function buildLinkedDependencyGraphSubset(
   }
 }
 
-export function addPackagesThatIndirectlyNeedToBeBuilt(
-  dependencyGraph: Graph,
-  packagesThatNeedToBeBuilt: Set<string>,
-): void {
+/**
+ * @param {gl.Graph} dependencyGraph
+ * @param {Set<string>} packagesThatNeedToBeBuilt
+ */
+export function addPackagesThatIndirectlyNeedToBeBuilt(dependencyGraph, packagesThatNeedToBeBuilt) {
   const packageDistances = gl.alg.dijkstraAll(dependencyGraph)
 
   for (const [pkg, distancesFromPkg] of Object.entries(packageDistances)) {
@@ -66,11 +81,12 @@ export function addPackagesThatIndirectlyNeedToBeBuilt(
   }
 }
 
-export function addPackagesThatAreDirty(
-  dependencyGraph: Graph,
-  packageInfos: PackageInfosWithBuildTime,
-  packagesThatNeedToBeBuilt: Set<string>,
-): void {
+/**
+ * @param {gl.Graph} dependencyGraph
+ * @param {PackageInfosWithBuildTime} packageInfos
+ * @param {Set<string>} packagesThatNeedToBeBuilt
+ */
+export function addPackagesThatAreDirty(dependencyGraph, packageInfos, packagesThatNeedToBeBuilt) {
   for (const pkg of dependencyGraph.nodes()) {
     const packageInfo = packageInfos[pkg]
     if (packageInfo.lastBuildTime === undefined) {
@@ -81,11 +97,16 @@ export function addPackagesThatAreDirty(
   }
 }
 
+/**
+ * @param {gl.Graph} dependencyGraph
+ * @param {PackageInfosWithBuildTime} packageInfos
+ * @param {Set<string>} packagesThatNeedToBeBuilt
+ */
 export function addPackagesWhosDependenciesHaveLaterBuildTimes(
-  dependencyGraph: Graph,
-  packageInfos: PackageInfosWithBuildTime,
-  packagesThatNeedToBeBuilt: Set<string>,
-): void {
+  dependencyGraph,
+  packageInfos,
+  packagesThatNeedToBeBuilt,
+) {
   for (const pkg of dependencyGraph.nodes()) {
     const packageInfo = packageInfos[pkg]
     if (packageInfo.lastBuildTime === undefined) continue
@@ -115,22 +136,29 @@ export function addPackagesWhosDependenciesHaveLaterBuildTimes(
   }
 }
 
-function connectsToFromNodes(
-  distancesFromPkg: {[node: string]: gl.Path},
-  basePackagesToBuild: Package[],
-): boolean {
+/**
+ * @param {{[node: string]: gl.Path}} distancesFromPkg
+ * @param {Package[]} basePackagesToBuild
+ */
+function connectsToFromNodes(distancesFromPkg, basePackagesToBuild) {
   return basePackagesToBuild.some((pkg) => distancesFromPkg[pkg.directory].distance !== Infinity)
 }
 
-function connectsFromToNodes(
-  pkg: string,
-  packageDistances: {[source: string]: {[node: string]: gl.Path}},
-  buildUpTo: Package[],
-) {
+/**
+ *
+ * @param {string} pkg
+ * @param {{[source: string]: {[node: string]: gl.Path}}} packageDistances
+ * @param {Package[]} buildUpTo
+ */
+function connectsFromToNodes(pkg, packageDistances, buildUpTo) {
   return buildUpTo.some((toPkg) => packageDistances[toPkg.directory][pkg].distance !== Infinity)
 }
 
-function snipCycles(graph: gl.Graph, cycles: string[][]) {
+/**
+ * @param {gl.Graph} graph
+ * @param {string[][]} cycles
+ */
+function snipCycles(graph, cycles) {
   debug('dependency graph has cycles:', cycles)
 
   for (const cycle of cycles) {
