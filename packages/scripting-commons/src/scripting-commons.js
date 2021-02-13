@@ -9,7 +9,7 @@ import {spawn, exec} from 'child_process'
  * @param {string} command
  * @param {{
  * cwd: string
- * env?: Record<string, string>
+ * env?: Record<string, string | undefined>
  * }} params
  */
 export async function sh(command, {cwd, env}) {
@@ -34,7 +34,7 @@ export async function sh(command, {cwd, env}) {
  * @param {string} command
  * @param {{
  * cwd: string
- * env?: Record<string, string>
+ * env?: Record<string, string | undefined>
  * }} params
  */
 export async function shWithOutput(command, {cwd, env}) {
