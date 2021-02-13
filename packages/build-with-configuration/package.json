@@ -1,6 +1,6 @@
 {
   "name": "@bilt/build-with-configuration",
-  "version": "9.0.1",
+  "version": "9.0.2",
   "description": "",
   "type": "module",
   "main": "lib/src/build-with-configuration.js",
@@ -40,7 +40,6 @@
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
     "@babel/plugin-syntax-top-level-await": "^7.12.13",
-    "@bilt/git-testkit": "^2.0.0",
     "@types/chai": "^4.2.15",
     "@types/chai-subset": "^1.3.3",
     "@types/debug": "^4.1.5",
