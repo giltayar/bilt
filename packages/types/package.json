@@ -1,6 +1,6 @@
 {
   "name": "@bilt/types",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "",
   "type": "module",
   "main": "lib/types.js",
@@ -44,7 +44,6 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.3.1",
     "prettier": "^2.2.1",
-    "ts-node": "^9.1.1",
     "typescript": "^4.1.5"
   }
 }
