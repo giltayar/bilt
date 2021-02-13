@@ -1,49 +1,68 @@
 {
   "name": "@bilt/build-with-configuration",
-  "version": "2.2.6",
+  "version": "9.0.1",
   "description": "",
-  "main": "src/build-with-configuration.js",
+  "type": "module",
+  "main": "lib/src/build-with-configuration.js",
+  "export": "./lib/src/build-with-configuration.js",
+  "types": "types/src/build-with-configuration.d.ts",
   "engines": {
     "node": ">=12.3.0"
   },
   "files": [
+    "types",
     "src"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
   "scripts": {
-    "test": "npm run eslint && npm run test:types && npm run test:mocha",
-    "test:types": "tsc",
-    "test:mocha": "mocha --no-timeouts --exit 'test/unit/*.test.js' 'test/it/*.test.js'",
-    "eslint": "eslint '**/*.js'"
+    "build": "concurrently -r 'npm:build:*'",
+    "build:typescript": "rm -rf types && tsc && cp src/*.d.ts types/src",
+    "test": "concurrently -r 'npm:test:*'",
+    "test:mocha": "npm run mocha",
+    "test:eslint": "eslint --max-warnings=0 '**/*.js'",
+    "test:typescript": "tsc --noEmit --emitDeclarationOnly false",
+    "mocha": "mocha --no-timeouts --exit 'test/**/*.test.js' --loader=testdouble"
   },
   "keywords": [
-    "bilt"
+    "ci",
+    "build",
+    "bilt",
+    "tool",
+    "monorepo"
   ],
   "author": "Gil Tayar <gil@tayar.org>",
-  "license": "unlicense",
+  "license": "MIT",
   "repository": {
     "url": "https://github.com/giltayar/bilt",
     "type": "git",
     "directory": "packages/build-with-configuration"
   },
-  "dependencies": {
-    "@bilt/scripting-commons": "^1.2.5",
-    "@types/node": "^14.14.26",
-    "constant-case": "^3.0.4",
-    "debug": "^4.3.1"
-  },
   "devDependencies": {
+    "@babel/core": "^7.12.16",
+    "@babel/eslint-parser": "^7.12.16",
+    "@babel/plugin-syntax-top-level-await": "^7.12.13",
+    "@bilt/git-testkit": "^2.0.0",
+    "@types/chai": "^4.2.15",
+    "@types/chai-subset": "^1.3.3",
+    "@types/debug": "^4.1.5",
+    "@types/graphlib": "^2.1.7",
+    "@types/mocha": "^8.2.0",
+    "@types/node": "^14.14.27",
+    "@typescript-eslint/eslint-plugin": "^4.15.0",
+    "@typescript-eslint/parser": "^4.15.0",
     "chai": "^4.3.0",
     "chai-subset": "^1.6.0",
-    "eslint": "^7.19.0",
+    "concurrently": "^5.3.0",
+    "eslint": "^7.20.0",
     "eslint-plugin-mocha-no-only": "^1.1.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.3.1",
-    "mocha": "^7.2.0",
+    "mocha": "^8.3.0",
     "prettier": "^2.2.1",
     "testdouble": "^3.16.1",
-    "typescript": "^3.9.9"
+    "typescript": "^4.1.5"
+  },
+  "dependencies": {
+    "@bilt/scripting-commons": "^2.0.3",
+    "constant-case": "^3.0.4"
   }
 }

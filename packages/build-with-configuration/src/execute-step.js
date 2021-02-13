@@ -1,8 +1,8 @@
-'use strict'
-const vm = require('vm')
-const {constantCase} = require('constant-case')
-const {sh} = require('@bilt/scripting-commons')
-const {arrayify} = require('./arrayify')
+import module from 'module'
+import {createContext, compileFunction} from 'vm'
+import {constantCase} from 'constant-case'
+import {sh} from '@bilt/scripting-commons'
+import {arrayify} from './arrayify.js'
 
 /**
  * @typedef {{
@@ -16,7 +16,7 @@ const {arrayify} = require('./arrayify')
  * @param {import('./types').Step} step
  * @returns {StepInfo}
  */
-function stepInfo(step) {
+export function stepInfo(step) {
   return {
     name: step.name,
     enableOptions: arrayify(step.enableOption),
@@ -27,11 +27,11 @@ function stepInfo(step) {
 /**
  * @param {import('./types').Step} step
  * @param {string} cwd
- * @param {{[x: string]: boolean|string}} buildOptions
- * @param {{[x: string]: any}} javascriptOptionsParameter
+ * @param {Record<string, boolean|string>} buildOptions
+ * @param {Record<string, any>} javascriptOptionsParameter
  * @returns {Promise<void>}
  */
-async function executeStep(step, cwd, buildOptions, javascriptOptionsParameter) {
+export async function executeStep(step, cwd, buildOptions, javascriptOptionsParameter) {
   const name = step.name
   const runCommand = step.run
   const runCondition = step.condition
@@ -43,7 +43,7 @@ async function executeStep(step, cwd, buildOptions, javascriptOptionsParameter) 
 }
 
 /**
- * @param {import('./types').BooleanValueOrFunctionText} condition
+ * @param {import('./types').BooleanValueOrFunctionText | undefined} condition
  * @param {{[x: string]: any}} javascriptOptionsParameter
  * @returns {Promise<boolean>}
  */
@@ -57,7 +57,7 @@ async function executeCondition(condition, javascriptOptionsParameter) {
 /**
  * @param {string} name
  * @param {string} command
- * @param {import('./types').EnvVars} env
+ * @param {import('./types').EnvVars | undefined} env
  * @param {string} cwd
  * @param {{[x: string]: any}} javascriptOptionsParameter
  * @param {any} buildOptions
@@ -71,14 +71,14 @@ async function executeCommand(name, command, env, cwd, buildOptions, javascriptO
       throw new Error(`Step ${name} has an "env", but it is not an object`)
 
     for (const [envVar, value] of Object.entries(env)) {
-      envVars[envVar] = await executeFunction(value, javascriptOptionsParameter)
+      envVars[envVar] = String(await executeFunction(value, javascriptOptionsParameter))
     }
   }
 
   await sh(command, {env: {...process.env, ...envVars}, cwd})
 }
 
-const contextWithRequire = vm.createContext({require, console})
+const contextWithRequire = createContext({require: module.createRequire(import.meta.url), console})
 
 /**
  * @param {any|{function: string}} functionAsText
@@ -86,7 +86,7 @@ const contextWithRequire = vm.createContext({require, console})
  */
 async function executeFunction(functionAsText, javascriptOptionsParameter) {
   if (typeof functionAsText === 'object')
-    return await vm.compileFunction(
+    return await compileFunction(
       `
     return (${functionAsText.function})(options)
   `,
@@ -99,8 +99,10 @@ async function executeFunction(functionAsText, javascriptOptionsParameter) {
 
 /**
  * @param {{ [s: string]: any; } | ArrayLike<any>} buildOptions
+ * @returns {Record<string, string>}
  */
 function envVarsFromBuildOptions(buildOptions) {
+  /**@type {Record<string, string>} */
   const ret = {}
 
   for (const [option, value] of Object.entries(buildOptions)) {
@@ -112,7 +114,14 @@ function envVarsFromBuildOptions(buildOptions) {
   return ret
 }
 
-function validateStep(step, i, phaseName, jobId, configPath) {
+/**
+ * @param {import('./types').Step} step
+ * @param {number} i
+ * @param {string} phaseName
+ * @param {string} jobId
+ * @param {string} configPath
+ */
+export function validateStep(step, i, phaseName, jobId, configPath) {
   if (typeof step !== 'object') {
     throw new Error(
       `Step #${i} in phase ${phaseName} of job ${jobId} must be an object but isnt in ${configPath}`,
@@ -166,8 +175,7 @@ function validateStep(step, i, phaseName, jobId, configPath) {
   if (
     step.enableOption != null &&
     typeof step.enableOption !== 'string' &&
-    !Array.isArray(step.enableOption) &&
-    !step.enableOption.every((p) => typeof p === 'string')
+    !Array.isArray(step.enableOption)
   ) {
     throw new Error(
       `"enableOption" property of step #${i} in phase ${phaseName} of job ${jobId} must be a string or an array of strings in ${configPath}`,
@@ -187,17 +195,10 @@ function validateStep(step, i, phaseName, jobId, configPath) {
   if (
     step.parameterOption != null &&
     typeof step.parameterOption !== 'string' &&
-    !Array.isArray(step.parameterOption) &&
-    !step.parameterOption.every((p) => typeof p === 'string')
+    !Array.isArray(step.parameterOption)
   ) {
     throw new Error(
       `"parameterOption" property of step #${i} in phase ${phaseName} of job ${jobId} must be a string or an array of strings in ${configPath}`,
     )
   }
-}
-
-module.exports = {
-  executeStep,
-  stepInfo,
-  validateStep,
 }

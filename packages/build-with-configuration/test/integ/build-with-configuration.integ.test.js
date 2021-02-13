@@ -1,9 +1,9 @@
-'use strict'
-const {describe, it, before} = require('mocha')
-const {expect} = require('chai')
-const {makeTemporaryDirectory, readFileAsString, writeFile} = require('@bilt/scripting-commons')
+import mocha from 'mocha'
+const {describe, it, before} = mocha
+import {expect} from 'chai'
+import {makeTemporaryDirectory, readFileAsString, writeFile} from '@bilt/scripting-commons'
 
-describe('build-with-configuration (it)', function () {
+describe('build-with-configuration (integ)', function () {
   /**@type {import('../../src/types').BuildConfiguration} */
   const buildConfiguration = {
     jobs: {
@@ -24,13 +24,11 @@ describe('build-with-configuration (it)', function () {
     },
   }
 
-  /**@type {import('../../src/build-with-configuration')} */
-  let bwc
-  before(() => {
-    delete require.cache[require.resolve('@bilt/scripting-commons')]
-    delete require.cache[require.resolve('../../src/build-with-configuration')]
-    delete require.cache[require.resolve('../../src/execute-step')]
-    bwc = require('../../src/build-with-configuration')
+  /**@type {import('../../src/build-with-configuration').executeJob} */
+  let executeJob
+  before(async () => {
+    // eslint-disable-next-line node/no-unsupported-features/es-syntax
+    executeJob = (await import('../../src/build-with-configuration.js')).executeJob
   })
 
   it('should execute a job using sh', async () => {
@@ -38,7 +36,7 @@ describe('build-with-configuration (it)', function () {
 
     await writeFile('buildname2', '', {cwd})
 
-    for await (const _ of bwc.executeJob(
+    for await (const _ of executeJob(
       buildConfiguration.jobs.build,
       'during',
       cwd,

@@ -1,11 +1,11 @@
-# build-with-configuration
+# ng
 
 Library that yada yada yada.
 
 ## Installing
 
 ```sh
-npm install @applitools/build-with-configuration
+npm install @applitools/ng
 ```
 
 ## Using the package
@@ -13,7 +13,7 @@ npm install @applitools/build-with-configuration
 yada yada yada
 
 ```js
-const yadayada = require('@applitools/build-with-configuration')
+const yadayada = require('@applitools/ng')
 
 yada yada yada
 ```

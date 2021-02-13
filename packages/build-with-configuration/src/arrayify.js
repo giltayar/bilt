@@ -1,14 +1,14 @@
-'use strict'
-
 /**
  * @template T
- * @param {T[]|T} possibleArray
- * @returns {T[]|undefined}
+ * @param {T[]|T|undefined} possibleArray
+ * @returns {T[]}
  */
-function arrayify(possibleArray) {
-  if (possibleArray == null) return []
-  if (Array.isArray(possibleArray)) return possibleArray
-  return [possibleArray]
+export function arrayify(possibleArray) {
+  if (possibleArray == null) {
+    return []
+  } else if (Array.isArray(possibleArray)) {
+    return possibleArray
+  } else {
+    return [possibleArray]
+  }
 }
-
-module.exports = {arrayify}

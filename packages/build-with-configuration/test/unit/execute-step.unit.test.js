@@ -1,16 +1,18 @@
-'use strict'
-const {describe, it, before, beforeEach, afterEach} = require('mocha')
-const {expect} = require('chai')
-const td = require('testdouble')
+import mocha from 'mocha'
+const {describe, it, before, beforeEach, afterEach} = mocha
+import {expect} from 'chai'
+import * as td from 'testdouble'
 
 describe('execute-step (unit)', function () {
   describe('executeStep', () => {
+    /** @type {import('@bilt/scripting-commons').sh} */
     let sh
-    /**@type {import('../../src/execute-step')} */
+    /**@type {import('../../src/execute-step.js')} */
     let es
-    beforeEach(() => {
-      ;({sh} = td.replace(require.resolve('@bilt/scripting-commons')))
-      es = require('../../src/execute-step')
+    beforeEach(async () => {
+      ;({sh} = await td.replaceEsm('@bilt/scripting-commons'))
+      // eslint-disable-next-line node/no-unsupported-features/es-syntax
+      es = await import('../../src/execute-step.js')
     })
     afterEach(() => td.reset())
 
@@ -18,7 +20,7 @@ describe('execute-step (unit)', function () {
       /**@type {import('../../src/types').Step} */
       const step = {name: 'step1', run: 'run1'}
 
-      es.validateStep(step)
+      es.validateStep(step, 1, 'before', 'build', 'configpath')
       await es.executeStep(step, 'currdir1', {}, {})
 
       td.verify(sh('run1', {cwd: 'currdir1', env: {...process.env}}), {times: 1})
@@ -32,7 +34,7 @@ describe('execute-step (unit)', function () {
         condition: {function: 'async ({directory}) => directory === "lalala"'},
       }
 
-      es.validateStep(step)
+      es.validateStep(step, 1, 'before', 'build', 'configpath')
       await es.executeStep(step, 'currdir1', {}, {directory: 'lalala'})
       td.verify(sh('run1', {cwd: 'currdir1', env: {...process.env}}), {times: 1})
     })
@@ -45,9 +47,12 @@ describe('execute-step (unit)', function () {
         condition: {function: 'async ({directory}) => directory === "wrong-dir!"'},
       }
 
-      es.validateStep(step)
+      es.validateStep(step, 1, 'before', 'build', 'configpath')
       await es.executeStep(step, 'currdir2', {}, {directory: 'lalala'})
-      td.verify(sh(), {times: 0, ignoreExtraArgs: true})
+      td.verify(sh(/**@type {string}*/ (td.matchers.anything()), td.matchers.anything()), {
+        times: 0,
+        ignoreExtraArgs: true,
+      })
     })
 
     it('should execute a step with the appropriate env vars', async () => {
@@ -62,7 +67,7 @@ describe('execute-step (unit)', function () {
         env,
       }
 
-      es.validateStep(step)
+      es.validateStep(step, 1, 'before', 'build', 'configpath')
       await es.executeStep(step, 'currdir1', {}, {directory: () => 'yes!'})
 
       td.verify(
@@ -88,7 +93,7 @@ describe('execute-step (unit)', function () {
         env,
       }
 
-      es.validateStep(step)
+      es.validateStep(step, 1, 'before', 'build', 'configpath')
       await es.executeStep(step, 'currdir1', buildOptions, {})
 
       td.verify(
@@ -107,23 +112,24 @@ describe('execute-step (unit)', function () {
   })
 
   describe('stepInfo', () => {
-    /**@type {import('../../src/execute-step')} */
+    /**@type {import('../../src/execute-step.js')} */
     let es
-    before(() => {
-      es = require('../../src/execute-step')
+    before(async () => {
+      // eslint-disable-next-line node/no-unsupported-features/es-syntax
+      es = await import('../../src/execute-step.js')
     })
 
     it('should return stepInfo for a simple step', () => {
       const step = {name: 'hi', run: 'run1'}
 
-      es.validateStep(step)
+      es.validateStep(step, 1, 'before', 'build', 'configpath')
       expect(es.stepInfo(step)).to.eql({name: 'hi', enableOptions: [], parameterOptions: []})
     })
 
     it('should return stepInfo for a step with simple enable and parameter', () => {
       const step = {name: 'hi', run: 'run1', enableOption: 'foo', parameterOption: 'bar'}
 
-      es.validateStep(step)
+      es.validateStep(step, 1, 'before', 'build', 'configpath')
       expect(es.stepInfo(step)).to.eql({
         name: 'hi',
         enableOptions: ['foo'],
@@ -139,7 +145,7 @@ describe('execute-step (unit)', function () {
         parameterOption: ['bar', 'bar2'],
       }
 
-      es.validateStep(step)
+      es.validateStep(step, 1, 'before', 'build', 'configpath')
       expect(es.stepInfo(step)).to.eql({
         name: 'hi',
         enableOptions: ['foo', 'foo2'],

@@ -1,8 +1,9 @@
-'use strict'
-const {describe, it, before, beforeEach, afterEach} = require('mocha')
-const {expect, use} = require('chai')
-const td = require('testdouble')
-use(require('chai-subset'))
+import mocha from 'mocha'
+const {describe, it, before, beforeEach, afterEach} = mocha
+import {expect, use} from 'chai'
+import chaiSubset from 'chai-subset'
+import {replaceEsm, reset, verify, matchers} from 'testdouble'
+use(chaiSubset)
 
 describe('build-with-configuration (unit)', function () {
   /**@type {import('../../src/types').BuildConfiguration} */
@@ -26,15 +27,17 @@ describe('build-with-configuration (unit)', function () {
   }
 
   describe('executeJob', () => {
+    /** @type {import('@bilt/scripting-commons').sh} */
     let sh
     /**@type {import('../../src/build-with-configuration')} */
     let bwc
-    beforeEach(() => {
-      ;({sh} = td.replace(require.resolve('@bilt/scripting-commons')))
+    beforeEach(async () => {
+      ;({sh} = await replaceEsm('@bilt/scripting-commons'))
 
-      bwc = require('../../src/build-with-configuration')
+      // eslint-disable-next-line node/no-unsupported-features/es-syntax
+      bwc = await import('../../src/build-with-configuration.js')
     })
-    afterEach(() => td.reset())
+    afterEach(() => reset())
 
     it('should execute a job', async () => {
       bwc.validateBuildConfiguration(buildConfiguration, '/')
@@ -64,14 +67,14 @@ describe('build-with-configuration (unit)', function () {
 
       expect(i).to.equal(2)
 
-      td.verify(
+      verify(
         sh('run1', {
           cwd: 'dir1',
           env: {...process.env, BILT_OPTION_NAME1OPT: 'true', BILT_OPTION_MESSAGE: 'message1'},
         }),
         {times: 1},
       )
-      td.verify(sh('run2', {cwd: 'dir1', env: td.matchers.contains({a: 'b', c: 'foobar found'})}), {
+      verify(sh('run2', {cwd: 'dir1', env: matchers.contains({a: 'b', c: 'foobar found'})}), {
         times: 1,
       })
     })
@@ -100,8 +103,9 @@ describe('build-with-configuration (unit)', function () {
   describe('jobInfo', () => {
     /**@type {import('../../src/build-with-configuration')} */
     let bwc
-    before(() => {
-      bwc = require('../../src/build-with-configuration')
+    before(async () => {
+      // eslint-disable-next-line node/no-unsupported-features/es-syntax
+      bwc = await import('../../src/build-with-configuration.js')
     })
 
     it('jobInfo should work', () => {

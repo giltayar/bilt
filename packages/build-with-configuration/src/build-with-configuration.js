@@ -1,5 +1,4 @@
-'use strict'
-const {executeStep, stepInfo, validateStep} = require('./execute-step')
+import {executeStep, stepInfo, validateStep} from './execute-step.js'
 
 /**
  * @param {import('./types').Job} jobConfiguration
@@ -9,7 +8,7 @@ const {executeStep, stepInfo, validateStep} = require('./execute-step')
  * @param {{[x: string]: any}} javascriptOptionsParameter
  * @returns {AsyncGenerator<import('./execute-step').StepInfo, void, void>}
  */
-async function* executeJob(
+export async function* executeJob(
   jobConfiguration,
   phase,
   directoryToExecuteIn,
@@ -36,7 +35,7 @@ async function* executeJob(
  * parameterOptions: string[]
  * }}
  */
-function jobInfo(buildConfiguration, jobId) {
+export function jobInfo(buildConfiguration, jobId) {
   const jobConfiguration = buildConfiguration.jobs[jobId]
 
   const enableOptions = []
@@ -46,7 +45,7 @@ function jobInfo(buildConfiguration, jobId) {
   /**@type {Map<string, string[]>} */
   const aggregateOptions = new Map()
   for (const phase of Object.values(jobConfiguration.steps)) {
-    for (const step of phase) {
+    for (const step of phase || []) {
       const stepEnableOptions = stepInfo(step).enableOptions
       for (const enableOption of stepEnableOptions) {
         enableOptions.push(enableOption)
@@ -87,10 +86,10 @@ function jobInfo(buildConfiguration, jobId) {
 }
 
 /**
- * @param {import('./types').Steps} steps
+ * @param {import('./types').Steps | undefined} steps
  * @param {string} directoryToExecuteIn
- * @param {{[x: string]: boolean|string}} buildOptions
- * @param {{[x: string]: any}} javascriptOptionsParameter
+ * @param {Record<string, boolean|string>} buildOptions
+ * @param {Record<string, any>} javascriptOptionsParameter
  * @returns {AsyncGenerator<import('./execute-step').StepInfo>}
  */
 async function* executePhase(
@@ -99,7 +98,7 @@ async function* executePhase(
   buildOptions,
   javascriptOptionsParameter,
 ) {
-  for (const step of steps) {
+  for (const step of steps || []) {
     if (isStepEnabled(stepInfo(step).enableOptions, buildOptions)) {
       yield stepInfo(step)
       await executeStep(step, directoryToExecuteIn, buildOptions, javascriptOptionsParameter)
@@ -107,6 +106,10 @@ async function* executePhase(
   }
 }
 
+/**
+ * @param {string[]} enableOptions
+ * @param {Record<string, boolean|string>} buildOptions
+ */
 function isStepEnabled(enableOptions, buildOptions) {
   if (!enableOptions || enableOptions.length === 0) return true
 
@@ -118,7 +121,7 @@ function isStepEnabled(enableOptions, buildOptions) {
  * @param {import('./types').BuildConfiguration} buildConfiguration
  * @param {string} configPath
  */
-function validateBuildConfiguration(buildConfiguration, configPath) {
+export function validateBuildConfiguration(buildConfiguration, configPath) {
   const jobs = buildConfiguration.jobs
   if (!jobs) {
     throw new Error(`could not find "jobs" section in build configuration ${configPath}`)
@@ -153,7 +156,7 @@ function validateBuildConfiguration(buildConfiguration, configPath) {
 
 /**
  *
- * @param {import('./types').Step[]|undefined} steps
+ * @param {import('./types').Step[] | undefined} steps
  * @param {string} phaseName
  * @param {string} jobId
  * @param {string} configPath
@@ -171,10 +174,4 @@ function validateStepsConfiguration(steps, phaseName, jobId, configPath) {
   for (const step of steps) {
     validateStep(step, ++i, phaseName, jobId, configPath)
   }
-}
-
-module.exports = {
-  validateBuildConfiguration,
-  executeJob,
-  jobInfo,
 }
