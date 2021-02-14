@@ -1,20 +1,26 @@
-'use strict'
-const fs = require('fs')
-const {promisify} = require('util')
-const path = require('path')
-const {execFile} = require('child_process')
-const {init, commitAll} = require('@bilt/git-testkit')
-const {startNpmRegistry, enablePackageToPublishToRegistry} = require('@bilt/npm-testkit')
-const {
+import {promises} from 'fs'
+import {promisify} from 'util'
+import {basename, join, resolve} from 'path'
+import {execFile} from 'child_process'
+import {init, commitAll} from '@bilt/git-testkit'
+import {startNpmRegistry, enablePackageToPublishToRegistry} from '@bilt/npm-testkit'
+import {
   makeTemporaryDirectory,
   readFileAsString,
   readFileAsJson,
   writeFile,
   sh,
-} = require('@bilt/scripting-commons')
-const cli = require('../../src/cli')
+} from '@bilt/scripting-commons'
+import {main as cli} from '../../src/cli.js'
+import {fileURLToPath, URL} from 'url'
 
-async function createAdepsBdepsCPackages(cwd, registry, base = '.') {
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
+
+/**
+ * @param {string} cwd
+ * @param {string} [registry]
+ */
+export async function createAdepsBdepsCPackages(cwd, registry = undefined, base = '.') {
   if (registry) {
     await enablePackageToPublishToRegistry(cwd, registry)
   }
@@ -28,10 +34,17 @@ async function createAdepsBdepsCPackages(cwd, registry, base = '.') {
   return {cPackageJson, bPackageJson}
 }
 
-async function createPackages(cwd, registry, aPackageDir, bPackageDir, cPackageDir) {
-  const aPackage = path.basename(aPackageDir)
-  const bPackage = path.basename(bPackageDir)
-  const cPackage = path.basename(cPackageDir)
+/**
+ * @param {string} cwd
+ * @param {string|undefined} registry
+ * @param {string} aPackageDir
+ * @param {string} bPackageDir
+ * @param {string} cPackageDir
+ */
+export async function createPackages(cwd, registry, aPackageDir, bPackageDir, cPackageDir) {
+  const aPackage = basename(aPackageDir)
+  const bPackage = basename(bPackageDir)
+  const cPackage = basename(cPackageDir)
   const build = `echo $(expr $(cat build-count) + 1) >build-count`
   await writeFile(
     [aPackageDir, 'package.json'],
@@ -48,7 +61,7 @@ async function createPackages(cwd, registry, aPackageDir, bPackageDir, cPackageD
   )
   await writeFile([aPackageDir, 'build-count'], '0', {cwd})
   if (registry) {
-    await enablePackageToPublishToRegistry(path.join(cwd, aPackageDir), registry)
+    await enablePackageToPublishToRegistry(join(cwd, aPackageDir), registry)
   }
   const bPackageJson = {
     name: `${bPackage}-package`,
@@ -61,26 +74,26 @@ async function createPackages(cwd, registry, aPackageDir, bPackageDir, cPackageD
   }
   await writeFile([bPackageDir, 'package.json'], bPackageJson, {cwd})
   if (registry) {
-    await enablePackageToPublishToRegistry(path.join(cwd, bPackageDir), registry)
+    await enablePackageToPublishToRegistry(join(cwd, bPackageDir), registry)
   }
   await writeFile([bPackageDir, 'build-count'], '0', {cwd})
   if (registry) {
-    await sh('npm publish', {cwd: path.join(cwd, bPackageDir)})
+    await sh('npm publish', {cwd: join(cwd, bPackageDir)})
   }
 
   const cPackageJson = {name: `${cPackage}-package`, version: '3.0.0', scripts: {build}}
   await writeFile([cPackageDir, 'package.json'], cPackageJson, {cwd})
   if (registry) {
-    await enablePackageToPublishToRegistry(path.join(cwd, cPackageDir), registry)
+    await enablePackageToPublishToRegistry(join(cwd, cPackageDir), registry)
   }
   await writeFile([cPackageDir, 'build-count'], '0', {cwd})
   if (registry) {
-    await sh('npm publish', {cwd: path.join(cwd, cPackageDir)})
+    await sh('npm publish', {cwd: join(cwd, cPackageDir)})
   }
   return {cPackageJson, bPackageJson}
 }
 
-async function prepareGitAndNpm() {
+export async function prepareGitAndNpm() {
   const cwd = await makeTemporaryDirectory()
   const pushTarget = await makeTemporaryDirectory()
   await init(pushTarget, {bare: true})
@@ -96,13 +109,13 @@ async function prepareGitAndNpm() {
  * @param {string} buildConfigurationName
  * @param {{[x: string]: any}} [moreBuiltRc]
  */
-async function prepareForSimpleBuild(buildConfigurationName, moreBuiltRc) {
+export async function prepareForSimpleBuild(buildConfigurationName, moreBuiltRc) {
   const cwd = await makeTemporaryDirectory()
   await init(cwd)
 
   await writeFile(
     '.biltrc.json',
-    {jobs: path.resolve(__dirname, buildConfigurationName), ...moreBuiltRc},
+    {jobs: resolve(__dirname, buildConfigurationName), ...moreBuiltRc},
     {cwd},
   )
 
@@ -122,7 +135,7 @@ async function prepareForSimpleBuild(buildConfigurationName, moreBuiltRc) {
  * @param {string[]} [moreArgs]
  * @param {string} [jobId]
  */
-async function runBuild(
+export async function runBuild(
   cwd,
   message,
   packages = undefined,
@@ -151,9 +164,14 @@ async function runBuild(
  * @param {string[]} [packages]
  * @param {string[]} [uptos]
  */
-async function runBuildCli(cwd, message, packages = undefined, uptos = undefined) {
+export async function runBuildCli(
+  cwd,
+  message = 'a message',
+  packages = undefined,
+  uptos = undefined,
+) {
   return await promisify(execFile)(
-    path.resolve(__dirname, '../../scripts/bilt.js'),
+    resolve(__dirname, '../../scripts/bilt.js'),
     [
       ...(packages && packages.length > 0 ? packages : []),
       '-m',
@@ -170,7 +188,7 @@ async function runBuildCli(cwd, message, packages = undefined, uptos = undefined
  * @param {string} scriptName
  * @returns {Promise<number>}
  */
-async function packageScriptCount(cwd, pkg, scriptName) {
+export async function packageScriptCount(cwd, pkg, scriptName) {
   return parseInt(
     await readFileAsString([pkg, `${scriptName}-count`], {cwd}).catch((err) =>
       err.code === 'ENOENT' ? '0' : Promise.reject(err),
@@ -185,8 +203,8 @@ async function packageScriptCount(cwd, pkg, scriptName) {
  * @param {string} scriptName
  * @returns {Promise<number>}
  */
-async function packageScriptTime(cwd, pkg, scriptName) {
-  return (await fs.promises.stat(path.join(cwd, pkg, `${scriptName}-count`))).mtime.getTime()
+export async function packageScriptTime(cwd, pkg, scriptName) {
+  return (await promises.stat(join(cwd, pkg, `${scriptName}-count`))).mtime.getTime()
 }
 
 /**
@@ -194,28 +212,22 @@ async function packageScriptTime(cwd, pkg, scriptName) {
  * @param {string} scriptName
  * @returns {Promise<number>}
  */
-async function repoScriptCount(cwd, scriptName) {
+export async function repoScriptCount(cwd, scriptName) {
   return parseInt(await readFileAsString([`${scriptName}-count`], {cwd}), 10)
 }
 
-async function setNpmScript(cwd, pkg, scriptName, script) {
+/**
+ * @param {any} cwd
+ * @param {string} pkg
+ * @param {string} scriptName
+ * @param {any} script
+ */
+export async function setNpmScript(cwd, pkg, scriptName, script) {
+  /**@type {any} */
   const packageJson = await readFileAsJson([pkg, 'package.json'], {cwd})
 
   packageJson.scripts = packageJson.scripts || {}
   packageJson.scripts[scriptName] = script
 
   await writeFile([pkg, 'package.json'], packageJson, {cwd})
-}
-
-module.exports = {
-  prepareGitAndNpm,
-  prepareForSimpleBuild,
-  createAdepsBdepsCPackages,
-  runBuild,
-  runBuildCli,
-  createPackages,
-  packageScriptCount,
-  repoScriptCount,
-  packageScriptTime,
-  setNpmScript,
 }

@@ -1,23 +1,30 @@
 {
   "name": "@bilt/cli",
-  "version": "3.2.21",
+  "version": "4.0.0",
   "description": "",
+  "type": "module",
   "main": "src/cli.js",
+  "export": "./src/cli.js",
+  "types": "types/src/cli.d.ts",
   "engines": {
     "node": ">=12.3.0"
   },
-  "files": [
-    "src",
-    "scripts"
-  ],
   "bin": {
     "bilt": "scripts/bilt.js"
   },
+  "files": [
+    "types",
+    "src",
+    "scripts"
+  ],
   "scripts": {
-    "test": "npm run eslint && npm run test:types && npm run test:mocha",
-    "test:types": "tsc",
-    "test:mocha": "mocha --no-timeouts --exit 'test/unit/*.test.js' 'test/it/*.test.js' 'test/e2e/*.test.js'",
-    "eslint": "eslint '**/*.js'"
+    "build": "concurrently -r 'npm:build:*'",
+    "build:typescript": "rm -rf types && tsc && cp src/*.d.ts types/src",
+    "test": "concurrently -r 'npm:test:*'",
+    "test:mocha": "npm run mocha",
+    "test:eslint": "eslint --max-warnings=0 '**/*.js'",
+    "test:typescript": "tsc --noEmit --emitDeclarationOnly false",
+    "mocha": "mocha --no-timeouts --exit 'test/**/*.test.js'"
   },
   "keywords": [
     "ci",
@@ -27,43 +34,54 @@
     "monorepo"
   ],
   "author": "Gil Tayar <gil@tayar.org>",
-  "license": "Unlicense",
+  "licenscd .e": "MIT",
   "repository": {
     "url": "https://github.com/giltayar/bilt",
     "type": "git",
     "directory": "packages/cli"
   },
-  "dependencies": {
-    "@bilt/build": "^2.0.10",
-    "@bilt/build-with-configuration": "^2.2.6",
-    "@bilt/git-packages": "^8.0.2",
-    "@bilt/npm-next-version": "^2.2.15",
-    "@bilt/npm-packages": "^1.1.7",
-    "@bilt/packages-to-build": "^4.0.1",
-    "@bilt/scripting-commons": "^1.2.5",
-    "camelcase": "^6.2.0",
-    "chalk": "^4.1.0",
-    "cosmiconfig": "^7.0.0",
-    "debug": "^4.3.1",
-    "globby": "^11.0.1",
-    "throat": "^5.0.0",
-    "yaml": "^1.10.0",
-    "yargs": "^16.2.0"
-  },
   "devDependencies": {
-    "@bilt/git-testkit": "^1.1.8",
-    "@bilt/npm-testkit": "^1.5.4",
-    "@bilt/types": "^2.0.3",
-    "@types/node": "^14.14.26",
-    "@types/yargs": "^15.0.13",
+    "@babel/core": "^7.12.16",
+    "@babel/eslint-parser": "^7.12.16",
+    "@babel/plugin-syntax-top-level-await": "^7.12.13",
+    "@bilt/types": "^3.0.1",
+    "@types/chai": "^4.2.15",
+    "@types/chai-subset": "^1.3.3",
+    "@types/debug": "^4.1.5",
+    "@types/graphlib": "^2.1.7",
+    "@types/js-yaml": "^4.0.0",
+    "@types/mocha": "^8.2.0",
+    "@types/node": "^14.14.27",
+    "@types/yargs": "^16.0.0",
+    "@typescript-eslint/eslint-plugin": "^4.15.0",
+    "@typescript-eslint/parser": "^4.15.0",
     "chai": "^4.3.0",
     "chai-subset": "^1.6.0",
-    "eslint": "^7.19.0",
+    "concurrently": "^5.3.0",
+    "eslint": "^7.20.0",
     "eslint-plugin-mocha-no-only": "^1.1.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.3.1",
+    "js-yaml": "^3.14.1",
     "mocha": "^8.3.0",
     "prettier": "^2.2.1",
     "typescript": "^4.1.5"
+  },
+  "dependencies": {
+    "@bilt/build": "^10.0.1",
+    "@bilt/build-with-configuration": "^9.0.6",
+    "@bilt/git-packages": "^9.0.3",
+    "@bilt/git-testkit": "^2.0.1",
+    "@bilt/npm-next-version": "^3.0.1",
+    "@bilt/npm-packages": "^2.0.2",
+    "@bilt/npm-testkit": "^2.0.1",
+    "@bilt/packages-to-build": "^9.0.2",
+    "@bilt/scripting-commons": "^2.0.3",
+    "chalk": "^4.1.0",
+    "cosmiconfig": "^7.0.0",
+    "debug": "^4.3.1",
+    "globby": "^11.0.2",
+    "throat": "^6.0.1",
+    "yargs": "^16.2.0"
   }
 }

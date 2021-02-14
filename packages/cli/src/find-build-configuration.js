@@ -1,12 +1,14 @@
-'use strict'
-const path = require('path')
-const cosmiconfig = require('cosmiconfig')
+import {resolve, join, dirname} from 'path'
+import {cosmiconfig as _cosmiconfig} from 'cosmiconfig'
+import {fileURLToPath, URL} from 'url'
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
 
 /**
  *
  * @param {{jobs: string|object |undefined}} config
  * @param {string} rootDirectory
- * @returns {Promise<object[]>}
+ * @returns {Promise<import('@bilt/build-with-configuration').BuildConfiguration[]>}
  */
 async function findBuildConfiguration(config, rootDirectory) {
   const buildConfigurationChain = []
@@ -18,23 +20,18 @@ async function findBuildConfiguration(config, rootDirectory) {
       typeof jobsConfigurationOrBuildConfigurationPath === 'object'
         ? {jobs: config.jobs}
         : (
-            await cosmiconfig
-              .cosmiconfig('bilt')
-              .load(
-                jobsConfigurationOrBuildConfigurationPath
-                  ? path.resolve(
-                      buildConfigurationRootPath,
-                      jobsConfigurationOrBuildConfigurationPath,
-                    )
-                  : path.join(__dirname, 'default-build.yaml'),
-              )
+            (await _cosmiconfig('bilt').load(
+              jobsConfigurationOrBuildConfigurationPath
+                ? resolve(buildConfigurationRootPath, jobsConfigurationOrBuildConfigurationPath)
+                : join(__dirname, 'default-build.yaml'),
+            )) || {config: undefined}
           ).config
 
     buildConfigurationChain.push(buildConfiguration)
 
     if (typeof jobsConfigurationOrBuildConfigurationPath === 'string') {
-      buildConfigurationRootPath = path.dirname(
-        path.resolve(buildConfigurationRootPath, jobsConfigurationOrBuildConfigurationPath),
+      buildConfigurationRootPath = dirname(
+        resolve(buildConfigurationRootPath, jobsConfigurationOrBuildConfigurationPath),
       )
     }
 
@@ -49,4 +46,4 @@ async function findBuildConfiguration(config, rootDirectory) {
   return buildConfigurationChain
 }
 
-module.exports = findBuildConfiguration
+export default findBuildConfiguration

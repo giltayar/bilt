@@ -1,25 +1,26 @@
-'use strict'
-const path = require('path')
-const {describe, it} = require('mocha')
-const {expect, use} = require('chai')
-use(require('chai-subset'))
-const {commitAll, commitHistory} = require('@bilt/git-testkit')
-const {enablePackageToPublishToRegistry} = require('@bilt/npm-testkit')
-const {
+import {join} from 'path'
+import mocha from 'mocha'
+const {describe, it} = mocha
+import {expect, use} from 'chai'
+import chaiSubset from 'chai-subset'
+use(chaiSubset)
+import {commitAll, commitHistory} from '@bilt/git-testkit'
+import {enablePackageToPublishToRegistry} from '@bilt/npm-testkit'
+import {
   writeFile,
   shWithOutput,
   sh,
   readFileAsJson,
   readFileAsString,
-} = require('@bilt/scripting-commons')
-const {
+} from '@bilt/scripting-commons'
+import {
   prepareGitAndNpm,
   runBuild,
   createAdepsBdepsCPackages,
   packageScriptCount,
-} = require('../commons/setup-and-run')
+} from '../commons/setup-and-run.js'
 
-describe('default-build (it)', function () {
+describe('default-build (integ)', function () {
   it(`should build two packages, first time, no dependencies,
       then build one if it changed,
       then not build because nothing changed`, async () => {
@@ -29,12 +30,12 @@ describe('default-build (it)', function () {
     await enablePackageToPublishToRegistry(cwd, registry)
 
     await writeFile(['a', 'package.json'], {name: 'a-package', version: '1.0.0'}, {cwd})
-    await enablePackageToPublishToRegistry(path.join(cwd, 'a'), registry)
-    await sh('npm publish', {cwd: path.join(cwd, 'a')})
+    await enablePackageToPublishToRegistry(join(cwd, 'a'), registry)
+    await sh('npm publish', {cwd: join(cwd, 'a')})
 
     await writeFile(['b', 'package.json'], {name: 'b-package', version: '2.0.0'}, {cwd})
-    await enablePackageToPublishToRegistry(path.join(cwd, 'b'), registry)
-    await sh('npm publish', {cwd: path.join(cwd, 'b')})
+    await enablePackageToPublishToRegistry(join(cwd, 'b'), registry)
+    await sh('npm publish', {cwd: join(cwd, 'b')})
 
     await writeFile(['not-a-package', 'foo.txt'], 'foo', {cwd})
 
@@ -125,7 +126,7 @@ describe('default-build (it)', function () {
     const beforeBuildPushedHistory = Object.entries(await commitHistory(pushTarget))
 
     await createPackage(cwd, registry, 'b', '1.0.0')
-    await sh('npm publish', {cwd: path.join(cwd, 'b')})
+    await sh('npm publish', {cwd: join(cwd, 'b')})
     await createPackage(cwd, registry, 'a', '2.0.0', {}, {'b-package': '^1.0.0'})
 
     await runBuild(cwd, 'a build without git', ['./a'], undefined, ['--no-git'])
@@ -169,9 +170,16 @@ describe('default-build (it)', function () {
  * @returns {Promise<string>}
  */
 async function packageDependency(cwd, pkg, dependency) {
-  return (await readFileAsJson([pkg, 'package-lock.json'], {cwd})).dependencies[dependency].version
+  /**@type {any} */
+  const packageLock = await readFileAsJson([pkg, 'package-lock.json'], {cwd})
+  return packageLock.dependencies[dependency].version
 }
 
+/**
+ * @param {string} cwd
+ * @param {string} registry
+ * @param {string} pkg
+ */
 async function createPackage(
   cwd,
   registry,
@@ -180,6 +188,9 @@ async function createPackage(
   scripts = {},
   dependencies = {},
 ) {
+  /**
+   * @param {string} name
+   */
   const scriptScript = async (name) => {
     await writeFile([pkg, `${name}-count`], '0', {cwd})
 
@@ -204,5 +215,5 @@ async function createPackage(
     },
     {cwd},
   )
-  await enablePackageToPublishToRegistry(path.join(cwd, pkg), registry)
+  await enablePackageToPublishToRegistry(join(cwd, pkg), registry)
 }

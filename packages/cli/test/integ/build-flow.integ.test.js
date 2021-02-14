@@ -1,11 +1,12 @@
-'use strict'
-const {promisify: p} = require('util')
-const path = require('path')
-const {describe, it} = require('mocha')
-const {expect, use} = require('chai')
-use(require('chai-subset'))
-const {writeFile} = require('@bilt/scripting-commons')
-const {
+import {promisify as p} from 'util'
+import {join} from 'path'
+import mocha from 'mocha'
+const {describe, it} = mocha
+import {expect, use} from 'chai'
+import chaiSubset from 'chai-subset'
+use(chaiSubset)
+import {writeFile} from '@bilt/scripting-commons'
+import {
   runBuild,
   createAdepsBdepsCPackages,
   createPackages,
@@ -13,9 +14,9 @@ const {
   packageScriptTime,
   repoScriptCount,
   prepareForSimpleBuild,
-} = require('../commons/setup-and-run')
+} from '../commons/setup-and-run.js'
 
-describe('build-flow (it)', function () {
+describe('build-flow (integ)', function () {
   it(`should build two packages, first time, no dependencies,
       then build one if it changed,
       then not build because nothing changed`, async () => {
@@ -248,7 +249,7 @@ describe('build-flow (it)', function () {
     })
     await createAdepsBdepsCPackages(cwd, undefined, 'packages')
 
-    await runBuild(path.join(cwd, 'packages/c'), 'first build', ['.'])
+    await runBuild(join(cwd, 'packages/c'), 'first build', ['.'])
     expect(await packageScriptCount(cwd, 'packages/a', 'during2')).to.equal(0)
     expect(await packageScriptCount(cwd, 'packages/b', 'during2')).to.equal(1)
     expect(await packageScriptCount(cwd, 'packages/c', 'during2')).to.equal(1)
@@ -257,12 +258,12 @@ describe('build-flow (it)', function () {
     await writeFile(['packages/b', 'build-now'], 'yes!', {cwd})
     await writeFile(['packages/c', 'build-now'], 'yes!', {cwd})
 
-    await runBuild(path.join(cwd, 'packages/c'), 'second build', ['.'], undefined, ['--no-upto'])
+    await runBuild(join(cwd, 'packages/c'), 'second build', ['.'], undefined, ['--no-upto'])
     expect(await packageScriptCount(cwd, 'packages/a', 'during2')).to.equal(0)
     expect(await packageScriptCount(cwd, 'packages/b', 'during2')).to.equal(1)
     expect(await packageScriptCount(cwd, 'packages/c', 'during2')).to.equal(2)
 
-    await runBuild(path.join(cwd, 'packages/c'), 'third build')
+    await runBuild(join(cwd, 'packages/c'), 'third build')
     expect(await packageScriptCount(cwd, 'packages/a', 'during2')).to.equal(0)
     expect(await packageScriptCount(cwd, 'packages/b', 'during2')).to.equal(2)
     expect(await packageScriptCount(cwd, 'packages/c', 'during2')).to.equal(2)

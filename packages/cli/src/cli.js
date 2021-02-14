@@ -1,14 +1,19 @@
-'use strict'
-const path = require('path')
-const fs = require('fs')
-const yargs = require('yargs')
-const debug = require('debug')('bilt:cli:cli')
-const globby = require('globby')
-const {jobInfo, validateBuildConfiguration} = require('@bilt/build-with-configuration')
-const findConfig = require('./find-config')
-const findBuildConfiguration = require('./find-build-configuration')
+/* eslint-disable node/no-unsupported-features/es-syntax */
+import path from 'path'
+import fs from 'fs'
+import yargs from 'yargs'
+import debugMaker from 'debug'
+import globby from 'globby'
+import {jobInfo, validateBuildConfiguration} from '@bilt/build-with-configuration'
+import findConfig from './find-config.js'
+import findBuildConfiguration from './find-build-configuration.js'
+const debug = debugMaker('bilt:cli:cli')
 
-async function main(argv, {exitOnError = false} = {}) {
+/**
+ * @param {string[]} argv
+ * @param {{exitOnError?: boolean}} options
+ */
+export async function main(argv, {exitOnError = false} = {}) {
   const {config, rootDirectory} = await findConfig(argv)
 
   setupPackages('upto', 'cwd', rootDirectory)(config)
@@ -29,7 +34,7 @@ async function main(argv, {exitOnError = false} = {}) {
   debug('final options', {rootDirectory, config, jobId, args})
 
   //@ts-expect-error
-  const success = await require(`./command-build`)({
+  const success = await (await import(`./command-build.js`)).default({
     jobId: /**@type{string}*/ (jobId),
     rootDirectory: /**@type{import('@bilt/types').Directory}*/ (rootDirectory),
     jobConfiguration: findJobConfigurationInChain(buildConfigurationChain, jobId),
@@ -146,6 +151,7 @@ function generateYargsCommandsAndOptions(argv, config, buildConfigurationChain, 
             )
           }
 
+          // @ts-expect-error
           yargs = yargs.middleware(dealWithAggregateOptions(aggregateOptions, inAggregateOptions))
           for (const parameterOption of parameterOptions) {
             yargs = yargs.option(...makeParameterOption(parameterOption, optionDefaults))
@@ -165,33 +171,39 @@ function generateYargsCommandsAndOptions(argv, config, buildConfigurationChain, 
  * @param {Map<string, string>} inAggregateOptions
  */
 function dealWithAggregateOptions(aggregateOptions, inAggregateOptions) {
-  return (argv) => {
-    for (const aggregateOption of [...aggregateOptions.keys()].concat('envelope')) {
-      argv[aggregateOption] = argv[aggregateOption] === undefined ? true : argv[aggregateOption]
-    }
+  return (
+    /**
+     * @param {Record<string, boolean|undefined>} argv
+     */
+    (argv) => {
+      for (const aggregateOption of [...aggregateOptions.keys()].concat('envelope')) {
+        argv[aggregateOption] = argv[aggregateOption] === undefined ? true : argv[aggregateOption]
+      }
 
-    for (const [inAggregateOption, aggregateOption] of [...inAggregateOptions.entries()].concat([
-      ['before', 'envelope'],
-      ['after', 'envelope'],
-    ])) {
-      argv[inAggregateOption] =
-        argv[inAggregateOption] === undefined ? argv[aggregateOption] : argv[inAggregateOption]
-    }
+      for (const [inAggregateOption, aggregateOption] of [...inAggregateOptions.entries()].concat([
+        ['before', 'envelope'],
+        ['after', 'envelope'],
+      ])) {
+        argv[inAggregateOption] =
+          argv[inAggregateOption] === undefined ? argv[aggregateOption] : argv[inAggregateOption]
+      }
 
-    return argv
-  }
+      return argv
+    }
+  )
 }
 
 /**
  * @param {string} option
- * @param {'cwd'|'configpath'} cwd
+ * @param {'cwd' | 'configpath'} cwd
+ * @param {string} rootDirectory
  */
 function setupPackages(option, cwd, rootDirectory) {
   /**
    * @param {string} v
    */
   const isGlob = (v) => v.startsWith('.') || v.startsWith('/') || v.startsWith('!')
-  return async (argv) => {
+  return /**@param {Record<string, any>} argv*/ async (argv) => {
     if (argv[option] && argv[option].length > 0) {
       if (argv[option].length === 1 && argv[option][0] === false) return argv
 
@@ -219,13 +231,16 @@ function setupPackages(option, cwd, rootDirectory) {
         }
       }
 
-      argv[option] = paths.concat(argv[option].filter((v) => !isGlob(v)))
+      argv[option] = paths.concat(argv[option].filter(/**@param {string} v*/ (v) => !isGlob(v)))
     }
 
     return argv
   }
 }
 
+/**
+ * @param {{upto: any, configUpto?: string}} argv
+ */
 function supportDashUpto(argv) {
   const {upto} = argv
 
@@ -239,7 +254,7 @@ function supportDashUpto(argv) {
 
 /**
  * @param {string} option
- * @param {object} optionDefaults
+ * @param {any} optionDefaults
  * @param {Map<string, string[]>} aggregateOptions
  * @param {Map<string, string>} inAggregateOptions
  * @returns {[string, import('yargs').Options]}
@@ -249,7 +264,7 @@ function makeEnableOption(option, optionDefaults, aggregateOptions, inAggregateO
     option,
     {
       describe: aggregateOptions.has(option)
-        ? `aggregages the ${aggregateOptions.get(option).join(',')} options`
+        ? `aggregates the ${(aggregateOptions.get(option) || ['?']).join(',')} options`
         : `enables disables "${option}" when building`,
       group: 'Build options:',
       type: 'boolean',
@@ -267,7 +282,7 @@ function makeEnableOption(option, optionDefaults, aggregateOptions, inAggregateO
 
 /**
  * @param {string} option
- * @param {object} optionDefaults
+ * @param {any} optionDefaults
  * @returns {[string, import('yargs').Options]}
  */
 function makeParameterOption(option, optionDefaults) {
@@ -284,9 +299,9 @@ function makeParameterOption(option, optionDefaults) {
 }
 
 /**
- * @param {import('@bilt/build-with-configuration/src/types').BuildConfiguration[]} buildConfigurationChain
+ * @param {import('@bilt/build-with-configuration').BuildConfiguration[]} buildConfigurationChain
  * @param {string} requestedJobId
- * @returns {import('@bilt/build-with-configuration/src/types').Job}
+ * @returns {import('@bilt/build-with-configuration').Job}
  */
 function findJobConfigurationInChain(buildConfigurationChain, requestedJobId) {
   for (const buildConfiguration of buildConfigurationChain) {
@@ -298,5 +313,3 @@ function findJobConfigurationInChain(buildConfigurationChain, requestedJobId) {
   }
   throw new Error(`could not find job ${requestedJobId}`)
 }
-
-module.exports = main

@@ -1,14 +1,14 @@
-'use strict'
-const path = require('path')
-const {describe, it} = require('mocha')
-const {expect} = require('chai')
-const {readFileAsString, writeFile} = require('@bilt/scripting-commons')
-const {
+import {join} from 'path'
+import mocha from 'mocha'
+const {describe, it} = mocha
+import {expect} from 'chai'
+import {readFileAsString, writeFile} from '@bilt/scripting-commons'
+import {
   prepareGitAndNpm,
   runBuildCli,
   createAdepsBdepsCPackages,
   setNpmScript,
-} = require('../commons/setup-and-run')
+} from '../commons/setup-and-run.js'
 
 describe('applitools build (e2e)', function () {
   it(`build package in current directory, then build the rest`, async () => {
@@ -16,7 +16,7 @@ describe('applitools build (e2e)', function () {
     await createAdepsBdepsCPackages(cwd, registry)
     await writeFile('.biltrc.json', {packages: ['*']}, {cwd})
 
-    await runBuildCli(path.join(cwd, 'c'), 'build c in its own directory', ['.'], [])
+    await runBuildCli(join(cwd, 'c'), 'build c in its own directory', ['.'], [])
 
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('0')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('0')

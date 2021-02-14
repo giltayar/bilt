@@ -1,20 +1,35 @@
-'use strict'
-const path = require('path')
-const debug = require('debug')('bilt:cli:build')
-const throat = require('throat')
-const {findNpmPackages, findNpmPackageInfos} = require('@bilt/npm-packages')
-const {calculateBuildOrder, build} = require('@bilt/build')
-const {calculatePackagesToBuild} = require('@bilt/packages-to-build')
-const {executeJob} = require('@bilt/build-with-configuration')
-const {
+import {relative, resolve, join} from 'path'
+import debugMaker from 'debug'
+const debug = debugMaker('bilt:cli:build')
+import throat from 'throat'
+import {findNpmPackages, findNpmPackageInfos} from '@bilt/npm-packages'
+import {calculateBuildOrder, build} from '@bilt/build'
+import {calculatePackagesToBuild} from '@bilt/packages-to-build'
+import {executeJob} from '@bilt/build-with-configuration'
+import {
   findChangedFiles,
   findLatestPackageChanges,
   FAKE_COMMITISH_FOR_UNCOMMITED_FILES,
-} = require('@bilt/git-packages')
-const {shWithOutput} = require('@bilt/scripting-commons')
-const o = require('./outputting')
-const npmBiltin = require('./npm-biltin')
-const makeOptionsBiltin = require('./options-biltin')
+} from '@bilt/git-packages'
+import {shWithOutput} from '@bilt/scripting-commons'
+import {
+  globalFooter,
+  globalHeader,
+  globalOperation,
+  globalFailureFooter,
+  packageErrorFooter,
+  packageFooter,
+  packageHeader,
+  packageOperation,
+} from './outputting.js'
+import npmBiltin from './npm-biltin.js'
+import {makeOptionsBiltin} from './options-biltin.js'
+
+/**
+ * @typedef {import('@bilt/types').Package} Package
+ * @typedef {import('@bilt/types').PackageInfo} PackageInfo
+ * @typedef {import('@bilt/types').PackageInfos} PackageInfos
+ */
 
 /**@param {{
  * jobId: string,
@@ -26,11 +41,11 @@ const makeOptionsBiltin = require('./options-biltin')
  * dryRun: boolean
  * before: boolean|undefined
  * after: boolean|undefined
- * envelop: boolean|undefined
- * jobConfiguration: import('@bilt/build-with-configuration/src/types').Job
- * } & {[x: string]: string|boolean}} options
+ * envelope: boolean|undefined
+ * jobConfiguration: import('@bilt/build-with-configuration').Job
+ * } & {[x: string]: string|boolean|undefined}} options
  */
-async function buildCommand({
+export default async function buildCommand({
   rootDirectory,
   packagesToBuild,
   packages,
@@ -43,7 +58,6 @@ async function buildCommand({
   ...userBuildOptions
 }) {
   debug(`starting build of ${rootDirectory}`)
-  /**@type {typeof userBuildOptions} */
   const buildOptions = {
     ...userBuildOptions,
     message: userBuildOptions.message + '\n\n\n[bilt-with-bilt]',
@@ -63,7 +77,7 @@ async function buildCommand({
   const changedPackageInfos = await determineChangedPackagesBuildInformation(
     rootDirectory,
     packageInfos,
-    samePackages(uptoPackages, initialSetOfPackagesToBuild)
+    samePackages(uptoPackages || [], initialSetOfPackagesToBuild || [])
       ? initialSetOfPackagesToBuild
       : undefined,
     force,
@@ -72,12 +86,12 @@ async function buildCommand({
   const {packageInfosWithBuildTime: finalPackagesToBuild, warnings} = calculatePackagesToBuild({
     packageInfos: changedPackageInfos,
     basePackagesToBuild: initialSetOfPackagesToBuild,
-    buildUpTo: uptoPackages,
+    buildUpTo: uptoPackages || [],
   })
 
   if (warnings && warnings.length > 0) {
     if (warnings.includes('NO_LINKED_UPTO')) {
-      o.globalFooter(
+      globalFooter(
         `mothing to build because the none of the uptos is linked to any of the packages to build.
 Maybe you forgot to add an upto package?`,
       )
@@ -86,12 +100,12 @@ Maybe you forgot to add an upto package?`,
   }
 
   if (Object.keys(finalPackagesToBuild).length === 0) {
-    o.globalFooter('nothing to build')
+    globalFooter('nothing to build')
     return true
   }
 
   if (!dryRun) {
-    o.globalHeader(`building ${Object.keys(finalPackagesToBuild).join(', ')}`)
+    globalHeader(`building ${Object.keys(finalPackagesToBuild).join(', ')}`)
     if (before)
       for await (const stepInfo of executeJob(
         jobConfiguration,
@@ -100,10 +114,11 @@ Maybe you forgot to add an upto package?`,
         buildOptions,
         {directory: rootDirectory, biltin},
       )) {
-        o.globalOperation(stepInfo.name)
+        globalOperation(stepInfo.name)
       }
   }
 
+  /** @type {import("@bilt/types").RelativeDirectoryPath[]} */
   const packagesBuildOrder = []
   const {succesful, failed} = await buildPackages(
     finalPackagesToBuild,
@@ -130,12 +145,12 @@ Maybe you forgot to add an upto package?`,
         buildOptions,
         {directory: rootDirectory, biltin},
       )) {
-        o.globalOperation(stepInfo.name)
+        globalOperation(stepInfo.name)
       }
     }
   } finally {
     if (failed.length > 0) {
-      o.globalFailureFooter(
+      globalFailureFooter(
         `Some packages have failed to build`,
         failed.map((p) => packageInfos[p.directory]),
       )
@@ -144,6 +159,10 @@ Maybe you forgot to add an upto package?`,
   return failed.length === 0
 }
 
+/**
+ * @param {Package[]} packages1
+ * @param {Package[]} packages2
+ */
 function samePackages(packages1, packages2) {
   if (packages1.length !== packages2.length) {
     return false
@@ -158,8 +177,8 @@ function samePackages(packages1, packages2) {
 /**@returns {Promise<import('@bilt/packages-to-build').PackageInfosWithBuildTime>} */
 async function determineChangedPackagesBuildInformation(
   /**@type {import('@bilt/types').Directory} */ rootDirectory,
-  /**@type {import('@bilt/types').PackageInfos} */ packageInfos,
-  /**@type {import('@bilt/types').Package[]} */ checkOnlyThesePackages,
+  /**@type {PackageInfos} */ packageInfos,
+  /**@type {Package[] | undefined} */ checkOnlyThesePackages,
   /**@type {boolean} */ force,
 ) {
   const changedFilesInGit = await findChangedFiles({rootDirectory})
@@ -176,7 +195,7 @@ async function determineChangedPackagesBuildInformation(
 
 /**
  *
- * @param {import('@bilt/types').PackageInfos} packageInfos
+ * @param {PackageInfos} packageInfos
  * @returns {import('@bilt/packages-to-build').PackageInfosWithBuildTime}
  */
 function makeAllPackagesDirty(packageInfos) {
@@ -190,23 +209,23 @@ function makeAllPackagesDirty(packageInfos) {
 }
 
 /**@returns {Promise<{
- * succesful: import('@bilt/types').Package[],
- * failed: import('@bilt/types').Package[],
+ * succesful: Package[],
+ * failed: Package[],
  * }>} */
 async function buildPackages(
-  /**@type {import('@bilt/types').PackageInfos} */ packageInfosToBuild,
+  /**@type {PackageInfos} */ packageInfosToBuild,
   /**@type {import('@bilt/build').BuildPackageFunction} */ buildPackageFunc,
   /**@type {boolean}*/ dryRun,
 ) {
   const buildOrder = calculateBuildOrder({packageInfos: packageInfosToBuild})
 
-  const ret = {succesful: [], failed: [], built: []}
+  const ret = {
+    succesful: /**@type {Package[]}*/ ([]),
+    failed: /**@type {Package[]}*/ ([]),
+    built: /**@type {Package[]}*/ ([]),
+  }
   debug('starting build')
-  for await (const buildPackageResult of build({
-    packageInfos: packageInfosToBuild,
-    buildOrder,
-    buildPackageFunc,
-  })) {
+  for await (const buildPackageResult of build(packageInfosToBuild, buildOrder, buildPackageFunc)) {
     debug(
       `build of ${buildPackageResult.package.directory} ended. result: ${
         buildPackageResult.buildResult
@@ -214,7 +233,7 @@ async function buildPackages(
     )
     if (buildPackageResult.buildResult === 'failure') {
       ret.failed.push(buildPackageResult.package)
-      o.packageErrorFooter(
+      packageErrorFooter(
         'build package failed',
         packageInfosToBuild[buildPackageResult.package.directory],
         buildPackageResult.error,
@@ -222,7 +241,7 @@ async function buildPackages(
     } else if (buildPackageResult.buildResult === 'success') {
       ret.succesful.push(buildPackageResult.package)
       if (!dryRun) {
-        o.packageFooter(
+        packageFooter(
           'build package succeeded',
           packageInfosToBuild[buildPackageResult.package.directory],
         )
@@ -235,7 +254,7 @@ async function buildPackages(
 
 /**
  *
- * @param {import('@bilt/types').PackageInfos} packageInfos,
+ * @param {PackageInfos} packageInfos,
  * @param {import('@bilt/git-packages').PackageChange[]} packageChanges
  * @param {import('@bilt/types').Directory} rootDirectory
  * @returns {Promise<import('@bilt/packages-to-build').PackageInfosWithBuildTime>}
@@ -285,13 +304,14 @@ async function addLastBuildTimeToPackageInfos(packageInfos, packageChanges, root
 }
 
 /**
+ * @param {import('@bilt/types').Directory} rootDirectory
  * @param {string[]} packagesDirectories
  * @param {string[]} packagesToBuildDirectories
  * @param {string[]} uptoDirectoriesOrPackageNames
  * @returns {Promise<{
- * initialSetOfPackagesToBuild: import('@bilt/types').Package[]
- * uptoPackages: import('@bilt/types').Package[] | undefined
- * packageInfos: import('@bilt/types').PackageInfos
+ * initialSetOfPackagesToBuild: Package[]
+ * uptoPackages: Package[] | undefined
+ * packageInfos: PackageInfos
  * }>}
  */
 async function findInitialSetOfPackagesToBuild(
@@ -323,7 +343,7 @@ async function findInitialSetOfPackagesToBuild(
       ? Object.values(packageInfos).map((p) => ({
           directory: p.directory,
         }))
-      : convertUserPackagesToPackages(packagesToBuildDirectories, packageInfos, rootDirectory)
+      : convertUserPackagesToPackages(packagesToBuildDirectories, packageInfos, rootDirectory) || []
   const uptoPackages = convertUserPackagesToPackages(
     uptoDirectoriesOrPackageNames,
     packageInfos,
@@ -339,9 +359,9 @@ async function findInitialSetOfPackagesToBuild(
 
 /**
  * @param {string[]} directoriesOrPackageNames
- * @param {import('@bilt/types').PackageInfos} packageInfos
+ * @param {PackageInfos} packageInfos
  * @param {string} rootDirectory
- * @returns {import('@bilt/types').Package[]}
+ * @returns {Package[] | undefined}
  */
 function convertUserPackagesToPackages(directoriesOrPackageNames, packageInfos, rootDirectory) {
   return directoriesOrPackageNames == null
@@ -362,7 +382,7 @@ function convertUserPackagesToPackages(directoriesOrPackageNames, packageInfos, 
             }
           } else {
             return {
-              directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (path.relative(
+              directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (relative(
                 rootDirectory,
                 d,
               )),
@@ -383,6 +403,8 @@ function directoryIsActuallyPackageName(directory) {
  * @param {string[][]} directoryPackages
  */
 async function convertDirectoriesToPackages(rootDirectory, ...directoryPackages) {
+  /** @type {string[]} */
+  // @ts-expect-error
   const allDirectoryPackages = [].concat(...directoryPackages.filter((d) => !!d))
 
   const autoFoundPackages = allDirectoryPackages.some((d) => d === '*')
@@ -394,29 +416,26 @@ async function convertDirectoriesToPackages(rootDirectory, ...directoryPackages)
   const allDirectoryPackagesWithAutoFoundPackages = autoFoundPackages
     ? allDirectoryPackages
         .filter((d) => !directoryIsActuallyPackageName(d))
-        .concat(autoFoundPackages.map((p) => path.resolve(rootDirectory, p.directory)))
+        .concat(autoFoundPackages.map((p) => resolve(rootDirectory, p.directory)))
     : allDirectoryPackages.filter((d) => !directoryIsActuallyPackageName(d))
 
   return [...new Set(allDirectoryPackagesWithAutoFoundPackages)].map((d) => ({
-    directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (path.relative(
-      rootDirectory,
-      d,
-    )),
+    directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (relative(rootDirectory, d)),
   }))
 }
 
 /**@return {import('@bilt/build').BuildPackageFunction} */
 function makePackageBuild(
-  /**@type {import('@bilt/build-with-configuration/src/types').Job} */ jobConfiguration,
+  /**@type {import('@bilt/build-with-configuration').Job} */ jobConfiguration,
   /**@type {import('@bilt/types').Directory}*/ rootDirectory,
-  /**@type {{[x: string]: string|boolean}} */ buildOptions,
+  /**@type {{[x: string]: string|boolean | undefined}} */ buildOptions,
   /**@type {object} */ biltin,
 ) {
   /**@type import('@bilt/build').BuildPackageFunction */
   return async function ({packageInfo}) {
-    const packageDirectory = path.join(rootDirectory, packageInfo.directory)
+    const packageDirectory = join(rootDirectory, packageInfo.directory)
 
-    o.packageHeader('building', packageInfo)
+    packageHeader('building', packageInfo)
 
     for await (const stepInfo of executeJob(
       jobConfiguration,
@@ -425,11 +444,9 @@ function makePackageBuild(
       buildOptions,
       {directory: packageDirectory, biltin},
     )) {
-      o.packageOperation(stepInfo.name, packageInfo)
+      packageOperation(stepInfo.name, packageInfo)
     }
 
     return 'success'
   }
 }
-
-module.exports = buildCommand

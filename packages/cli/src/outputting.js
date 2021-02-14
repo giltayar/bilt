@@ -1,19 +1,18 @@
-'use strict'
-const chalk = require('chalk')
+import chalk from 'chalk'
 
 const outputFunction = console.error
 
 /**
  * @param {string} msg
  */
-function globalHeader(msg) {
+export function globalHeader(msg) {
   outputFunction(chalk.green(msg))
 }
 
 /**
  * @param {string} msg
  */
-function globalFooter(msg) {
+export function globalFooter(msg) {
   outputFunction(chalk.green(`* ${msg}`))
 }
 
@@ -21,7 +20,7 @@ function globalFooter(msg) {
  * @param {string} msg
  * @param {import('@bilt/types').PackageInfo[]} packageInfos
  */
-function globalFailureFooter(msg, packageInfos) {
+export function globalFailureFooter(msg, packageInfos) {
   console.log('\n')
   outputFunction(
     chalk.redBright.underline(`* ${msg}:`),
@@ -32,7 +31,7 @@ function globalFailureFooter(msg, packageInfos) {
 /**
  * @param {string} msg
  */
-function globalOperation(msg) {
+export function globalOperation(msg) {
   outputFunction(chalk.grey.underline(`** ${msg}`))
 }
 
@@ -40,7 +39,7 @@ function globalOperation(msg) {
  * @param {string} msg
  * @param {import('@bilt/types').PackageInfo} packageInfo
  */
-function packageHeader(msg, packageInfo) {
+export function packageHeader(msg, packageInfo) {
   outputFunction(chalk.greenBright.underline(`**** [${packageInfo.directory}] ${msg}`))
 }
 
@@ -48,7 +47,7 @@ function packageHeader(msg, packageInfo) {
  * @param {string} msg
  * @param {import('@bilt/types').PackageInfo} packageInfo
  */
-function packageFooter(msg, packageInfo) {
+export function packageFooter(msg, packageInfo) {
   outputFunction(chalk.green(`**** [${packageInfo.directory}] ${msg}`))
 }
 
@@ -58,7 +57,7 @@ function packageFooter(msg, packageInfo) {
  * @param {import('@bilt/types').PackageInfo} packageInfo
  * @param {any} _error
  */
-function packageErrorFooter(msg, packageInfo, _error) {
+export function packageErrorFooter(msg, packageInfo, _error) {
   console.log()
   outputFunction(chalk.red(`**** [${packageInfo.directory}] ${msg}`))
 }
@@ -67,17 +66,6 @@ function packageErrorFooter(msg, packageInfo, _error) {
  * @param {string} msg
  * @param {import('@bilt/types').PackageInfo} packageInfo
  */
-function packageOperation(msg, packageInfo) {
+export function packageOperation(msg, packageInfo) {
   outputFunction(chalk.grey.underline(`****** [${packageInfo.directory}] ${msg}`))
-}
-
-module.exports = {
-  globalHeader,
-  globalFooter,
-  globalFailureFooter,
-  globalOperation,
-  packageHeader,
-  packageFooter,
-  packageErrorFooter,
-  packageOperation,
 }

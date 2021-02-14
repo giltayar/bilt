@@ -1,16 +1,20 @@
-'use strict'
-const {describe, it} = require('mocha')
-const {expect} = require('chai')
-const {parse} = require('yaml')
-const {writeFile, readFileAsString} = require('@bilt/scripting-commons')
-const {
+import mocha from 'mocha'
+const {describe, it} = mocha
+import {expect} from 'chai'
+import jsYaml from 'js-yaml'
+const {load} = jsYaml
+import {writeFile, readFileAsString} from '@bilt/scripting-commons'
+import {
   prepareForSimpleBuild,
   runBuild,
   packageScriptCount,
   repoScriptCount,
-} = require('../commons/setup-and-run')
+} from '../commons/setup-and-run.js'
+import {fileURLToPath, URL} from 'url'
 
-describe('build-options (it)', function () {
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
+
+describe('build-options (integ)', function () {
   it('should use and allow overriding the values in .biltrc', async () => {
     const cwd = await prepareForSimpleBuild('simple-build.yaml', {
       jobDefaults: {build: {during1: false}},
@@ -74,7 +78,8 @@ describe('build-options (it)', function () {
   })
 
   it('should enable creating a "jobs" configuration in the config file', async () => {
-    const simpleBuildModified = parse(
+    /**@type {any} */
+    const simpleBuildModified = load(
       await readFileAsString(['../commons/simple-build.yaml'], {cwd: __dirname}),
     )
     simpleBuildModified.jobs.build.steps.before.push({

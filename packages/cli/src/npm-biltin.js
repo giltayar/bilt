@@ -1,7 +1,6 @@
-'use strict'
-const fs = require('fs')
-const path = require('path')
-const {npmNextVersion} = require('@bilt/npm-next-version')
+import {promises} from 'fs'
+import {join} from 'path'
+import {npmNextVersion} from '@bilt/npm-next-version'
 
 /**
  *
@@ -10,7 +9,7 @@ const {npmNextVersion} = require('@bilt/npm-next-version')
  */
 async function nextVersion(packageDirectory) {
   const packageJson = JSON.parse(
-    await fs.promises.readFile(path.join(packageDirectory, 'package.json'), 'utf8'),
+    await promises.readFile(join(packageDirectory, 'package.json'), 'utf8'),
   )
 
   const nextVersion = await npmNextVersion({...packageJson, packageDirectory})
@@ -18,7 +17,7 @@ async function nextVersion(packageDirectory) {
   return nextVersion
 }
 
-module.exports = {
+export default {
   npm: {
     nextVersion,
   },

@@ -1,8 +1,10 @@
-'use strict'
-const path = require('path')
-const yargs = require('yargs')
-const {cosmiconfig} = require('cosmiconfig')
+import {dirname} from 'path'
+import yargs from 'yargs'
+import {cosmiconfig} from 'cosmiconfig'
 
+/**
+ * @param {string[]} argv
+ */
 async function findConfig(argv) {
   const {config: configPath} = yargs(argv)
     .option('config', {
@@ -13,11 +15,14 @@ async function findConfig(argv) {
     .strict(false)
     .parse()
 
-  const {filepath, config} = configPath
+  const {
+    config,
+    filepath,
+  } = /**@type {NonNullable<import('cosmiconfig/dist/types').CosmiconfigResult>}*/ (configPath
     ? await cosmiconfig('bilt').load(configPath)
-    : await cosmiconfig('bilt').search()
+    : await cosmiconfig('bilt').search())
 
-  return {config, rootDirectory: path.dirname(filepath)}
+  return {config, rootDirectory: dirname(filepath)}
 }
 
-module.exports = findConfig
+export default findConfig
