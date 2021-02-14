@@ -24,7 +24,7 @@ jobs:
           # cat ~/.npmrc
           # cat .npmrc
           npm install -g @bilt/cli
-          bilt -m "build from CI" --no-before
+          bilt -f -m "build from CI" --no-before
         env:
           # This is necessary in order to push a commit to the repo
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
