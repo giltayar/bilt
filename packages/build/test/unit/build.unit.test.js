@@ -1,44 +1,44 @@
 import {inspect} from 'util'
-import {describe, it} from 'mocha'
+import mocha from 'mocha'
+const {describe, it} = mocha
 import {expect} from 'chai'
-import {PackageInfo, PackageInfos, RelativeDirectoryPath} from '@bilt/types'
 
-import {calculateBuildOrder, build, BuildPackageSuccessResult} from '../../src/build'
+import {calculateBuildOrder, build} from '../../src/build.js'
 
 inspect.defaultOptions.depth = 1000
 
 describe('build (unit)', function () {
-  const ePackage: PackageInfo = {
-    directory: 'edir' as RelativeDirectoryPath,
+  const ePackage = createPackageInfo({
+    directory: 'edir',
     name: 'epackage',
     dependencies: [],
-  }
-  const fPackage: PackageInfo = {
-    directory: 'fdir' as RelativeDirectoryPath,
+  })
+  const fPackage = createPackageInfo({
+    directory: 'fdir',
     name: 'fpackage',
     dependencies: [],
-  }
-  const cPackage: PackageInfo = {
-    directory: 'cdir' as RelativeDirectoryPath,
+  })
+  const cPackage = createPackageInfo({
+    directory: 'cdir',
     name: 'cpackage',
     dependencies: [ePackage],
-  }
-  const dPackage: PackageInfo = {
-    directory: 'ddir' as RelativeDirectoryPath,
+  })
+  const dPackage = createPackageInfo({
+    directory: 'ddir',
     name: 'dpackage',
     dependencies: [cPackage, ePackage],
-  }
-  const bPackage: PackageInfo = {
-    directory: 'packages/bdir' as RelativeDirectoryPath,
+  })
+  const bPackage = createPackageInfo({
+    directory: 'packages/bdir',
     name: 'bpackage',
     dependencies: [dPackage],
-  }
-  const aPackage: PackageInfo = {
-    directory: 'adir' as RelativeDirectoryPath,
+  })
+  const aPackage = createPackageInfo({
+    directory: 'adir',
     name: 'apackage',
     dependencies: [bPackage, cPackage],
-  }
-  const packageInfos: PackageInfos = {
+  })
+  const packageInfos = {
     [aPackage.directory]: aPackage,
     [bPackage.directory]: bPackage,
     [cPackage.directory]: cPackage,
@@ -50,13 +50,14 @@ describe('build (unit)', function () {
   it('should build in the correct order', async () => {
     const buildOrder = calculateBuildOrder({packageInfos})
 
-    const packagesBuilt: RelativeDirectoryPath[] = []
+    /**@type {import('@bilt/types').RelativeDirectoryPath[]} */
+    const packagesBuilt = []
 
-    async function buildPackageFunc({
-      packageInfo,
-    }: {
-      packageInfo: PackageInfo
-    }): Promise<BuildPackageSuccessResult> {
+    /**
+     * @param {{packageInfo: import('@bilt/types').PackageInfo}} options
+     * @returns {Promise<import('../../src/types.js').BuildPackageSuccessResult>}
+     */
+    async function buildPackageFunc({packageInfo}) {
       expect(packageInfo).to.eql(packageInfos[packageInfo.directory])
 
       packagesBuilt.push(packageInfo.directory)
@@ -64,7 +65,7 @@ describe('build (unit)', function () {
       return 'success'
     }
 
-    for await (const buildResult of build({packageInfos, buildOrder, buildPackageFunc})) {
+    for await (const buildResult of build(packageInfos, buildOrder, buildPackageFunc)) {
       expect(buildResult).to.eql({
         package: {directory: packagesBuilt[packagesBuilt.length - 1]},
         buildResult: 'success',
@@ -75,34 +76,34 @@ describe('build (unit)', function () {
   })
 
   it('should build in the correct order even if dependencies includes a package not in packageInfos', async () => {
-    const cPackage: PackageInfo = {
-      directory: 'packages/cdir' as RelativeDirectoryPath,
+    const cPackage = createPackageInfo({
+      directory: 'packages/cdir',
       name: 'cpackage',
       dependencies: [],
-    }
-    const bPackage: PackageInfo = {
-      directory: 'packages/bdir' as RelativeDirectoryPath,
+    })
+    const bPackage = createPackageInfo({
+      directory: 'packages/bdir',
       name: 'bpackage',
       dependencies: [cPackage],
-    }
-    const aPackage: PackageInfo = {
-      directory: 'adir' as RelativeDirectoryPath,
+    })
+    const aPackage = createPackageInfo({
+      directory: 'adir',
       name: 'apackage',
       dependencies: [bPackage],
-    }
-    const packageInfos: PackageInfos = {
+    })
+    const packageInfos = {
       [aPackage.directory]: aPackage,
       [bPackage.directory]: bPackage,
     }
 
     const buildOrder = calculateBuildOrder({packageInfos})
-    const packagesBuilt: RelativeDirectoryPath[] = []
+    const packagesBuilt = /**@type {import('@bilt/types').RelativeDirectoryPath[]}*/ ([])
 
-    async function buildPackageFunc({
-      packageInfo,
-    }: {
-      packageInfo: PackageInfo
-    }): Promise<BuildPackageSuccessResult> {
+    /**
+     * @param {{packageInfo: import('@bilt/types').PackageInfo}} options
+     * @returns {Promise<import('../../src/types.js').BuildPackageSuccessResult>}
+     */
+    async function buildPackageFunc({packageInfo}) {
       expect(packageInfo).to.eql(packageInfos[packageInfo.directory])
 
       packagesBuilt.push(packageInfo.directory)
@@ -110,7 +111,7 @@ describe('build (unit)', function () {
       return 'success'
     }
 
-    for await (const buildResult of build({packageInfos, buildOrder, buildPackageFunc})) {
+    for await (const buildResult of build(packageInfos, buildOrder, buildPackageFunc)) {
       expect(buildResult).to.eql({
         package: {directory: packagesBuilt[packagesBuilt.length - 1]},
         buildResult: 'success',
@@ -123,13 +124,13 @@ describe('build (unit)', function () {
   it('should fail to build correctly', async () => {
     const buildOrder = calculateBuildOrder({packageInfos})
 
-    const packagesBuilt: RelativeDirectoryPath[] = []
+    const packagesBuilt = /**@type {import('@bilt/types').RelativeDirectoryPath[]}*/ ([])
 
-    async function buildPackageFunc({
-      packageInfo,
-    }: {
-      packageInfo: PackageInfo
-    }): Promise<BuildPackageSuccessResult> {
+    /**
+     * @param {{packageInfo: import('@bilt/types').PackageInfo}} options
+     * @returns {Promise<import('../../src/types.js').BuildPackageSuccessResult>}
+     */
+    async function buildPackageFunc({packageInfo}) {
       packagesBuilt.push(packageInfo.directory)
 
       return packageInfo.name === 'cpackage' ? 'failure' : 'success'
@@ -138,7 +139,7 @@ describe('build (unit)', function () {
     let countFailures = 0
     let countSuccesses = 0
     let countNotBuilt = 0
-    for await (const buildResult of build({packageInfos, buildOrder, buildPackageFunc})) {
+    for await (const buildResult of build(packageInfos, buildOrder, buildPackageFunc)) {
       const shouldBeSuccesful = ['edir', 'fdir'].includes(buildResult.package.directory)
       const shouldFail = ['cdir'].includes(buildResult.package.directory)
 
@@ -160,3 +161,19 @@ describe('build (unit)', function () {
     expect(countNotBuilt).to.eql(3)
   })
 })
+
+/**
+ * @param {{
+ *  directory: string
+ *  name: string
+ *  dependencies: import('@bilt/types').Package[]
+ * }} pi
+ * @returns {import('@bilt/types').PackageInfo}
+ */
+function createPackageInfo(pi) {
+  return {
+    directory: /**@type {import('@bilt/types').RelativeDirectoryPath}*/ (pi.directory),
+    name: pi.name,
+    dependencies: pi.dependencies,
+  }
+}

@@ -1,44 +1,44 @@
 import {inspect} from 'util'
-import {describe, it} from 'mocha'
+import mocha from 'mocha'
+const {describe, it} = mocha
 import {expect} from 'chai'
-import {PackageInfo, PackageInfos, RelativeDirectoryPath} from '@bilt/types'
 
-import {calculateBuildOrder, Build} from '../../src/build'
+import {calculateBuildOrder} from '../../src/build.js'
 
 inspect.defaultOptions.depth = 1000
 
 describe('calculateBuildOrder (unit)', function () {
-  const ePackage: PackageInfo = {
-    directory: 'edir' as RelativeDirectoryPath,
+  const ePackage = createPackageInfo({
+    directory: 'edir',
     name: 'epackage',
     dependencies: [],
-  }
-  const fPackage: PackageInfo = {
-    directory: 'fdir' as RelativeDirectoryPath,
+  })
+  const fPackage = createPackageInfo({
+    directory: 'fdir',
     name: 'fpackage',
     dependencies: [],
-  }
-  const cPackage: PackageInfo = {
-    directory: 'cdir' as RelativeDirectoryPath,
+  })
+  const cPackage = createPackageInfo({
+    directory: 'cdir',
     name: 'cpackage',
     dependencies: [ePackage],
-  }
-  const dPackage: PackageInfo = {
-    directory: 'ddir' as RelativeDirectoryPath,
+  })
+  const dPackage = createPackageInfo({
+    directory: 'ddir',
     name: 'dpackage',
     dependencies: [cPackage, ePackage],
-  }
-  const bPackage: PackageInfo = {
-    directory: 'packages/bdir' as RelativeDirectoryPath,
+  })
+  const bPackage = createPackageInfo({
+    directory: 'packages/bdir',
     name: 'bpackage',
     dependencies: [dPackage],
-  }
-  const aPackage: PackageInfo = {
-    directory: 'adir' as RelativeDirectoryPath,
+  })
+  const aPackage = createPackageInfo({
+    directory: 'adir',
     name: 'apackage',
     dependencies: [bPackage, cPackage],
-  }
-  const packageInfos: PackageInfos = {
+  })
+  const packageInfos = {
     [aPackage.directory]: aPackage,
     [bPackage.directory]: bPackage,
     [cPackage.directory]: cPackage,
@@ -48,7 +48,7 @@ describe('calculateBuildOrder (unit)', function () {
   }
 
   it('should create the correct build order for the above packageInfos', () => {
-    const aBuild: Build = {packageToBuild: aPackage, buildOrderAfter: []}
+    const aBuild = {packageToBuild: aPackage, buildOrderAfter: []}
     const dBuild = {
       packageToBuild: dPackage,
       buildOrderAfter: [
@@ -76,26 +76,26 @@ describe('calculateBuildOrder (unit)', function () {
         packageToBuild: fPackage,
         buildOrderAfter: [],
       },
-    ] as ReturnType<typeof calculateBuildOrder>)
+    ])
   })
 
   it('should calculate correct build order even if dependencies includes a package not in packageInfos', () => {
-    const cPackage: PackageInfo = {
-      directory: 'packages/cdir' as RelativeDirectoryPath,
+    const cPackage = createPackageInfo({
+      directory: 'packages/cdir',
       name: 'cpackage',
       dependencies: [],
-    }
-    const bPackage: PackageInfo = {
-      directory: 'packages/bdir' as RelativeDirectoryPath,
+    })
+    const bPackage = createPackageInfo({
+      directory: 'packages/bdir',
       name: 'bpackage',
       dependencies: [cPackage],
-    }
-    const aPackage: PackageInfo = {
-      directory: 'adir' as RelativeDirectoryPath,
+    })
+    const aPackage = createPackageInfo({
+      directory: 'adir',
       name: 'apackage',
       dependencies: [bPackage],
-    }
-    const packageInfos: PackageInfos = {
+    })
+    const packageInfos = {
       [aPackage.directory]: aPackage,
       [bPackage.directory]: bPackage,
     }
@@ -112,6 +112,22 @@ describe('calculateBuildOrder (unit)', function () {
           },
         ],
       },
-    ] as ReturnType<typeof calculateBuildOrder>)
+    ])
   })
 })
+
+/**
+ * @param {{
+ *  directory: string
+ *  name: string
+ *  dependencies: import('@bilt/types').Package[]
+ * }} pi
+ * @returns {import('@bilt/types').PackageInfo}
+ */
+function createPackageInfo(pi) {
+  return {
+    directory: /**@type {import('@bilt/types').RelativeDirectoryPath}*/ (pi.directory),
+    name: pi.name,
+    dependencies: pi.dependencies,
+  }
+}
