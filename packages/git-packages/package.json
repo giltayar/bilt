@@ -1,6 +1,6 @@
 {
   "name": "@bilt/git-packages",
-  "version": "9.0.3",
+  "version": "9.0.4",
   "description": "",
   "type": "module",
   "main": "src/git-packages.js",
@@ -44,7 +44,7 @@
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
     "@babel/plugin-syntax-top-level-await": "^7.12.13",
-    "@bilt/git-testkit": "^2.0.0",
+    "@bilt/git-testkit": "^2.0.2",
     "@types/chai": "^4.2.15",
     "@types/mocha": "^8.2.0",
     "@types/node": "^14.14.26",

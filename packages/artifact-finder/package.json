@@ -1,6 +1,6 @@
 {
   "name": "@bilt/artifact-finder",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "",
   "type": "module",
   "exports": "./src/artifact-finder.js",
@@ -40,7 +40,7 @@
     "directory": "packages/artifact-finder"
   },
   "dependencies": {
-    "@bilt/scripting-commons": "^2.0.2",
+    "@bilt/scripting-commons": "^2.0.4",
     "debug": "^4.3.1",
     "ignore": "^4.0.6",
     "js-yaml": "^3.14.1",

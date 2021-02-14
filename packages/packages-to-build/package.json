@@ -1,6 +1,6 @@
 {
   "name": "@bilt/packages-to-build",
-  "version": "9.0.2",
+  "version": "9.0.3",
   "description": "",
   "type": "module",
   "main": "src/packages-to-build.js",
@@ -37,7 +37,7 @@
     "directory": "packages/packages-to-build"
   },
   "dependencies": {
-    "@bilt/types": "^3.0.0",
+    "@bilt/types": "^3.0.2",
     "debug": "^4.3.1",
     "graphlib": "^2.1.8"
   },
@@ -45,7 +45,7 @@
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
     "@babel/plugin-syntax-top-level-await": "^7.12.13",
-    "@bilt/git-testkit": "^2.0.0",
+    "@bilt/git-testkit": "^2.0.2",
     "@types/chai": "^4.2.15",
     "@types/debug": "^4.1.5",
     "@types/graphlib": "^2.1.7",
