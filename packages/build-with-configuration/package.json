@@ -1,6 +1,6 @@
 {
   "name": "@bilt/build-with-configuration",
-  "version": "9.0.2",
+  "version": "9.0.3",
   "description": "",
   "type": "module",
   "main": "lib/src/build-with-configuration.js",

@@ -1,7 +1,12 @@
 import {executeStep, stepInfo, validateStep} from './execute-step.js'
 
 /**
- * @param {import('./types').Job} jobConfiguration
+ * @typedef {import('./types').Job} Job
+ * @typedef {import('./types').BuildConfiguration} BuildWithConfiguration
+ */
+
+/**
+ * @param {Job} jobConfiguration
  * @param {'before'|'during'|'after'} phase
  * @param {string} directoryToExecuteIn
  * @param {{[x: string]: boolean|string}} buildOptions
@@ -26,7 +31,7 @@ export async function* executeJob(
 }
 
 /**
- * @param {import('./types').BuildConfiguration} buildConfiguration
+ * @param {BuildWithConfiguration} buildConfiguration
  * @param {string} jobId
  * @returns {{
  * enableOptions: string[]
