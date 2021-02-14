@@ -1,10 +1,10 @@
 {
   "name": "@bilt/npm-packages",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "",
   "type": "module",
-  "main": "lib/src/npm-packages.js",
-  "export": "./lib/src/npm-packages.js",
+  "main": "src/npm-packages.js",
+  "export": "./src/npm-packages.js",
   "types": "types/src/npm-packages.d.ts",
   "engines": {
     "node": ">=12.3.0"

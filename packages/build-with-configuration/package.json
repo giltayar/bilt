@@ -1,10 +1,10 @@
 {
   "name": "@bilt/build-with-configuration",
-  "version": "9.0.4",
+  "version": "9.0.5",
   "description": "",
   "type": "module",
-  "main": "lib/src/build-with-configuration.js",
-  "export": "./lib/src/build-with-configuration.js",
+  "main": "src/build-with-configuration.js",
+  "export": "./src/build-with-configuration.js",
   "types": "types/src/build-with-configuration.d.ts",
   "engines": {
     "node": ">=12.3.0"
