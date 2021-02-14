@@ -2,7 +2,7 @@ import {executeStep, stepInfo, validateStep} from './execute-step.js'
 
 /**
  * @typedef {import('./types').Job} Job
- * @typedef {import('./types').BuildConfiguration} BuildWithConfiguration
+ * @typedef {import('./types').BuildConfiguration} BuildConfiguration
  */
 
 /**
@@ -31,7 +31,7 @@ export async function* executeJob(
 }
 
 /**
- * @param {BuildWithConfiguration} buildConfiguration
+ * @param {BuildConfiguration} buildConfiguration
  * @param {string} jobId
  * @returns {{
  * enableOptions: string[]
