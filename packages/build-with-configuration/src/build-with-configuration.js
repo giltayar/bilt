@@ -9,7 +9,7 @@ import {executeStep, stepInfo, validateStep} from './execute-step.js'
  * @param {Job} jobConfiguration
  * @param {'before'|'during'|'after'} phase
  * @param {string} directoryToExecuteIn
- * @param {{[x: string]: boolean|string}} buildOptions
+ * @param {{[x: string]: boolean|string|undefined}} buildOptions
  * @param {{[x: string]: any}} javascriptOptionsParameter
  * @returns {AsyncGenerator<import('./execute-step').StepInfo, void, void>}
  */
@@ -93,7 +93,7 @@ export function jobInfo(buildConfiguration, jobId) {
 /**
  * @param {import('./types').Steps | undefined} steps
  * @param {string} directoryToExecuteIn
- * @param {Record<string, boolean|string>} buildOptions
+ * @param {Record<string, boolean|string|undefined>} buildOptions
  * @param {Record<string, any>} javascriptOptionsParameter
  * @returns {AsyncGenerator<import('./execute-step').StepInfo>}
  */
@@ -113,7 +113,7 @@ async function* executePhase(
 
 /**
  * @param {string[]} enableOptions
- * @param {Record<string, boolean|string>} buildOptions
+ * @param {Record<string, boolean|string|undefined>} buildOptions
  */
 function isStepEnabled(enableOptions, buildOptions) {
   if (!enableOptions || enableOptions.length === 0) return true

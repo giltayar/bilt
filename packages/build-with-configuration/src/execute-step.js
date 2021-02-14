@@ -27,7 +27,7 @@ export function stepInfo(step) {
 /**
  * @param {import('./types').Step} step
  * @param {string} cwd
- * @param {Record<string, boolean|string>} buildOptions
+ * @param {Record<string, boolean|string|undefined>} buildOptions
  * @param {Record<string, any>} javascriptOptionsParameter
  * @returns {Promise<void>}
  */
