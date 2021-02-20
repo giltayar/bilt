@@ -47,7 +47,7 @@ export async function executeStep(step, cwd, buildOptions, javascriptOptionsPara
  * @param {{[x: string]: any}} javascriptOptionsParameter
  * @returns {Promise<boolean>}
  */
-async function executeCondition(condition, javascriptOptionsParameter) {
+export async function executeCondition(condition, javascriptOptionsParameter) {
   if (condition == null) {
     return true
   }
@@ -62,7 +62,14 @@ async function executeCondition(condition, javascriptOptionsParameter) {
  * @param {{[x: string]: any}} javascriptOptionsParameter
  * @param {any} buildOptions
  */
-async function executeCommand(name, command, env, cwd, buildOptions, javascriptOptionsParameter) {
+export async function executeCommand(
+  name,
+  command,
+  env,
+  cwd,
+  buildOptions,
+  javascriptOptionsParameter,
+) {
   if (!command) throw new Error(`Step ${name} must have a command`)
 
   const envVars = envVarsFromBuildOptions(buildOptions)

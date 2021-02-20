@@ -1,4 +1,10 @@
-import {executeStep, stepInfo, validateStep} from './execute-step.js'
+import {
+  executeCommand,
+  executeCondition,
+  executeStep,
+  stepInfo,
+  validateStep,
+} from './execute-step.js'
 
 /**
  * @typedef {import('./types').Job} Job
@@ -109,6 +115,45 @@ async function* executePhase(
       await executeStep(step, directoryToExecuteIn, buildOptions, javascriptOptionsParameter)
     }
   }
+}
+
+/**
+ * @typedef {{
+ *  info: () => import('./execute-step.js').StepInfo
+ *  isEnabled: () => boolean
+ *  shouldSkip: () => Promise<boolean>
+ *  execute: () => Promise<void>
+}} StepExecution
+ */
+
+/**
+ * @param {import('./types').Steps | undefined} steps
+ * @param {string} directoryToExecuteIn
+ * @param {Record<string, boolean|string|undefined>} buildOptions
+ * @param {Record<string, any>} javascriptOptionsParameter
+ * @returns {StepExecution[]}
+ */
+export function getPhaseExecution(
+  steps,
+  directoryToExecuteIn,
+  buildOptions,
+  javascriptOptionsParameter,
+) {
+  return (steps || []).map((step) => ({
+    info: () => stepInfo(step),
+    isEnabled: () => isStepEnabled(stepInfo(step).enableOptions, buildOptions),
+    shouldSkip: async () => executeCondition(step.condition, javascriptOptionsParameter),
+
+    execute: async () =>
+      executeCommand(
+        step.name,
+        step.run,
+        step.env,
+        directoryToExecuteIn,
+        buildOptions,
+        javascriptOptionsParameter,
+      ),
+  }))
 }
 
 /**
