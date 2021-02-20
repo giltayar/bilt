@@ -59,9 +59,15 @@ describe('build-with-configuration (unit)', function () {
             name: 'name1',
             enableOptions: ['name1opt', 'git'],
             parameterOptions: [],
+            command: 'run1',
           })
         } else {
-          expect(stepInfo).to.eql({name: 'name2', enableOptions: [], parameterOptions: ['message']})
+          expect(stepInfo).to.eql({
+            name: 'name2',
+            command: 'run2',
+            enableOptions: [],
+            parameterOptions: ['message'],
+          })
         }
       }
 

@@ -1,5 +1,6 @@
 import {
   executeCommand,
+  executeCommandToChildProcess,
   executeCondition,
   executeStep,
   stepInfo,
@@ -123,6 +124,7 @@ async function* executePhase(
  *  isEnabled: () => boolean
  *  shouldSkip: () => Promise<boolean>
  *  execute: () => Promise<void>
+ *  executeToChildProcess: () => Promise<import('child_process').ChildProcessByStdio<null, import('stream').Readable, import('stream').Readable>>
 }} StepExecution
  */
 
@@ -143,9 +145,17 @@ export function getPhaseExecution(
     info: () => stepInfo(step),
     isEnabled: () => isStepEnabled(stepInfo(step).enableOptions, buildOptions),
     shouldSkip: async () => executeCondition(step.condition, javascriptOptionsParameter),
-
     execute: async () =>
       executeCommand(
+        step.name,
+        step.run,
+        step.env,
+        directoryToExecuteIn,
+        buildOptions,
+        javascriptOptionsParameter,
+      ),
+    executeToChildProcess: async () =>
+      executeCommandToChildProcess(
         step.name,
         step.run,
         step.env,

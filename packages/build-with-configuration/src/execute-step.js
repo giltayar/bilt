@@ -1,4 +1,5 @@
 import module from 'module'
+import {spawn} from 'child_process'
 import {createContext, compileFunction} from 'vm'
 import {constantCase} from 'constant-case'
 import {sh} from '@bilt/scripting-commons'
@@ -6,9 +7,10 @@ import {arrayify} from './arrayify.js'
 
 /**
  * @typedef {{
-    name: string;
-    enableOptions: string[];
-    parameterOptions: string[];
+    name: string
+    enableOptions: string[]
+    parameterOptions: string[]
+    command: string
 }} StepInfo
  */
 
@@ -21,6 +23,7 @@ export function stepInfo(step) {
     name: step.name,
     enableOptions: arrayify(step.enableOption),
     parameterOptions: arrayify(step.parameterOption),
+    command: step.run,
   }
 }
 
@@ -83,6 +86,43 @@ export async function executeCommand(
   }
 
   await sh(command, {env: {...process.env, ...envVars}, cwd})
+}
+
+/**
+ * @param {string} name
+ * @param {string} command
+ * @param {import('./types').EnvVars | undefined} env
+ * @param {string} cwd
+ * @param {{[x: string]: any}} javascriptOptionsParameter
+ * @param {any} buildOptions
+ * @returns {Promise<import('child_process').ChildProcessByStdio<null, import('stream').Readable, import('stream').Readable>>}
+ */
+export async function executeCommandToChildProcess(
+  name,
+  command,
+  env,
+  cwd,
+  buildOptions,
+  javascriptOptionsParameter,
+) {
+  if (!command) throw new Error(`Step ${name} must have a command`)
+
+  const envVars = envVarsFromBuildOptions(buildOptions)
+  if (env) {
+    if (typeof env !== 'object')
+      throw new Error(`Step ${name} has an "env", but it is not an object`)
+
+    for (const [envVar, value] of Object.entries(env)) {
+      envVars[envVar] = String(await executeFunction(value, javascriptOptionsParameter))
+    }
+  }
+
+  return spawn(command, {
+    env: {...process.env, ...envVars},
+    cwd,
+    shell: true,
+    stdio: ['inherit', 'pipe', 'pipe'],
+  })
 }
 
 const contextWithRequire = createContext({require: module.createRequire(import.meta.url), console})

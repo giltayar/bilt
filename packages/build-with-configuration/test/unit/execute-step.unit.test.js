@@ -123,7 +123,12 @@ describe('execute-step (unit)', function () {
       const step = {name: 'hi', run: 'run1'}
 
       es.validateStep(step, 1, 'before', 'build', 'configpath')
-      expect(es.stepInfo(step)).to.eql({name: 'hi', enableOptions: [], parameterOptions: []})
+      expect(es.stepInfo(step)).to.eql({
+        name: 'hi',
+        command: 'run1',
+        enableOptions: [],
+        parameterOptions: [],
+      })
     })
 
     it('should return stepInfo for a step with simple enable and parameter', () => {
@@ -132,6 +137,7 @@ describe('execute-step (unit)', function () {
       es.validateStep(step, 1, 'before', 'build', 'configpath')
       expect(es.stepInfo(step)).to.eql({
         name: 'hi',
+        command: 'run1',
         enableOptions: ['foo'],
         parameterOptions: ['bar'],
       })
@@ -148,6 +154,7 @@ describe('execute-step (unit)', function () {
       es.validateStep(step, 1, 'before', 'build', 'configpath')
       expect(es.stepInfo(step)).to.eql({
         name: 'hi',
+        command: 'run1',
         enableOptions: ['foo', 'foo2'],
         parameterOptions: ['bar', 'bar2'],
       })

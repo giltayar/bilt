@@ -53,11 +53,12 @@ describe('get-phase-execution (unit)', function () {
     expect(phaseExecution.map((pe) => pe.info())).to.eql([
       {
         name: 'name1',
+        command: 'run1',
         enableOptions: ['name1opt', 'git'],
         parameterOptions: [],
       },
-      {name: 'name2', enableOptions: [], parameterOptions: ['message']},
-      {name: 'name3', enableOptions: [], parameterOptions: []},
+      {name: 'name2', enableOptions: [], command: 'run2', parameterOptions: ['message']},
+      {name: 'name3', enableOptions: [], command: 'never-executed', parameterOptions: []},
     ])
     expect(await phaseExecution[0].shouldSkip()).to.equal(true)
     expect(await phaseExecution[1].shouldSkip()).to.equal(true)
