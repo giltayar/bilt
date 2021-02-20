@@ -1,6 +1,6 @@
 {
   "name": "@bilt/npm-next-version",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "",
   "type": "module",
   "exports": "./src/npm-next-version.js",
@@ -40,16 +40,16 @@
     "directory": "packages/npm-next-version"
   },
   "dependencies": {
-    "@bilt/scripting-commons": "^2.0.4",
+    "@bilt/scripting-commons": "^2.0.5",
     "debug": "^4.3.1"
   },
   "devDependencies": {
     "@babel/plugin-syntax-top-level-await": "^7.12.13",
-    "@bilt/npm-testkit": "^2.0.0",
+    "@bilt/npm-testkit": "^2.0.3",
     "@types/chai": "^4.2.15",
     "@types/chai-as-promised": "^7.1.3",
-    "@types/mocha": "^8.2.0",
-    "@types/node": "^14.14.26",
+    "@types/mocha": "^8.2.1",
+    "@types/node": "^14.14.31",
     "chai": "^4.3.0",
     "chai-as-promised": "^7.1.1",
     "concurrently": "^5.3.0",
