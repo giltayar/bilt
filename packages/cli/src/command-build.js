@@ -5,7 +5,7 @@ import throat from 'throat'
 import {findNpmPackages, findNpmPackageInfos} from '@bilt/npm-packages'
 import {calculateBuildOrder, build} from '@bilt/build'
 import {calculatePackagesToBuild} from '@bilt/packages-to-build'
-import {executeJob} from '@bilt/build-with-configuration'
+import {getPhaseExecution} from '@bilt/build-with-configuration'
 import {
   findChangedFiles,
   findLatestPackageChanges,
@@ -106,16 +106,11 @@ Maybe you forgot to add an upto package?`,
 
   if (!dryRun) {
     globalHeader(`building ${Object.keys(finalPackagesToBuild).join(', ')}`)
-    if (before)
-      for await (const stepInfo of executeJob(
-        jobConfiguration,
-        'before',
-        rootDirectory,
-        buildOptions,
-        {directory: rootDirectory, biltin},
-      )) {
-        globalOperation(stepInfo.name)
-      }
+    if (before) {
+      await executePhase(jobConfiguration, 'before', rootDirectory, buildOptions, biltin, (se) =>
+        globalOperation(se.info().name),
+      )
+    }
   }
 
   /** @type {import("@bilt/types").RelativeDirectoryPath[]} */
@@ -138,15 +133,9 @@ Maybe you forgot to add an upto package?`,
 
   try {
     if (succesful.length > 0 && after) {
-      for await (const stepInfo of executeJob(
-        jobConfiguration,
-        'after',
-        rootDirectory,
-        buildOptions,
-        {directory: rootDirectory, biltin},
-      )) {
-        globalOperation(stepInfo.name)
-      }
+      await executePhase(jobConfiguration, 'after', rootDirectory, buildOptions, biltin, (se) =>
+        globalOperation(se.info().name),
+      )
     }
   } finally {
     if (failed.length > 0) {
@@ -433,20 +422,47 @@ function makePackageBuild(
 ) {
   /**@type import('@bilt/build').BuildPackageFunction */
   return async function ({packageInfo}) {
-    const packageDirectory = join(rootDirectory, packageInfo.directory)
+    const packageDirectory = /**@type {import('@bilt/types').Directory}*/ (join(
+      rootDirectory,
+      packageInfo.directory,
+    ))
 
     packageHeader('building', packageInfo)
-
-    for await (const stepInfo of executeJob(
-      jobConfiguration,
-      'during',
-      packageDirectory,
-      buildOptions,
-      {directory: packageDirectory, biltin},
-    )) {
-      packageOperation(stepInfo.name, packageInfo)
-    }
+    await executePhase(jobConfiguration, 'during', packageDirectory, buildOptions, biltin, (se) =>
+      packageOperation(se.info().name, packageInfo),
+    )
 
     return 'success'
+  }
+}
+
+/**
+ * @param {import('@bilt/build-with-configuration').Job} jobConfiguration
+ * @param {'during' | 'before' | 'after'} phase
+ * @param {import('@bilt/types').Directory} packageDirectory
+ * @param {Record<string, string | boolean | undefined>} buildOptions
+ * @param {object} biltin
+ * @param {(se: import('@bilt/build-with-configuration').StepExecution) => void} logExecution
+ */
+async function executePhase(
+  jobConfiguration,
+  phase,
+  packageDirectory,
+  buildOptions,
+  biltin,
+  logExecution,
+) {
+  const stepExecutions = getPhaseExecution(
+    jobConfiguration.steps[phase],
+    packageDirectory,
+    buildOptions,
+    {directory: packageDirectory, biltin},
+  )
+
+  for (const stepExecution of stepExecutions.filter((se) => se.isEnabled())) {
+    if (await stepExecution.shouldSkip()) {
+      await stepExecution.execute()
+    }
+    logExecution(stepExecution)
   }
 }

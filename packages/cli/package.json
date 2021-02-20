@@ -1,6 +1,6 @@
 {
   "name": "@bilt/cli",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "",
   "type": "module",
   "main": "src/cli.js",
@@ -62,7 +62,7 @@
     "eslint-plugin-mocha-no-only": "^1.1.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.3.1",
-    "js-yaml": "^3.14.1",
+    "js-yaml": "^4.0.0",
     "mocha": "^8.3.0",
     "prettier": "^2.2.1",
     "typescript": "^4.1.5"
