@@ -11,7 +11,7 @@ import {
   findLatestPackageChanges,
   FAKE_COMMITISH_FOR_UNCOMMITED_FILES,
 } from '@bilt/git-packages'
-import {shWithOutput} from '@bilt/scripting-commons'
+import {shWithOutput, childProcessWait} from '@bilt/scripting-commons'
 import {
   globalFooter,
   globalHeader,
@@ -461,7 +461,10 @@ async function executePhase(
 
   for (const stepExecution of stepExecutions.filter((se) => se.isEnabled())) {
     if (await stepExecution.shouldSkip()) {
-      await stepExecution.execute()
+      const childProcess = await stepExecution.executeToChildProcess()
+      childProcess.stdout.pipe(process.stdout)
+      childProcess.stderr.pipe(process.stderr)
+      await childProcessWait(childProcess, stepExecution.info().command)
     }
     logExecution(stepExecution)
   }
