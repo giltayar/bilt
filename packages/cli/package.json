@@ -1,6 +1,6 @@
 {
   "name": "@bilt/cli",
-  "version": "4.0.4",
+  "version": "4.0.5",
   "description": "",
   "type": "module",
   "main": "src/cli.js",
@@ -69,11 +69,11 @@
   },
   "dependencies": {
     "@bilt/build": "^10.0.2",
-    "@bilt/build-with-configuration": "^9.1.1",
+    "@bilt/build-with-configuration": "^9.3.0",
     "@bilt/git-packages": "^9.0.5",
     "@bilt/git-testkit": "^2.0.3",
-    "@bilt/npm-next-version": "^3.0.2",
-    "@bilt/npm-packages": "^2.0.3",
+    "@bilt/npm-next-version": "^3.0.3",
+    "@bilt/npm-packages": "^2.0.4",
     "@bilt/npm-testkit": "^2.0.3",
     "@bilt/packages-to-build": "^9.0.4",
     "@bilt/scripting-commons": "^2.0.5",
