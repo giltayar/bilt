@@ -14,10 +14,21 @@ import {spawn, exec} from 'child_process'
  */
 export async function sh(command, {cwd, env}) {
   const childProcess = spawn(command, {cwd, stdio: 'inherit', shell: true, env})
+
+  return await childProcessWait(childProcess, command)
+}
+
+/**
+ * @param {import('child_process').ChildProcess} childProcess
+ * @param {string} commandToShowInError
+ */
+export async function childProcessWait(childProcess, commandToShowInError) {
   const [result] = await Promise.race([once(childProcess, 'error'), once(childProcess, 'exit')])
   if (typeof result === 'number') {
     if (result !== 0) {
-      const error = new Error(`Command failed: ${command} ${result === 127 ? '(not found)' : ''}\n`)
+      const error = new Error(
+        `Command failed: ${commandToShowInError} ${result === 127 ? '(not found)' : ''}\n`,
+      )
       //@ts-ignore
       error.code = result
 
