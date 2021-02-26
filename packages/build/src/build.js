@@ -119,53 +119,6 @@ export async function* build(packageInfos, buildOrder, buildPackageFunc) {
 }
 
 /**
- * @param {Directory} rootDirectory
- * @param {BuildPackageResult} buildPackageResult
- * @param {Commitish} commit
- */
-export async function saveCommitOfLastSuccesfulBuild(rootDirectory, buildPackageResult, commit) {
-  if (buildPackageResult.buildResult !== 'success') return
-
-  const resultDirectory = path.join(rootDirectory, buildPackageResult.package.directory)
-  await fs.mkdir(resultDirectory, {
-    recursive: true,
-  })
-
-  await fs.writeFile(
-    path.join(resultDirectory, '.lastsuccesfulbuild.json'),
-    JSON.stringify({commit}),
-  )
-}
-
-/**
- *
- * @param {Directory} rootDirectory
- * @param {Package[]} packages
- * @returns {Promise<LastSuccessfulBuildOfPackage[]>}
- */
-export async function loadCommitsOfLastSuccesfulBuilds(rootDirectory, packages) {
-  return /**@type {import('@bilt/types').LastSuccesfulBuildOfPackage[]}*/ (await Promise.all(
-    packages.map(async (pkg) => {
-      const resultDirectory = path.join(rootDirectory, pkg.directory)
-      const [error, buildResultJsonString] = await presult(
-        fs.readFile(path.join(resultDirectory, '.lastsuccesfulbuild.json'), 'utf-8'),
-      )
-
-      if (error) {
-        if (error.code === 'ENOENT') return undefined
-        else throw error
-      }
-
-      const result = /**@type {{commit: Commitish}}*/ (JSON.parse(
-        /**@type {string}*/ (buildResultJsonString),
-      ))
-
-      return {package: pkg, lastSuccesfulBuild: result.commit}
-    }),
-  )).filter((lsbop) => !!lsbop)
-}
-
-/**
  *
  * @param {PackageInfos} packageInfos
  * @param {Package | undefined} rootPackage
