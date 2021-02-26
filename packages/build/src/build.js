@@ -1,6 +1,3 @@
-import {promises as fs} from 'fs'
-import path from 'path'
-
 /**
  * @typedef {import('@bilt/types').PackageInfos} PackageInfos
  * @typedef {import('@bilt/types').Package} Package
