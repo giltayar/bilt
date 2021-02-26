@@ -1,12 +1,16 @@
 name: Build bilt
-on: [push]
+on:
+  push:
+    branches:
+      - main
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
         with:
-          ref: master
+          ref: main
           fetch-depth: 0
       - name: Re-attach HEAD
         run: |
