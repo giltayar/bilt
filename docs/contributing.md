@@ -113,14 +113,43 @@ to build Bilt (say it fast 10 times!). That's easy. Just:
 npm install -g @bilt/cli
 ```
 
-To try it out, just do `bilt --version`.
+To see whether it works, just do `bilt --version`.
+
+## Developing in a branch
+
+When using Bilt, you are constantly publishing packages in this monorepo, so that other packages
+can use them. When developing in the `main` branch, that makes sense, but it does _not_ make sense
+when developing in a branch, i.e. in a Pull Request. To deal with that, the usual method is
+to run an NPM registry locally, and to ensure that all Bilt packages are published to it. For this,
+there is a special directory, `dev` that has scripts to enable this. So before developing,
+do the following:
+
+```shell
+# from the root of the repository
+cd dev
+npm install
+npm run develop-in-branch
+```
+
+This will run Verdaccio (an NPM registry), and ensure that all publishes of `bilt` packages
+will publish to it and not to the public NPM registry. Now you can develop to your hearts content.
+It is important not to close the window that ran this registry, so that it will always run while
+you're developing.
+
+To kill Verdaccio and restore everything to what it was, do:
+
+```shell
+# from the root of the repository
+cd dev
+npm run develop-in-main
+```
 
 Now let's go over the structure of a package to see how to develop in one package:
 
 ## Developing one package
 
 Now that we've gotten past the responsibility of each package, let's discuss each package. All
-packages have the exact same structure, and the exact same lifecycle. 
+packages have the exact same structure, and the exact same lifecycle.
 Let's talk about the lifecycle, meaning how do I install, build, test, and publish them:
 
 ### Installing a package
@@ -142,8 +171,10 @@ So the methodology is simple:
 1. Write code.
 1. Write tests that check the code.
 1. Run the tests and fix the code until they pass (see below on how to run the tests).
-1. Done? Run `bilt --no-publish` on the package, just to ensure that everything's OK. You
-   don't want to publish because this is a pull request.
+1. Done? Run `bilt . -m "<commit-message>"` on the package.
+   - Remember running `npm run develop-in-branch`? That command makes sure that when bilt
+     builds the package, it will publish it only to the local registry and not to the global
+     public NPM registry.
 1. This will also commit and push your changes, and the CI will build all of Bilt based on your
    change.
 
@@ -181,9 +212,9 @@ The debugger will run all the tests (you will probably have a `.only` somewhere 
 one test), and stop on your breakpoint. Now start debugging with ease!
 
 Of course, `console.log`-ing your way also works... 😎. Just don't forget to remove them
-before pushing. Tip, a good way of not forgetting is to add a comment to the console.log in the form of
-`// @@@<name>`. The `@@@` in the comment will cause ESLint to fail, so it won't let you push the
-change.
+before pushing. Tip: a good way of not forgetting is to add a comment to the console.log
+in the form of `// @@@<name>`.
+The `@@@` in the comment will cause ESLint to fail, so it won't let you push the change.
 
 ### Pushing the change
 
@@ -191,7 +222,7 @@ While theoretically you can `git commit` and `git push` yourself, the best and s
 to do it would be to use `bilt` itself:
 
 ```shell
-bilt .  --no-publish -m "<commit message>"
+bilt .  -m "<commit message>"
 ```
 
 The `.` in the command tells Bilt to build only the current package. What it will do is:
@@ -206,8 +237,8 @@ The `.` in the command tells Bilt to build only the current package. What it wil
    it here.
 1. `npm test` to run all the tests. This runs ESLint, TypeScript, and Mocha in parallel (to save
    time)
-1. `npm publish` to publish the package. You _don't_ want to do that, which is why we add
-   `--no-publish` to the build command.
+1. `npm publish` to publish the package. Remember, we ran a local registry so that this publish
+   won't go to the global NPM registry, but rather to the local one running on your machine.
 1. `git add . && git commit` to commit the changes in this directory
 1. `git push` to push the changes
 
@@ -227,11 +258,19 @@ goto the "Actions" tab in the Github monorepo: <https://github.com/giltayar/bilt
 What if a bug or a feature spans two packages? This definitely _does_ happen, although
 not as commonly as you would think.
 
-To deal with that, use [`npm link`](https://docs.npmjs.com/cli/v7/commands/npm-link). This
-command links two packages together. Let's take an example. Let's say you want to add
+There are two ways to do that. Let's take an example. Let's say you want to add
 functionality to the `cli` package, but for that you want to add a function to `scripting-commons`.
 In other words, you want to develop the `cli` and `scripting-commons` together.
 
+The recommended way is to first add the functionality to `scripting-commons`, write the tests,
+make them run, and then Bilt it using `bilt . -m "<commit message>"`. This will publish the
+package to the local NPM registry you installed previously. Now that you've finished doing that,
+you can goto the `cli` package, and run `npm update` to update the `scripting-commons` dependency
+to the newer version, and continue with the feature there.
+
+The alternative, but less recommended way, is to use
+[`npm link`](https://docs.npmjs.com/cli/v7/commands/npm-link).
+This command links two packages together.
 The only thing you need to do here is execute the following:
 
 ```shell
@@ -247,6 +286,8 @@ immediately be seen by `cli`.
 > Also note: when you change the type signature of something in `scripting-commons`, you should
 > run `npm run build` there so that the `.d.ts` files will be regenerated,
 > so that `cli` can see the new type signature (see ["JSDoc typing"](#jsdoc-typing) below).
+> Also note: don't try to do it on more than two packages, because Node and NPM get confused
+> if there are too many links.
 
 ## The source code of Bilt packages
 
@@ -331,8 +372,8 @@ Two rules to remember:
    an error saying you can't import them using named imports. In that case, do the following:
 
    ```js
-   import somePackage from 'some-package'
-   const {namedImport} = somePackage
+   import somePackage from "some-package";
+   const { namedImport } = somePackage;
    ```
 
 ## Coding style guidelines
