@@ -76,7 +76,7 @@ There's a lot of testing being done in the codebase, and to support that, we hav
 packages, which are packages that have functionality needed for testing.
 
 - [`npm-testkit`](../packages/npm-testkit): used to test functionality around npm install and
-  publish. Exports the `startNpmRegistry` function that starts an NPM registry (Verdaccio),
+  publish. Exports the `startNpmRegistry` function that starts an NPM registry ([Verdaccio](https://verdaccio.org/),
   that can be used by whatever `npm install/publish` code you have to publish to it. This is used
   because publishing to the public npm registry just to check functionality just doesn't make sense.
 - [`git-testkit`](../packages/git-testkit): used to create git repositories and manipulate them.
@@ -115,13 +115,13 @@ npm install -g @bilt/cli
 
 To try it out, just do `bilt --version`.
 
-Now let's go over the structure of a package to see how to develop in one package
+Now let's go over the structure of a package to see how to develop in one package:
 
 ## Developing one package
 
 Now that we've gotten past the responsibility of each package, let's discuss each package. All
-packages have the exact same structure, and the exact same lifeccle. Let's talk about the lifecycle,
-meaning how do I install, build, test, and publish them.
+packages have the exact same structure, and the exact same lifecycle. 
+Let's talk about the lifecycle, meaning how do I install, build, test, and publish them:
 
 ### Installing a package
 
@@ -138,10 +138,10 @@ run Bilt to see that it works. Rather, you write tests to ensure that the code y
 
 So the methodology is simple:
 
-1. Create a branch and a Pull Request, in regular OSS manner
-1. Write code
-1. Write tests that check the code
-1. Run the tests and fix the code until they pass (see below on how to run the tests)
+1. Create a branch and a Pull Request, in regular OSS manner.
+1. Write code.
+1. Write tests that check the code.
+1. Run the tests and fix the code until they pass (see below on how to run the tests).
 1. Done? Run `bilt --no-publish` on the package, just to ensure that everything's OK. You
    don't want to publish because this is a pull request.
 1. This will also commit and push your changes, and the CI will build all of Bilt based on your
@@ -181,7 +181,7 @@ The debugger will run all the tests (you will probably have a `.only` somewhere 
 one test), and stop on your breakpoint. Now start debugging with ease!
 
 Of course, `console.log`-ing your way also works... 😎. Just don't forget to remove them
-before pushing. A good way of not forgetting is to add a comment to the console.log in the form of
+before pushing. Tip, a good way of not forgetting is to add a comment to the console.log in the form of
 `// @@@<name>`. The `@@@` in the comment will cause ESLint to fail, so it won't let you push the
 change.
 
@@ -290,7 +290,7 @@ include all kinds of tests. The three types are:
 - `unit`: simple tests that test one function or one simple module. Easiest to understand
   and easiest to add to, but give the least confidence.
 - `integ`: "integration" tests that tests part or all of a package, using internal interfaces.
-  For example, in `cli`, it will test the command line through the function in `cli.js` and not by executing the `run-cli.js` process, as a user woud.
+  For example, in `cli`, it will test the command line through the function in `cli.js` and not by executing the `run-cli.js` process, as a user would.
 - `e2e`: tests the whole package, as a user would. In the `cli` case, it runs the `run-cli.js`
   as a process and checks the output. We try to minimize the number of e2e tests to a mininum
   and have most tests be `integ` or `unit`.
