@@ -10,6 +10,9 @@ about 10 packages overall for its functionality.
 All bilt code is in the [packages](../../) directory, in a flat hierarchy. Let's go over what
 those packages are. We'll go top down.
 
+But before that, there is the site itself. You can find information
+about contributing to it in the contributing doc [there](../packages/site/README.md).
+
 ## List of packages and their use
 
 ### The main "CLI" package

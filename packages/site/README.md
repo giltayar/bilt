@@ -1,45 +1,33 @@
-# site
-
-Library that yada yada yada.
+# Bilt Site
 
 ## Installing
 
-```sh
-npm install @applitools/site
+```shell
+npm install
 ```
 
-## Using the package
+## Trying it out
 
-yada yada yada
-
-```js
-const yadayada = require('@applitools/site')
-
-yada yada yada
+```shell
+npm start
 ```
 
-## API
+Then open the browser at <http://localhost:8080>.
 
-### `yadayada(yadayada, yada, [yada])`
+## Building before deploying
 
-```js
-yadaYada(yada)
+```shell
+npm run build
 ```
 
-#### `yadayada`
+## Deploying to Netlify (to production!)
 
-yadayada
-
-#### `yada`
-
-yadayada
-
-#### returns
-
-yadayada
-
-#### Example
-
-```js
-yadayada(4, 5, 6) // ==> 5
+```shell
+npm run deploy
 ```
+
+## Contributing
+
+- The source for the pages is in `src/docs`, in Markdown files.
+- The CSS is in `src/resources`
+- The HTML is a template file in `src/_includes/docs-layout.ejs`
