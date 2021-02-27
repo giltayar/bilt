@@ -1,0 +1,25 @@
+{
+  "name": "package-to-help-working-with-bilt",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": "true",
+  "scripts": {
+    "develop-in-main": "npm run kill-verdaccio && npm config delete @bilt:registry && (pkill verdaccio || true)",
+    "develop-in-branch": "npm run kill-verdaccio && npm run start-verdaccio && wait-on http://localhost:4873 && npm run set-bilt-to-verdaccio",
+    "start-verdaccio": "node -e \"require('child_process').spawn('verdaccio', ['--config=verdaccio.config.yaml'], {stdio: 'inherit'}).unref()\"",
+    "enable-publish-overwrite": "rimraf verdaccio-storage",
+    "set-bilt-to-verdaccio": "npm-cli-login -u anon -p anon -e anon@example.com -s @bilt -r http://localhost:4873",
+    "kill-verdaccio": "kill-port 4873"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cross-port-killer": "^1.3.0",
+    "npm-cli-login": "^0.1.1",
+    "rimraf": "^2.4.5",
+    "verdaccio": "^4.11.1",
+    "wait-on": "^5.2.1"
+  }
+}

@@ -1,3 +1,3 @@
 module.exports = {
-  packages: ['./packages/*'],
+  packages: ['./packages/*', '!./packages/dev'],
 }
