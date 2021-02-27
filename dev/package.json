@@ -8,7 +8,6 @@
     "develop-in-main": "npm run kill-verdaccio && npm config delete @bilt:registry && (pkill verdaccio || true)",
     "develop-in-branch": "npm run kill-verdaccio && npm run start-verdaccio && wait-on http://localhost:4873 && npm run set-bilt-to-verdaccio",
     "start-verdaccio": "node -e \"require('child_process').spawn('verdaccio', ['--config=verdaccio.config.yaml'], {stdio: 'inherit'}).unref()\"",
-    "enable-publish-overwrite": "rimraf verdaccio-storage",
     "set-bilt-to-verdaccio": "npm-cli-login -u anon -p anon -e anon@example.com -s @bilt -r http://localhost:4873",
     "kill-verdaccio": "kill-port 4873"
   },
