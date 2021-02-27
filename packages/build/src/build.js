@@ -17,6 +17,7 @@
  * @returns {import('./types.js').BuildOrder}
  */
 export function calculateBuildOrder({packageInfos}) {
+  throw new Error()
   return calculateBuildOrderDo(packageInfos, new Map(), undefined)
 
   /**

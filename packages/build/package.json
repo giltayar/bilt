@@ -14,12 +14,12 @@
     "src"
   ],
   "scripts": {
-    "build": "concurrently -r 'npm:build:*'",
+    "build": "#concurrently -r 'npm:build:*'",
     "build:typescript": "rm -rf types && tsc && cp src/*.d.ts types/src",
-    "test": "concurrently -r 'npm:test:*'",
+    "test": "#concurrently -r 'npm:test:*'",
     "test:mocha": "npm run mocha",
-    "test:eslint": "eslint --max-warnings=0 '**/*.js'",
-    "test:typescript": "tsc --noEmit --emitDeclarationOnly false",
+    "test:eslint": "#eslint --max-warnings=0 '**/*.js'",
+    "test:typescript": "#tsc --noEmit --emitDeclarationOnly false",
     "mocha": "mocha --no-timeouts --exit 'test/**/*.test.js'"
   },
   "keywords": [
