@@ -1,45 +1,4 @@
-# ng
+# Bilt CLI
 
-Library that yada yada yada.
-
-## Installing
-
-```sh
-npm install @applitools/ng
-```
-
-## Using the package
-
-yada yada yada
-
-```js
-const yadayada = require('@applitools/ng')
-
-yada yada yada
-```
-
-## API
-
-### `yadayada(yadayada, yada, [yada])`
-
-```js
-yadaYada(yada)
-```
-
-#### `yadayada`
-
-yadayada
-
-#### `yada`
-
-yadayada
-
-#### returns
-
-yadayada
-
-#### Example
-
-```js
-yadayada(4, 5, 6) // ==> 5
-```
+For more information on Bilt, refer to the Bilt repo, here:
+<https://github.com/giltayar/bilt>.
