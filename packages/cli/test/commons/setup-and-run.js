@@ -171,7 +171,7 @@ export async function runBuildCli(
   uptos = undefined,
 ) {
   return await promisify(execFile)(
-    resolve(__dirname, '../../scripts/bilt.js'),
+    resolve(__dirname, '../../src/run-bilt.js'),
     [
       ...(packages && packages.length > 0 ? packages : []),
       '-m',

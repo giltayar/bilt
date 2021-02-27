@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import {main} from '../src/cli.js'
+import {main} from './cli.js'
 
 main(process.argv.slice(2), {exitOnError: true}).catch((err) => {
   console.error(err.stack || err)
