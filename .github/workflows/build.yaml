@@ -30,10 +30,10 @@ jobs:
           npm run develop-in-branch
       - name: Bilt
         run: |
-          if [ "${GITHUB_REF}" = "refs/heads/main" ]
+          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
             export MORE_BILT_OPTIONS=--no-after
           fi
-          bilt -m "build from CI" --no-before ${MORE_OPTIONS}
+          bilt -m "build from CI" --no-before ${MORE_BILT_OPTIONS}
         env:
           # This is necessary in order to push a commit to the repo
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
