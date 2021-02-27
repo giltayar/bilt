@@ -1,6 +1,6 @@
 {
   "name": "@bilt/cli",
-  "version": "4.0.12",
+  "version": "4.0.16",
   "description": "",
   "type": "module",
   "main": "src/cli.js",
