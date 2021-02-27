@@ -14,7 +14,7 @@ those packages are. We'll go top down.
 
 ### The main "CLI" package
 
-The main package is (`cli`)[../cli]. It includes the CLI that is used to run Bilt and all
+The main package is (`cli`)[../packages/cli]. It includes the CLI that is used to run Bilt and all
 the "UI" that is needed to determine what to build, to run the build, and to show the result. The
 actual logic of determining which packages to build, and determining their build order is in
 three packages:
@@ -22,12 +22,13 @@ three packages:
 ### the "build order" packages
 
 - [`packages-to-build`](../packages-to-build) is the package with the algorithm that uses
-  the dependency graph to determine _which_ packages need building. It exports one function `calculatePackagesToBuild` which receives all
+  the dependency graph to determine _which_ packages need building.
+  It exports one function `calculatePackagesToBuild` which receives all
   the package information, including the dependencies, and returns an array of packages that need
   building. In order to do taht, it also gets information about the last build time of
   each package to determine whether it (and its dependents) need to be built.
 
-- [`build`](../build): once we have that information (of which packages to build), we need
+- [`build`](../packages/build): once we have that information (of which packages to build), we need
   to build them in a specific order, according to the dependencies between them. This is
   what this package does. It has a main function `build` that executes a JS function
   for each package that needs to be built. It also returns success/failure information
@@ -48,38 +49,39 @@ These packages are lower-level still and support CLI in its quest to give the co
 that the "build order" packages need. That information is around i) dependencies, and ii) last
 build time. So... NPM information and Git information. Which brings me to the packages:
 
-- [`npm-packages`](../npm-packages): the main function in this package is `findNpmPackageInfos`,
-  which, given a set of package directories, finds the name, version, and dependencies
-  of each package.
-- [`git-packages`](../git-packages): the main function in this package is `findLatestPackageChanges`
-  that returns the list of packages, and their last build time, according to information
-  in Git (see [How Bilt Works](./how-bilt-works.md) to understand how it does that).
+- [`npm-packages`](../packages/npm-packages): the main function in this package
+  is `findNpmPackageInfos`, which, given a set of package directories, finds the name, version, and dependencies of each package.
+- [`git-packages`](../packages/git-packages): the main function in this package is
+  `findLatestPackageChanges` that returns the list of packages, and their last build time,
+  according to information in Git (see [How Bilt Works](./how-bilt-works.md)
+  to understand how it does that).
 
-Another package is [`npm-next-version`](../npm-next-version):
+Another package is [`npm-next-version`](../packages/npm-next-version):
 this package is used by Bilt in the _default_ build steps it has,
 and its purpose is to determine what the "next" version of a package should be when it is published.
 
 ### The "types" package
 
-[This package](../types) includes TypeScript types that are used by all of the above packages. I usually
-dislike packages that have stuff for _all_ packages, but, hey, we're all human, right? I've
-tried distributing the types more as time goes by, and not adding any more types here.
+[This package](../packages/types) includes TypeScript types that are used by
+all of the above packages. I usually dislike packages that have stuff for _all_ packages,
+but, hey, we're all human, right? I've tried distributing the types more as time goes by,
+and not adding any more types here.
 
 ### The testkits
 
 There's a lot of testing being done in the codebase, and to support that, we have the "testkit"
 packages, which are packages that have functionality needed for testing.
 
-- [`npm-testkit`](../npm-testkit): used to test functionality around npm install and publish.
-  Exports the `startNpmRegistry` function that starts an NPM registry (Verdaccio), that can be
-  used by whatever `npm install/publish` code you have to publish to it. This is used
+- [`npm-testkit`](../packages/npm-testkit): used to test functionality around npm install and
+  publish. Exports the `startNpmRegistry` function that starts an NPM registry (Verdaccio),
+  that can be used by whatever `npm install/publish` code you have to publish to it. This is used
   because publishing to the public npm registry just to check functionality just doesn't make sense.
-- [`git-testkit`](../git-testkit): used to create git repositories and manipulate them. Many
-  small utilities around git.
+- [`git-testkit`](../packages/git-testkit): used to create git repositories and manipulate them.
+  Many small utilities around git.
 
 ### The infra packages
 
-- [`scripting-commons`](../scripting-commons): a package including code that executes
+- [`scripting-commons`](../packages/scripting-commons): a package including code that executes
   processes, creates temporary directories, and reads and write files, all in a nice and easy
   to use way.
 
@@ -139,7 +141,7 @@ So the methodology is simple:
 1. Run the tests and fix the code until they pass (see below on how to run the tests)
 1. Done? Run `bilt --no-publish` on the package, just to ensure that everything's OK. You
    don't want to publish because this is a pull request.
-1. This will also  commit and push your changes, and the CI will build all of Bilt based on your
+1. This will also commit and push your changes, and the CI will build all of Bilt based on your
    change.
 
 ### Running the tests
@@ -159,9 +161,7 @@ Also, usually, I am working on a single test, and it's nice to run just _that_ t
 of all of them. To do that, goto that test in the code, and add `.only` to the `it`:
 
 ```js
-  it.only('should do something great', () => {
-
-  })
+it.only("should do something great", () => {});
 ```
 
 This tells Mocha to run only _that_ test. You can also attach a `.only` to the `describe` to run
@@ -179,8 +179,8 @@ one test), and stop on your breakpoint. Now start debugging with ease!
 
 Of course, `console.log`-ing your way also works... 😎. Just don't forget to remove them
 before pushing. A good way of not forgetting is to add a comment to the console.log in the form of
- `// @@@<name>`. The `@@@` in the comment will cause ESLint to fail, so it won't let you push the
- change.
+`// @@@<name>`. The `@@@` in the comment will cause ESLint to fail, so it won't let you push the
+change.
 
 ### Pushing the change
 
@@ -199,11 +199,11 @@ The `.` in the command tells Bilt to build only the current package. What it wil
 1. Update the version of the package using `npm-next-version`
 1. `npm run build` to run whatever build steps are necessary. All the packages in Bilt only
    use this step to generate `.d.ts` files for TypeScript use (see below section on TypeScript
-  to understand what this means). If you have a type error that TypeScript catches, it will catch
-  it here.
+   to understand what this means). If you have a type error that TypeScript catches, it will catch
+   it here.
 1. `npm test` to run all the tests. This runs ESLint, TypeScript, and Mocha in parallel (to save
    time)
-1. `npm publish` to publish the package. You *don't* want to do that, which is why we add
+1. `npm publish` to publish the package. You _don't_ want to do that, which is why we add
    `--no-publish` to the build command.
 1. `git add . && git commit` to commit the changes in this directory
 1. `git push` to push the changes
@@ -212,10 +212,128 @@ This is, in essence, a full build of only that package, and it's best to use Bil
 that a full build passes. Don't worry: it usually takes less than a minute.
 
 Once your code is pushed, Bilt in CI will wake up and build all the dependencies of that package,
-assuming there are any. To see the build in action, and to ensure it doesn't fail,
-goto the "Actions" tab in the Github monorepo: <https://github.com/giltayar/bilt/actions>.
+assuming there are any. For example, if you changed the `build-with-configuration` and pushed it,
+CI will also build the `cli` package, because the `cli` package
+depends on `build-with-configuration`.
 
-### JSDoc Typing and TypeScript
+To see the build you triggered in action, and to ensure it doesn't fail,
+goto the "Actions" tab in the Github monorepo: <https://github.com/giltayar/bilt/actions>.
 
 ### Working with two packages in tandem
 
+What if a bug or a feature spans two packages? This definitely _does_ happen, although
+not as commonly as you would think.
+
+To deal with that, use [`npm link`](https://docs.npmjs.com/cli/v7/commands/npm-link). This
+command links two packages together. Let's take an example. Let's say you want to add
+functionality to the `cli` package, but for that you want to add a function to `scripting-commons`.
+In other words, you want to develop the `cli` and `scripting-commons` together.
+
+The only thing you need to do here is execute the following:
+
+```shell
+cd packages/cli
+npm link ../scripting-commons
+```
+
+This will link `cli` to `scripting-commons`: any changes you do to `scripting-commons` will
+immediately be seen by `cli`.
+
+> Note: any `npm install` you run in `cli` will erase the link and you will go back to using
+> the latest `scripting-commons` in the registry.
+> Also note: when you change the type signature of something in `scripting-commons`, you should
+> run `npm run build` there so that the `.d.ts` files will be regenerated,
+> so that `cli` can see the new type signature (see ["JSDoc typing"](#jsdoc-typing) below).
+
+## The source code of Bilt packages
+
+Let's look at the source code of Bilt packages. The structure of them all is the same, so
+we'll take [`cli`](../packages/cli) as an example.
+
+The two most important directories there are `src` and `test`. `src` will include all
+source code of the package, and `test` will include the tests for the package.
+
+The third most important file is `package.json`, which you all know, and which
+points to the main file of the package (the "entry point" to the package, which is what
+we run when we `import` the package), and which includes all dependencies and dev dependencies.
+
+There are also lots of configuration files in the root directory, most of them "dotfiles" (i.e.
+starting with "dot"). You can usually ignore them.
+
+### `src`
+
+The main file here is `cli.js`. If you look at the `package.json` "main", you will see that this
+file is the entry point to the package and is what you import when you `import` the package.
+All the other source files in `src` are usually `import`-ed directly or indirectly by `cli.js`.
+
+The `bilt` package is a bit different in that it includes another "entry point": `run-bilt.js`.
+This is what is executed when you run `bilt` in the command line (you can see that the
+`package.json` has `"bin"` that points to it). But `run-bilt.js` is a small wrapper that
+just imports and calls the main function in `bilt.js`, so you can usually safely ignore it.
+
+To understand the `bilt` CLI and how it works, goto the design of CLI in
+[`design.md`](../packages/cli/docs/design.md)
+
+All source code is written in JavaScript, but has JSDocs that give full type information that
+is typechecked by TypeScript. See ["JSDoc Typing"](#jsdoc-typing) below. It also doesn't use
+CommonJS (`require(...)`) to import modules and packages, but rather the newer ESM that
+uses `import` to do that. See ["ESM"](#esm) for more information.
+
+## `test`
+
+The test directory includes subdirectories for the three main types of tests. Not all packages
+include all kinds of tests. The three types are:
+
+- `unit`: simple tests that test one function or one simple module. Easiest to understand
+  and easiest to add to, but give the least confidence.
+- `integ`: "integration" tests that tests part or all of a package, using internal interfaces.
+  For example, in `cli`, it will test the command line through the function in `cli.js` and not by executing the `run-cli.js` process, as a user woud.
+- `e2e`: tests the whole package, as a user would. In the `cli` case, it runs the `run-cli.js`
+  as a process and checks the output. We try to minimize the number of e2e tests to a mininum
+  and have most tests be `integ` or `unit`.
+
+Bilt uses [Mocha](https://mochajs.org/) and [Chai](https://www.chaijs.com/api/bdd/)
+for all its testing.
+
+## JSDoc Typing
+
+All source code in all Bilt packages uses JSDoc typing, to fully typecheck the code with
+TypeScript, but without the need to transpile. To understand how to use JSDoc Typing,
+read
+[this](https://gils-blog.tayar.org/posts/jsdoc-typings-all-the-benefits-none-of-the-drawbacks/).
+
+But don't worry: you can incrementally learn about it, and it should be usually pretty
+straightforward, especially if you've used TypeScript in the past. One thing you should NOT
+do is use `//@ts-ignore-error` to ignore typechecking errors, unless you know that this is fine.
+I would suggest DM-ing one of the maintainers of the project if you feel a `//@ts-ignore-error`
+is warranted. In 99% of the cases, it isn't.
+
+## ESM
+
+Bilt also uses the new ES Modules support in Node.js (which is why it won't work in Node.js
+versions less than 12). If you want to learn more about it, read about it
+[here](https://gils-blog.tayar.org/posts/using-jsm-esm-in-nodejs-a-practical-guide-part-1/).
+
+Two rules to remember:
+
+1. When you import another file, you must include the extension of the file:
+
+   ```js
+   import './another-file' // ERROR: won't work!
+   import './another-file.js` // Yay!!!
+   ```
+
+1. You _can_ import packages that are not ESM, but if you're using named imports
+   e.g. `import {namedImport} from 'some-package`, then for some packages you may get
+   an error saying you can't import them using named imports. In that case, do the following:
+
+   ```js
+   import somePackage from 'some-package'
+   const {namedImport} = somePackage
+   ```
+
+## Continuing from here
+
+That's it for the guide! If you want to dive into the codebase, I would recommend
+understanding the topmost package: `cli`, by reading its design document
+[here](../packages/cli/docs/design.md).
