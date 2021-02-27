@@ -57,6 +57,11 @@
 			"path": "packages/types"
 		},
 		{
+			"name": "dev",
+			"path": "dev"
+		},
+		{
+			"name": ".github",
 			"path": ".github"
 		}
 	],
