@@ -21,11 +21,12 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - name: Install Bilt
         run: |
+          npm install -g npm@latest
           npm install -g @bilt/cli
       - name: Run Verdaccio on Branch Build
         if: github.ref != 'refs/heads/main'
         run: |
-          cd packages/dev
+          cd dev
           npm install
           npm run develop-in-branch
       - name: Bilt
@@ -33,7 +34,7 @@ jobs:
           if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
             export MORE_BILT_OPTIONS=--no-after
           fi
-          bilt -m "build from CI" --no-before ${MORE_BILT_OPTIONS}
+          bilt @bilt/scripting-commons -f -m "build from CI" --no-before ${MORE_BILT_OPTIONS}
         env:
           # This is necessary in order to push a commit to the repo
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
