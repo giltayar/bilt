@@ -30,7 +30,7 @@ jobs:
           npm run develop-in-branch
       - name: Bilt
         run: |
-          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+          if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
             export MORE_BILT_OPTIONS=--no-after
           fi
           bilt -m "build from CI" --no-before ${MORE_BILT_OPTIONS}
