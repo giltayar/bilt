@@ -63,3 +63,42 @@ And that's it! Let's just delve into the separate phases, and we're done.
 
 ### Executing the "before" phase
 
+This one's easy. If `before` is true (i.e. the user did not add a `--no-before`), then
+we use `executePhase` to execute the steps in the before phase.
+
+`executePhase` is a simple function: it uses the function `getPhaseExection`
+in the `build-with-configuration` package to get an array of `StepExecution` by which it will
+execute each and every step, which it does in a loop.
+
+### Executing the "during" phase
+
+The "during" phase is more complicated, because the steps in that phase need to be executed
+per-package, and the package order is determined by the build order. To do that it uses
+`buildPackages` (which the "dry running" also used). `buildPackages` knows how to call a function
+for each package, in the correct build order. The function it sends, created by `makePackageBuild`,
+just calls `executePhase` for the steps in the "during" phase.
+
+`buildPackages` is also inherently simple. It calls `build`, the function from the `build` package.
+This `build` function returns an
+["async generator"](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*)
+which calls the build function for each package in the correct order, and yields a value that
+indicates whether the build function succeeded or failed.
+
+### Executing the "after" phase
+
+Executing this phase is similar to executing the "before" phase, except that we do it only
+if at least one package succeeded.
+
+## Summary
+
+That's it! Pretty simple, given that all the complex functionality is in the other packages. To
+summarize:
+
+1. Get the configuration, and determine the Yargs options
+1. Execute the yargs parser to get the arguments
+1. Pass arguments to `command-build.js` to execute the job
+1. Get name/version/dependencies/last-build-time information for all the packages
+1. Based on this information, determine which packages to build
+1. Execute the "before" phase
+1. Execute the "during" phase for all the packages to build, ordered by their dependency graph
+1. Execute the "after" phase

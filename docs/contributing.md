@@ -21,7 +21,7 @@ three packages:
 
 ### the "build order" packages
 
-- [`packages-to-build`](../packages-to-build) is the package with the algorithm that uses
+- [`packages-to-build`](../packages/packages-to-build) is the package with the algorithm that uses
   the dependency graph to determine _which_ packages need building.
   It exports one function `calculatePackagesToBuild` which receives all
   the package information, including the dependencies, and returns an array of packages that need
