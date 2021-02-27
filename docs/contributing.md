@@ -332,6 +332,17 @@ Two rules to remember:
    const {namedImport} = somePackage
    ```
 
+## Coding style guidelines
+
+- Function and variable names can (and should be) as long as needed to explain what's in them.
+  Don't hesitate to go overboard with long names. Definitely no shortcuts. The one
+  exception are parameter names for small anonymous functions that you pass to `filter` and `map`,
+  because in that case, the parameter is obvious from usage.
+
+- The code should "breath": separate functionality in a function with an empty line. Separate
+  the variable declarations from the code with an empty line. Let the code "breath" by not having
+  it cramped together.
+
 ## Continuing from here
 
 That's it for the guide! If you want to dive into the codebase, I would recommend

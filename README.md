@@ -36,3 +36,7 @@ monorepo is built as a series of NPM packages linked together by an NPM dependen
 1. [How Bilt works](./docs/how-bilt-works.md)
 1. [Reference](./docs/reference.md)
 1. [Build configurations](./docs/build-configurations.md)
+
+## Contributing
+
+If you want to help contribute, to built, go [here](./docs/contributing.md) to learn ahout the Bilt code, how to build it, and how to contribute.
