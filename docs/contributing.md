@@ -43,7 +43,7 @@ three packages:
   of the packages, the steps for each package, and what to do after the package is built. It
   is the package that is responsible for running the build of a package.
 
-To truly understand the algorithms in these packages, see see [How Bilt Works](./how-bilt-works.md).
+To truly understand the algorithms in these packages, see [How Bilt Works](./how-bilt-works.md).
 But, frankly, most of the code their is done, and the features and bugs are elsewhere.
 
 ### The "info" packages
