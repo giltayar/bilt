@@ -16,8 +16,6 @@ const debug = debugMaker('bilt:cli:cli')
 export async function main(argv, {exitOnError = false} = {}) {
   const {config, rootDirectory} = await findConfig(argv)
 
-  setupPackages('upto', 'cwd', rootDirectory)(config)
-
   const buildConfigurationChain = await findBuildConfiguration(config, rootDirectory)
 
   const yargsOptions = generateYargsCommandsAndOptions(

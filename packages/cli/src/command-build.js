@@ -63,13 +63,12 @@ export default async function buildCommand({
     message: userBuildOptions.message + '\n\n\n[bilt-with-bilt]',
     force,
   }
-  const biltin = {...npmBiltin, ...makeOptionsBiltin(buildOptions)}
-
-  const {
-    initialSetOfPackagesToBuild,
-    uptoPackages,
-    packageInfos,
-  } = await findInitialSetOfPackagesToBuild(rootDirectory, packages, packagesToBuild, upto)
+  const {initialSetOfPackagesToBuild, uptoPackages, packageInfos} = await extractPackageInfos(
+    rootDirectory,
+    packages,
+    packagesToBuild,
+    upto,
+  )
   debug(
     `determined packages to build`,
     initialSetOfPackagesToBuild.map((pkg) => pkg.directory),
@@ -104,38 +103,30 @@ Maybe you forgot to add an upto package?`,
     return true
   }
 
-  if (!dryRun) {
-    globalHeader(`building ${Object.keys(finalPackagesToBuild).join(', ')}`)
-    if (before) {
-      await executePhase(jobConfiguration, 'before', rootDirectory, buildOptions, biltin, (se) =>
-        globalOperation(se.info().name),
-      )
-    }
+  if (dryRun) {
+    return await showPackagesForDryRun(finalPackagesToBuild, dryRun)
   }
 
-  /** @type {import("@bilt/types").RelativeDirectoryPath[]} */
-  const packagesBuildOrder = []
-  const {succesful, failed} = await buildPackages(
+  const biltin = {...npmBiltin, ...makeOptionsBiltin(buildOptions)}
+
+  globalHeader(`building ${Object.keys(finalPackagesToBuild).join(', ')}`)
+
+  if (before) {
+    await executeBeforePhase(jobConfiguration, rootDirectory, buildOptions, biltin)
+  }
+
+  const {succesful, failed} = await executeDuringPhase(
     finalPackagesToBuild,
-    dryRun
-      ? async ({packageInfo}) => {
-          packagesBuildOrder.push(packageInfo.directory)
-          return 'success'
-        }
-      : makePackageBuild(jobConfiguration, rootDirectory, buildOptions, biltin),
+    jobConfiguration,
+    rootDirectory,
+    buildOptions,
+    biltin,
     dryRun,
   )
 
-  if (dryRun) {
-    console.log(packagesBuildOrder.join(', '))
-    return true
-  }
-
   try {
     if (succesful.length > 0 && after) {
-      await executePhase(jobConfiguration, 'after', rootDirectory, buildOptions, biltin, (se) =>
-        globalOperation(se.info().name),
-      )
+      await executeAfterPhase(jobConfiguration, rootDirectory, buildOptions, biltin)
     }
   } finally {
     if (failed.length > 0) {
@@ -146,6 +137,75 @@ Maybe you forgot to add an upto package?`,
     }
   }
   return failed.length === 0
+}
+
+/**
+ * @param {import('@bilt/build-with-configuration').Job} jobConfiguration
+ * @param {import("@bilt/types").Nominal<string, "Directory">} rootDirectory
+ * @param {Record<string, string | boolean | undefined>} buildOptions
+ * @param {object} biltin
+ */
+async function executeAfterPhase(jobConfiguration, rootDirectory, buildOptions, biltin) {
+  await executePhase(jobConfiguration, 'after', rootDirectory, buildOptions, biltin, (se) =>
+    globalOperation(se.info().name),
+  )
+}
+
+/**
+ * @param {import("@bilt/types").PackageInfos} finalPackagesToBuild
+ * @param {import('@bilt/build-with-configuration').Job} jobConfiguration
+ * @param {import("@bilt/types").Nominal<string, "Directory">} rootDirectory
+ * @param {{ [x: string]: string | boolean | undefined; message?: string; force?: boolean; jobId?: string; envelope?: boolean | undefined; }} buildOptions
+ * @param {object} biltin
+ * @param {boolean} dryRun
+ */
+async function executeDuringPhase(
+  finalPackagesToBuild,
+  jobConfiguration,
+  rootDirectory,
+  buildOptions,
+  biltin,
+  dryRun,
+) {
+  return await buildPackages(
+    finalPackagesToBuild,
+    makePackageBuild(jobConfiguration, rootDirectory, buildOptions, biltin),
+    dryRun,
+  )
+}
+
+/**
+ * @param {import("@bilt/types").PackageInfos} finalPackagesToBuild
+ * @param {boolean} dryRun
+ */
+async function showPackagesForDryRun(finalPackagesToBuild, dryRun) {
+  /** @type {import("@bilt/types").RelativeDirectoryPath[]} */
+  const packagesBuildOrder = []
+
+  await buildPackages(
+    finalPackagesToBuild,
+    async ({packageInfo}) => {
+      packagesBuildOrder.push(packageInfo.directory)
+      return 'success'
+    },
+    dryRun,
+  )
+
+  console.log(packagesBuildOrder.join(', '))
+
+  return true
+}
+
+/**
+ * @param {import('@bilt/build-with-configuration').Job} jobConfiguration
+ * @param {import("@bilt/types").Nominal<string, "Directory">} rootDirectory
+ * @param {Record<string, string | boolean | undefined>} buildOptions
+ * @param {object} biltin
+ */
+async function executeBeforePhase(jobConfiguration, rootDirectory, buildOptions, biltin) {
+  await executePhase(jobConfiguration, 'before', rootDirectory, buildOptions, biltin, (se) =>
+    globalOperation(se.info().name),
+  )
 }
 
 /**
@@ -303,7 +363,7 @@ async function addLastBuildTimeToPackageInfos(packageInfos, packageChanges, root
  * packageInfos: PackageInfos
  * }>}
  */
-async function findInitialSetOfPackagesToBuild(
+async function extractPackageInfos(
   rootDirectory,
   packagesDirectories,
   packagesToBuildDirectories,
