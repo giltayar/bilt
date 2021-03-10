@@ -1,71 +1,67 @@
 {
-	"folders": [
-		{
-			"name": "artifact-finder",
-			"path": "packages/artifact-finder"
-		},
-		{
-			"name": "build",
-			"path": "packages/build"
-		},
-		{
-			"name": "build-with-configuration",
-			"path": "packages/build-with-configuration"
-		},
-		{
-			"name": "cli",
-			"path": "packages/cli"
-		},
-		{
-			"name": "docs",
-			"path": "docs"
-		},
-		{
-			"name": "git-packages",
-			"path": "packages/git-packages"
-		},
-		{
-			"name": "git-testkit",
-			"path": "packages/git-testkit"
-		},
-		{
-			"name": "npm-next-version",
-			"path": "packages/npm-next-version"
-		},
-		{
-			"name": "npm-packages",
-			"path": "packages/npm-packages"
-		},
-		{
-			"name": "npm-testkit",
-			"path": "packages/npm-testkit"
-		},
-		{
-			"name": "packages-to-build",
-			"path": "packages/packages-to-build"
-		},
-		{
-			"name": "scripting-commons",
-			"path": "packages/scripting-commons"
-		},
-		{
-			"name": "site",
-			"path": "packages/site"
-		},
-		{
-			"name": "types",
-			"path": "packages/types"
-		},
-		{
-			"name": "dev",
-			"path": "dev"
-		},
-		{
-			"name": ".github",
-			"path": ".github"
-		}
-	],
-	"settings": {
-		"debug.node.autoAttach": "on"
-	}
+  "folders": [
+    {
+      "name": "build",
+      "path": "packages/build"
+    },
+    {
+      "name": "build-with-configuration",
+      "path": "packages/build-with-configuration"
+    },
+    {
+      "name": "cli",
+      "path": "packages/cli"
+    },
+    {
+      "name": "docs",
+      "path": "docs"
+    },
+    {
+      "name": "git-packages",
+      "path": "packages/git-packages"
+    },
+    {
+      "name": "git-testkit",
+      "path": "packages/git-testkit"
+    },
+    {
+      "name": "npm-next-version",
+      "path": "packages/npm-next-version"
+    },
+    {
+      "name": "npm-packages",
+      "path": "packages/npm-packages"
+    },
+    {
+      "name": "npm-testkit",
+      "path": "packages/npm-testkit"
+    },
+    {
+      "name": "packages-to-build",
+      "path": "packages/packages-to-build"
+    },
+    {
+      "name": "scripting-commons",
+      "path": "packages/scripting-commons"
+    },
+    {
+      "name": "site",
+      "path": "packages/site"
+    },
+    {
+      "name": "types",
+      "path": "packages/types"
+    },
+    {
+      "name": "dev",
+      "path": "dev"
+    },
+    {
+      "name": ".github",
+      "path": ".github"
+    }
+  ],
+  "settings": {
+    "debug.node.autoAttach": "on"
+  }
 }

@@ -37,7 +37,6 @@
     "directory": "packages/npm-packages"
   },
   "dependencies": {
-    "@bilt/artifact-finder": "^3.0.2",
     "@bilt/types": "^3.0.2",
     "debug": "^4.3.1"
   },
