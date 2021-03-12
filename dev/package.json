@@ -7,7 +7,7 @@
   "scripts": {
     "develop-in-main": "npm run kill-verdaccio &&  npm run unset-bilt-registry && (pkill verdaccio || true)",
     "develop-in-branch": "npm run kill-verdaccio && npm run start-verdaccio && wait-on http://localhost:4873 && npm run set-bilt-to-verdaccio",
-    "start-verdaccio": "node -e \"require('child_process').spawn('verdaccio', ['--config=verdaccio.config.yaml'], {stdio: 'inherit'}).unref()\"",
+    "start-verdaccio": "node -e \"require('child_process').spawn(/^win/.test(process.platform) ? 'verdaccio.cmd' : 'verdaccio', ['--config=verdaccio.config.yaml'], {stdio: 'inherit'}).unref()\"",
     "set-bilt-to-verdaccio": "npm config set '//localhost:4873/:_authToken' anon-token && npm config set '@bilt:registry' 'http://localhost:4873'",
     "unset-bilt-registry": "npm config delete @bilt:registry",
     "kill-verdaccio": "kill-port 4873 && rimraf verdaccio.log verdaccio-storage"
