@@ -4,12 +4,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v1
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
       - name: Enable Git Push
         run: |
+          echo GITHUB_REF: "${GITHUB_REF}"
           git checkout "${GITHUB_REF:11}"
           git config --global user.email "bilt-ci@tayar.org"
           git config --global user.name "Bilt CI"
