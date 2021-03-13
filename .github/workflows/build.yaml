@@ -10,6 +10,7 @@ jobs:
           fetch-depth: 0
       - name: Enable Git Push
         run: |
+          git checkout "${GITHUB_REF:11}"
           git config --global user.email "bilt-ci@tayar.org"
           git config --global user.name "Bilt CI"
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
