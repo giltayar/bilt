@@ -163,12 +163,14 @@ export async function runBuild(
  * @param {string} [message]
  * @param {string[]} [packages]
  * @param {string[]} [uptos]
+ * @param {string[]} [moreOptions]
  */
 export async function runBuildCli(
   cwd,
   message = 'a message',
   packages = undefined,
   uptos = undefined,
+  moreOptions = undefined,
 ) {
   return await promisify(execFile)(
     resolve(__dirname, '../../src/run-bilt.js'),
@@ -177,6 +179,7 @@ export async function runBuildCli(
       '-m',
       message,
       ...(uptos && uptos.length > 0 ? ['--upto', ...uptos] : []),
+      ...(moreOptions ? moreOptions : []),
     ],
     {cwd},
   )

@@ -55,4 +55,22 @@ describe('applitools build (e2e)', function () {
     expect(err).to.not.be.undefined
     expect(err.stderr).to.include('build package failed')
   })
+
+  it(`print built packages in correct order`, async () => {
+    const {registry, cwd} = await prepareGitAndNpm()
+    await createAdepsBdepsCPackages(cwd, registry)
+    await writeFile('.biltrc.json', {packages: ['*']}, {cwd})
+
+    const {stdout: dryRunStdout} = await runBuildCli(
+      cwd,
+      'dry-run',
+      undefined,
+      ['./a'],
+      ['--dry-run'],
+    )
+    expect(dryRunStdout.trim()).to.eql('c, b, a')
+
+    const {stderr} = await runBuildCli(cwd, 'full 1-run', undefined, ['./a'])
+    expect(stderr.trim()).to.include('building c, b, a')
+  })
 })
