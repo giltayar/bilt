@@ -40,7 +40,7 @@ You can run `bilt` in any directory of the monorepo, and it looks upwards for th
 to determine what the root of the monorepo is.
 
 If you have multiple projects in your monorepo, just have separate `.biltrc-<project>.json`
-and reference them in `bilt` using `bilt --config ,biltrc-<project>.json`.
+and reference them in `bilt` using `bilt --config .biltrc-<project>.json`.
 
 ## Running a build on your monorepo
 
