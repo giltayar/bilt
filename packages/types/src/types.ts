@@ -21,7 +21,7 @@ export interface PackageInfos {
   [packageDirectory: string]: PackageInfo
 }
 
-export interface LastSuccesfulBuildOfPackage {
+export interface LastSuccessfulBuildOfPackage {
   package: Package
-  lastSuccesfulBuild: Commitish
+  lastSuccessfulBuild: Commitish
 }

@@ -65,7 +65,7 @@ An object with the following properties:
   `before`: an array of `Step` objects defining the steps to execute _before_ building all the
   packages (but only if there are any packages to build)
   `after`: an array of `Step` objects defining the steps to execute _after_ building all the
-  packages (but only if at least one of the packages built succesfully)
+  packages (but only if at least one of the packages built successfully)
   `during`: the steps to run for each package. These are the steps for the ["package build"](../concepts#build)
 
 ### The `Step` object

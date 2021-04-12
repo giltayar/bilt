@@ -115,7 +115,7 @@ Maybe you forgot to add an upto package?`,
     await executeBeforePhase(jobConfiguration, rootDirectory, buildOptions, biltin)
   }
 
-  const {succesful, failed} = await executeDuringPhase(
+  const {successful, failed} = await executeDuringPhase(
     finalPackagesToBuild,
     jobConfiguration,
     rootDirectory,
@@ -125,7 +125,7 @@ Maybe you forgot to add an upto package?`,
   )
 
   try {
-    if (succesful.length > 0 && after) {
+    if (successful.length > 0 && after) {
       await executeAfterPhase(jobConfiguration, rootDirectory, buildOptions, biltin)
     }
   } finally {
@@ -258,7 +258,7 @@ function makeAllPackagesDirty(packageInfos) {
 }
 
 /**@returns {Promise<{
- * succesful: Package[],
+ * successful: Package[],
  * failed: Package[],
  * }>} */
 async function buildPackages(
@@ -269,7 +269,7 @@ async function buildPackages(
   const buildOrder = calculateBuildOrder({packageInfos: packageInfosToBuild})
 
   const ret = {
-    succesful: /**@type {Package[]}*/ ([]),
+    successful: /**@type {Package[]}*/ ([]),
     failed: /**@type {Package[]}*/ ([]),
     built: /**@type {Package[]}*/ ([]),
   }
@@ -288,7 +288,7 @@ async function buildPackages(
         buildPackageResult.error,
       )
     } else if (buildPackageResult.buildResult === 'success') {
-      ret.succesful.push(buildPackageResult.package)
+      ret.successful.push(buildPackageResult.package)
       if (!dryRun) {
         packageFooter(
           'build package succeeded',

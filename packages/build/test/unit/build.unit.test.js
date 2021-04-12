@@ -140,7 +140,7 @@ describe('build (unit)', function () {
     let countSuccesses = 0
     let countNotBuilt = 0
     for await (const buildResult of build(packageInfos, buildOrder, buildPackageFunc)) {
-      const shouldBeSuccesful = ['edir', 'fdir'].includes(buildResult.package.directory)
+      const shouldBeSuccessful = ['edir', 'fdir'].includes(buildResult.package.directory)
       const shouldFail = ['cdir'].includes(buildResult.package.directory)
 
       if (buildResult.buildResult === 'success') {
@@ -151,7 +151,7 @@ describe('build (unit)', function () {
         countNotBuilt++
       }
       expect(buildResult.buildResult).to.eql(
-        shouldBeSuccesful ? 'success' : shouldFail ? 'failure' : 'not-built',
+        shouldBeSuccessful ? 'success' : shouldFail ? 'failure' : 'not-built',
       )
     }
 

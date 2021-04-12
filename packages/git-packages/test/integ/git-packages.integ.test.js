@@ -127,7 +127,7 @@ describe('git-packages (integ)', function () {
     const pd = {directory: 'd'}
     const packages = [pa, pb, pc, pd]
 
-    it('should find no packages if last succesful build is the HEAD', async () => {
+    it('should find no packages if last successful build is the HEAD', async () => {
       const changedPackages = findLatestPackageChanges({
         changedFilesInGit,
         packages: [/**@type {Package}*/ (pd)],

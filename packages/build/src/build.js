@@ -8,7 +8,7 @@
  * @typedef {import('./types.js').BuildPackageSuccessResult} BuildPackageSuccessResult
  * @typedef {import('@bilt/types').Commitish} Commitish
  * @typedef {import('@bilt/types').Directory} Directory
- * @typedef {import('@bilt/types').LastSuccesfulBuildOfPackage} LastSuccessfulBuildOfPackage
+ * @typedef {import('@bilt/types').LastSuccessfulBuildOfPackage} LastSuccessfulBuildOfPackage
  */
 
 /**

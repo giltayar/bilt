@@ -11,7 +11,7 @@ Each of the packages will have the additional info:
 
 * `dependencies`: the list of packages it depends on directly. From this, a "dependency graph" (a
    DAG) can be built.
-* `lastBuildTime`: a unix timestamp of the last succesful build time of the package.
+* `lastBuildTime`: a unix timestamp of the last successful build time of the package.
 * `isDirty`: the package was changed since it was last built.
 
 ### The invariants

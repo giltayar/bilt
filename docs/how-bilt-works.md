@@ -28,7 +28,7 @@ following invariants:
 
 For more information on the design of how Bilt determines which packages to build, see
 [the design document for
-`@bilt/packages-to-build`](./packages/packages-to-build/docs/design.md#calculating-set-of-packages-to-build).
+`@bilt/packages-to-build`](/packages/packages-to-build/docs/design.md#calculating-set-of-packages-to-build).
 
 ## <a name="version-increment-how"></a>How Bilt increments the package version
 
