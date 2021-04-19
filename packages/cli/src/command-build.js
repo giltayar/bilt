@@ -167,11 +167,22 @@ async function executeDuringPhase(
   biltin,
   dryRun,
 ) {
-  return await buildPackages(
-    finalPackagesToBuild,
-    makePackageBuild(jobConfiguration, rootDirectory, buildOptions, biltin),
-    dryRun,
-  )
+  const packagesToBuildLength = Object.keys(finalPackagesToBuild).length
+
+  /**@return {import('@bilt/build').BuildPackageFunction} */
+  const buildCounter = () => {
+    let index = 1
+    return makePackageBuild(
+      jobConfiguration,
+      rootDirectory,
+      buildOptions,
+      biltin,
+      packagesToBuildLength,
+      index,
+    )
+  }
+
+  return await buildPackages(finalPackagesToBuild, buildCounter(), dryRun)
 }
 
 /**
@@ -274,6 +285,7 @@ async function buildPackages(
     built: /**@type {Package[]}*/ ([]),
   }
   debug('starting build')
+
   for await (const buildPackageResult of build(packageInfosToBuild, buildOrder, buildPackageFunc)) {
     debug(
       `build of ${buildPackageResult.package.directory} ended. result: ${
@@ -479,6 +491,8 @@ function makePackageBuild(
   /**@type {import('@bilt/types').Directory}*/ rootDirectory,
   /**@type {{[x: string]: string|boolean | undefined}} */ buildOptions,
   /**@type {object} */ biltin,
+  /**@type {(number)} */ packagesLength,
+  /**@type {(number)} */ current,
 ) {
   /**@type import('@bilt/build').BuildPackageFunction */
   return async function ({packageInfo}) {
@@ -487,11 +501,12 @@ function makePackageBuild(
       packageInfo.directory,
     ))
 
-    packageHeader('building', packageInfo)
+    packageHeader('building', packageInfo, current, packagesLength)
+
     await executePhase(jobConfiguration, 'during', packageDirectory, buildOptions, biltin, (se) =>
       packageOperation(se.info().name, packageInfo),
     )
-
+    ++current
     return 'success'
   }
 }
