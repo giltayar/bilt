@@ -490,7 +490,7 @@ function makePackageBuild(
   /**@type {{[x: string]: string|boolean | undefined}} */ buildOptions,
   /**@type {object} */ biltin,
   /**@type {(number)} */ packagesLength,
-  /**@type {(number)} */ current,
+  /**@type {(number)} */ pointer,
 ) {
   /**@type import('@bilt/build').BuildPackageFunction */
   return async function ({packageInfo}) {
@@ -499,12 +499,12 @@ function makePackageBuild(
       packageInfo.directory,
     ))
 
-    packageHeader('building', packageInfo, current, packagesLength)
+    packageHeader('building', packageInfo, pointer, packagesLength)
 
     await executePhase(jobConfiguration, 'during', packageDirectory, buildOptions, biltin, (se) =>
       packageOperation(se.info().name, packageInfo),
     )
-    ++current
+    ++pointer
     return 'success'
   }
 }
