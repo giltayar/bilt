@@ -167,18 +167,16 @@ async function executeDuringPhase(
   biltin,
   dryRun,
 ) {
-  const packagesToBuildLength = Object.keys(finalPackagesToBuild).length
-
   /**@return {import('@bilt/build').BuildPackageFunction} */
   const buildCounter = () => {
-    let index = 1
+    let pointer = 1
     return makePackageBuild(
       jobConfiguration,
       rootDirectory,
       buildOptions,
       biltin,
-      packagesToBuildLength,
-      index,
+      Object.keys(finalPackagesToBuild).length,
+      pointer,
     )
   }
 
