@@ -420,7 +420,7 @@ function convertUserPackagesToPackages(directoriesOrPackageNames, packageInfos, 
         .map((d) => {
           if (directoryIsActuallyPackageName(d)) {
             const packageInfoEntry = Object.entries(packageInfos).find(
-              ([, packageInfo]) => d === packageInfo.name,
+              ([, packageInfo]) => d.length > 2? packageInfo.name.includes(d) : d === packageInfo.name,
             )
             if (!packageInfoEntry)
               throw new Error(
