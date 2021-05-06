@@ -516,7 +516,7 @@ async function executePhase(jobConfiguration, phase, packageDirectory, buildOpti
     {
       rendererOptions: {
         showTimer: true,
-        collapse: false,
+        collapseErrors: false,
       },
     },
   ).run()
