@@ -522,13 +522,14 @@ async function executePhase(jobConfiguration, phase, packageDirectory, buildOpti
   ).run()
 }
 
-/** @type {( linesToDisplay?: number) => (payload: string) => string} */
+/** @type {( linesToDisplay?: number) => (payload: string, showAll?: boolean) => string} */
 const StreamBuffer = (linesToDisplay = 10) => {
   /** @type {string[]} */
   let buffer = []
-  return (payload) => {
+  return (payload, showAll = false) => {
     const newLines = splitLines(payload.toString())
     buffer = buffer.concat(newLines)
+    if (showAll) return buffer.join('\n')
     return buffer.slice(Math.max(0, buffer.length - linesToDisplay), buffer.length).join('\n')
   }
 }
@@ -547,7 +548,7 @@ function convertStepExecutionsToTasks(stepExecutions) {
         task.output = buffer(payload)
       })
       childProcess.stderr.on('data', (payload) => {
-        task.output = buffer(payload)
+        task.output = buffer(payload, true)
       })
       await childProcessWait(childProcess, stepExecution.info().command)
     },
