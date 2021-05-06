@@ -2,6 +2,8 @@ import {relative, resolve, join} from 'path'
 import debugMaker from 'debug'
 const debug = debugMaker('bilt:cli:build')
 import throat from 'throat'
+import {Listr} from 'listr2'
+import splitLines from 'split-lines'
 import {findNpmPackages, findNpmPackageInfos} from '@bilt/npm-packages'
 import {calculateBuildOrder, build} from '@bilt/build'
 import {calculatePackagesToBuild} from '@bilt/packages-to-build'
@@ -15,12 +17,10 @@ import {shWithOutput, childProcessWait} from '@bilt/scripting-commons'
 import {
   globalFooter,
   globalHeader,
-  globalOperation,
   globalFailureFooter,
   packageErrorFooter,
   packageFooter,
   packageHeader,
-  packageOperation,
 } from './outputting.js'
 import npmBiltin from './npm-biltin.js'
 import {makeOptionsBiltin} from './options-biltin.js'
@@ -146,9 +146,7 @@ Maybe you forgot to add an upto package?`,
  * @param {object} biltin
  */
 async function executeAfterPhase(jobConfiguration, rootDirectory, buildOptions, biltin) {
-  await executePhase(jobConfiguration, 'after', rootDirectory, buildOptions, biltin, (se) =>
-    globalOperation(se.info().name),
-  )
+  await executePhase(jobConfiguration, 'after', rootDirectory, buildOptions, biltin)
 }
 
 /**
@@ -203,9 +201,7 @@ async function showPackagesForDryRun(finalPackagesToBuild, dryRun) {
  * @param {object} biltin
  */
 async function executeBeforePhase(jobConfiguration, rootDirectory, buildOptions, biltin) {
-  await executePhase(jobConfiguration, 'before', rootDirectory, buildOptions, biltin, (se) =>
-    globalOperation(se.info().name),
-  )
+  await executePhase(jobConfiguration, 'before', rootDirectory, buildOptions, biltin)
 }
 
 /**
@@ -488,10 +484,7 @@ function makePackageBuild(
     ))
 
     packageHeader('building', packageInfo)
-    await executePhase(jobConfiguration, 'during', packageDirectory, buildOptions, biltin, (se) =>
-      packageOperation(se.info().name, packageInfo),
-    )
-
+    await executePhase(jobConfiguration, 'during', packageDirectory, buildOptions, biltin)
     return 'success'
   }
 }
@@ -502,30 +495,70 @@ function makePackageBuild(
  * @param {import('@bilt/types').Directory} packageDirectory
  * @param {Record<string, string | boolean | undefined>} buildOptions
  * @param {object} biltin
- * @param {(se: import('@bilt/build-with-configuration').StepExecution) => void} logExecution
  */
-async function executePhase(
-  jobConfiguration,
-  phase,
-  packageDirectory,
-  buildOptions,
-  biltin,
-  logExecution,
-) {
+async function executePhase(jobConfiguration, phase, packageDirectory, buildOptions, biltin) {
   const stepExecutions = getPhaseExecution(
     jobConfiguration.steps[phase],
     packageDirectory,
     buildOptions,
     {directory: packageDirectory, biltin},
   )
+  return new Listr(
+    [
+      {
+        title: phase,
+        task: (_, task) => task.newListr(convertStepExecutionsToTasks(stepExecutions)),
+        options: {
+          persistentOutput: true,
+        },
+      },
+    ],
+    {
+      rendererOptions: {
+        showTimer: true,
+        collapse: false,
+      },
+    },
+  ).run()
+}
 
-  for (const stepExecution of stepExecutions.filter((se) => se.isEnabled())) {
-    if (await stepExecution.shouldSkip()) {
-      const childProcess = await stepExecution.executeToChildProcess()
-      childProcess.stdout.pipe(process.stdout)
-      childProcess.stderr.pipe(process.stderr)
-      await childProcessWait(childProcess, stepExecution.info().command)
-    }
-    logExecution(stepExecution)
+/** @type {( linesToDisplay?: number) => (payload: string) => string} */
+const StreamBuffer = (linesToDisplay = 10) => {
+  /** @type {string[]} */
+  let buffer = []
+  return (payload) => {
+    const newLines = splitLines(payload.toString())
+    buffer = buffer.concat(newLines)
+    return buffer.slice(Math.max(0, buffer.length - linesToDisplay), buffer.length).join('\n')
   }
+}
+
+/**
+ * @param {import('@bilt/build-with-configuration').StepExecution[]} stepExecutions
+ * @returns {import('listr2').ListrTask[]}
+ */
+function convertStepExecutionsToTasks(stepExecutions) {
+  return stepExecutions.map((stepExecution) => ({
+    title: stepExecution.info().name,
+    task: async (_, task) => {
+      const childProcess = await stepExecution.executeToChildProcess()
+      const buffer = StreamBuffer()
+      childProcess.stdout.on('data', (payload) => {
+        task.output = buffer(payload)
+      })
+      childProcess.stderr.on('data', (payload) => {
+        task.output = buffer(payload)
+      })
+      await childProcessWait(childProcess, stepExecution.info().command)
+    },
+    skip: async () => {
+      const shouldSkip = !(await stepExecution.shouldSkip())
+      return shouldSkip
+    },
+    exitOnError: true,
+    enabled: stepExecution.isEnabled,
+    options: {
+      persistentOutput: true,
+    },
+  }))
 }

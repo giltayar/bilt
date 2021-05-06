@@ -80,6 +80,8 @@
     "cosmiconfig": "^7.0.0",
     "debug": "^4.3.1",
     "globby": "^11.0.2",
+    "listr2": "^3.8.2",
+    "split-lines": "^3.0.0",
     "throat": "^6.0.1",
     "yargs": "^16.2.0"
   }
