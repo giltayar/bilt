@@ -1,6 +1,6 @@
 {
   "name": "@bilt/npm-packages",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "",
   "type": "module",
   "main": "src/npm-packages.js",
