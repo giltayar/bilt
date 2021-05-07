@@ -1,6 +1,6 @@
 {
   "name": "@bilt/npm-next-version",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "",
   "type": "module",
   "exports": "./src/npm-next-version.js",
