@@ -523,10 +523,10 @@ async function executePhase(jobConfiguration, phase, packageDirectory, buildOpti
 }
 
 /** @type {( linesToDisplay?: number) => (payload: string, showAll?: boolean) => string} */
-const StreamBuffer = (linesToDisplay = 10) => {
+function LinesBuffer(linesToDisplay = 10) {
   /** @type {string[]} */
   let buffer = []
-  return (payload, showAll = false) => {
+  return function handlePayload(payload, showAll = false) {
     const newLines = splitLines(payload.toString())
     buffer = buffer.concat(newLines)
     if (showAll) return buffer.join('\n')
@@ -539,27 +539,29 @@ const StreamBuffer = (linesToDisplay = 10) => {
  * @returns {import('listr2').ListrTask[]}
  */
 function convertStepExecutionsToTasks(stepExecutions) {
-  return stepExecutions.map((stepExecution) => ({
-    title: stepExecution.info().name,
-    task: async (_, task) => {
-      const childProcess = await stepExecution.executeToChildProcess()
-      const buffer = StreamBuffer()
-      childProcess.stdout.on('data', (payload) => {
-        task.output = buffer(payload)
-      })
-      childProcess.stderr.on('data', (payload) => {
-        task.output = buffer(payload, true)
-      })
-      await childProcessWait(childProcess, stepExecution.info().command)
-    },
-    skip: async () => {
-      const shouldSkip = !(await stepExecution.shouldSkip())
-      return shouldSkip
-    },
-    exitOnError: true,
-    enabled: stepExecution.isEnabled,
-    options: {
-      persistentOutput: true,
-    },
-  }))
+  return stepExecutions.map(function createTaskFromStep(stepExecution) {
+    return {
+      title: stepExecution.info().name,
+      task: async function (_, task) {
+        const childProcess = await stepExecution.executeToChildProcess()
+        const buffer = LinesBuffer()
+        childProcess.stdout.on('data', (payload) => {
+          task.output = buffer(payload)
+        })
+        childProcess.stderr.on('data', (payload) => {
+          task.output = buffer(payload, true)
+        })
+        await childProcessWait(childProcess, stepExecution.info().command)
+      },
+      skip: async function () {
+        const shouldSkip = !(await stepExecution.shouldSkip())
+        return shouldSkip
+      },
+      exitOnError: true,
+      enabled: stepExecution.isEnabled,
+      options: {
+        persistentOutput: true,
+      },
+    }
+  })
 }
