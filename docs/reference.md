@@ -106,7 +106,7 @@ are relevant for _all_ build job configurations.
 * `job`: the job to execute from the build configuration. If not specified, the job will be `build`.
 * `--config`: the config file to read. Optional, and if does not exist, will search
   for it, as described [above](#configuration-file).
-* `packagesToBuild`: a set of package directories or package names. If a directory, it MUST
+* `packagesToBuild`: a set of package directories or shortcuts or the entire package names. If a directory, it MUST
   start with a `.` or `/` to differentiate from package names. Usually, packages here are
   a subset of packages of the packages determined by the config file's `packages` field,
   but theoretically, you can add to them. If the package is a package _name_, then they must

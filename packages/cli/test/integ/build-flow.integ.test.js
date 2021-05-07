@@ -241,9 +241,9 @@ describe('build-flow (integ)', function () {
     expect(await packageScriptCount(cwd, 'b', 'during2')).to.equal(2)
     expect(await packageScriptCount(cwd, 'c', 'during2')).to.equal(1)
 
-    await runBuild(cwd, 'shortcut name build', undefined, ['a-pac'])
-    expect(await packageScriptCount(cwd, 'a', 'during2')).to.equal(1)
-    expect(await packageScriptCount(cwd, 'b', 'during2')).to.equal(1)
+    await runBuild(cwd, 'forth build - short name', ['a-pack'], undefined)
+    expect(await packageScriptCount(cwd, 'a', 'during2')).to.equal(3)
+    expect(await packageScriptCount(cwd, 'b', 'during2')).to.equal(2)
     expect(await packageScriptCount(cwd, 'c', 'during2')).to.equal(1)
   })
 
