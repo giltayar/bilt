@@ -240,6 +240,28 @@ describe('build-flow (integ)', function () {
     expect(await packageScriptCount(cwd, 'a', 'during2')).to.equal(2)
     expect(await packageScriptCount(cwd, 'b', 'during2')).to.equal(2)
     expect(await packageScriptCount(cwd, 'c', 'during2')).to.equal(1)
+
+    await runBuild(cwd, 'forth build - short name', ['a-pack'], undefined)
+    expect(await packageScriptCount(cwd, 'a', 'during2')).to.equal(3)
+    expect(await packageScriptCount(cwd, 'b', 'during2')).to.equal(2)
+    expect(await packageScriptCount(cwd, 'c', 'during2')).to.equal(1)
+
+    expect(
+      await runBuild(
+        cwd,
+        `more then one package - don't build anything`,
+        ['package'],
+        undefined,
+      ).catch((err) => err.message),
+    ).to.include('there are 3 packages')
+    expect(
+      await runBuild(
+        cwd,
+        `no package match the name - don't build anything`,
+        ['bilt'],
+        undefined,
+      ).catch((err) => err.message),
+    ).to.include('cannot find a package with the name')
   })
 
   it('should use packages and uptos from biltrc', async () => {
