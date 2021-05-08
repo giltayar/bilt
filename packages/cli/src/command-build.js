@@ -14,14 +14,7 @@ import {
   FAKE_COMMITISH_FOR_UNCOMMITED_FILES,
 } from '@bilt/git-packages'
 import {shWithOutput, childProcessWait} from '@bilt/scripting-commons'
-import {
-  globalFooter,
-  globalHeader,
-  globalFailureFooter,
-  packageErrorFooter,
-  packageFooter,
-  packageHeader,
-} from './outputting.js'
+import {globalFooter, globalHeader, globalFailureFooter, packageErrorFooter} from './outputting.js'
 import npmBiltin from './npm-biltin.js'
 import {makeOptionsBiltin} from './options-biltin.js'
 
@@ -31,7 +24,8 @@ import {makeOptionsBiltin} from './options-biltin.js'
  * @typedef {import('@bilt/types').PackageInfos} PackageInfos
  */
 
-/**@param {{
+/**
+ * @param {{
  * jobId: string,
  * rootDirectory: import('@bilt/types').Directory
  * packagesToBuild: string[]
@@ -104,7 +98,7 @@ Maybe you forgot to add an upto package?`,
   }
 
   if (dryRun) {
-    return await showPackagesForDryRun(finalPackagesToBuild, dryRun)
+    return await showPackagesForDryRun(finalPackagesToBuild)
   }
 
   const biltin = {...npmBiltin, ...makeOptionsBiltin(buildOptions)}
@@ -121,7 +115,6 @@ Maybe you forgot to add an upto package?`,
     rootDirectory,
     buildOptions,
     biltin,
-    dryRun,
   )
 
   try {
@@ -155,7 +148,6 @@ async function executeAfterPhase(jobConfiguration, rootDirectory, buildOptions, 
  * @param {import("@bilt/types").Nominal<string, "Directory">} rootDirectory
  * @param {{ [x: string]: string | boolean | undefined; message?: string; force?: boolean; jobId?: string; envelope?: boolean | undefined; }} buildOptions
  * @param {object} biltin
- * @param {boolean} dryRun
  */
 async function executeDuringPhase(
   finalPackagesToBuild,
@@ -163,31 +155,22 @@ async function executeDuringPhase(
   rootDirectory,
   buildOptions,
   biltin,
-  dryRun,
 ) {
   return await buildPackages(
     finalPackagesToBuild,
     makePackageBuild(jobConfiguration, rootDirectory, buildOptions, biltin),
-    dryRun,
   )
 }
 
-/**
- * @param {import("@bilt/types").PackageInfos} finalPackagesToBuild
- * @param {boolean} dryRun
- */
-async function showPackagesForDryRun(finalPackagesToBuild, dryRun) {
+/** @param {import("@bilt/types").PackageInfos} finalPackagesToBuild */
+async function showPackagesForDryRun(finalPackagesToBuild) {
   /** @type {import("@bilt/types").RelativeDirectoryPath[]} */
   const packagesBuildOrder = []
 
-  await buildPackages(
-    finalPackagesToBuild,
-    async ({packageInfo}) => {
-      packagesBuildOrder.push(packageInfo.directory)
-      return 'success'
-    },
-    dryRun,
-  )
+  await buildPackages(finalPackagesToBuild, async ({packageInfo}) => {
+    packagesBuildOrder.push(packageInfo.directory)
+    return 'success'
+  })
 
   console.log(packagesBuildOrder.join(', '))
 
@@ -260,7 +243,6 @@ function makeAllPackagesDirty(packageInfos) {
 async function buildPackages(
   /**@type {PackageInfos} */ packageInfosToBuild,
   /**@type {import('@bilt/build').BuildPackageFunction} */ buildPackageFunc,
-  /**@type {boolean}*/ dryRun,
 ) {
   const buildOrder = calculateBuildOrder({packageInfos: packageInfosToBuild})
 
@@ -285,12 +267,6 @@ async function buildPackages(
       )
     } else if (buildPackageResult.buildResult === 'success') {
       ret.succesful.push(buildPackageResult.package)
-      if (!dryRun) {
-        packageFooter(
-          'build package succeeded',
-          packageInfosToBuild[buildPackageResult.package.directory],
-        )
-      }
     }
   }
 
@@ -476,15 +452,21 @@ function makePackageBuild(
   /**@type {{[x: string]: string|boolean | undefined}} */ buildOptions,
   /**@type {object} */ biltin,
 ) {
-  /**@type import('@bilt/build').BuildPackageFunction */
+  /**@type {import('@bilt/build').BuildPackageFunction} */
   return async function ({packageInfo}) {
     const packageDirectory = /**@type {import('@bilt/types').Directory}*/ (join(
       rootDirectory,
       packageInfo.directory,
     ))
 
-    packageHeader('building', packageInfo)
-    await executePhase(jobConfiguration, 'during', packageDirectory, buildOptions, biltin)
+    await executePhase(
+      jobConfiguration,
+      'during',
+      packageDirectory,
+      buildOptions,
+      biltin,
+      packageInfo,
+    )
     return 'success'
   }
 }
@@ -495,18 +477,32 @@ function makePackageBuild(
  * @param {import('@bilt/types').Directory} packageDirectory
  * @param {Record<string, string | boolean | undefined>} buildOptions
  * @param {object} biltin
+ * @param {PackageInfo=} packageInfo
  */
-async function executePhase(jobConfiguration, phase, packageDirectory, buildOptions, biltin) {
+async function executePhase(
+  jobConfiguration,
+  phase,
+  packageDirectory,
+  buildOptions,
+  biltin,
+  packageInfo,
+) {
   const stepExecutions = getPhaseExecution(
     jobConfiguration.steps[phase],
     packageDirectory,
     buildOptions,
     {directory: packageDirectory, biltin},
   )
+
+  const title = (function formatTitle() {
+    if (phase === 'during' && packageInfo) return `building ${packageInfo.directory}`
+    return phase
+  })()
+
   return new Listr(
     [
       {
-        title: phase,
+        title,
         task: (_, task) => task.newListr(convertStepExecutionsToTasks(stepExecutions)),
         options: {
           persistentOutput: true,
