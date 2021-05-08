@@ -69,5 +69,5 @@ a `[bilt-with-bilt]` text to the commit message, so that it can find it later.
 In each build, Bilt scans the Git logs (a year back), and finds the last
 commit of each package. Each package can have a different "last "commit. If this last
 commit of the package is _not_ a Bilt commit
-(checked by searching the commit message for `[bilt-with-bilt]`), then the package was changed
+(checked by searching the commit message for `[bilt-with-bilt-_branchName_]`), then the package was changed
 after it was built, and so needs to be rebuilt.

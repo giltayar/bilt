@@ -57,10 +57,11 @@ export default async function buildCommand({
   jobConfiguration,
   ...userBuildOptions
 }) {
-  debug(`starting build of ${rootDirectory}`)
+  const branchName = await getGitBranchName(rootDirectory)
+  debug(`starting build of ${rootDirectory} - branch ${branchName}`)
   const buildOptions = {
     ...userBuildOptions,
-    message: userBuildOptions.message + '\n\n\n[bilt-with-bilt]',
+    message: userBuildOptions.message + '\n\n\n[bilt-with-bilt-' + branchName + ']',
     force,
   }
   const {initialSetOfPackagesToBuild, uptoPackages, packageInfos} = await extractPackageInfos(
@@ -322,7 +323,8 @@ async function addLastBuildTimeToPackageInfos(packageInfos, packageChanges, root
             cwd: rootDirectory,
           })
 
-          if (stdout.includes('[bilt-with-bilt]')) {
+          const branchName = await getGitBranchName(rootDirectory)
+          if (stdout.includes(`[bilt-with-bilt-${branchName}]`)) {
             return [packageChange.package.directory, {...packageChange, isDirty: false}]
           } else {
             return [packageChange.package.directory, {...packageChange, isDirty: true}]
@@ -450,6 +452,16 @@ function convertUserPackagesToPackages(directoriesOrPackageNames, packageInfos, 
  */
 function directoryIsActuallyPackageName(directory) {
   return !directory.startsWith('.') && !directory.startsWith('/')
+}
+
+/**
+ * @param {string} cwd
+ */
+async function getGitBranchName(cwd) {
+  const branchName = await shWithOutput(`git branch --show-current`, {
+    cwd,
+  })
+  return branchName.trim()
 }
 
 /**
