@@ -60,9 +60,9 @@ describe('get-phase-execution (unit)', function () {
       {name: 'name2', enableOptions: [], command: 'run2', parameterOptions: ['message']},
       {name: 'name3', enableOptions: [], command: 'never-executed', parameterOptions: []},
     ])
-    expect(await phaseExecution[0].shouldSkip()).to.equal(true)
-    expect(await phaseExecution[1].shouldSkip()).to.equal(true)
-    expect(await phaseExecution[2].shouldSkip()).to.equal(false)
+    expect(await phaseExecution[0].shouldSkip()).to.equal(false)
+    expect(await phaseExecution[1].shouldSkip()).to.equal(false)
+    expect(await phaseExecution[2].shouldSkip()).to.equal(true)
 
     await phaseExecution[0].execute()
     await phaseExecution[1].execute()

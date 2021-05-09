@@ -549,10 +549,7 @@ function convertStepExecutionsToTasks(stepExecutions) {
         })
         await childProcessWait(childProcess, stepExecution.info().command)
       },
-      skip: async function () {
-        const shouldSkip = !(await stepExecution.shouldSkip())
-        return shouldSkip
-      },
+      skip: stepExecution.shouldSkip,
       exitOnError: true,
       enabled: stepExecution.isEnabled,
       options: {
