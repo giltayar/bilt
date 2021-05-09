@@ -1,6 +1,6 @@
 {
   "name": "@bilt/cli",
-  "version": "4.0.31",
+  "version": "5.0.0",
   "description": "",
   "type": "module",
   "main": "src/cli.js",
@@ -33,7 +33,7 @@
     "monorepo"
   ],
   "author": "Gil Tayar <gil@tayar.org>",
-  "licenscd .e": "MIT",
+  "license": "MIT",
   "repository": {
     "url": "https://github.com/giltayar/bilt",
     "type": "git",
@@ -70,7 +70,7 @@
   },
   "dependencies": {
     "@bilt/build": "^10.0.3",
-    "@bilt/build-with-configuration": "^9.3.0",
+    "@bilt/build-with-configuration": "^10.0.0",
     "@bilt/git-packages": "^9.0.5",
     "@bilt/npm-next-version": "^3.0.3",
     "@bilt/npm-packages": "^2.0.4",
