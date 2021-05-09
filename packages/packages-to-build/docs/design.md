@@ -16,7 +16,7 @@ Each of the packages will have the additional info:
 
 ### The invariants
 
-1. A package will be built if it is in the graph subset that links all the uptos to the froms in the
+1. A package will be built if and only if it is in the graph subset that links all the uptos to the froms in the
   dependency graph. In other words, one of its predecessors (recursive) MUST be one of the uptos,
   and one of its descendants (recursive) MUST be one of the froms.
 2. A package will be built if it is dirty.
