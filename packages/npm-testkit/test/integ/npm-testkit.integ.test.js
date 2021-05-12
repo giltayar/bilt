@@ -44,6 +44,6 @@ describe('startNpmRegistry (integ)', function () {
     await writeFile('.npmrc', `registry=${registry}`, {cwd})
     await sh('npm install', {cwd})
 
-    expect(await shWithOutput('npm view lodash version', {cwd})).to.equal('4.17.20\n')
+    expect(await shWithOutput('npm view lodash version', {cwd})).to.equal('4.17.21\n')
   })
 })
