@@ -90,7 +90,9 @@ export async function findChangedFiles({
  * @returns {PackageChange[]}
  */
 export function findLatestPackageChanges({changedFilesInGit, packages}) {
-  const lastCommitOfPackages = /**@type {Map<RelativeDirectoryPath, [Commitish, CommitInfo]>} */ (new Map())
+  const lastCommitOfPackages = /**@type {Map<RelativeDirectoryPath, [Commitish, CommitInfo]>} */ (
+    new Map()
+  )
 
   for (const [commit, commitInfo] of [...changedFilesInGit.entries()]) {
     const packagesInCommit = packages.filter((pkg) =>
@@ -116,10 +118,12 @@ export function findLatestPackageChanges({changedFilesInGit, packages}) {
  * @param {{stdout: string}} diffTreeResult
  */
 function addChangedFilesFromDiffTree(changedFiles, diffTreeResult) {
-  const gitDiffTreeLogLines = /**@type {RelativeFilePath[]}*/ (diffTreeResult.stdout
-    .split('\n')
-    .map((l) => l.trim())
-    .filter((l) => !!l))
+  const gitDiffTreeLogLines = /**@type {RelativeFilePath[]}*/ (
+    diffTreeResult.stdout
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => !!l)
+  )
   /**@type {Commitish|undefined} */
   let currentCommit = undefined
   for (const gitLogLine of gitDiffTreeLogLines) {
@@ -169,10 +173,12 @@ function addChangedFilesFromGitStatus(changedFiles, statusResult) {
  * @param {{stdout: string}} lsFilesResult
  */
 function addUntrackedFiles(changedFiles, lsFilesResult) {
-  const statusLines = /**@type {RelativeFilePath[]} */ (lsFilesResult.stdout
-    .split('\n')
-    .filter((l) => !!l)
-    .map((s) => s.trim()))
+  const statusLines = /**@type {RelativeFilePath[]} */ (
+    lsFilesResult.stdout
+      .split('\n')
+      .filter((l) => !!l)
+      .map((s) => s.trim())
+  )
   for (const statusLine of statusLines) {
     if (changedFiles.has(FAKE_COMMITISH_FOR_UNCOMMITED_FILES)) {
       changedFiles.get(FAKE_COMMITISH_FOR_UNCOMMITED_FILES)?.files.push(statusLine)

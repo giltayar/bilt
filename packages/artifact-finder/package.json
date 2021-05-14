@@ -1,6 +1,6 @@
 {
   "name": "@bilt/artifact-finder",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "description": "",
   "type": "module",
   "exports": "./src/artifact-finder.js",

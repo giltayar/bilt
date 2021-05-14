@@ -31,13 +31,16 @@ export async function main(argv, {exitOnError = false} = {}) {
   } = await yargsOptions.strict().help().parse()
   debug('final options', {rootDirectory, config, jobId, args})
 
-  //@ts-expect-error
-  const success = await (await import(`./command-build.js`)).default({
-    jobId: /**@type{string}*/ (jobId),
-    rootDirectory: /**@type{import('@bilt/types').Directory}*/ (rootDirectory),
-    jobConfiguration: findJobConfigurationInChain(buildConfigurationChain, jobId),
-    ...args,
-  })
+  const success = await (
+    await import(`./command-build.js`)
+  )
+    //@ts-expect-error
+    .default({
+      jobId: /**@type{string}*/ (jobId),
+      rootDirectory: /**@type{import('@bilt/types').Directory}*/ (rootDirectory),
+      jobConfiguration: findJobConfigurationInChain(buildConfigurationChain, jobId),
+      ...args,
+    })
 
   if (!success && exitOnError) {
     process.exit(1)
