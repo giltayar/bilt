@@ -15,10 +15,12 @@ async function findConfig(argv) {
     .strict(false)
     .parse()
 
-  const {config, filepath} =
-    /**@type {NonNullable<import('cosmiconfig/dist/types').CosmiconfigResult>}*/ (
-      configPath ? await cosmiconfig('bilt').load(configPath) : await cosmiconfig('bilt').search()
-    )
+  const {
+    config,
+    filepath,
+  } = /**@type {NonNullable<import('cosmiconfig/dist/types').CosmiconfigResult>}*/ (configPath
+    ? await cosmiconfig('bilt').load(configPath)
+    : await cosmiconfig('bilt').search())
 
   return {config, rootDirectory: dirname(filepath)}
 }
