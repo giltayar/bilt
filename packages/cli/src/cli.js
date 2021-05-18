@@ -31,7 +31,9 @@ export async function main(argv, {exitOnError = false} = {}) {
   } = await yargsOptions.strict().help().parse()
   debug('final options', {rootDirectory, config, jobId, args})
 
-  const success = await (await import(`./command-build.js`))
+  const success = await (
+    await import(`./command-build.js`)
+  )
     //@ts-expect-error
     .default({
       jobId: /**@type{string}*/ (jobId),
