@@ -38,11 +38,11 @@ export function globalOperation(msg) {
 /**
  * @param {string} msg
  * @param {import('@bilt/types').PackageInfo} packageInfo
- * @param {number | null} current
- * @param {number | null} length
+ * @param {number | undefined} current
+ * @param {number | undefined} length
  */
-export function packageHeader(msg, packageInfo, current = null, length = null) {
-  const counterMessage = current && length ? `${current} of ${length}` : ''
+export function packageHeader(msg, packageInfo, current = undefined, length = undefined) {
+  const counterMessage = current && length ? `#${current}/${length}` : ''
   outputFunction(
     chalk.greenBright.underline(`**** [${packageInfo.directory}] ${msg} ${counterMessage} `),
   )
