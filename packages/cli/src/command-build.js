@@ -404,15 +404,14 @@ function convertUserPackagesToPackages(directoriesOrPackageNames, packageInfos, 
                 `cannot find a package with the name "${d}" in any packages in ${rootDirectory}`,
               )
             return {
-              directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (
-                packagesInfoEntry[0][0]
-              ),
+              directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (packagesInfoEntry[0][0]),
             }
           } else {
             return {
-              directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (
-                relative(rootDirectory, d)
-              ),
+              directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (relative(
+                rootDirectory,
+                d,
+              )),
             }
           }
         })
@@ -460,9 +459,10 @@ function makePackageBuild(
 ) {
   /**@type {import('@bilt/build').BuildPackageFunction} */
   return async function ({packageInfo}) {
-    const packageDirectory = /**@type {import('@bilt/types').Directory}*/ (
-      join(rootDirectory, packageInfo.directory)
-    )
+    const packageDirectory = /**@type {import('@bilt/types').Directory}*/ (join(
+      rootDirectory,
+      packageInfo.directory,
+    ))
 
     await executePhase(
       jobConfiguration,
