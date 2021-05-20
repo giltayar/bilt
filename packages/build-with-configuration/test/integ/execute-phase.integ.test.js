@@ -44,11 +44,10 @@ describe('build-with-configuration (integ)', function () {
     )
 
     for (const stepExecution of stepExecutions.filter((se) => se.isEnabled())) {
-      if (await stepExecution.shouldSkip()) {
-        const childProcess = await stepExecution.executeToChildProcess()
+      if (await stepExecution.shouldSkip()) continue
+      const childProcess = await stepExecution.executeToChildProcess()
 
-        await childProcessWait(childProcess, stepExecution.info().command)
-      }
+      await childProcessWait(childProcess, stepExecution.info().command)
     }
 
     expect(await readFileAsString('buildname1', {cwd})).to.equal('')

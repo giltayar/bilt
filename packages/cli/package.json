@@ -1,6 +1,6 @@
 {
   "name": "@bilt/cli",
-  "version": "4.0.29",
+  "version": "5.0.0",
   "description": "",
   "type": "module",
   "main": "src/cli.js",
@@ -33,15 +33,15 @@
     "monorepo"
   ],
   "author": "Gil Tayar <gil@tayar.org>",
-  "licenscd .e": "MIT",
+  "license": "MIT",
   "repository": {
     "url": "https://github.com/giltayar/bilt",
     "type": "git",
     "directory": "packages/cli"
   },
   "devDependencies": {
-    "@babel/core": "^7.13.8",
-    "@babel/eslint-parser": "^7.13.8",
+    "@babel/core": "^7.14.3",
+    "@babel/eslint-parser": "^7.14.3",
     "@babel/plugin-syntax-top-level-await": "^7.12.13",
     "@bilt/git-testkit": "^2.0.3",
     "@bilt/npm-testkit": "^2.0.3",
@@ -52,10 +52,10 @@
     "@types/graphlib": "^2.1.7",
     "@types/js-yaml": "^4.0.0",
     "@types/mocha": "^8.2.1",
-    "@types/node": "^14.14.31",
+    "@types/node": "^15.3.0",
     "@types/yargs": "^16.0.0",
-    "@typescript-eslint/eslint-plugin": "^4.15.2",
-    "@typescript-eslint/parser": "^4.15.2",
+    "@typescript-eslint/eslint-plugin": "^4.24.0",
+    "@typescript-eslint/parser": "^4.24.0",
     "chai": "^4.3.0",
     "chai-subset": "^1.6.0",
     "concurrently": "^6.0.0",
@@ -70,7 +70,7 @@
   },
   "dependencies": {
     "@bilt/build": "^10.0.3",
-    "@bilt/build-with-configuration": "^9.3.0",
+    "@bilt/build-with-configuration": "^10.0.0",
     "@bilt/git-packages": "^9.0.5",
     "@bilt/npm-next-version": "^3.0.3",
     "@bilt/npm-packages": "^2.0.4",
@@ -80,7 +80,9 @@
     "cosmiconfig": "^7.0.0",
     "debug": "^4.3.1",
     "globby": "^11.0.2",
+    "listr2": "^3.8.2",
+    "split-lines": "^3.0.0",
     "throat": "^6.0.1",
-    "yargs": "^16.2.0"
+    "yargs": "^17.0.1"
   }
 }

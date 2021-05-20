@@ -91,12 +91,14 @@ function interimPackageInfoToPackageInfo(interimPackageInfo, packageNamesToPacka
   return {
     directory: interimPackageInfo.directory,
     name: interimPackageInfo.name,
-    dependencies: /**@type{Package[]}*/ (interimPackageInfo.dependencies
-      .map((dep) =>
-        packageNamesToPackagePaths[dep] != null
-          ? {directory: /**@type {RelativeDirectoryPath}*/ (packageNamesToPackagePaths[dep])}
-          : undefined,
-      )
-      .filter((dep) => dep !== undefined)),
+    dependencies: /**@type{Package[]}*/ (
+      interimPackageInfo.dependencies
+        .map((dep) =>
+          packageNamesToPackagePaths[dep] != null
+            ? {directory: /**@type {RelativeDirectoryPath}*/ (packageNamesToPackagePaths[dep])}
+            : undefined,
+        )
+        .filter((dep) => dep !== undefined)
+    ),
   }
 }

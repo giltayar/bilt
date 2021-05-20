@@ -1,6 +1,6 @@
 {
   "name": "@bilt/scripting-commons",
-  "version": "2.0.5",
+  "version": "2.0.8",
   "description": "",
   "type": "module",
   "exports": "./src/scripting-commons.js",
