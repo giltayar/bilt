@@ -42,7 +42,7 @@ export function globalOperation(msg) {
  * @param {number | null} length
  */
 export function packageHeader(msg, packageInfo, current = null, length = null) {
-  const counterMessage = current && current ? `${current} of ${length}` : ''
+  const counterMessage = current && length ? `${current} of ${length}` : ''
   outputFunction(
     chalk.greenBright.underline(`**** [${packageInfo.directory}] ${msg} ${counterMessage} `),
   )
