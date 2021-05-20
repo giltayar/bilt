@@ -57,7 +57,7 @@ export default async function buildCommand({
   jobConfiguration,
   ...userBuildOptions
 }) {
-  const branchName = await getGitBranchName(rootDirectory)
+  const branchName = await getGitBranchNameOrCommitSha(rootDirectory)
   debug(`starting build of ${rootDirectory} - branch ${branchName}`)
   const buildOptions = {
     ...userBuildOptions,
@@ -310,6 +310,8 @@ async function buildPackages(
  * @returns {Promise<import('@bilt/packages-to-build').PackageInfosWithBuildTime>}
  */
 async function addLastBuildTimeToPackageInfos(packageInfos, packageChanges, rootDirectory) {
+  const branchName = await getGitBranchNameOrCommitSha(rootDirectory)
+  const biltCommitMessage = `[bilt-with-bilt-${branchName}]`
   const dirtyInfo = new Map(
     //@ts-ignore
     await Promise.all(
@@ -322,9 +324,7 @@ async function addLastBuildTimeToPackageInfos(packageInfos, packageChanges, root
           const stdout = await shWithOutput(`git show --format=%B -s ${packageChange.commit}`, {
             cwd: rootDirectory,
           })
-
-          const branchName = await getGitBranchName(rootDirectory)
-          if (stdout.includes(`[bilt-with-bilt-${branchName}]`)) {
+          if (stdout.includes(biltCommitMessage)) {
             return [packageChange.package.directory, {...packageChange, isDirty: false}]
           } else {
             return [packageChange.package.directory, {...packageChange, isDirty: true}]
@@ -457,10 +457,16 @@ function directoryIsActuallyPackageName(directory) {
 /**
  * @param {string} cwd
  */
-async function getGitBranchName(cwd) {
+async function getGitBranchNameOrCommitSha(cwd) {
   const branchName = await shWithOutput(`git branch --show-current`, {
     cwd,
   })
+  if (!branchName) {
+    const commitSha = await shWithOutput(`git rev-parse --verify HEAD`, {
+      cwd,
+    })
+    return commitSha.trim()
+  }
   return branchName.trim()
 }
 
