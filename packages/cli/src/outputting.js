@@ -38,9 +38,14 @@ export function globalOperation(msg) {
 /**
  * @param {string} msg
  * @param {import('@bilt/types').PackageInfo} packageInfo
+ * @param {number | undefined} current
+ * @param {number | undefined} length
  */
-export function packageHeader(msg, packageInfo) {
-  outputFunction(chalk.greenBright.underline(`**** [${packageInfo.directory}] ${msg}`))
+export function packageHeader(msg, packageInfo, current = undefined, length = undefined) {
+  const counterMessage = current && length ? `#${current}/${length}` : ''
+  outputFunction(
+    chalk.greenBright.underline(`**** [${packageInfo.directory}] ${msg} ${counterMessage} `),
+  )
 }
 
 /**

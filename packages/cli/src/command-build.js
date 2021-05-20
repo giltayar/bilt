@@ -14,7 +14,13 @@ import {
   FAKE_COMMITISH_FOR_UNCOMMITED_FILES,
 } from '@bilt/git-packages'
 import {shWithOutput, childProcessWait} from '@bilt/scripting-commons'
-import {globalFooter, globalHeader, globalFailureFooter, packageErrorFooter} from './outputting.js'
+import {
+  globalFooter,
+  globalHeader,
+  globalFailureFooter,
+  packageErrorFooter,
+  packageHeader,
+} from './outputting.js'
 import npmBiltin from './npm-biltin.js'
 import {makeOptionsBiltin} from './options-biltin.js'
 
@@ -158,7 +164,13 @@ async function executeDuringPhase(
 ) {
   return await buildPackages(
     finalPackagesToBuild,
-    makePackageBuild(jobConfiguration, rootDirectory, buildOptions, biltin),
+    makePackageBuild(
+      jobConfiguration,
+      rootDirectory,
+      buildOptions,
+      biltin,
+      Object.keys(finalPackagesToBuild).length,
+    ),
   )
 }
 
@@ -252,6 +264,7 @@ async function buildPackages(
     built: /**@type {Package[]}*/ ([]),
   }
   debug('starting build')
+
   for await (const buildPackageResult of build(packageInfosToBuild, buildOrder, buildPackageFunc)) {
     debug(
       `build of ${buildPackageResult.package.directory} ended. result: ${
@@ -404,15 +417,14 @@ function convertUserPackagesToPackages(directoriesOrPackageNames, packageInfos, 
                 `cannot find a package with the name "${d}" in any packages in ${rootDirectory}`,
               )
             return {
-              directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (
-                packagesInfoEntry[0][0]
-              ),
+              directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (packagesInfoEntry[0][0]),
             }
           } else {
             return {
-              directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (
-                relative(rootDirectory, d)
-              ),
+              directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (relative(
+                rootDirectory,
+                d,
+              )),
             }
           }
         })
@@ -457,12 +469,19 @@ function makePackageBuild(
   /**@type {import('@bilt/types').Directory}*/ rootDirectory,
   /**@type {{[x: string]: string|boolean | undefined}} */ buildOptions,
   /**@type {object} */ biltin,
+  /**@type {(number)} */ packagesLength,
 ) {
-  /**@type {import('@bilt/build').BuildPackageFunction} */
+  /**@type import('@bilt/build').BuildPackageFunction */
+
+  /**@type {(number)}*/
+  let buildIndex = 1
+
   return async function ({packageInfo}) {
-    const packageDirectory = /**@type {import('@bilt/types').Directory}*/ (
-      join(rootDirectory, packageInfo.directory)
-    )
+    const packageDirectory = /**@type {import('@bilt/types').Directory}*/ (join(
+      rootDirectory,
+      packageInfo.directory,
+    ))
+    packageHeader('building', packageInfo, buildIndex, packagesLength)
 
     await executePhase(
       jobConfiguration,
@@ -472,6 +491,7 @@ function makePackageBuild(
       biltin,
       packageInfo,
     )
+    ++buildIndex
     return 'success'
   }
 }
