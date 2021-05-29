@@ -1,10 +1,6 @@
 {
 	"folders": [
 		{
-			"name": "artifact-finder",
-			"path": "packages/artifact-finder"
-		},
-		{
 			"name": "build",
 			"path": "packages/build"
 		},
