@@ -28,7 +28,7 @@ export async function main(argv, {exitOnError = false} = {}) {
   const {
     _: [jobId = 'build'],
     ...args
-  } = await yargsOptions.strict().help().parse()
+  } = await yargsOptions.strict().help().parseAsync()
   debug('final options', {rootDirectory, config, jobId, args})
 
   const success = await (

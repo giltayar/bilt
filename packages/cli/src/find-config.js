@@ -6,14 +6,14 @@ import {cosmiconfig} from 'cosmiconfig'
  * @param {string[]} argv
  */
 async function findConfig(argv) {
-  const {config: configPath} = yargs(argv)
+  const {config: configPath} = await yargs(argv)
     .option('config', {
       alias: 'c',
       type: 'string',
     })
     .help(false)
     .strict(false)
-    .parse()
+    .parseAsync()
 
   const {config, filepath} =
     /**@type {NonNullable<import('cosmiconfig/dist/types').CosmiconfigResult>}*/ (

@@ -14,6 +14,7 @@ import {
   packageScriptTime,
   repoScriptCount,
   prepareForSimpleBuild,
+  createPackageWithNameSimilarToAPackage,
 } from '../commons/setup-and-run.js'
 
 describe('build-flow (integ)', function () {
@@ -245,6 +246,18 @@ describe('build-flow (integ)', function () {
     expect(await packageScriptCount(cwd, 'a', 'during2')).to.equal(3)
     expect(await packageScriptCount(cwd, 'b', 'during2')).to.equal(2)
     expect(await packageScriptCount(cwd, 'c', 'during2')).to.equal(1)
+  })
+
+  it('should find packages when short name is used', async () => {
+    const cwd = await prepareForSimpleBuild('simple-build.yaml', {packages: ['*']})
+    await createAdepsBdepsCPackages(cwd)
+    await createPackageWithNameSimilarToAPackage(cwd)
+
+    await runBuild(cwd, 'multiple packages', ['a-package-l'], undefined)
+    expect(await packageScriptCount(cwd, 'a', 'during2')).to.equal(0)
+    expect(await packageScriptCount(cwd, 'a-package-longer', 'during2')).to.equal(1)
+    expect(await packageScriptCount(cwd, 'b', 'during2')).to.equal(0)
+    expect(await packageScriptCount(cwd, 'c', 'during2')).to.equal(0)
 
     expect(
       await runBuild(
@@ -253,7 +266,8 @@ describe('build-flow (integ)', function () {
         ['package'],
         undefined,
       ).catch((err) => err.message),
-    ).to.include('there are 3 packages')
+    ).to.include('there are 4 packages')
+
     expect(
       await runBuild(
         cwd,
@@ -262,6 +276,10 @@ describe('build-flow (integ)', function () {
         undefined,
       ).catch((err) => err.message),
     ).to.include('cannot find a package with the name')
+
+    await runBuild(cwd, 'exact name', ['a-package'], undefined)
+    expect(await packageScriptCount(cwd, 'a', 'during2')).to.equal(1)
+    expect(await packageScriptCount(cwd, 'a-package-longer', 'during2')).to.equal(1)
   })
 
   it('should use packages and uptos from biltrc', async () => {

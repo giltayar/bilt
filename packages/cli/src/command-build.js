@@ -391,18 +391,25 @@ function convertUserPackagesToPackages(directoriesOrPackageNames, packageInfos, 
         .filter((d) => d !== '*')
         .map((d) => {
           if (directoryIsActuallyPackageName(d)) {
-            const packagesInfoEntry = Object.entries(packageInfos).filter(([, packageInfo]) =>
+            let packagesInfoEntry = Object.entries(packageInfos).filter(([, packageInfo]) =>
               packageInfo.name.includes(d),
             )
-            if (packagesInfoEntry.length > 1) {
-              throw new Error(
-                `there are ${packagesInfoEntry.length} packages with the name "${d}" in any packages in ${rootDirectory}`,
-              )
-            }
-            if (packagesInfoEntry.length === 0)
+            if (packagesInfoEntry.length === 0) {
               throw new Error(
                 `cannot find a package with the name "${d}" in any packages in ${rootDirectory}`,
               )
+            } else if (packagesInfoEntry.length > 1) {
+              const exactPackageInfoEntry = packagesInfoEntry.find(
+                ([, packageInfo]) => packageInfo.name === d,
+              )
+              if (exactPackageInfoEntry === undefined) {
+                throw new Error(
+                  `there are ${packagesInfoEntry.length} packages with the name "${d}" in any packages in ${rootDirectory}`,
+                )
+              } else {
+                packagesInfoEntry = [exactPackageInfoEntry]
+              }
+            }
             return {
               directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (
                 packagesInfoEntry[0][0]

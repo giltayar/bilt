@@ -93,6 +93,25 @@ export async function createPackages(cwd, registry, aPackageDir, bPackageDir, cP
   return {cPackageJson, bPackageJson}
 }
 
+/**
+ * @param {string} cwd
+ */
+export async function createPackageWithNameSimilarToAPackage(cwd) {
+  const aPackageLonger = 'a-package-longer'
+  const aPackageLongerDir = `./${aPackageLonger}`
+  const build = `echo $(expr $(cat build-count) + 1) >build-count`
+  await writeFile(
+    [aPackageLongerDir, 'package.json'],
+    {
+      name: `${aPackageLonger}-package`,
+      version: '1.0.0',
+      scripts: {build},
+    },
+    {cwd},
+  )
+  await writeFile([aPackageLongerDir, 'build-count'], '0', {cwd})
+}
+
 export async function prepareGitAndNpm() {
   const cwd = await makeTemporaryDirectory()
   const pushTarget = await makeTemporaryDirectory()
