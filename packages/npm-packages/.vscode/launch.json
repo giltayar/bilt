@@ -10,13 +10,8 @@
       "name": "Mocha Tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [
-        "--require",
-        "ts-node/register",
         "--no-timeouts",
-        "--trace-warnings",
-        "'test/unit/*.test.?s'",
-        "'test/it/*.test.?s'",
-        "'test/e2e/*.test.?s'"
+        "test/**/*.test.?s"
       ],
       "env": {
         "DEBUG": "applitools:${workspaceFolderBasename}*"

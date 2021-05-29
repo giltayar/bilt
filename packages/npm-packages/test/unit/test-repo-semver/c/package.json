@@ -1,0 +1,4 @@
+{
+  "name": "c-package",
+  "dependencies": {"b-package": "asdjksdfkhsafd"}
+}

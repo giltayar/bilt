@@ -1,3 +1,5 @@
 {
-  "name": "@lalala/a-package"
+  "name": "@lalala/a-package",
+  "version": "1.4.3",
+  "dependencies": {"not-here": "1.0.0"}
 }

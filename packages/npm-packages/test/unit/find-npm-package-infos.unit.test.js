@@ -27,4 +27,21 @@ describe('findNpmPackageInfos (unit)', function () {
       'adir/b': {directory: 'adir/b', name: '@lalala/b-package', dependencies: [{directory: 'a'}]},
     })
   })
+
+  it('should ignore dependencies that are not semver compatible', async () => {
+    const rootDirectory = /**@type {Directory}*/ (path.join(__dirname, 'test-repo-semver'))
+
+    const packages = [
+      {directory: /**@type {import('@bilt/types').RelativeDirectoryPath}*/ ('a')},
+      {directory: /**@type {import('@bilt/types').RelativeDirectoryPath}*/ ('b')},
+      {directory: /**@type {import('@bilt/types').RelativeDirectoryPath}*/ ('c')},
+    ]
+    const packageInfos = await findNpmPackageInfos({rootDirectory, packages})
+
+    expect(packageInfos).to.eql({
+      a: {directory: 'a', name: 'a-package', dependencies: []},
+      b: {directory: 'b', name: 'b-package', dependencies: [{directory: 'c'}]},
+      c: {directory: 'c', name: 'c-package', dependencies: [{directory: 'b'}]},
+    })
+  })
 })

@@ -1,0 +1,5 @@
+{
+  "name": "b-package",
+  "version": "1.5.7",
+  "dependencies": {"a-package": "^1.0.0", "c-package": "^1.9.3"}
+}
