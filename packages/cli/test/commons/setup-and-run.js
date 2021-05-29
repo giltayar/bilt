@@ -127,13 +127,18 @@ export async function prepareGitAndNpm() {
 /**
  * @param {string} buildConfigurationName
  * @param {{[x: string]: any}} [moreBuiltRc]
+ * @param {string} [biltRcLocation]
  */
-export async function prepareForSimpleBuild(buildConfigurationName, moreBuiltRc) {
+export async function prepareForSimpleBuild(
+  buildConfigurationName,
+  moreBuiltRc,
+  biltRcLocation = '.biltrc.json',
+) {
   const cwd = await makeTemporaryDirectory()
   await init(cwd)
 
   await writeFile(
-    '.biltrc.json',
+    biltRcLocation,
     {jobs: resolve(__dirname, buildConfigurationName), ...moreBuiltRc},
     {cwd},
   )
