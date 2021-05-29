@@ -97,13 +97,16 @@ Maybe you forgot to add an upto package?`,
     return true
   }
 
+  const packagesInBuildOrder = await getPackagesInBuildOrder(finalPackagesToBuild)
+
   if (dryRun) {
-    return await showPackagesForDryRun(finalPackagesToBuild)
+    console.log(packagesInBuildOrder.join(', '))
+    return true
   }
 
   const biltin = {...npmBiltin, ...makeOptionsBiltin(buildOptions)}
 
-  globalHeader(`building ${Object.keys(finalPackagesToBuild).join(', ')}`)
+  globalHeader(`building ${packagesInBuildOrder.join(', ')}`)
 
   if (before) {
     await executeBeforePhase(jobConfiguration, rootDirectory, buildOptions, biltin)
@@ -163,7 +166,7 @@ async function executeDuringPhase(
 }
 
 /** @param {import("@bilt/types").PackageInfos} finalPackagesToBuild */
-async function showPackagesForDryRun(finalPackagesToBuild) {
+async function getPackagesInBuildOrder(finalPackagesToBuild) {
   /** @type {import("@bilt/types").RelativeDirectoryPath[]} */
   const packagesBuildOrder = []
 
@@ -172,9 +175,7 @@ async function showPackagesForDryRun(finalPackagesToBuild) {
     return 'success'
   })
 
-  console.log(packagesBuildOrder.join(', '))
-
-  return true
+  return packagesBuildOrder
 }
 
 /**
