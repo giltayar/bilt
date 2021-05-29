@@ -1,6 +1,6 @@
 {
   "name": "@bilt/cli",
-  "version": "5.0.3",
+  "version": "5.0.4",
   "description": "",
   "type": "module",
   "main": "src/cli.js",
@@ -73,7 +73,7 @@
     "@bilt/build-with-configuration": "^10.0.1",
     "@bilt/git-packages": "^9.0.6",
     "@bilt/npm-next-version": "^3.0.5",
-    "@bilt/npm-packages": "^2.0.6",
+    "@bilt/npm-packages": "^3.0.0",
     "@bilt/packages-to-build": "^9.0.5",
     "@bilt/scripting-commons": "^2.0.8",
     "chalk": "^4.1.1",

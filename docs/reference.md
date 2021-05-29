@@ -29,12 +29,6 @@ like to keep it out of the root of your repository.
    Globs are supported (using [`globby`](https://github.com/sindresorhus/globby)),
    so you can specify `["packages/*"]` if you wish.
 
-   Specifying ["*"] tells Bilt to auto-discover the packages by crawling the
-   monorepo directories and looking for directories with a `package.json`.
-   When auto-discovering a package,
-   it does not look inside that package for another package, so nested packages
-   are not supported in auto-discovery
-   (although they are supported by specifying packages explicitly).
 * `jobs`: either the JSON of a build configuration (that builds the `packages`), or a string
   containing the path to the build configuration (which will be loaded using
   [`cosmiconfig`](https://github.com/davidtheclark/cosmiconfig)). If empty, will default to [the

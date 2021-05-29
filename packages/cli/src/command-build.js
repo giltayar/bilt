@@ -1,10 +1,10 @@
-import {relative, resolve, join} from 'path'
+import {relative, join} from 'path'
 import debugMaker from 'debug'
 const debug = debugMaker('bilt:cli:build')
 import throat from 'throat'
 import {Listr} from 'listr2'
 import splitLines from 'split-lines'
-import {findNpmPackages, findNpmPackageInfos} from '@bilt/npm-packages'
+import {findNpmPackageInfos} from '@bilt/npm-packages'
 import {calculateBuildOrder, build} from '@bilt/build'
 import {calculatePackagesToBuild} from '@bilt/packages-to-build'
 import {getPhaseExecution} from '@bilt/build-with-configuration'
@@ -349,7 +349,7 @@ async function extractPackageInfos(
   )
 
   if (packages.length === 0) {
-    throw new Error('no packages to build. You can let bilt autofind your packages using "*"')
+    throw new Error('no packages to build')
   }
 
   const packageInfos = await findNpmPackageInfos({
@@ -358,9 +358,7 @@ async function extractPackageInfos(
   })
 
   const initialSetOfPackagesToBuild =
-    !packagesToBuildDirectories ||
-    packagesToBuildDirectories.length === 0 ||
-    packagesToBuildDirectories[0] === '*'
+    !packagesToBuildDirectories || packagesToBuildDirectories.length === 0
       ? Object.values(packageInfos).map((p) => ({
           directory: p.directory,
         }))
@@ -387,42 +385,40 @@ async function extractPackageInfos(
 function convertUserPackagesToPackages(directoriesOrPackageNames, packageInfos, rootDirectory) {
   return directoriesOrPackageNames == null
     ? undefined
-    : directoriesOrPackageNames
-        .filter((d) => d !== '*')
-        .map((d) => {
-          if (directoryIsActuallyPackageName(d)) {
-            let packagesInfoEntry = Object.entries(packageInfos).filter(([, packageInfo]) =>
-              packageInfo.name.includes(d),
+    : directoriesOrPackageNames.map((d) => {
+        if (directoryIsActuallyPackageName(d)) {
+          let packagesInfoEntry = Object.entries(packageInfos).filter(([, packageInfo]) =>
+            packageInfo.name.includes(d),
+          )
+          if (packagesInfoEntry.length === 0) {
+            throw new Error(
+              `cannot find a package with the name "${d}" in any packages in ${rootDirectory}`,
             )
-            if (packagesInfoEntry.length === 0) {
+          } else if (packagesInfoEntry.length > 1) {
+            const exactPackageInfoEntry = packagesInfoEntry.find(
+              ([, packageInfo]) => packageInfo.name === d,
+            )
+            if (exactPackageInfoEntry === undefined) {
               throw new Error(
-                `cannot find a package with the name "${d}" in any packages in ${rootDirectory}`,
+                `there are ${packagesInfoEntry.length} packages with the name "${d}" in any packages in ${rootDirectory}`,
               )
-            } else if (packagesInfoEntry.length > 1) {
-              const exactPackageInfoEntry = packagesInfoEntry.find(
-                ([, packageInfo]) => packageInfo.name === d,
-              )
-              if (exactPackageInfoEntry === undefined) {
-                throw new Error(
-                  `there are ${packagesInfoEntry.length} packages with the name "${d}" in any packages in ${rootDirectory}`,
-                )
-              } else {
-                packagesInfoEntry = [exactPackageInfoEntry]
-              }
-            }
-            return {
-              directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (
-                packagesInfoEntry[0][0]
-              ),
-            }
-          } else {
-            return {
-              directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (
-                relative(rootDirectory, d)
-              ),
+            } else {
+              packagesInfoEntry = [exactPackageInfoEntry]
             }
           }
-        })
+          return {
+            directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (
+              packagesInfoEntry[0][0]
+            ),
+          }
+        } else {
+          return {
+            directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (
+              relative(rootDirectory, d)
+            ),
+          }
+        }
+      })
 }
 
 /**
@@ -435,27 +431,18 @@ function directoryIsActuallyPackageName(directory) {
 /**
  * @param {string} rootDirectory
  * @param {string[][]} directoryPackages
+ *
+ * @returns {Promise<Package[]>}
  */
 async function convertDirectoriesToPackages(rootDirectory, ...directoryPackages) {
-  /** @type {string[]} */
-  // @ts-expect-error
-  const allDirectoryPackages = [].concat(...directoryPackages.filter((d) => !!d))
-
-  const autoFoundPackages = allDirectoryPackages.some((d) => d === '*')
-    ? await findNpmPackages({
-        rootDirectory: /**@type{import('@bilt/types').Directory}*/ (rootDirectory),
-      })
-    : undefined
-
-  const allDirectoryPackagesWithAutoFoundPackages = autoFoundPackages
-    ? allDirectoryPackages
-        .filter((d) => !directoryIsActuallyPackageName(d))
-        .concat(autoFoundPackages.map((p) => resolve(rootDirectory, p.directory)))
-    : allDirectoryPackages.filter((d) => !directoryIsActuallyPackageName(d))
-
-  return [...new Set(allDirectoryPackagesWithAutoFoundPackages)].map((d) => ({
-    directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (relative(rootDirectory, d)),
-  }))
+  return [...new Set(directoryPackages.flat())]
+    .filter((d) => !!d)
+    .filter((d) => !directoryIsActuallyPackageName(d))
+    .map((d) => ({
+      directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (
+        relative(rootDirectory, d)
+      ),
+    }))
 }
 
 /**@return {import('@bilt/build').BuildPackageFunction} */

@@ -26,7 +26,7 @@ describe('default-build (integ)', function () {
       then not build because nothing changed`, async () => {
     const {registry, cwd, pushTarget} = await prepareGitAndNpm()
 
-    await writeFile(['.biltrc.json'], {}, {cwd})
+    await writeFile(['.biltrc.json'], {packages: ['./*']}, {cwd})
     await enablePackageToPublishToRegistry(cwd, registry)
 
     await writeFile(['a', 'package.json'], {name: 'a-package', version: '1.0.0'}, {cwd})
@@ -36,8 +36,6 @@ describe('default-build (integ)', function () {
     await writeFile(['b', 'package.json'], {name: 'b-package', version: '2.0.0'}, {cwd})
     await enablePackageToPublishToRegistry(join(cwd, 'b'), registry)
     await sh('npm publish', {cwd: join(cwd, 'b')})
-
-    await writeFile(['not-a-package', 'foo.txt'], 'foo', {cwd})
 
     await runBuild(cwd, 'first build', ['./a', './b'])
 
@@ -74,7 +72,7 @@ describe('default-build (integ)', function () {
       'a/package-lock.json',
     ])
 
-    await runBuild(cwd, 'third build', ['*'])
+    await runBuild(cwd, 'third build', [])
     const noBuildHistory = Object.entries(await commitHistory(cwd))
     expect(noBuildHistory).to.have.length(history.length)
   })
@@ -83,10 +81,10 @@ describe('default-build (integ)', function () {
     const {registry, cwd} = await prepareGitAndNpm()
     const {cPackageJson, bPackageJson} = await createAdepsBdepsCPackages(cwd, registry)
 
-    await writeFile('.biltrc.json', {jobs: './extends-default.json'}, {cwd})
+    await writeFile('.biltrc.json', {packages: ['./*'], jobs: './extends-default.json'}, {cwd})
     await writeFile('extends-default.json', {extends: '#default', jobs: {}}, {cwd})
 
-    await runBuild(cwd, 'first build', ['*'], ['./a'])
+    await runBuild(cwd, 'first build', [], ['./a'])
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('1\n')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('1\n')
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
@@ -100,7 +98,7 @@ describe('default-build (integ)', function () {
     })
 
     await writeFile(['b', 'build-this'], 'yes!', {cwd})
-    await runBuild(cwd, 'second build', ['*'], ['./a'])
+    await runBuild(cwd, 'second build', [], ['./a'])
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('2\n')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('2\n')
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
@@ -113,7 +111,7 @@ describe('default-build (integ)', function () {
       version: '2.0.2',
     })
 
-    await runBuild(cwd, 'second build', ['*'], ['./a'])
+    await runBuild(cwd, 'second build', [], ['./a'])
     expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('2\n')
     expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('2\n')
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
