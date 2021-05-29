@@ -13,6 +13,7 @@ import {
   findLatestPackageChanges,
   FAKE_COMMITISH_FOR_UNCOMMITED_FILES,
 } from '@bilt/git-packages'
+import inquirer from 'inquirer'
 import {shWithOutput, childProcessWait} from '@bilt/scripting-commons'
 import {globalFooter, globalHeader, globalFailureFooter, packageErrorFooter} from './outputting.js'
 import npmBiltin from './npm-biltin.js'
@@ -52,11 +53,6 @@ export default async function buildCommand({
   ...userBuildOptions
 }) {
   debug(`starting build of ${rootDirectory}`)
-  const buildOptions = {
-    ...userBuildOptions,
-    message: userBuildOptions.message + '\n\n\n[bilt-with-bilt]',
-    force,
-  }
   const {initialSetOfPackagesToBuild, uptoPackages, packageInfos} = await extractPackageInfos(
     rootDirectory,
     packages,
@@ -102,6 +98,15 @@ Maybe you forgot to add an upto package?`,
   if (dryRun) {
     console.log(packagesInBuildOrder.join(', '))
     return true
+  }
+
+  const message =
+    userBuildOptions.message === 'marker-for-no-message' ? await getMessageFromUser() : undefined
+
+  const buildOptions = {
+    ...userBuildOptions,
+    message: message + '\n\n\n[bilt-with-bilt]',
+    force,
   }
 
   const biltin = {...npmBiltin, ...makeOptionsBiltin(buildOptions)}
@@ -557,4 +562,9 @@ function convertStepExecutionsToTasks(stepExecutions) {
       },
     }
   })
+}
+
+async function getMessageFromUser() {
+  return (await inquirer.prompt({name: 'message', validate: (x) => (!x ? 'required' : true)}))
+    .message
 }

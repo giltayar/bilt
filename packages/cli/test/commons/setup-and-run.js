@@ -1,7 +1,6 @@
 import {promises} from 'fs'
-import {promisify} from 'util'
+import execa from 'execa'
 import {basename, join, resolve} from 'path'
-import {execFile} from 'child_process'
 import {init, commitAll} from '@bilt/git-testkit'
 import {startNpmRegistry, enablePackageToPublishToRegistry} from '@bilt/npm-testkit'
 import {
@@ -187,12 +186,18 @@ export async function runBuild(
  * @param {string} [message]
  * @param {string[]} [cliArgs]
  * @param {string[]} [packages]
+ * @param {string} [stdin]
  */
-export async function runBuildCli(cwd, message = 'a message', cliArgs, packages = undefined) {
-  return await promisify(execFile)(
-    resolve(__dirname, '../../src/run-bilt.js'),
-    [...(packages && packages.length > 0 ? packages : []), '-m', message, ...(cliArgs || [])],
-    {cwd},
+export async function runBuildCli(cwd, message, cliArgs, packages = undefined, stdin) {
+  return await execa(
+    'node',
+    [
+      resolve(__dirname, '../../src/run-bilt.js'),
+      ...(packages && packages.length > 0 ? packages : []),
+      ...(message ? ['-m', message] : []),
+      ...(cliArgs || []),
+    ],
+    {cwd, input: stdin},
   )
 }
 

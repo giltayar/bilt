@@ -29,6 +29,26 @@ describe('applitools build (e2e)', function () {
     expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
   })
 
+  it(`build prompt for message`, async () => {
+    const {registry, cwd} = await prepareGitAndNpm()
+    await createAdepsBdepsCPackages(cwd, registry)
+    await writeFile('.biltrc.json', {packages: ['./*']}, {cwd})
+
+    const {stdout} = await runBuildCli(
+      join(cwd, 'c'),
+      undefined,
+      ['.'],
+      undefined,
+      'build c in its own directory',
+    )
+
+    expect(stdout).to.include('message').and.to.include('build c in its own directory')
+
+    expect(await readFileAsString(['a', 'build-count'], {cwd})).to.equal('0')
+    expect(await readFileAsString(['b', 'build-count'], {cwd})).to.equal('0')
+    expect(await readFileAsString(['c', 'build-count'], {cwd})).to.equal('1\n')
+  })
+
   it('should show a warning on NO_LinkeD_UPTO', async () => {
     const {registry, cwd} = await prepareGitAndNpm()
     await createAdepsBdepsCPackages(cwd, registry)
@@ -61,7 +81,7 @@ describe('applitools build (e2e)', function () {
     await createAdepsBdepsCPackages(cwd, registry)
     await writeFile('.biltrc.json', {packages: ['./*']}, {cwd})
 
-    const {stdout} = await runBuildCli(cwd, 'build all', ['--dry-run', '--upto=./a'])
+    const {stdout} = await runBuildCli(cwd, undefined, ['--dry-run', '--upto=./a'])
 
     expect(stdout.trim()).to.equal('c, b, a')
   })

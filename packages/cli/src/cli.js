@@ -292,8 +292,13 @@ function makeParameterOption(option, optionDefaults) {
     {
       group: 'Build options:',
       type: 'string',
-      default: optionDefaults[option] === undefined ? undefined : optionDefaults[option],
-      demandOption: option === 'message' ? true : false,
+      default:
+        option === 'message'
+          ? 'marker-for-no-message'
+          : optionDefaults[option] === undefined
+          ? undefined
+          : optionDefaults[option],
+      demandOption: false,
       alias: option === 'message' ? 'm' : undefined,
     },
   ]
