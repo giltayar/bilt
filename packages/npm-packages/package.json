@@ -1,6 +1,6 @@
 {
   "name": "@bilt/npm-packages",
-  "version": "2.0.6",
+  "version": "3.0.0",
   "description": "",
   "type": "module",
   "main": "src/npm-packages.js",
@@ -37,28 +37,27 @@
     "directory": "packages/npm-packages"
   },
   "dependencies": {
-    "@bilt/artifact-finder": "^3.0.4",
-    "@bilt/types": "^3.0.2",
+    "@bilt/types": "^3.0.3",
     "debug": "^4.3.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.14.0",
-    "@babel/eslint-parser": "^7.13.14",
+    "@babel/core": "^7.14.3",
+    "@babel/eslint-parser": "^7.14.4",
     "@babel/plugin-syntax-top-level-await": "^7.12.13",
-    "@bilt/git-testkit": "^2.0.3",
+    "@bilt/git-testkit": "^2.0.4",
     "@types/chai": "^4.2.18",
     "@types/mocha": "^8.2.2",
-    "@types/node": "^15.0.2",
-    "@typescript-eslint/eslint-plugin": "^4.23.0",
-    "@typescript-eslint/parser": "^4.23.0",
+    "@types/node": "^15.6.1",
+    "@typescript-eslint/eslint-plugin": "^4.25.0",
+    "@typescript-eslint/parser": "^4.25.0",
     "chai": "^4.3.4",
-    "concurrently": "^6.1.0",
-    "eslint": "^7.26.0",
+    "concurrently": "^6.2.0",
+    "eslint": "^7.27.0",
     "eslint-plugin-mocha-no-only": "^1.1.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.4.0",
     "mocha": "^8.4.0",
     "prettier": "^2.3.0",
-    "typescript": "^4.2.4"
+    "typescript": "^4.3.2"
   }
 }

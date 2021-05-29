@@ -1,5 +1,4 @@
 import {promises as fs} from 'fs'
-import makeFindArtifacts from '@bilt/artifact-finder'
 import path from 'path'
 
 /**
@@ -11,19 +10,6 @@ import path from 'path'
  * @typedef {import('@bilt/types').PackageInfos} PackageInfos
  * @typedef {import('@bilt/types').RelativeDirectoryPath} RelativeDirectoryPath
  */
-
-/**
- *
- * @param {{rootDirectory: Directory}} options
- * @returns {Promise<Package[]>}
- */
-export async function findNpmPackages({rootDirectory}) {
-  const {findArtifacts} = await makeFindArtifacts()
-
-  const result = /**@type {{path: RelativeDirectoryPath}[]}}*/ (await findArtifacts(rootDirectory))
-
-  return result.map((artifact) => ({directory: artifact.path}))
-}
 
 /**
  *
