@@ -19,6 +19,9 @@ searchs for: `.biltrc`, `.biltrc.json`, `.biltrc.yaml`, `biltrc.config.js`
 (for the precise algorithm, see the documenation
 for [`cosmiconfig`](https://github.com/davidtheclark/cosmiconfig)).
 
+Bilt will also search for the above configuration files in a `.bilt` directory, if you would
+like to keep it out of the root of your repository.
+
 ### Properties
 
 * `packages`: an array that includes a set of directories. All directories MUST
