@@ -22,7 +22,7 @@ all packages in the [babel](https://babeljs.io/) project), but only if you are O
 and testing _all_ packages at once.
 
 Bilt was designed to treat each package as a totally independent
-entity, while understanding the relationships between the packaedeges. This enables
+entity, while understanding the relationships between the packages. This enables
 Bilt to scale to hundreds of packages in a repo, spanning multiple projects.
 
 ## Nx
@@ -48,7 +48,7 @@ Bilt doesn't care what is in your package, as long as the steps needed to build 
 [Bazel](https://bazel.build/), from Google, is supposed to be similar to the internal tool
 Google have for building their monorepo. It is a veritable workhorse, and a super powerful tool
 for dealing with repos of thousands (and probably tens of thousands) of packages, spanning
-multiple packages.
+multiple projects.
 
 But configuring your project to use Bazel is a complicated thing. I couldn't make
 heads or tails on how to do it. The reason for this is its
