@@ -101,7 +101,9 @@ Maybe you forgot to add an upto package?`,
   }
 
   const message =
-    userBuildOptions.message === 'marker-for-no-message' ? await getMessageFromUser() : undefined
+    userBuildOptions.message === 'marker-for-no-message'
+      ? await getMessageFromUser()
+      : userBuildOptions.message
 
   const buildOptions = {
     ...userBuildOptions,

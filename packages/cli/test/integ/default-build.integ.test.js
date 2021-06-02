@@ -4,7 +4,7 @@ const {describe, it} = mocha
 import {expect, use} from 'chai'
 import chaiSubset from 'chai-subset'
 use(chaiSubset)
-import {commitAll, commitHistory} from '@bilt/git-testkit'
+import {commitAll, commitHistory, commitMessagesHistory} from '@bilt/git-testkit'
 import {enablePackageToPublishToRegistry} from '@bilt/npm-testkit'
 import {
   writeFile,
@@ -38,6 +38,7 @@ describe('default-build (integ)', function () {
     await sh('npm publish', {cwd: join(cwd, 'b')})
 
     await runBuild(cwd, 'first build', ['./a', './b'])
+    expect(await commitMessagesHistory(cwd)).to.eql(['first build', 'first commit'])
 
     const firstBuildHistory = Object.entries(await commitHistory(cwd))
     expect(firstBuildHistory).to.have.length(2)
