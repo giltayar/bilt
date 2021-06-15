@@ -6,8 +6,6 @@ In which we get a deeper understanding of how Bilt works to build a monorepo.
 ## How Bilt determines the dependency graph
 
 Bilt first takes the `packages` field in `.biltrc.json` and finds all the packages using the glob.
-If the `packages` field is just "*", it auto-discovers all the packages by crawling the monorepo and
-finding them (it's much faster than it sounds).
 
 Once it determined the list of packages, it reads the `package.json`-s of all the packages, figures
 out the dependencies from the `dependencies` and `devDependencies` in them,

@@ -14,6 +14,7 @@ import {
   packageScriptTime,
   repoScriptCount,
   prepareForSimpleBuild,
+  createPackageWithNameSimilarToAPackage,
 } from '../commons/setup-and-run.js'
 
 describe('build-flow (integ)', function () {
@@ -45,7 +46,7 @@ describe('build-flow (integ)', function () {
     expect(await packageScriptCount(cwd, 'b', 'during1')).to.eql(1)
     expect(await packageScriptCount(cwd, 'b', 'during2')).to.eql(1)
 
-    await runBuild(cwd, 'third build, no change', ['*'])
+    await runBuild(cwd, 'third build, no change', ['./a', './b'])
 
     expect(await repoScriptCount(cwd, 'before1')).to.eql(2)
     expect(await repoScriptCount(cwd, 'after1')).to.eql(2)
@@ -56,10 +57,10 @@ describe('build-flow (integ)', function () {
   })
 
   it('should build packages with dependencies correctly', async () => {
-    const cwd = await prepareForSimpleBuild('simple-build.yaml')
+    const cwd = await prepareForSimpleBuild('simple-build.yaml', {packages: ['./*']})
     await createAdepsBdepsCPackages(cwd)
 
-    await runBuild(cwd, 'first build', ['*'], ['./a'])
+    await runBuild(cwd, 'first build', [], ['./a'])
     expect(await repoScriptCount(cwd, 'before1')).to.eql(1)
     expect(await repoScriptCount(cwd, 'after1')).to.eql(1)
     expect(await packageScriptCount(cwd, 'a', 'during1')).to.eql(1)
@@ -76,7 +77,7 @@ describe('build-flow (integ)', function () {
     )
 
     await writeFile(['b', 'build-this'], 'yes!', {cwd})
-    await runBuild(cwd, 'second build, build b and thus a', ['*'], ['./a'])
+    await runBuild(cwd, 'second build, build b and thus a', [], ['./a'])
     expect(await packageScriptCount(cwd, 'a', 'during1')).to.eql(2)
     expect(await packageScriptCount(cwd, 'b', 'during1')).to.eql(2)
     expect(await packageScriptCount(cwd, 'c', 'during1')).to.eql(1)
@@ -84,7 +85,7 @@ describe('build-flow (integ)', function () {
       await packageScriptTime(cwd, 'b', 'during1'),
     )
 
-    await runBuild(cwd, 'third build, no change', ['*'], ['./a'])
+    await runBuild(cwd, 'third build, no change', [], ['./a'])
     expect(await packageScriptCount(cwd, 'a', 'during1')).to.eql(2)
     expect(await packageScriptCount(cwd, 'b', 'during1')).to.eql(2)
     expect(await packageScriptCount(cwd, 'c', 'during1')).to.eql(1)
@@ -94,13 +95,13 @@ describe('build-flow (integ)', function () {
   })
 
   it('should run after if at least one succeeded, but not if none succeeded', async () => {
-    const cwd = await prepareForSimpleBuild('simple-build.yaml')
+    const cwd = await prepareForSimpleBuild('simple-build.yaml', {packages: ['./*']})
     await createAdepsBdepsCPackages(cwd)
 
     await writeFile(['b', 'fail'], '', {cwd})
 
     // first build - b fails, a isnt run at all
-    await runBuild(cwd, 'failed build 1 (c succeeds)', ['*'])
+    await runBuild(cwd, 'failed build 1 (c succeeds)', [])
     expect(await packageScriptCount(cwd, 'a', 'during1')).to.eql(0)
     expect(await packageScriptCount(cwd, 'a', 'during2')).to.eql(0)
     expect(await packageScriptCount(cwd, 'b', 'during1')).to.eql(1)
@@ -111,7 +112,7 @@ describe('build-flow (integ)', function () {
     expect(await repoScriptCount(cwd, 'after1')).to.eql(1)
 
     // first build - b fails, a isnt run at all
-    await runBuild(cwd, 'failed build 2 (c not built)', ['*'])
+    await runBuild(cwd, 'failed build 2 (c not built)', [])
     expect(await packageScriptCount(cwd, 'a', 'during1')).to.eql(0)
     expect(await packageScriptCount(cwd, 'a', 'during2')).to.eql(0)
     expect(await packageScriptCount(cwd, 'b', 'during1')).to.eql(2)
@@ -121,7 +122,7 @@ describe('build-flow (integ)', function () {
 
     expect(await repoScriptCount(cwd, 'after1')).to.eql(1)
 
-    await runBuild(cwd, 'last build', ['*'], ['./a'], ['--no-fail'])
+    await runBuild(cwd, 'last build', [], ['./a'], ['--no-fail'])
     expect(await packageScriptCount(cwd, 'a', 'during1')).to.eql(1)
     expect(await packageScriptCount(cwd, 'a', 'during2')).to.eql(1)
     expect(await packageScriptCount(cwd, 'b', 'during1')).to.eql(3)
@@ -197,11 +198,11 @@ describe('build-flow (integ)', function () {
   })
 
   it('should ignore packages not in the "project (i.e. not leading to the uptos)', async () => {
-    const cwd = await prepareForSimpleBuild('simple-build.yaml')
+    const cwd = await prepareForSimpleBuild('simple-build.yaml', {packages: ['./*']})
     await createAdepsBdepsCPackages(cwd)
     await createPackages(cwd, undefined, 'd', 'e', 'f')
 
-    await runBuild(cwd, 'build abc project', ['*'], ['./a'])
+    await runBuild(cwd, 'build abc project', [], ['./a'])
 
     expect(await packageScriptCount(cwd, 'a', 'during2')).to.equal(1)
     expect(await packageScriptCount(cwd, 'b', 'during2')).to.equal(1)
@@ -210,7 +211,7 @@ describe('build-flow (integ)', function () {
     expect(await packageScriptCount(cwd, 'e', 'during2')).to.equal(0)
     expect(await packageScriptCount(cwd, 'f', 'during2')).to.equal(0)
 
-    await runBuild(cwd, 'build def project', ['*'], ['./d'])
+    await runBuild(cwd, 'build def project', [], ['./d'])
 
     expect(await packageScriptCount(cwd, 'a', 'during2')).to.equal(1)
     expect(await packageScriptCount(cwd, 'b', 'during2')).to.equal(1)
@@ -221,7 +222,7 @@ describe('build-flow (integ)', function () {
   })
 
   it('should build using package names', async () => {
-    const cwd = await prepareForSimpleBuild('simple-build.yaml', {packages: ['*']})
+    const cwd = await prepareForSimpleBuild('simple-build.yaml', {packages: ['./*']})
     await createAdepsBdepsCPackages(cwd)
 
     await runBuild(cwd, 'first build', undefined, ['a-package'])
@@ -245,6 +246,18 @@ describe('build-flow (integ)', function () {
     expect(await packageScriptCount(cwd, 'a', 'during2')).to.equal(3)
     expect(await packageScriptCount(cwd, 'b', 'during2')).to.equal(2)
     expect(await packageScriptCount(cwd, 'c', 'during2')).to.equal(1)
+  })
+
+  it('should find packages when short name is used', async () => {
+    const cwd = await prepareForSimpleBuild('simple-build.yaml', {packages: ['./*']})
+    await createAdepsBdepsCPackages(cwd)
+    await createPackageWithNameSimilarToAPackage(cwd)
+
+    await runBuild(cwd, 'multiple packages', ['a-package-l'], undefined)
+    expect(await packageScriptCount(cwd, 'a', 'during2')).to.equal(0)
+    expect(await packageScriptCount(cwd, 'a-package-longer', 'during2')).to.equal(1)
+    expect(await packageScriptCount(cwd, 'b', 'during2')).to.equal(0)
+    expect(await packageScriptCount(cwd, 'c', 'during2')).to.equal(0)
 
     expect(
       await runBuild(
@@ -253,7 +266,8 @@ describe('build-flow (integ)', function () {
         ['package'],
         undefined,
       ).catch((err) => err.message),
-    ).to.include('there are 3 packages')
+    ).to.include('there are 4 packages')
+
     expect(
       await runBuild(
         cwd,
@@ -262,6 +276,10 @@ describe('build-flow (integ)', function () {
         undefined,
       ).catch((err) => err.message),
     ).to.include('cannot find a package with the name')
+
+    await runBuild(cwd, 'exact name', ['a-package'], undefined)
+    expect(await packageScriptCount(cwd, 'a', 'during2')).to.equal(1)
+    expect(await packageScriptCount(cwd, 'a-package-longer', 'during2')).to.equal(1)
   })
 
   it('should use packages and uptos from biltrc', async () => {
@@ -292,7 +310,7 @@ describe('build-flow (integ)', function () {
   })
 
   it('should run with non-default jobId in an extends folder (and one of the phases is missing)', async () => {
-    const cwd = await prepareForSimpleBuild('simple-build.yaml')
+    const cwd = await prepareForSimpleBuild('simple-build.yaml', {packages: ['./*']})
 
     await writeFile(['a', 'package.json'], {name: 'a-package', version: '1.0.0'}, {cwd})
 

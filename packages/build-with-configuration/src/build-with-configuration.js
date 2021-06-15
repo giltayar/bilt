@@ -144,7 +144,7 @@ export function getPhaseExecution(
   return (steps || []).map((step) => ({
     info: () => stepInfo(step),
     isEnabled: () => isStepEnabled(stepInfo(step).enableOptions, buildOptions),
-    shouldSkip: async () => executeCondition(step.condition, javascriptOptionsParameter),
+    shouldSkip: async () => !(await executeCondition(step.condition, javascriptOptionsParameter)),
     execute: async () =>
       executeCommand(
         step.name,

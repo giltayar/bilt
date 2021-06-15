@@ -1,8 +1,10 @@
-import {relative, resolve, join} from 'path'
+import {relative, join} from 'path'
 import debugMaker from 'debug'
 const debug = debugMaker('bilt:cli:build')
 import throat from 'throat'
-import {findNpmPackages, findNpmPackageInfos} from '@bilt/npm-packages'
+import {Listr} from 'listr2'
+import splitLines from 'split-lines'
+import {findNpmPackageInfos} from '@bilt/npm-packages'
 import {calculateBuildOrder, build} from '@bilt/build'
 import {calculatePackagesToBuild} from '@bilt/packages-to-build'
 import {getPhaseExecution} from '@bilt/build-with-configuration'
@@ -11,17 +13,9 @@ import {
   findLatestPackageChanges,
   FAKE_COMMITISH_FOR_UNCOMMITED_FILES,
 } from '@bilt/git-packages'
+import inquirer from 'inquirer'
 import {shWithOutput, childProcessWait} from '@bilt/scripting-commons'
-import {
-  globalFooter,
-  globalHeader,
-  globalOperation,
-  globalFailureFooter,
-  packageErrorFooter,
-  packageFooter,
-  packageHeader,
-  packageOperation,
-} from './outputting.js'
+import {globalFooter, globalHeader, globalFailureFooter, packageErrorFooter} from './outputting.js'
 import npmBiltin from './npm-biltin.js'
 import {makeOptionsBiltin} from './options-biltin.js'
 
@@ -31,7 +25,8 @@ import {makeOptionsBiltin} from './options-biltin.js'
  * @typedef {import('@bilt/types').PackageInfos} PackageInfos
  */
 
-/**@param {{
+/**
+ * @param {{
  * jobId: string,
  * rootDirectory: import('@bilt/types').Directory
  * packagesToBuild: string[]
@@ -58,11 +53,6 @@ export default async function buildCommand({
   ...userBuildOptions
 }) {
   debug(`starting build of ${rootDirectory}`)
-  const buildOptions = {
-    ...userBuildOptions,
-    message: userBuildOptions.message + '\n\n\n[bilt-with-bilt]',
-    force,
-  }
   const {initialSetOfPackagesToBuild, uptoPackages, packageInfos} = await extractPackageInfos(
     rootDirectory,
     packages,
@@ -103,13 +93,27 @@ Maybe you forgot to add an upto package?`,
     return true
   }
 
+  const packagesInBuildOrder = await getPackagesInBuildOrder(finalPackagesToBuild)
+
   if (dryRun) {
-    return await showPackagesForDryRun(finalPackagesToBuild, dryRun)
+    console.log(packagesInBuildOrder.join(', '))
+    return true
+  }
+
+  const message =
+    userBuildOptions.message === 'marker-for-no-message'
+      ? await getMessageFromUser()
+      : userBuildOptions.message
+
+  const buildOptions = {
+    ...userBuildOptions,
+    message: message + '\n\n\n[bilt-with-bilt]',
+    force,
   }
 
   const biltin = {...npmBiltin, ...makeOptionsBiltin(buildOptions)}
 
-  globalHeader(`building ${Object.keys(finalPackagesToBuild).join(', ')}`)
+  globalHeader(`building ${packagesInBuildOrder.join(', ')}`)
 
   if (before) {
     await executeBeforePhase(jobConfiguration, rootDirectory, buildOptions, biltin)
@@ -121,7 +125,6 @@ Maybe you forgot to add an upto package?`,
     rootDirectory,
     buildOptions,
     biltin,
-    dryRun,
   )
 
   try {
@@ -146,9 +149,7 @@ Maybe you forgot to add an upto package?`,
  * @param {object} biltin
  */
 async function executeAfterPhase(jobConfiguration, rootDirectory, buildOptions, biltin) {
-  await executePhase(jobConfiguration, 'after', rootDirectory, buildOptions, biltin, (se) =>
-    globalOperation(se.info().name),
-  )
+  await executePhase(jobConfiguration, 'after', rootDirectory, buildOptions, biltin)
 }
 
 /**
@@ -157,7 +158,6 @@ async function executeAfterPhase(jobConfiguration, rootDirectory, buildOptions, 
  * @param {import("@bilt/types").Nominal<string, "Directory">} rootDirectory
  * @param {{ [x: string]: string | boolean | undefined; message?: string; force?: boolean; jobId?: string; envelope?: boolean | undefined; }} buildOptions
  * @param {object} biltin
- * @param {boolean} dryRun
  */
 async function executeDuringPhase(
   finalPackagesToBuild,
@@ -165,35 +165,24 @@ async function executeDuringPhase(
   rootDirectory,
   buildOptions,
   biltin,
-  dryRun,
 ) {
   return await buildPackages(
     finalPackagesToBuild,
     makePackageBuild(jobConfiguration, rootDirectory, buildOptions, biltin),
-    dryRun,
   )
 }
 
-/**
- * @param {import("@bilt/types").PackageInfos} finalPackagesToBuild
- * @param {boolean} dryRun
- */
-async function showPackagesForDryRun(finalPackagesToBuild, dryRun) {
+/** @param {import("@bilt/types").PackageInfos} finalPackagesToBuild */
+async function getPackagesInBuildOrder(finalPackagesToBuild) {
   /** @type {import("@bilt/types").RelativeDirectoryPath[]} */
   const packagesBuildOrder = []
 
-  await buildPackages(
-    finalPackagesToBuild,
-    async ({packageInfo}) => {
-      packagesBuildOrder.push(packageInfo.directory)
-      return 'success'
-    },
-    dryRun,
-  )
+  await buildPackages(finalPackagesToBuild, async ({packageInfo}) => {
+    packagesBuildOrder.push(packageInfo.directory)
+    return 'success'
+  })
 
-  console.log(packagesBuildOrder.join(', '))
-
-  return true
+  return packagesBuildOrder
 }
 
 /**
@@ -203,9 +192,7 @@ async function showPackagesForDryRun(finalPackagesToBuild, dryRun) {
  * @param {object} biltin
  */
 async function executeBeforePhase(jobConfiguration, rootDirectory, buildOptions, biltin) {
-  await executePhase(jobConfiguration, 'before', rootDirectory, buildOptions, biltin, (se) =>
-    globalOperation(se.info().name),
-  )
+  await executePhase(jobConfiguration, 'before', rootDirectory, buildOptions, biltin)
 }
 
 /**
@@ -264,7 +251,6 @@ function makeAllPackagesDirty(packageInfos) {
 async function buildPackages(
   /**@type {PackageInfos} */ packageInfosToBuild,
   /**@type {import('@bilt/build').BuildPackageFunction} */ buildPackageFunc,
-  /**@type {boolean}*/ dryRun,
 ) {
   const buildOrder = calculateBuildOrder({packageInfos: packageInfosToBuild})
 
@@ -289,12 +275,6 @@ async function buildPackages(
       )
     } else if (buildPackageResult.buildResult === 'success') {
       ret.successful.push(buildPackageResult.package)
-      if (!dryRun) {
-        packageFooter(
-          'build package succeeded',
-          packageInfosToBuild[buildPackageResult.package.directory],
-        )
-      }
     }
   }
 
@@ -377,7 +357,7 @@ async function extractPackageInfos(
   )
 
   if (packages.length === 0) {
-    throw new Error('no packages to build. You can let bilt autofind your packages using "*"')
+    throw new Error('no packages to build')
   }
 
   const packageInfos = await findNpmPackageInfos({
@@ -386,9 +366,7 @@ async function extractPackageInfos(
   })
 
   const initialSetOfPackagesToBuild =
-    !packagesToBuildDirectories ||
-    packagesToBuildDirectories.length === 0 ||
-    packagesToBuildDirectories[0] === '*'
+    !packagesToBuildDirectories || packagesToBuildDirectories.length === 0
       ? Object.values(packageInfos).map((p) => ({
           directory: p.directory,
         }))
@@ -415,35 +393,40 @@ async function extractPackageInfos(
 function convertUserPackagesToPackages(directoriesOrPackageNames, packageInfos, rootDirectory) {
   return directoriesOrPackageNames == null
     ? undefined
-    : directoriesOrPackageNames
-        .filter((d) => d !== '*')
-        .map((d) => {
-          if (directoryIsActuallyPackageName(d)) {
-            const packagesInfoEntry = Object.entries(packageInfos).filter(([, packageInfo]) =>
-              packageInfo.name.includes(d),
+    : directoriesOrPackageNames.map((d) => {
+        if (directoryIsActuallyPackageName(d)) {
+          let packagesInfoEntry = Object.entries(packageInfos).filter(([, packageInfo]) =>
+            packageInfo.name.includes(d),
+          )
+          if (packagesInfoEntry.length === 0) {
+            throw new Error(
+              `cannot find a package with the name "${d}" in any packages in ${rootDirectory}`,
             )
-            if (packagesInfoEntry.length > 1) {
+          } else if (packagesInfoEntry.length > 1) {
+            const exactPackageInfoEntry = packagesInfoEntry.find(
+              ([, packageInfo]) => packageInfo.name === d,
+            )
+            if (exactPackageInfoEntry === undefined) {
               throw new Error(
                 `there are ${packagesInfoEntry.length} packages with the name "${d}" in any packages in ${rootDirectory}`,
               )
-            }
-            if (packagesInfoEntry.length === 0)
-              throw new Error(
-                `cannot find a package with the name "${d}" in any packages in ${rootDirectory}`,
-              )
-            return {
-              directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (
-                packagesInfoEntry[0][0]
-              ),
-            }
-          } else {
-            return {
-              directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (
-                relative(rootDirectory, d)
-              ),
+            } else {
+              packagesInfoEntry = [exactPackageInfoEntry]
             }
           }
-        })
+          return {
+            directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (
+              packagesInfoEntry[0][0]
+            ),
+          }
+        } else {
+          return {
+            directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (
+              relative(rootDirectory, d)
+            ),
+          }
+        }
+      })
 }
 
 /**
@@ -456,27 +439,18 @@ function directoryIsActuallyPackageName(directory) {
 /**
  * @param {string} rootDirectory
  * @param {string[][]} directoryPackages
+ *
+ * @returns {Promise<Package[]>}
  */
 async function convertDirectoriesToPackages(rootDirectory, ...directoryPackages) {
-  /** @type {string[]} */
-  // @ts-expect-error
-  const allDirectoryPackages = [].concat(...directoryPackages.filter((d) => !!d))
-
-  const autoFoundPackages = allDirectoryPackages.some((d) => d === '*')
-    ? await findNpmPackages({
-        rootDirectory: /**@type{import('@bilt/types').Directory}*/ (rootDirectory),
-      })
-    : undefined
-
-  const allDirectoryPackagesWithAutoFoundPackages = autoFoundPackages
-    ? allDirectoryPackages
-        .filter((d) => !directoryIsActuallyPackageName(d))
-        .concat(autoFoundPackages.map((p) => resolve(rootDirectory, p.directory)))
-    : allDirectoryPackages.filter((d) => !directoryIsActuallyPackageName(d))
-
-  return [...new Set(allDirectoryPackagesWithAutoFoundPackages)].map((d) => ({
-    directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (relative(rootDirectory, d)),
-  }))
+  return [...new Set(directoryPackages.flat())]
+    .filter((d) => !!d)
+    .filter((d) => !directoryIsActuallyPackageName(d))
+    .map((d) => ({
+      directory: /**@type{import('@bilt/types').RelativeDirectoryPath}*/ (
+        relative(rootDirectory, d)
+      ),
+    }))
 }
 
 /**@return {import('@bilt/build').BuildPackageFunction} */
@@ -486,17 +460,20 @@ function makePackageBuild(
   /**@type {{[x: string]: string|boolean | undefined}} */ buildOptions,
   /**@type {object} */ biltin,
 ) {
-  /**@type import('@bilt/build').BuildPackageFunction */
+  /**@type {import('@bilt/build').BuildPackageFunction} */
   return async function ({packageInfo}) {
     const packageDirectory = /**@type {import('@bilt/types').Directory}*/ (
       join(rootDirectory, packageInfo.directory)
     )
 
-    packageHeader('building', packageInfo)
-    await executePhase(jobConfiguration, 'during', packageDirectory, buildOptions, biltin, (se) =>
-      packageOperation(se.info().name, packageInfo),
+    await executePhase(
+      jobConfiguration,
+      'during',
+      packageDirectory,
+      buildOptions,
+      biltin,
+      packageInfo,
     )
-
     return 'success'
   }
 }
@@ -507,7 +484,7 @@ function makePackageBuild(
  * @param {import('@bilt/types').Directory} packageDirectory
  * @param {Record<string, string | boolean | undefined>} buildOptions
  * @param {object} biltin
- * @param {(se: import('@bilt/build-with-configuration').StepExecution) => void} logExecution
+ * @param {PackageInfo=} packageInfo
  */
 async function executePhase(
   jobConfiguration,
@@ -515,7 +492,7 @@ async function executePhase(
   packageDirectory,
   buildOptions,
   biltin,
-  logExecution,
+  packageInfo,
 ) {
   const stepExecutions = getPhaseExecution(
     jobConfiguration.steps[phase],
@@ -524,13 +501,72 @@ async function executePhase(
     {directory: packageDirectory, biltin},
   )
 
-  for (const stepExecution of stepExecutions.filter((se) => se.isEnabled())) {
-    if (await stepExecution.shouldSkip()) {
-      const childProcess = await stepExecution.executeToChildProcess()
-      childProcess.stdout.pipe(process.stdout)
-      childProcess.stderr.pipe(process.stderr)
-      await childProcessWait(childProcess, stepExecution.info().command)
-    }
-    logExecution(stepExecution)
+  const title = (function formatTitle() {
+    if (phase === 'during' && packageInfo) return `building ${packageInfo.directory}`
+    return phase
+  })()
+
+  return new Listr(
+    [
+      {
+        title,
+        task: (_, task) => task.newListr(convertStepExecutionsToTasks(stepExecutions)),
+        options: {
+          persistentOutput: true,
+        },
+      },
+    ],
+    {
+      rendererOptions: {
+        showTimer: true,
+        collapseErrors: false,
+      },
+    },
+  ).run()
+}
+
+/** @type {( linesToDisplay?: number) => (payload: string, showAll?: boolean) => string} */
+function LinesBuffer(linesToDisplay = 10) {
+  /** @type {string[]} */
+  let buffer = []
+  return function handlePayload(payload, showAll = false) {
+    const newLines = splitLines(payload.toString())
+    buffer = buffer.concat(newLines)
+    if (showAll) return buffer.join('\n')
+    return buffer.slice(Math.max(0, buffer.length - linesToDisplay), buffer.length).join('\n')
   }
+}
+
+/**
+ * @param {import('@bilt/build-with-configuration').StepExecution[]} stepExecutions
+ * @returns {import('listr2').ListrTask[]}
+ */
+function convertStepExecutionsToTasks(stepExecutions) {
+  return stepExecutions.map(function createTaskFromStep(stepExecution) {
+    return {
+      title: stepExecution.info().name,
+      task: async function (_, task) {
+        const childProcess = await stepExecution.executeToChildProcess()
+        const buffer = LinesBuffer()
+        childProcess.stdout.on('data', (payload) => {
+          task.output = buffer(payload)
+        })
+        childProcess.stderr.on('data', (payload) => {
+          task.output = buffer(payload, true)
+        })
+        await childProcessWait(childProcess, stepExecution.info().command)
+      },
+      skip: stepExecution.shouldSkip,
+      exitOnError: true,
+      enabled: stepExecution.isEnabled,
+      options: {
+        persistentOutput: true,
+      },
+    }
+  })
+}
+
+async function getMessageFromUser() {
+  return (await inquirer.prompt({name: 'message', validate: (x) => (!x ? 'required' : true)}))
+    .message
 }

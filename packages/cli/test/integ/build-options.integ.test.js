@@ -15,6 +15,16 @@ import {fileURLToPath, URL} from 'url'
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 
 describe('build-options (integ)', function () {
+  it('should enable .biltrc to be in .bilt folder', async () => {
+    const cwd = await prepareForSimpleBuild('simple-build.yaml', undefined, '.bilt/.biltrc')
+
+    await writeFile(['a', 'package.json'], {name: 'a-package', version: '1.0.0'}, {cwd})
+
+    await runBuild(cwd, 'a build with biltrc defaults', ['./a'], undefined, ['--force'])
+
+    expect(await packageScriptCount(cwd, 'a', 'during1')).to.equal(1)
+  })
+
   it('should use and allow overriding the values in .biltrc', async () => {
     const cwd = await prepareForSimpleBuild('simple-build.yaml', {
       jobDefaults: {build: {during1: false}},

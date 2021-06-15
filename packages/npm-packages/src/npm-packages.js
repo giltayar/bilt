@@ -1,6 +1,6 @@
 import {promises as fs} from 'fs'
-import makeFindArtifacts from '@bilt/artifact-finder'
 import path from 'path'
+import semver from 'semver'
 
 /**
  * @typedef {import('@bilt/types').RelativeFilePath} RelativeFilePath
@@ -14,19 +14,6 @@ import path from 'path'
 
 /**
  *
- * @param {{rootDirectory: Directory}} options
- * @returns {Promise<Package[]>}
- */
-export async function findNpmPackages({rootDirectory}) {
-  const {findArtifacts} = await makeFindArtifacts()
-
-  const result = /**@type {{path: RelativeDirectoryPath}[]}}*/ (await findArtifacts(rootDirectory))
-
-  return result.map((artifact) => ({directory: artifact.path}))
-}
-
-/**
- *
  * @param {{rootDirectory: Directory, packages: Package[]}} options
  * @returns {Promise<PackageInfos>}
  */
@@ -35,17 +22,17 @@ export async function findNpmPackageInfos({rootDirectory, packages}) {
     packages.map((pkg) => loadInterimPackageInfo(rootDirectory, pkg)),
   )
 
-  const packageNameToPackagePath = Object.fromEntries(
+  const packageNameToPackagePathAndDeps = Object.fromEntries(
     interimPackageInfos.map((interimPackageInfo) => [
       interimPackageInfo.name,
-      interimPackageInfo.directory,
+      {directory: interimPackageInfo.directory, version: interimPackageInfo.version},
     ]),
   )
 
   return Object.fromEntries(
     interimPackageInfos.map((interimPackageInfo) => [
       interimPackageInfo.directory,
-      interimPackageInfoToPackageInfo(interimPackageInfo, packageNameToPackagePath),
+      interimPackageInfoToPackageInfo(interimPackageInfo, packageNameToPackagePathAndDeps),
     ]),
   )
 }
@@ -54,7 +41,8 @@ export async function findNpmPackageInfos({rootDirectory, packages}) {
  * @typedef {{
  *  directory: RelativeDirectoryPath
  *  name: string
- *  dependencies: string[]
+ *  version: string | undefined
+ *  dependencies: [name: string, semverRange: string][]
  * }} InterimPackageInfo
  * */
 
@@ -69,14 +57,20 @@ async function loadInterimPackageInfo(rootDirectory, pkg) {
     await fs.readFile(path.join(rootDirectory, pkg.directory, 'package.json'), 'utf-8'),
   )
   const name = packageJson.name
+  const version = packageJson.version
   const dependenciesByName = [
-    ...Object.keys(packageJson.dependencies || []),
-    ...Object.keys(packageJson.devDependencies || []),
+    ...Object.entries(packageJson.dependencies || []).map(
+      ([k, v]) => /**@type {[string, string]}*/ ([k, semver.validRange(v)]),
+    ),
+    ...Object.entries(packageJson.devDependencies || []).map(
+      ([k, v]) => /**@type {[string, string]}*/ ([k, semver.validRange(v)]),
+    ),
   ]
 
   return {
     ...pkg,
     name,
+    version,
     dependencies: dependenciesByName,
   }
 }
@@ -84,18 +78,28 @@ async function loadInterimPackageInfo(rootDirectory, pkg) {
 /**
  *
  * @param {InterimPackageInfo} interimPackageInfo
- * @param {{[packageName: string]: RelativeDirectoryPath}} packageNamesToPackagePaths
+ * @param {{[packageName: string]: {
+ *  directory: RelativeDirectoryPath, version: string | undefined
+ * }}} packageNamesToPackagePathsAndVersions
  * @returns {PackageInfo}
  */
-function interimPackageInfoToPackageInfo(interimPackageInfo, packageNamesToPackagePaths) {
+function interimPackageInfoToPackageInfo(
+  interimPackageInfo,
+  packageNamesToPackagePathsAndVersions,
+) {
   return {
     directory: interimPackageInfo.directory,
     name: interimPackageInfo.name,
     dependencies: /**@type{Package[]}*/ (
       interimPackageInfo.dependencies
         .map((dep) =>
-          packageNamesToPackagePaths[dep] != null
-            ? {directory: /**@type {RelativeDirectoryPath}*/ (packageNamesToPackagePaths[dep])}
+          packageNamesToPackagePathsAndVersions[dep[0]] != null &&
+          (!dep[1] ||
+            !packageNamesToPackagePathsAndVersions[dep[0]].version ||
+            semver.satisfies(packageNamesToPackagePathsAndVersions[dep[0]].version || '-', dep[1]))
+            ? {
+                directory: packageNamesToPackagePathsAndVersions[dep[0]].directory,
+              }
             : undefined,
         )
         .filter((dep) => dep !== undefined)

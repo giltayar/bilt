@@ -21,8 +21,7 @@ Next, create a `.biltrc.json` file in the root of the monorepo, with the informa
 
 ```js
 {
-  // list of all the packages. You can use globs, or you can let bilt auto-discover your
-  // packages by just using "*". Don't worry, auto-disover works fast.
+  // list of all the packages.
   // Directories are relative to the root of the monorepo, and MUST be prefixed by a "./".
   "packages": ["./packages/*"],
 

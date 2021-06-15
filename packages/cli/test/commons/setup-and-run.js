@@ -1,7 +1,6 @@
 import {promises} from 'fs'
-import {promisify} from 'util'
+import execa from 'execa'
 import {basename, join, resolve} from 'path'
-import {execFile} from 'child_process'
 import {init, commitAll} from '@bilt/git-testkit'
 import {startNpmRegistry, enablePackageToPublishToRegistry} from '@bilt/npm-testkit'
 import {
@@ -93,6 +92,25 @@ export async function createPackages(cwd, registry, aPackageDir, bPackageDir, cP
   return {cPackageJson, bPackageJson}
 }
 
+/**
+ * @param {string} cwd
+ */
+export async function createPackageWithNameSimilarToAPackage(cwd) {
+  const aPackageLonger = 'a-package-longer'
+  const aPackageLongerDir = `./${aPackageLonger}`
+  const build = `echo $(expr $(cat build-count) + 1) >build-count`
+  await writeFile(
+    [aPackageLongerDir, 'package.json'],
+    {
+      name: `${aPackageLonger}-package`,
+      version: '1.0.0',
+      scripts: {build},
+    },
+    {cwd},
+  )
+  await writeFile([aPackageLongerDir, 'build-count'], '0', {cwd})
+}
+
 export async function prepareGitAndNpm() {
   const cwd = await makeTemporaryDirectory()
   const pushTarget = await makeTemporaryDirectory()
@@ -108,13 +126,18 @@ export async function prepareGitAndNpm() {
 /**
  * @param {string} buildConfigurationName
  * @param {{[x: string]: any}} [moreBuiltRc]
+ * @param {string} [biltRcLocation]
  */
-export async function prepareForSimpleBuild(buildConfigurationName, moreBuiltRc) {
+export async function prepareForSimpleBuild(
+  buildConfigurationName,
+  moreBuiltRc,
+  biltRcLocation = '.biltrc.json',
+) {
   const cwd = await makeTemporaryDirectory()
   await init(cwd)
 
   await writeFile(
-    '.biltrc.json',
+    biltRcLocation,
     {jobs: resolve(__dirname, buildConfigurationName), ...moreBuiltRc},
     {cwd},
   )
@@ -161,24 +184,20 @@ export async function runBuild(
 /**
  * @param {string} cwd
  * @param {string} [message]
+ * @param {string[]} [cliArgs]
  * @param {string[]} [packages]
- * @param {string[]} [uptos]
+ * @param {string} [stdin]
  */
-export async function runBuildCli(
-  cwd,
-  message = 'a message',
-  packages = undefined,
-  uptos = undefined,
-) {
-  return await promisify(execFile)(
-    resolve(__dirname, '../../src/run-bilt.js'),
+export async function runBuildCli(cwd, message, cliArgs, packages = undefined, stdin) {
+  return await execa(
+    'node',
     [
+      resolve(__dirname, '../../src/run-bilt.js'),
       ...(packages && packages.length > 0 ? packages : []),
-      '-m',
-      message,
-      ...(uptos && uptos.length > 0 ? ['--upto', ...uptos] : []),
+      ...(message ? ['-m', message] : []),
+      ...(cliArgs || []),
     ],
-    {cwd},
+    {cwd, input: stdin},
   )
 }
 

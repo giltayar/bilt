@@ -1,4 +1,4 @@
 {
   "name": "@lalala/b-package",
-  "dependencies": {"@lalala/a-package": "1.0.0"}
+  "dependencies": {"@lalala/a-package": "^1.0.0"}
 }

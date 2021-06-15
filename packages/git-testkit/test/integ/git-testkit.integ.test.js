@@ -2,7 +2,7 @@
 import {makeTemporaryDirectory, sh, writeFile} from '@bilt/scripting-commons'
 import {expect} from 'chai'
 import mocha from 'mocha'
-import {commitAll, commitHistory, init} from '../../src/git-testkit.js'
+import {commitAll, commitHistory, commitMessagesHistory, init} from '../../src/git-testkit.js'
 const {describe, it} = mocha
 
 describe('git-testkit (it)', function () {
@@ -18,6 +18,8 @@ describe('git-testkit (it)', function () {
     await commitAll(cwdSource, 'a commit')
 
     const history = await commitHistory(cwdSource)
+    const messagesHistory = await commitMessagesHistory(cwdSource)
+    expect(messagesHistory).to.eql(['message', 'first commit'])
     expect(Object.values(history)).to.have.length(2).and.deep.include(['bar.txt', 'foo.txt'])
 
     await sh(`git push`, {cwd: cwdSource})

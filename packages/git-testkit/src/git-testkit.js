@@ -64,11 +64,13 @@ export async function commitAll(
 
 /**@typedef {{[commit: string]: string[]}} ChangedFilesInGit*/
 
-/**@type {(
+/**
+ * @type {(
  * rootDirectory: string,
  * options: {fromGitDate?: string, toCommit?: string}) =>
  * Promise<ChangedFilesInGit>
- * } */
+ * }
+ * */
 export async function commitHistory(
   rootDirectory,
   {fromGitDate = 'one year ago', toCommit = 'HEAD'} = {},
@@ -108,4 +110,39 @@ export async function commitHistory(
   }
 
   return ret
+}
+
+/**
+ * @type {(
+ * rootDirectory: string,
+ * options: {fromGitDate?: string, toCommit?: string}) =>
+ * Promise<string[]>
+ * }
+ * */
+export async function commitMessagesHistory(
+  rootDirectory,
+  {fromGitDate = 'one year ago', toCommit = 'HEAD'} = {},
+) {
+  const COMMIT_PREFIX_IN_LOG = '----'
+  const diffTreeResult = await promisify(execFile)(
+    'git',
+    [
+      'log',
+      `--format=format:${COMMIT_PREFIX_IN_LOG}%s`,
+      '--name-only',
+      `--since="${fromGitDate}"`,
+      toCommit,
+    ],
+    {
+      cwd: rootDirectory,
+    },
+  )
+  const gitLogLines = diffTreeResult.stdout
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => !!l)
+
+  return gitLogLines
+    .filter((line) => line.startsWith(COMMIT_PREFIX_IN_LOG))
+    .map((line) => line.trim().slice(COMMIT_PREFIX_IN_LOG.length))
 }
