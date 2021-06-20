@@ -1,6 +1,6 @@
 # Build configurations
 
-In which we define precisely what [build configurations](./docs/concepts.md#build-configurations)
+In which we define precisely what [build configurations](./concepts.md#build-configurations)
 are, and how to use them.
 
 ## What are build configurations
@@ -8,7 +8,7 @@ are, and how to use them.
 A build configuration defines the different jobs that can be executed on a monorepo. For example,
 "build" jobs, and "deploy" jobs. If not specified in the Bilt cli, the "build" job is executed.
 
-See [build configurations](./docs/concepts.md#build-configurations) for a more precise definition of
+See [build configurations](./concepts.md#build-configurations) for a more precise definition of
 build configurations.
 
 ## Using build configurations
@@ -61,7 +61,7 @@ An object with the following properties:
   `before`: an array of `Step` objects defining the steps to execute _before_ building all the
   packages (but only if there are any packages to build)
   `after`: an array of `Step` objects defining the steps to execute _after_ building all the
-  packages (but only if at least one of the packages built succesfully)
+  packages (but only if at least one of the packages built successfully)
   `during`: the steps to run for each package. These are the steps for the ["package build"](./concepts.md#build)
 
 ### The `Step` object

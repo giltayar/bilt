@@ -11,15 +11,15 @@ Each of the packages will have the additional info:
 
 * `dependencies`: the list of packages it depends on directly. From this, a "dependency graph" (a
    DAG) can be built.
-* `lastBuildTime`: a unix timestamp of the last succesful build time of the package.
+* `lastBuildTime`: a unix timestamp of the last successful build time of the package.
 * `isDirty`: the package was changed since it was last built.
 
 ### The invariants
 
-1. A package will be built iff it is in the graph subset that links all the uptos to the froms in the
+1. A package will be built if and only if it is in the graph subset that links all the uptos to the froms in the
   dependency graph. In other words, one of its predecessors (recursive) MUST be one of the uptos,
   and one of its descendants (recursive) MUST be one of the froms.
-2. A package will be built if it is dirty
+2. A package will be built if it is dirty.
 3. A package will be built if its last build is smaller than one of the last builds of its
   dependencies or if one of its packages is dirty.
 4. A package will be built if a package that it depends will be built.

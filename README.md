@@ -5,7 +5,7 @@ A build tool for NPM monorepos
 
 ## What is Bilt
 
-Bilt is a CLI that builds, tests, and publishes packages
+Bilt is a CLI that builds, tests, and publishes NPM packages
 in your monorepos, and does that in the proper order, according to the packages dependency graph,
 while guaranteeing that only those packages that were not built (and their dependents) get built.
 
@@ -39,4 +39,4 @@ monorepo is built as a series of NPM packages linked together by an NPM dependen
 
 ## Contributing
 
-If you want to help contribute, to built, go [here](./docs/contributing.md) to learn ahout the Bilt code, how to build it, and how to contribute.
+If you want to help contribute, to built, go [here](./docs/contributing.md) to learn about the Bilt code, how to build it, and how to contribute.

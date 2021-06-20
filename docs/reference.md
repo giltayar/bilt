@@ -83,7 +83,7 @@ bilt [job] [packagesToBuild...] [options...]
    and from there determine the build order of the packages
    (using [topological sorting](https://en.wikipedia.org/wiki/Topological_sorting)).
 1. `bilt` builds each package according to the [build
-   configuration](./docs/build-configurations.md). The build configuration also includes steps that
+   configuration](./build-configurations.md). The build configuration also includes steps that
    are executed _before_ all the package build (usually pulling from the remote repository), and
    steps that are executed _after_ all the packages are built (usually commiting the changes and
    pushing to the remote repository).
@@ -139,4 +139,4 @@ See [here](./build-configurations.md).
 
 You can find the build configuration for the default build configuration
 [here](./packages/build-with-configuration/src/types.js). For a human discussion
-of this build configuration, look [here](./build-configurations#the-default-build-configuration).
+of this build configuration, look [here](./build-configurations.md#the-default-build-configuration).
