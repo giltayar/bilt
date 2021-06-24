@@ -520,6 +520,7 @@ async function executePhase(
       rendererOptions: {
         showTimer: true,
         collapseErrors: false,
+        formatOutput: 'wrap',
       },
     },
   ).run()
