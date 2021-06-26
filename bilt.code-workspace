@@ -1,6 +1,10 @@
 {
 	"folders": [
 		{
+			"name": "bilt-cli-commons",
+			"path": "packages/bilt-cli-commons"
+		},
+		{
 			"name": "build",
 			"path": "packages/build"
 		},
@@ -15,6 +19,10 @@
 		{
 			"name": "docs",
 			"path": "docs"
+		},
+		{
+			"name": "github-actions-workflow",
+			"path": "packages/github-actions-workflow"
 		},
 		{
 			"name": "git-packages",
