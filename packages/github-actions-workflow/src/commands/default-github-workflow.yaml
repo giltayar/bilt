@@ -1,7 +1,7 @@
 name: Build using Bilt
 on: ['push']
 jobs:
-  generateBuildInformation:
+  generateBuildInformation-template:
     name: "Generate 'Needs Build' information'"
     runs-on: ubuntu-latest
     steps:
@@ -17,14 +17,9 @@ jobs:
       run: npm install -g @bilt/cli @bilt/generate-github-actions-workflow
     - name: "Generate build information"
       id: "generateBuildInformation"
-      run: |
-        bilt --dry-run | generate-github-actions-workflow echo-build-needs
-        # echo ::set-output name=needs-build-_sample-bilt-monorepo__math-utils::true
-        # echo ::set-output name=needs-build-_sample-bilt-monorepo__promise-utils::true
-        # echo ::set-output name=needs-build-_sample-bilt-monorepo__snake::true
-        # echo ::set-output name=needs-build-_sample-bilt-monorepo__console-snake::false
+      run: bilt --dry-run --json | generate-github-actions-workflow echo-build-needs
     outputs:
-  build-_sample-bilt-monorepo__math-utils:
+  build-template:
     name: "$packageNames"
     runs-on: ubuntu-latest
     needs:

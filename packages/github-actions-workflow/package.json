@@ -1,6 +1,6 @@
 {
   "name": "@bilt/github-actions-workflow",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "type": "module",
   "exports": "./src/github-actions-workflow.js",
@@ -10,7 +10,7 @@
   },
   "types": "./types/src/github-actions-workflow.d.ts",
   "engines": {
-    "node": ">=15.0.0"
+    "node": ">=16.0.0"
   },
   "files": [
     "src",
@@ -36,6 +36,7 @@
     "type": "git"
   },
   "dependencies": {
+    "js-yaml": "^3.14.1",
     "yargs": "^17.0.1"
   },
   "devDependencies": {
@@ -43,8 +44,10 @@
     "@babel/eslint-parser": "^7.14.7",
     "@babel/plugin-syntax-top-level-await": "^7.14.5",
     "@bilt/scripting-commons": "^2.0.8",
+    "@bilt/types": "^3.0.3",
     "@types/chai": "^4.2.19",
     "@types/chai-subset": "^1.3.3",
+    "@types/js-yaml": "^4.0.1",
     "@types/mocha": "^8.2.2",
     "@types/node": "^15.12.4",
     "@types/yargs": "^17.0.0",
