@@ -27,6 +27,7 @@ import {makeOptionsBiltin} from './options-biltin.js'
  * upto: string[]
  * force: boolean
  * dryRun: boolean
+ * json: boolean
  * before: boolean|undefined
  * after: boolean|undefined
  * envelope: boolean|undefined
@@ -40,6 +41,7 @@ export default async function buildCommand({
   upto,
   force,
   dryRun,
+  json,
   before,
   after,
   jobConfiguration,
@@ -73,7 +75,17 @@ Maybe you forgot to add an upto package?`,
   const packagesInBuildOrder = await getPackagesInBuildOrder(finalPackagesToBuild)
 
   if (dryRun) {
-    console.log(packagesInBuildOrder.join(', '))
+    if (json) {
+      console.log(
+        JSON.stringify(
+          generateJsonDryRunInformation(packagesInBuildOrder, finalPackagesToBuild),
+          null,
+          2,
+        ),
+      )
+    } else {
+      console.log(packagesInBuildOrder.join(', '))
+    }
     return true
   }
 
@@ -326,4 +338,29 @@ function convertStepExecutionsToTasks(stepExecutions) {
 async function getMessageFromUser() {
   return (await inquirer.prompt({name: 'message', validate: (x) => (!x ? 'required' : true)}))
     .message
+}
+
+/**
+ * @param {import("@bilt/types").RelativeDirectoryPath[]} packagesInBuildOrder
+ * @param {import("@bilt/packages-to-build/types/src/types").PackageInfosWithBuildTime} finalPackagesToBuild
+ * @returns {{
+ *  packages: {
+ *    name: string;
+ *    directory: import('@bilt/types').RelativeDirectoryPath;
+ *    dependencies: string[];
+ *  }[];
+ * }}
+ */
+function generateJsonDryRunInformation(packagesInBuildOrder, finalPackagesToBuild) {
+  return {
+    packages: packagesInBuildOrder.map((p) => {
+      const packageInfo = finalPackagesToBuild[p]
+
+      return {
+        name: packageInfo.name,
+        directory: packageInfo.directory,
+        dependencies: packageInfo.dependencies.map((d) => finalPackagesToBuild[d.directory].name),
+      }
+    }),
+  }
 }

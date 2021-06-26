@@ -85,4 +85,40 @@ describe('applitools build (e2e)', function () {
 
     expect(stdout.trim()).to.equal('c, b, a')
   })
+
+  it('should display information on list of packages to build in build order when `--dry-run`', async () => {
+    const {registry, cwd} = await prepareGitAndNpm()
+    await createAdepsBdepsCPackages(cwd, registry)
+    await writeFile('.biltrc.json', {packages: ['./*']}, {cwd})
+
+    const {stdout} = await runBuildCli(cwd, undefined, ['--dry-run', '--json', '--upto=./a'])
+
+    expect(stdout.trim()).to.equal(
+      `
+{
+  "packages": [
+    {
+      "name": "c-package",
+      "directory": "c",
+      "dependencies": []
+    },
+    {
+      "name": "b-package",
+      "directory": "b",
+      "dependencies": [
+        "c-package"
+      ]
+    },
+    {
+      "name": "a-package",
+      "directory": "a",
+      "dependencies": [
+        "b-package"
+      ]
+    }
+  ]
+}
+`.trim(),
+    )
+  })
 })

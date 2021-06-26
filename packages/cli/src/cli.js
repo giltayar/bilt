@@ -98,6 +98,11 @@ function generateYargsCommandsAndOptions(argv, config, buildConfigurationChain, 
               type: 'boolean',
               default: false,
             })
+            .option('json', {
+              describe: 'show dry run information as json',
+              type: 'boolean',
+              default: false,
+            })
             .option('force', {
               alias: 'f',
               describe: 'force build of packages',
