@@ -17,6 +17,6 @@
     "declarationDir": "types",
     "maxNodeModuleJsDepth": 0
   },
-  "include": ["src/**/*.js", "src/**/*.d.ts", "test/**/*.js", "test/**/*.d.ts"],
+  "include": ["src/**/*.js", "src/**/*.d.ts", "test/**/*.js", "test/**/*.d.ts", "../cli-commons/src/find-config.js", "../cli-commons/src/determine-packages-to-build.js"],
   "exclude": ["node_modules"]
 }

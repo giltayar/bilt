@@ -5,7 +5,7 @@ import yargs from 'yargs'
 import debugMaker from 'debug'
 import globby from 'globby'
 import {jobInfo, validateBuildConfiguration} from '@bilt/build-with-configuration'
-import findConfig from './find-config.js'
+import {findConfigFromConfigPath, findConfigPathWithYargs} from '@bilt/bilt-cli-commons'
 import findBuildConfiguration from './find-build-configuration.js'
 const debug = debugMaker('bilt:cli:cli')
 
@@ -14,7 +14,9 @@ const debug = debugMaker('bilt:cli:cli')
  * @param {{exitOnError?: boolean}} options
  */
 export async function main(argv, {exitOnError = false} = {}) {
-  const {config, rootDirectory} = await findConfig(argv)
+  const {config, rootDirectory} = await findConfigFromConfigPath(
+    await findConfigPathWithYargs(argv),
+  )
 
   const buildConfigurationChain = await findBuildConfiguration(config, rootDirectory)
 

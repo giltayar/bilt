@@ -7,10 +7,10 @@ import {calculateBuildOrder, build} from '@bilt/build'
 import {getPhaseExecution} from '@bilt/build-with-configuration'
 import inquirer from 'inquirer'
 import {childProcessWait} from '@bilt/scripting-commons'
+import {determinePackagesToBuild} from '@bilt/bilt-cli-commons'
 import {globalFooter, globalHeader, globalFailureFooter, packageErrorFooter} from './outputting.js'
 import npmBiltin from './npm-biltin.js'
 import {makeOptionsBiltin} from './options-biltin.js'
-import {determinePackagesToBuild} from './determine-packages-to-build.js'
 
 /**
  * @typedef {import('@bilt/types').Package} Package

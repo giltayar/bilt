@@ -1,6 +1,6 @@
 {
   "name": "@bilt/cli",
-  "version": "5.1.6",
+  "version": "5.1.7",
   "description": "",
   "type": "module",
   "main": "src/cli.js",
@@ -71,12 +71,10 @@
     "typescript": "^4.3.4"
   },
   "dependencies": {
+    "@bilt/bilt-cli-commons": "^1.1.0",
     "@bilt/build": "^10.0.4",
     "@bilt/build-with-configuration": "^10.0.1",
-    "@bilt/git-packages": "^9.0.7",
     "@bilt/npm-next-version": "^3.0.5",
-    "@bilt/npm-packages": "^3.1.1",
-    "@bilt/packages-to-build": "^9.0.6",
     "@bilt/scripting-commons": "^2.0.8",
     "chalk": "^4.1.1",
     "cosmiconfig": "^7.0.0",
@@ -85,7 +83,6 @@
     "inquirer": "^8.1.1",
     "listr2": "^3.10.0",
     "split-lines": "^3.0.0",
-    "throat": "^6.0.1",
     "yargs": "^17.0.1"
   }
 }
