@@ -1,0 +1,38 @@
+{
+  "env": {
+    "commonjs": true,
+    "es6": true,
+    "node": true,
+    "browser": true
+  },
+  "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "extends": ["plugin:node/recommended"],
+  "plugins": ["prettier", "mocha-no-only", "node"],
+  "rules": {
+    "prettier/prettier": ["warn"],
+    "no-warning-comments": [
+      "warn",
+      {"terms": ["fixme", "removeme", "xxx", "@@@"], "location": "anywhere"}
+    ],
+    "no-process-exit": "off",
+    "no-const-assign": "error",
+    "no-this-before-super": "error",
+    "no-undef": "warn",
+    "no-unreachable": "warn",
+    "no-unused-vars": [
+      "warn",
+      {"varsIgnorePattern": "^_", "args": "all", "argsIgnorePattern": "^_"}
+    ],
+    "constructor-super": "warn",
+    "valid-typeof": "warn",
+    "mocha-no-only/mocha-no-only": "warn",
+    "node/no-unsupported-features/es-syntax": ["error", {
+      "ignores": ["dynamicImport", "modules"]
+    }],
+    "node/exports-style": ["error", "module.exports"]
+  }
+}

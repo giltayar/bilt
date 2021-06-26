@@ -1,0 +1,62 @@
+{
+  "name": "@bilt/github-actions-workflow",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "exports": "./src/github-actions-workflow.js",
+  "main": "./src/github-actions-workflow.js",
+  "bin": {
+    "github-actions-workflow": "src/run-github-actions-workflow.js"
+  },
+  "types": "./types/src/github-actions-workflow.d.ts",
+  "engines": {
+    "node": ">=15.0.0"
+  },
+  "files": [
+    "src",
+    "types"
+  ],
+  "scripts": {
+    "build": "concurrently -r 'npm:build:*'",
+    "build:typescript": "rm -rf types && tsc && cp src/*.d.ts types/src",
+    "test": "FULL_TEST=1 concurrently -r 'npm:test:*'",
+    "test:mocha-parallel": "npm run mocha -- --parallel",
+    "test:eslint": "eslint --max-warnings=0 --color '**/*.js'",
+    "test:typescript": "tsc --noEmit --emitDeclarationOnly false --pretty",
+    "mocha": "mocha --no-timeouts --exit --color 'test/unit/*.test.js' 'test/integ/*.test.js' 'test/e2e/*.test.js'"
+  },
+  "keywords": [
+    "javascript",
+    "nodejs"
+  ],
+  "license": "MIT",
+  "repository": {
+    "url": "https://github.com/giltayar/bilt",
+    "directory": "packages/github-actions-workflow",
+    "type": "git"
+  },
+  "dependencies": {
+    "yargs": "^17.0.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.14.6",
+    "@babel/eslint-parser": "^7.14.7",
+    "@babel/plugin-syntax-top-level-await": "^7.14.5",
+    "@bilt/scripting-commons": "^2.0.8",
+    "@types/chai": "^4.2.19",
+    "@types/chai-subset": "^1.3.3",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^15.12.4",
+    "@types/yargs": "^17.0.0",
+    "chai": "^4.3.4",
+    "chai-subset": "^1.6.0",
+    "concurrently": "^6.2.0",
+    "eslint": "^7.29.0",
+    "eslint-plugin-mocha-no-only": "^1.1.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "mocha": "^9.0.1",
+    "prettier": "^2.3.1",
+    "typescript": "^4.3.4"
+  }
+}
