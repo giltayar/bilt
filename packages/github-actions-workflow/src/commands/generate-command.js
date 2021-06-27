@@ -85,7 +85,7 @@ function transformGenerateBuildInformationTemplate(template, packages, biltOptio
     steps: (template.steps || []).concat({
       name: 'Generate build information',
       id: 'generateBuildInformation',
-      run: `bilt ${biltOptions} --dry-run --json | generate-github-actions-workflow echo-build-needs`,
+      run: `bilt ${biltOptions} --dry-run --json | github-actions-workflow echo-build-needs`,
     }),
     outputs: {
       ...template.outputs,
@@ -124,7 +124,7 @@ function generateBuildJobs(template, packages) {
           needs: pkg.dependencies
             .map((d) => `build-${normalizeToGithubActionsId(d)}`)
             .concat(pkg.dependencies.length === 0 ? 'generateBuildInformation' : []),
-          if: `\${{needs.generateBuildInformation.outputs.needs-build-${normalizedPackageName} == "true"}}`,
+          if: `\${{needs.generateBuildInformation.outputs.needs-build-${normalizedPackageName} == 'true'}}`,
           steps: template.steps.map((/** @type {any} */ step) =>
             step.name !== 'Build'
               ? step
