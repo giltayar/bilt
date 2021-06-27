@@ -1,30 +1,25 @@
 import yaml from 'js-yaml'
 import fs from 'fs/promises'
+import {readStream} from './read-stream.js'
+import {normalizeToGithubActionsId} from './normalize-to-github-actions-id.js'
+
 /**
  *
- * @param {{'template-workflow-file': string}} options
+ * @param {{'template-workflow-file': string, 'bilt-options'?: string}} options
  */
-export async function generateCommand({'template-workflow-file': templateWorkflowFile}) {
+export async function generateCommand({
+  'template-workflow-file': templateWorkflowFile,
+  'bilt-options': biltOptions = '',
+}) {
   const biltPackageInfosOutput = JSON.parse((await readStream(process.stdin)).toString('utf-8'))
 
   const workflowTemplate = await yaml.load(await fs.readFile(templateWorkflowFile, 'utf8'), {
     filename: templateWorkflowFile,
   })
 
-  console.log(transformWorkflowTemplate(workflowTemplate, biltPackageInfosOutput.packages))
-}
-
-/**
- * @param {NodeJS.ReadStream} stream
- */
-async function readStream(stream) {
-  let buffer = Buffer.from('')
-
-  for await (const chunk of stream) {
-    buffer += chunk
-  }
-
-  return buffer
+  console.log(
+    transformWorkflowTemplate(workflowTemplate, biltPackageInfosOutput.packages, biltOptions),
+  )
 }
 
 /**
@@ -35,13 +30,16 @@ async function readStream(stream) {
  *    dependencies: string[];
  *  }[]
  * } packages
+ * @param {string} biltOptions
  */
-function transformWorkflowTemplate(workflowTemplate, packages) {
+function transformWorkflowTemplate(workflowTemplate, packages, biltOptions) {
   return {
     ...workflowTemplate,
     'generateBuildInformation-template': undefined,
     generateBuildInformation: transformGenerateBuildInformationTemplate(
       workflowTemplate['generateBuildInformation-template'],
+      packages,
+      biltOptions,
     ),
     ...generateBuildJobs(workflowTemplate['build-template'], packages),
   }
@@ -49,9 +47,35 @@ function transformWorkflowTemplate(workflowTemplate, packages) {
 
 /**
  * @param {any} template
+ * @param {{
+ *    name: string;
+ *    directory: import('@bilt/types').RelativeDirectoryPath;
+ *    dependencies: string[];
+ *  }[]
+ * } packages
+ * @param {string} biltOptions
  */
-function transformGenerateBuildInformationTemplate(template) {
-  return template
+function transformGenerateBuildInformationTemplate(template, packages, biltOptions) {
+  return {
+    ...template,
+    steps: (template.steps || []).concat({
+      name: 'Generate build information',
+      id: 'generateBuildInformation',
+      run: `bilt ${biltOptions} --dry-run --json | generate-github-actions-workflow echo-build-needs`,
+    }),
+    outputs: {
+      ...template.outputs,
+      ...Object.fromEntries(
+        packages.map((pkg) => {
+          const normalizedPackageName = normalizeToGithubActionsId(pkg.name)
+          return [
+            `needs-build-${normalizedPackageName}`,
+            `\${{steps.generateBuildInformation.outputs.needs-build-${normalizedPackageName}}}`,
+          ]
+        }),
+      ),
+    },
+  }
 }
 
 /**
@@ -67,13 +91,14 @@ function transformGenerateBuildInformationTemplate(template) {
 function generateBuildJobs(template, packages) {
   return Object.fromEntries(
     packages.map((pkg) => {
-      const packageNameNormalized = normalizeToGithubActionsId(pkg.name)
+      const normalizedPackageName = normalizeToGithubActionsId(pkg.name)
       return [
-        `build-${packageNameNormalized}`,
+        `build-${normalizedPackageName}`,
         {
           ...template,
           name: template.name.replaceAll('$packageNames', pkg.name),
           needs: pkg.dependencies.map((d) => `build-${normalizeToGithubActionsId(d)}`),
+          if: `\${{needs.generateBuildInformation.outputs.needs-build-${normalizedPackageName} == "true"}}`,
           steps: template.steps((/** @type {any} */ step) =>
             step.name !== 'Build'
               ? step
@@ -86,10 +111,4 @@ function generateBuildJobs(template, packages) {
       ]
     }),
   )
-}
-/**
- * @param {string} name
- */
-function normalizeToGithubActionsId(name) {
-  return name.replaceAll('/', '__').replaceAll(/[^a-zA-Z\-_]/, '_')
 }

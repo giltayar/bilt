@@ -15,9 +15,6 @@ jobs:
         registry-url: 'https://registry.npmjs.org'
     - name: Install Bilt
       run: npm install -g @bilt/cli @bilt/generate-github-actions-workflow
-    - name: "Generate build information"
-      id: "generateBuildInformation"
-      run: bilt --dry-run --json | generate-github-actions-workflow echo-build-needs
     outputs:
   build-template:
     name: "$packageNames"

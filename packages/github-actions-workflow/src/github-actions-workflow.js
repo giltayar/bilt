@@ -20,12 +20,18 @@ function getCommandLineOptions(argv) {
     '$0 <template-workflow-file>',
     'generate a github actions workflow that runs the Bilt',
     (yargs) =>
-      yargs.positional('template-workflow-file', {
-        describe:
-          'the workflow template file (YAML) that generates the github action workflow file',
-        type: 'string',
-        demandOption: true,
-      }),
+      yargs
+        .positional('template-workflow-file', {
+          describe:
+            'the workflow template file (YAML) that generates the github action workflow file',
+          type: 'string',
+          demandOption: true,
+        })
+        .option('bilt-options', {
+          type: 'string',
+          describe:
+            'command line options to pass to bilt that is executed as part of the generateBuildInformation',
+        }),
     generateCommand,
   )
 }
