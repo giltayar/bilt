@@ -363,7 +363,9 @@ function generateJsonDryRunInformation(packagesInBuildOrder, finalPackagesToBuil
       return {
         name: packageInfo.name,
         directory: packageInfo.directory,
-        dependencies: packageInfo.dependencies.map((d) => finalPackagesToBuild[d.directory].name),
+        dependencies: packageInfo.dependencies
+          .map((d) => finalPackagesToBuild[d.directory]?.name)
+          .filter((d) => !!d),
       }
     }),
   }
