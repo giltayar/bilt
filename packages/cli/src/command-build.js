@@ -68,7 +68,11 @@ Maybe you forgot to add an upto package?`,
   }
 
   if (Object.keys(finalPackagesToBuild).length === 0) {
-    globalFooter('nothing to build')
+    if (json) {
+      console.log(JSON.stringify({packages: []}))
+    } else {
+      globalFooter('nothing to build')
+    }
     return true
   }
 
