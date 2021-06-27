@@ -2,13 +2,19 @@ import yaml from 'js-yaml'
 import fs from 'fs/promises'
 import {readStream} from './read-stream.js'
 import {normalizeToGithubActionsId} from './normalize-to-github-actions-id.js'
+import path from 'path'
+
+const __dirname = new URL('.', import.meta.url).pathname
 
 /**
  *
- * @param {{'template-workflow-file': string, 'bilt-options'?: string}} options
+ * @param {{'template-workflow-file'?: string, 'bilt-options'?: string}} options
  */
 export async function generateCommand({
-  'template-workflow-file': templateWorkflowFile,
+  'template-workflow-file': templateWorkflowFile = path.resolve(
+    __dirname,
+    'default-github-workflow.yaml',
+  ),
   'bilt-options': biltOptions = '',
 }) {
   const biltPackageInfosOutput = JSON.parse((await readStream(process.stdin)).toString('utf-8'))
@@ -18,7 +24,10 @@ export async function generateCommand({
   })
 
   console.log(
-    transformWorkflowTemplate(workflowTemplate, biltPackageInfosOutput.packages, biltOptions),
+    yaml.dump(
+      transformWorkflowTemplate(workflowTemplate, biltPackageInfosOutput.packages, biltOptions),
+      {noRefs: true},
+    ),
   )
 }
 
@@ -35,14 +44,29 @@ export async function generateCommand({
 function transformWorkflowTemplate(workflowTemplate, packages, biltOptions) {
   return {
     ...workflowTemplate,
-    'generateBuildInformation-template': undefined,
-    generateBuildInformation: transformGenerateBuildInformationTemplate(
-      workflowTemplate['generateBuildInformation-template'],
-      packages,
-      biltOptions,
+    jobs: removeKey(
+      {
+        ...workflowTemplate.jobs,
+        generateBuildInformation: transformGenerateBuildInformationTemplate(
+          workflowTemplate.jobs['generateBuildInformation'],
+          packages,
+          biltOptions,
+        ),
+        ...generateBuildJobs(workflowTemplate.jobs['build-template'], packages),
+      },
+      'build-template',
     ),
-    ...generateBuildJobs(workflowTemplate['build-template'], packages),
   }
+}
+
+/**
+ * @param {{ [x: string]: any; }} obj
+ * @param {string} key
+ */
+function removeKey(obj, key) {
+  const {[key]: _, ...restOfObject} = obj
+
+  return restOfObject
 }
 
 /**
@@ -97,9 +121,11 @@ function generateBuildJobs(template, packages) {
         {
           ...template,
           name: template.name.replaceAll('$packageNames', pkg.name),
-          needs: pkg.dependencies.map((d) => `build-${normalizeToGithubActionsId(d)}`),
+          needs: pkg.dependencies
+            .map((d) => `build-${normalizeToGithubActionsId(d)}`)
+            .concat(pkg.dependencies.length === 0 ? 'generateBuildInformation' : []),
           if: `\${{needs.generateBuildInformation.outputs.needs-build-${normalizedPackageName} == "true"}}`,
-          steps: template.steps((/** @type {any} */ step) =>
+          steps: template.steps.map((/** @type {any} */ step) =>
             step.name !== 'Build'
               ? step
               : {
