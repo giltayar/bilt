@@ -123,8 +123,21 @@ function generateBuildJobs(template, packages) {
           name: template.name.replaceAll('$packageNames', pkg.name),
           needs: pkg.dependencies
             .map((d) => `build-${normalizeToGithubActionsId(d)}`)
-            .concat(pkg.dependencies.length === 0 ? 'generateBuildInformation' : []),
-          if: `\${{needs.generateBuildInformation.outputs.needs-build-${normalizedPackageName} == 'true'}}`,
+            .concat('generateBuildInformation'),
+          // The "always()" is so that if a "needs" job is skipped, this job won't be skipped.
+          // (weird, huh? The mere existence of "always()" in the if changes the behavior of "needs")
+          // See https://github.com/actions/runner/issues/491
+          // Which is why we need the needs.pkgname.result != 'failure' condition.
+          if: `\${{
+always() &&
+needs.generateBuildInformation.outputs.needs-build-${normalizedPackageName} == 'true' ${
+            pkg.dependencies.length > 0 ? '&&' : ''
+          }
+${pkg.dependencies
+  .map((d) => `needs.build-${normalizeToGithubActionsId(d)}.result != 'failure'`)
+  .join(' && ')
+  .replace('\n', ' ')}
+          }}`,
           steps: template.steps.map((/** @type {any} */ step) =>
             step.name !== 'Build'
               ? step
