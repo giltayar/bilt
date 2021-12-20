@@ -1,29 +1,33 @@
 # npm-next-version
-
-Library that yada yada yada.
+Find next version for a package.
 
 ## Installing
 
 ```sh
-npm install @applitools/npm-next-version
+npm install @built/npm-next-version
 ```
 
 ## Using the package
 
-* yada yada yada
+The package is used internally in `built`.
 
 ```js
-const yadayada = require('@applitools/npm-next-version')
+const npmNextVersion = require('@built/npm-next-version')
 
-yada yada yada
+const { name, version } = require(packageDirectory);
+
+const nextVersion = await npmNextVersion({version, name, packageDirectory});
+
 ```
 
 ## API
 
 ```js
-yadaYada(yada)
+npmNextVersion({version, name, packageDirectory})
 ```
 
-* `yada`: yada yada
+* `version`: the current version of the package
+* `name`: the name of the version as it appears in `package.json`
+* `packageDirectory`: path to the directory of the directory where `package.json` should be found
 
-* Returns: yada yada yada
+* Returns: string of the next avbailable semver version.
