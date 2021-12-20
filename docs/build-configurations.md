@@ -32,7 +32,7 @@ in Typescript (as embedded in JSDoc) [here](./packages/build-with-configuration/
 
 ### The `BuildConfiguration` object
 
-* A build configuration is a JSON object with the following properties:
+* A build configuration is an object with the following properties:
 
 * `jobs`: a `Jobs` object.
 * `extends`: a path to a file that is another build configuration. The CLI will look for a job in
