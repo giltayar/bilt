@@ -1,6 +1,6 @@
 {
   "name": "@bilt/github-actions-workflow",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "",
   "type": "module",
   "exports": "./src/github-actions-workflow.js",
