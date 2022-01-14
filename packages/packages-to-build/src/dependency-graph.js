@@ -12,7 +12,7 @@ const debug = debugMaker('bilt:packages-to-build:dependency-graph')
 /**
  *
  * @param {PackageInfosWithBuildTime} packageInfos
- * @returns {gl.Graph}
+ * @returns {{dependencyGraph: gl.Graph, dependenciesSnipped: [string, string][]}}
  */
 export function createDependencyGraph(packageInfos) {
   const graph = new gl.Graph()
@@ -24,13 +24,16 @@ export function createDependencyGraph(packageInfos) {
     }
   }
 
-  const cycles = alg.findCycles(graph)
+  /**@type {[string, string][]} */
+  const dependenciesSnipped = []
 
-  if (cycles && cycles.length > 0) {
-    snipCycles(graph, cycles)
+  /**@type {string[][]} */
+  let cycles
+  while ((cycles = alg.findCycles(graph)) && cycles.length > 0 ) {
+    dependenciesSnipped.push(...snipCycles(graph, cycles))
   }
 
-  return graph
+  return {dependencyGraph: graph, dependenciesSnipped}
 }
 
 /**
@@ -157,12 +160,48 @@ function connectsFromToNodes(pkg, packageDistances, buildUpTo) {
 /**
  * @param {gl.Graph} graph
  * @param {string[][]} cycles
+ *
+ * @returns {[string, string][]}
  */
 function snipCycles(graph, cycles) {
   debug('dependency graph has cycles:', cycles)
 
+  /**@type {[string, string][]} */
+  const dependenciesSnipped = []
+
   for (const cycle of cycles) {
-    debug('removing dependency between', cycle[1], 'and', cycle[0])
-    graph.removeEdge(cycle[1], cycle[0])
+    const index = findNodeWithMinNumberOfEdges(graph, cycle)
+    const from = cycle[index]
+    const to = cycle[index === 0 ? cycle.length - 1 : index - 1]
+
+    debug('removing dependency between', from, 'and', to)
+
+    graph.removeEdge(from, to)
+
+    dependenciesSnipped.push([from, to])
   }
+
+  return dependenciesSnipped
+}
+
+/**
+ * @param {gl.Graph} graph
+ * @param {string[]} cycle
+ */
+function findNodeWithMinNumberOfEdges(graph, cycle) {
+  let min = Infinity
+  let minIndex = 1
+
+  for (let i = 0; i < cycle.length; i++) {
+    const node = cycle[i]
+    const outEdges = graph.outEdges(node)
+    const numberOfEdges = outEdges?.length ?? Infinity
+
+    if (numberOfEdges < min) {
+      min = numberOfEdges
+      minIndex = i
+    }
+  }
+
+  return minIndex
 }

@@ -376,6 +376,7 @@ describe('calculatePackagesToBuild (unit)', function () {
       })
       aPackage.dependencies.push(bPackage)
       aPackage.dependencies.push(cPackage)
+      bPackage.dependencies.push(aPackage)
       bPackage.dependencies.push(cPackage)
       cPackage.dependencies.push(aPackage)
 
@@ -388,14 +389,18 @@ describe('calculatePackagesToBuild (unit)', function () {
       const packagesToBuild = calculatePackagesToBuild({
         packageInfos,
         basePackagesToBuild: [cPackage],
-        buildUpTo: [cPackage],
+        buildUpTo: [aPackage],
       })
-      const expectedResult = {
-        [aPackage.directory]: aPackage,
-        [cPackage.directory]: cPackage,
-      }
 
-      expect(packagesToBuild).to.eql({packageInfosWithBuildTime: expectedResult})
+      expect(
+        packagesToBuild.packageInfosWithBuildTime['adir'].dependencies.map((d) => d.directory),
+      ).to.eql(['bdir', 'cdir'])
+      expect(
+        packagesToBuild.packageInfosWithBuildTime['bdir'].dependencies.map((d) => d.directory),
+      ).to.eql(['cdir'])
+      expect(
+        packagesToBuild.packageInfosWithBuildTime['cdir'].dependencies.map((d) => d.directory),
+      ).to.eql([])
     })
   })
 })

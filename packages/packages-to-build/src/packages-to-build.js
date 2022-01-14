@@ -34,7 +34,7 @@ import {
  */
 export function calculatePackagesToBuild({packageInfos, basePackagesToBuild, buildUpTo}) {
   debug('base packages:', basePackagesToBuild.map((p) => p.directory).join(' '))
-  const dependencyGraph = createDependencyGraph(packageInfos)
+  const {dependencyGraph, dependenciesSnipped} = createDependencyGraph(packageInfos)
 
   buildLinkedDependencyGraphSubset(dependencyGraph, basePackagesToBuild, buildUpTo)
 
@@ -55,19 +55,53 @@ export function calculatePackagesToBuild({packageInfos, basePackagesToBuild, bui
   addPackagesThatIndirectlyNeedToBeBuilt(dependencyGraph, packagesThatNeedToBeBuilt)
 
   return {
-    packageInfosWithBuildTime: filterPackageInfos(packageInfos, packagesThatNeedToBeBuilt),
+    packageInfosWithBuildTime: filterPackageInfos(
+      packageInfos,
+      packagesThatNeedToBeBuilt,
+      dependenciesSnipped,
+    ),
   }
 }
 
 /**
- *
  * @param {PackageInfosWithBuildTime} packageInfos
  * @param {Set<string>} packagesThatNeedToBeBuilt
+ * @param {[string, string][]} dependenciesSnipped
  */
-function filterPackageInfos(packageInfos, packagesThatNeedToBeBuilt) {
-  return Object.fromEntries(
-    Object.entries(packageInfos).filter(([pkgDirectory]) =>
-      packagesThatNeedToBeBuilt.has(pkgDirectory),
-    ),
+function filterPackageInfos(packageInfos, packagesThatNeedToBeBuilt, dependenciesSnipped) {
+  const filtered = Object.entries(packageInfos).filter(([pkgDirectory]) =>
+    packagesThatNeedToBeBuilt.has(pkgDirectory),
   )
+
+  if (dependenciesSnipped.length === 0) {
+    return Object.fromEntries(filtered)
+  } else {
+    return Object.fromEntries(
+      filtered.map(([pkgDirectory, packageInfo]) => [
+        pkgDirectory,
+        removeDepenedenciesSnipped(pkgDirectory, packageInfo, dependenciesSnipped),
+      ]),
+    )
+  }
+}
+
+/**
+ * @param {string} pkgDirectory
+ * @param {import("./types").PackageInfoWithBuildTime} packageInfo
+ * @param {[string, string][]} dependenciesSnipped
+ */
+function removeDepenedenciesSnipped(pkgDirectory, packageInfo, dependenciesSnipped) {
+  if (!dependenciesSnipped.find(([pkgDirectory_]) => pkgDirectory_ === pkgDirectory)) {
+    return packageInfo
+  }
+  return {
+    ...packageInfo,
+    dependencies: packageInfo.dependencies.filter(
+      (d) =>
+        !dependenciesSnipped.find(
+          ([pkg, dependencyOfPkg]) =>
+            pkg === packageInfo.directory && dependencyOfPkg === d.directory,
+        ),
+    ),
+  }
 }
