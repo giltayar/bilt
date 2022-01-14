@@ -45,7 +45,7 @@ export function findLatestPackageChanges({ changedFilesInGit, packages }: {
  * @typedef {{commitTime: Date; files: RelativeFilePath[]}} CommitInfo
  * @typedef {Map<Commitish, CommitInfo>} ChangedFilesInGit
  */
-export const FAKE_COMMITISH_FOR_UNCOMMITED_FILES: Commitish;
+export const FAKE_COMMITISH_FOR_UNCOMMITED_FILES: import("@bilt/types").Commitish;
 export type PackageChange = {
     package: Package;
     commit: Commitish;

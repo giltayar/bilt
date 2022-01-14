@@ -1,6 +1,6 @@
 {
   "name": "@bilt/npm-testkit",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "",
   "type": "module",
   "exports": "./src/npm-testkit.js",
