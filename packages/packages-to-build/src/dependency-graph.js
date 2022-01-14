@@ -29,7 +29,7 @@ export function createDependencyGraph(packageInfos) {
 
   /**@type {string[][]} */
   let cycles
-  while ((cycles = alg.findCycles(graph)) && cycles.length > 0 ) {
+  while ((cycles = alg.findCycles(graph)) && cycles.length > 0) {
     dependenciesSnipped.push(...snipCycles(graph, cycles))
   }
 
