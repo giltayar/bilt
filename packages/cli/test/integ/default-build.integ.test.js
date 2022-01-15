@@ -94,7 +94,7 @@ describe('default-build (integ)', function () {
       version: '3.0.1',
     })
     expect(await readFileAsJson(['a', 'b-package.json'], {cwd})).to.containSubset({
-      ...bPackageJson,
+      ...{...bPackageJson, dependencies: {'c-package': '^3.0.1'}},
       version: '2.0.1',
     })
 
@@ -108,7 +108,7 @@ describe('default-build (integ)', function () {
       version: '3.0.1',
     })
     expect(await readFileAsJson(['a', 'b-package.json'], {cwd})).to.containSubset({
-      ...bPackageJson,
+      ...{...bPackageJson, dependencies: {'c-package': '^3.0.1'}},
       version: '2.0.2',
     })
 
@@ -148,7 +148,6 @@ describe('default-build (integ)', function () {
     await runBuild(cwd, 'a build wihtout anything except update', ['./a'], undefined, [
       '--no-git',
       '--no-test',
-      '--no-audit',
       '--no-install',
       '--no-publish',
       '--no-build',
@@ -170,8 +169,9 @@ describe('default-build (integ)', function () {
  */
 async function packageDependency(cwd, pkg, dependency) {
   /**@type {any} */
-  const packageLock = await readFileAsJson([pkg, 'package-lock.json'], {cwd})
-  return packageLock.dependencies[dependency].version
+  const packageJson = await readFileAsJson([pkg, 'package.json'], {cwd})
+
+  return packageJson.dependencies[dependency].replace(/^\^/, '').replace(/^\~/, '')
 }
 
 /**
@@ -204,7 +204,6 @@ async function createPackage(
       scripts: {
         postinstall: await scriptScript('install'),
         postupdate: await scriptScript('update'),
-        // postaudit: await scriptScript('audit'), // unfortunately, postaudit doesn't work
         build: await scriptScript('build'),
         test: await scriptScript('test'),
         postpublish: await scriptScript('publish'),

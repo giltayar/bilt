@@ -1,5 +1,5 @@
 import {promises} from 'fs'
-import execa from 'execa'
+import {execa} from 'execa'
 import {basename, join, resolve} from 'path'
 import {init, commitAll} from '@bilt/git-testkit'
 import {startNpmRegistry, enablePackageToPublishToRegistry} from '@bilt/npm-testkit'

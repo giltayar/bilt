@@ -1,6 +1,9 @@
 import {promises} from 'fs'
 import {join} from 'path'
 import {npmNextVersion} from '@bilt/npm-next-version'
+import {createRequire} from 'module'
+
+const require = createRequire(import.meta.url)
 
 /**
  *
@@ -20,5 +23,6 @@ async function nextVersion(packageDirectory) {
 export default {
   npm: {
     nextVersion,
+    checkUpdatesPath: require.resolve('npm-check-updates'),
   },
 }
