@@ -292,20 +292,30 @@ async function executePhase(
       rendererOptions: {
         showTimer: true,
         collapseErrors: false,
+        showErrorMessage: true,
         formatOutput: 'wrap',
+        collapse: false,
       },
     },
   ).run()
 }
 
-/** @type {( linesToDisplay?: number) => (payload: string, showAll?: boolean) => string} */
+/** @type {( linesToDisplay?: number) => (payload: string, showAll: boolean) => string} */
 function LinesBuffer(linesToDisplay = 10) {
   /** @type {string[]} */
   let buffer = []
-  return function handlePayload(payload, showAll = false) {
+
+  return function handlePayload(payload, showAll) {
     const newLines = splitLines(payload.toString())
+
     buffer = buffer.concat(newLines)
-    if (showAll) return buffer.join('\n')
+
+    if (showAll) {
+      // when showing all, we need to subvert ListR's collapse
+      // of empty lines, so we insert a "invisible plus" sign
+      // instead of each empty line
+      return buffer.map((s) => (s ? s : '\u2064')).join('\n')
+    }
     return buffer.slice(Math.max(0, buffer.length - linesToDisplay), buffer.length).join('\n')
   }
 }
@@ -320,20 +330,26 @@ function convertStepExecutionsToTasks(stepExecutions) {
       title: stepExecution.info().name,
       task: async function (_, task) {
         const childProcess = await stepExecution.executeToChildProcess()
-        const buffer = LinesBuffer()
+        let buffer = LinesBuffer()
         childProcess.stdout.on('data', (payload) => {
-          task.output = buffer(payload)
+          task.output = buffer(payload, false)
         })
         childProcess.stderr.on('data', (payload) => {
-          task.output = buffer(payload, true)
+          task.output = buffer(payload, false)
         })
-        await childProcessWait(childProcess, stepExecution.info().command)
+
+        await childProcessWait(childProcess, stepExecution.info().command).catch(async (err) => {
+          const ret = Promise.reject(new Error(buffer('\n' + err.message, true)))
+          // reclaim memory
+          buffer = LinesBuffer()
+          return ret
+        })
       },
       skip: stepExecution.shouldSkip,
       exitOnError: true,
       enabled: stepExecution.isEnabled,
       options: {
-        persistentOutput: true,
+        persistentOutput: false,
       },
     }
   })
