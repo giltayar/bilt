@@ -46,9 +46,7 @@ export async function determinePackagesToBuild({
   const changedPackageInfos = await determineChangedPackagesBuildInformation(
     rootDirectory,
     packageInfos,
-    samePackages(uptoPackages || [], initialSetOfPackagesToBuild || [])
-      ? initialSetOfPackagesToBuild
-      : undefined,
+    undefined,
     force,
   )
 
@@ -59,21 +57,6 @@ export async function determinePackagesToBuild({
   })
 
   return {packagesToBuild: finalPackagesToBuild, warnings}
-}
-
-/**
- * @param {Package[]} packages1
- * @param {Package[]} packages2
- */
-function samePackages(packages1, packages2) {
-  if (packages1.length !== packages2.length) {
-    return false
-  }
-
-  const packages1Set = new Set(packages1.map((p) => p.directory))
-  const packages2Set = new Set(packages2.map((p) => p.directory))
-
-  return [...packages1Set.values()].every((p) => packages2Set.has(p))
 }
 
 /**@returns {Promise<import('@bilt/packages-to-build').PackageInfosWithBuildTime>} */
