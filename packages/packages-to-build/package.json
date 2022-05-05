@@ -1,6 +1,6 @@
 {
   "name": "@bilt/packages-to-build",
-  "version": "9.0.13",
+  "version": "9.0.14",
   "description": "",
   "type": "module",
   "main": "src/packages-to-build.js",
@@ -59,7 +59,7 @@
     "eslint-plugin-mocha-no-only": "^1.1.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "mocha": "^9.2.2",
+    "mocha": "^10.0.0",
     "prettier": "^2.6.2",
     "typescript": "^4.6.4"
   }

@@ -1,6 +1,6 @@
 {
   "name": "@bilt/bilt-cli-commons",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "",
   "type": "module",
   "exports": "./src/bilt-cli-commons.js",
@@ -40,8 +40,8 @@
   },
   "dependencies": {
     "@bilt/git-packages": "^9.0.14",
-    "@bilt/npm-packages": "^3.1.8",
-    "@bilt/packages-to-build": "^9.0.11",
+    "@bilt/npm-packages": "^3.1.10",
+    "@bilt/packages-to-build": "^9.0.14",
     "@bilt/scripting-commons": "^2.0.10",
     "cosmiconfig": "^7.0.1",
     "debug": "^4.3.4",
