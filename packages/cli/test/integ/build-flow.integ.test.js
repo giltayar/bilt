@@ -85,7 +85,7 @@ describe('build-flow (integ)', function () {
       await packageScriptTime(cwd, 'b', 'during1'),
     )
 
-    await runBuild(cwd, 'third build, no change', [], ['./a'])
+    await runBuild(cwd, 'third build, no change', ['./a'])
     expect(await packageScriptCount(cwd, 'a', 'during1')).to.eql(2)
     expect(await packageScriptCount(cwd, 'b', 'during1')).to.eql(2)
     expect(await packageScriptCount(cwd, 'c', 'during1')).to.eql(1)
@@ -242,6 +242,7 @@ describe('build-flow (integ)', function () {
     expect(await packageScriptCount(cwd, 'b', 'during2')).to.equal(2)
     expect(await packageScriptCount(cwd, 'c', 'during2')).to.equal(1)
 
+    await writeFile(['a', 'build-this'], 'yes!', {cwd})
     await runBuild(cwd, 'forth build - short name', ['a-pack'], undefined)
     expect(await packageScriptCount(cwd, 'a', 'during2')).to.equal(3)
     expect(await packageScriptCount(cwd, 'b', 'during2')).to.equal(2)

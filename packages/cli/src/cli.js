@@ -213,11 +213,11 @@ function setupPackages(option, cwd, rootDirectory) {
   const isGlob = (v) => v.startsWith('.') || v.startsWith('/') || v.startsWith('!')
   return /**@param {Record<string, any>} argv*/ async (argv) => {
     if (argv[option] && argv[option].length > 0) {
-      if (argv[option].length === 1 && argv[option][0] === false) return argv
+      if (argv[option].length === 1 && argv[option][0] === false) return
 
       const values = argv[option].filter(isGlob)
       if (values.length === 0) {
-        return argv
+        return
       }
       const paths = await globby(values, {
         cwd: cwd === 'cwd' ? process.cwd() : rootDirectory,
@@ -241,8 +241,6 @@ function setupPackages(option, cwd, rootDirectory) {
 
       argv[option] = paths.concat(argv[option].filter(/**@param {string} v*/ (v) => !isGlob(v)))
     }
-
-    return argv
   }
 }
 
@@ -256,8 +254,6 @@ function supportDashUpto(argv) {
     argv.upto = undefined
     delete argv.configUpto
   }
-
-  return argv
 }
 
 /**
