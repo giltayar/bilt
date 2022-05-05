@@ -1,6 +1,6 @@
 {
   "name": "@bilt/cli",
-  "version": "6.0.2",
+  "version": "6.0.3",
   "description": "",
   "type": "module",
   "main": "src/cli.js",
@@ -43,7 +43,7 @@
     "@babel/core": "^7.17.10",
     "@babel/eslint-parser": "^7.17.0",
     "@babel/plugin-syntax-top-level-await": "^7.14.5",
-    "@bilt/git-testkit": "^2.0.9",
+    "@bilt/git-testkit": "^2.0.10",
     "@bilt/npm-testkit": "^2.0.8",
     "@bilt/types": "^3.0.5",
     "@types/chai": "^4.3.1",
@@ -71,7 +71,7 @@
     "typescript": "^4.6.4"
   },
   "dependencies": {
-    "@bilt/bilt-cli-commons": "^2.0.3",
+    "@bilt/bilt-cli-commons": "^2.0.4",
     "@bilt/build": "^10.0.7",
     "@bilt/build-with-configuration": "^10.0.5",
     "@bilt/npm-next-version": "^3.0.8",
