@@ -17,7 +17,7 @@ export async function makeTemporaryDirectory() {
  * @return {Promise<void>}
  */
 export async function init(gitDir, {bare, origin} = {}) {
-  await execAsync(`git init ${bare ? '--bare' : ''}`, {cwd: gitDir})
+  await execAsync(`git init ${bare ? '--bare' : ''} -b master`, {cwd: gitDir})
   if (origin) {
     await execAsync(`git remote add origin ${origin}`, {cwd: gitDir})
     await execAsync(`git commit -m "first commit" --allow-empty`, {cwd: gitDir})
