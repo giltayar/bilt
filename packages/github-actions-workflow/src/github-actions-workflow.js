@@ -21,7 +21,7 @@ function getCommandLineOptions(argv) {
     .command(
       '$0 [template-workflow-file]',
       'generate a github actions workflow that runs the Bilt',
-      (yargs) =>
+      (/** @type {import('yargs').Argv} */ yargs) =>
         yargs
           .positional('template-workflow-file', {
             describe:
