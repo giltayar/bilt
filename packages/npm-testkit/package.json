@@ -1,6 +1,6 @@
 {
   "name": "@bilt/npm-testkit",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "description": "",
   "type": "module",
   "exports": "./src/npm-testkit.js",
@@ -41,13 +41,14 @@
   },
   "dependencies": {
     "@bilt/scripting-commons": "^2.0.10",
+    "@qiwi/npm-registry-client": "^8.9.1",
     "debug": "^4.3.4",
     "get-port": "^6.1.2",
-    "npm-registry-client": "^8.6.0",
     "verdaccio": "^5.10.1"
   },
   "devDependencies": {
     "@babel/plugin-syntax-top-level-await": "^7.14.5",
+    "@qiwi/npm-types": "^1.0.3",
     "@types/chai": "^4.3.1",
     "@types/mocha": "^9.1.1",
     "@types/node": "^17.0.31",

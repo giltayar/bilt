@@ -1,2 +1,2 @@
 declare module 'verdaccio'
-declare module 'npm-registry-client'
+declare module '@qiwi/npm-registry-client'

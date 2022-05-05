@@ -5,7 +5,7 @@ import {promisify} from 'util'
 import verdaccio from 'verdaccio'
 const {default: startVerdaccio} = verdaccio
 import getPort from 'get-port'
-import NpmRegistryClient from 'npm-registry-client'
+import NpmRegistryClient from '@qiwi/npm-registry-client'
 import {writeFile, readFileAsString} from '@bilt/scripting-commons'
 
 /**@type {(
@@ -71,6 +71,7 @@ export async function startNpmRegistry({
  */
 export async function enablePackageToPublishToRegistry(packageDir, registry, scope) {
   const x = await new Promise((resolve, reject) => {
+    // @ts-expect-error
     new NpmRegistryClient().adduser(
       registry,
       {
