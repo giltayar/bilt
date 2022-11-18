@@ -7,7 +7,7 @@ First off, Bilt is a monorepo itself, and it is built using Bilt!
 thing we need to understand, is that while the Bilt CLI is one package, it actually uses
 about 10 packages overall for its functionality.
 
-All bilt code is in the [packages](../../) directory, in a flat hierarchy. Let's go over what
+All bilt code is in the [packages](../packages) directory, in a flat hierarchy. Let's go over what
 those packages are. We'll go top down.
 
 But before that, there is the site itself. You can find information
