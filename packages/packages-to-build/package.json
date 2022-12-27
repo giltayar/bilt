@@ -1,6 +1,6 @@
 {
   "name": "@bilt/packages-to-build",
-  "version": "9.0.15",
+  "version": "9.0.16",
   "description": "",
   "type": "module",
   "main": "src/packages-to-build.js",
@@ -42,25 +42,25 @@
     "graphlib": "^2.1.8"
   },
   "devDependencies": {
-    "@babel/core": "^7.17.10",
-    "@babel/eslint-parser": "^7.17.0",
+    "@babel/core": "^7.20.7",
+    "@babel/eslint-parser": "^7.19.1",
     "@babel/plugin-syntax-top-level-await": "^7.14.5",
     "@bilt/git-testkit": "^2.0.10",
-    "@types/chai": "^4.3.1",
+    "@types/chai": "^4.3.4",
     "@types/debug": "^4.1.7",
     "@types/graphlib": "^2.1.8",
-    "@types/mocha": "^9.1.1",
-    "@types/node": "^17.0.31",
-    "@typescript-eslint/eslint-plugin": "^5.22.0",
-    "@typescript-eslint/parser": "^5.22.0",
-    "chai": "^4.3.6",
-    "concurrently": "^7.1.0",
-    "eslint": "^8.14.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^18.11.18",
+    "@typescript-eslint/eslint-plugin": "^5.47.1",
+    "@typescript-eslint/parser": "^5.47.1",
+    "chai": "^4.3.7",
+    "concurrently": "^7.6.0",
+    "eslint": "^8.30.0",
     "eslint-plugin-mocha-no-only": "^1.1.1",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "mocha": "^10.0.0",
-    "prettier": "^2.6.2",
-    "typescript": "^4.6.4"
+    "eslint-plugin-prettier": "^4.2.1",
+    "mocha": "^10.2.0",
+    "prettier": "^2.8.1",
+    "typescript": "^4.9.4"
   }
 }
