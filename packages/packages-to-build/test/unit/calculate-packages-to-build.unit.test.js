@@ -402,6 +402,54 @@ describe('calculatePackagesToBuild (unit)', function () {
         packagesToBuild.packageInfosWithBuildTime['cdir'].dependencies.map((d) => d.directory),
       ).to.eql([])
     })
+
+    it('should support circular dependencies - non-trivial case', async () => {
+      const aPackage = createPackageInfoWithBuildTime({
+        directory: 'adir',
+        name: 'apackage',
+        dependencies: [],
+        lastBuildTime: undefined,
+      })
+      const bPackage = createPackageInfoWithBuildTime({
+        directory: 'bdir',
+        name: 'bpackage',
+        dependencies: [],
+        lastBuildTime: undefined,
+      })
+      const cPackage = createPackageInfoWithBuildTime({
+        directory: 'cdir',
+        name: 'cpackage',
+        dependencies: [],
+        lastBuildTime: undefined,
+      })
+      aPackage.dependencies.push(bPackage)
+      aPackage.dependencies.push(cPackage)
+      bPackage.dependencies.push(aPackage)
+      bPackage.dependencies.push(cPackage)
+      cPackage.dependencies.push(bPackage)
+
+      const packageInfos = {
+        [aPackage.directory]: aPackage,
+        [bPackage.directory]: bPackage,
+        [cPackage.directory]: cPackage,
+      }
+
+      const packagesToBuild = calculatePackagesToBuild({
+        packageInfos,
+        basePackagesToBuild: [cPackage],
+        buildUpTo: [aPackage],
+      })
+
+      expect(
+        packagesToBuild.packageInfosWithBuildTime['adir'].dependencies.map((d) => d.directory),
+      ).to.eql(['bdir', 'cdir'])
+      expect(
+        packagesToBuild.packageInfosWithBuildTime['bdir'].dependencies.map((d) => d.directory),
+      ).to.eql(['cdir'])
+      expect(
+        packagesToBuild.packageInfosWithBuildTime['cdir'].dependencies.map((d) => d.directory),
+      ).to.eql([])
+    })
   })
 })
 

@@ -172,7 +172,7 @@ function snipCycles(graph, cycles) {
   for (const cycle of cycles) {
     const index = findNodeWithMinNumberOfEdges(graph, cycle)
     const from = cycle[index]
-    const to = cycle[index === 0 ? cycle.length - 1 : index - 1]
+    const to = cycle[index === 0 ? determineTargetNodeIndex(graph, cycle, index) : index - 1]
 
     debug('removing dependency between', from, 'and', to)
 
@@ -204,4 +204,19 @@ function findNodeWithMinNumberOfEdges(graph, cycle) {
   }
 
   return minIndex
+}
+
+/**
+ * @param {gl.Graph} graph
+ * @param {string[]} cycle
+ * @param {number} indexFrom
+ * @returns {number}
+ */
+function determineTargetNodeIndex(graph, cycle, indexFrom) {
+  for (let i = cycle.length - 1; i > indexFrom; i--) {
+    if (graph.hasEdge(cycle[indexFrom], cycle[i])) {
+      return i
+    }
+  }
+  return indexFrom
 }
